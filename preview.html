@@ -490,6 +490,20 @@
 
     // Hero load animation sequence
     function initHeroAnimation() {
+      const ease = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+      // Respect reduced motion: skip animations, show elements immediately
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.getElementById('nameLine1').textContent = 'ABDALLAH';
+        document.getElementById('nameLine2').textContent = 'YAACKOUBI';
+        document.querySelector('.hero-eyebrow').style.opacity = '1';
+        document.getElementById('heroMeta').style.opacity = '1';
+        const hr = document.getElementById('heroRight');
+        if (!window.matchMedia('(min-width: 1024px)').matches) hr.style.opacity = '1';
+        document.querySelector('.featured-top-bar').style.transform = 'scaleX(1)';
+        return;
+      }
+
       const line1El  = document.getElementById('nameLine1');
       const line2El  = document.getElementById('nameLine2');
       const eyebrow  = document.querySelector('.hero-eyebrow');
@@ -517,7 +531,7 @@
 
       // t=150ms — eyebrow fades up
       setTimeout(() => {
-        eyebrow.style.animation = 'fadeUp 0.6s var(--ease-out) forwards';
+        eyebrow.style.animation = `fadeUp 0.6s ${ease} forwards`;
       }, 150);
 
       // t=300ms — name letters slide up
@@ -528,20 +542,20 @@
 
       // t=900ms — meta rows fade up
       setTimeout(() => {
-        heroMeta.style.animation = 'fadeUp 0.7s var(--ease-out) forwards';
+        heroMeta.style.animation = `fadeUp 0.7s ${ease} forwards`;
       }, 900);
 
       // t=1100ms — right panel fades in (mobile only — desktop is always visible via opacity: 1)
       setTimeout(() => {
         const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
         if (!isDesktop) {
-          heroRight.style.animation = 'fadeIn 0.6s ease forwards';
+          heroRight.style.animation = `fadeIn 0.6s ${ease} forwards`;
         }
       }, 1100);
 
       // t=1300ms — red top bar draws left-to-right
       setTimeout(() => {
-        topBar.style.animation = 'barDraw 0.5s var(--ease-out) forwards';
+        topBar.style.animation = `barDraw 0.5s ${ease} forwards`;
       }, 1300);
     }
 
