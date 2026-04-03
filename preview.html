@@ -331,6 +331,33 @@
       .hero-desc-block { padding: 28px 40px; }
     }
 
+    /* ── HERO ANIMATIONS ── */
+    @keyframes slideUp {
+      from { transform: translateY(110%); }
+      to   { transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes barDraw {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+
+    .letter-wrap {
+      display: inline-block; overflow: hidden;
+      vertical-align: bottom; line-height: 1;
+    }
+    .letter {
+      display: inline-block;
+      animation: slideUp 0.65s var(--ease-out) both;
+    }
+
   </style>
 </head>
 <body>
@@ -460,6 +487,65 @@
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 40);
     }, { passive: true });
+
+    // Hero load animation sequence
+    function initHeroAnimation() {
+      const line1El  = document.getElementById('nameLine1');
+      const line2El  = document.getElementById('nameLine2');
+      const eyebrow  = document.querySelector('.hero-eyebrow');
+      const heroMeta = document.getElementById('heroMeta');
+      const heroRight= document.getElementById('heroRight');
+      const topBar   = document.querySelector('.featured-top-bar');
+
+      const line1 = 'ABDALLAH';
+      const line2 = 'YAACKOUBI';
+
+      // Build letter spans with mask wrapper
+      function buildLetters(el, text, baseDelay) {
+        el.innerHTML = '';
+        [...text].forEach((ch, i) => {
+          const wrap = document.createElement('span');
+          wrap.className = 'letter-wrap';
+          const letter = document.createElement('span');
+          letter.className = 'letter';
+          letter.textContent = ch === ' ' ? '\u00A0' : ch;
+          letter.style.animationDelay = (baseDelay + i * 40) + 'ms';
+          wrap.appendChild(letter);
+          el.appendChild(wrap);
+        });
+      }
+
+      // t=150ms — eyebrow fades up
+      setTimeout(() => {
+        eyebrow.style.animation = 'fadeUp 0.6s var(--ease-out) forwards';
+      }, 150);
+
+      // t=300ms — name letters slide up
+      setTimeout(() => {
+        buildLetters(line1El, line1, 0);
+        buildLetters(line2El, line2, 80);
+      }, 300);
+
+      // t=900ms — meta rows fade up
+      setTimeout(() => {
+        heroMeta.style.animation = 'fadeUp 0.7s var(--ease-out) forwards';
+      }, 900);
+
+      // t=1100ms — right panel fades in (mobile only — desktop is always visible via opacity: 1)
+      setTimeout(() => {
+        const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+        if (!isDesktop) {
+          heroRight.style.animation = 'fadeIn 0.6s ease forwards';
+        }
+      }, 1100);
+
+      // t=1300ms — red top bar draws left-to-right
+      setTimeout(() => {
+        topBar.style.animation = 'barDraw 0.5s var(--ease-out) forwards';
+      }, 1300);
+    }
+
+    document.addEventListener('DOMContentLoaded', initHeroAnimation);
 
     // setLang stub (full implementation in Task 11)
     function setLang(lang) {
