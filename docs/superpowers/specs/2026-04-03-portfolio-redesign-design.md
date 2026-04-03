@@ -225,25 +225,38 @@ Featured project in hero: **Steer** (most prominent case study, CPO role).
 
 ## Responsive Design
 
-### Breakpoints
+### Target Viewports
 
-| Name | Width | Target |
+| Category | Sizes |
+|---|---|
+| Desktop | 1920×1080 · 1536×864 · 1366×768 |
+| Tablet | 768×1024 · 810×1080 · 820×1180 |
+| Mobile | 360×800 · 390×844 · 393×873 |
+
+### Breakpoints (CSS)
+
+| Name | `min-width` | Covers |
 |---|---|---|
-| Desktop | `≥ 1024px` | Full split layout |
-| Tablet | `768px – 1023px` | Adapted split, smaller type |
-| Mobile | `< 768px` | Single column, stacked |
+| Mobile (base) | — | 360px – 767px |
+| Tablet | `768px` | 768px – 1023px |
+| Desktop | `1024px` | 1024px – 1920px+ |
+
+All three desktop widths (1366, 1536, 1920) share the same layout — fluid columns and `clamp()` type ensure it looks good across all three. No pixel-specific overrides needed.
 
 ### Desktop (≥ 1024px)
-Full design as specced — split hero, sidebar about, all columns intact.
+Full design as specced — split hero, sidebar about, all columns intact. Validated at 1366, 1536, and 1920px widths. Max content width capped at `1400px`, centered with `margin: 0 auto`, so 1920px doesn't stretch awkwardly.
 
 ### Tablet (768px – 1023px)
-- Hero: split maintained but left panel shrinks to 44%, type scale reduced ~15%
-- About: sidebar collapses to top label row (horizontal), no vertical text
+Covers 768×1024, 810×1080, 820×1180.
+- Hero: split maintained, left panel 44%, type scale reduced ~15%
+- About: sidebar collapses to inline horizontal label row, no vertical text
 - Work list: unchanged
 - Contact: split maintained, columns narrower
 - Nav: links visible, lang switcher kept
 
 ### Mobile (< 768px)
+
+Covers 360×800, 390×844, 393×873 — all narrow portrait screens. Base design targets 360px minimum width.
 
 **Nav:**
 - Logo left, lang switcher right — nav links hidden (no hamburger menu needed; anchor links reachable by scroll)
