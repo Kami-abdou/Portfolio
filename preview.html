@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Abdallah Yaackoubi — Product Designer. UX, UI, and AI workflows. 5+ years, 8 startups, based in Tunisia.">
+  <meta property="og:title" content="Abdallah Yaackoubi — Product Designer">
+  <meta property="og:description" content="UX, UI, and AI workflows. 5+ years, 8 startups, based in Tunisia.">
+  <meta property="og:type" content="website">
   <meta name="color-scheme" content="dark">
   <title>Abdallah Yaackoubi — Product Designer</title>
   <style>
@@ -907,7 +911,11 @@
     // Custom cursor
     const cursorDot  = document.getElementById('cursorDot');
     const cursorRing = document.getElementById('cursorRing');
-    let ringX = 0, ringY = 0, mouseX = 0, mouseY = 0;
+    let ringX = -100, ringY = -100, mouseX = -100, mouseY = -100;
+    cursorDot.style.left  = '-100px';
+    cursorDot.style.top   = '-100px';
+    cursorRing.style.left = '-100px';
+    cursorRing.style.top  = '-100px';
 
     // Cursor state management — globally accessible for other tasks
     function setCursorState(state) {
@@ -924,6 +932,12 @@
         cursorDot.style.left = mouseX + 'px';
         cursorDot.style.top  = mouseY + 'px';
       }, { passive: true });
+
+      document.addEventListener('mouseleave', () => {
+        cursorDot.style.left = '-100px';
+        cursorDot.style.top  = '-100px';
+        ringX = -100; ringY = -100;
+      });
 
       function animateRing() {
         ringX += (mouseX - ringX) * 0.12;
