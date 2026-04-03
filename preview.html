@@ -644,7 +644,7 @@
             <span class="meta-val"   data-en="Tunisia" data-fr="Tunisie">Tunisia</span>
           </div>
           <div class="hero-meta-row">
-            <span class="meta-label" data-en="Years"  data-fr="Expérience">Years</span>
+            <span class="meta-label" data-en="Years"  data-fr="Ans">Years</span>
             <span class="meta-val"   data-en="5+ years · 8 startups" data-fr="5+ ans · 8 startups">5+ years · 8 startups</span>
           </div>
           <div class="hero-meta-row">
@@ -658,7 +658,7 @@
       <div class="hero-right" id="heroRight">
         <a href="#" class="hero-featured" data-cursor="project" id="heroFeatured">
           <div class="featured-top-bar"></div>
-          <span class="featured-badge" data-en="Featured" data-fr="En vedette">Featured</span>
+          <span class="featured-badge" data-en="Featured" data-fr="À la une">Featured</span>
           <div class="featured-body">
             <p class="featured-label" data-en="Case Study — 01" data-fr="Étude de cas — 01">Case Study — 01</p>
             <h2 class="featured-title">Steer</h2>
@@ -817,7 +817,7 @@
   <section class="contact" id="contact">
     <div class="contact-inner">
       <div class="contact-left reveal">
-        <p class="section-label" data-en="Get in touch" data-fr="Me contacter">Get in touch</p>
+        <p class="section-label" data-en="Get in touch" data-fr="Contactez-moi">Get in touch</p>
         <h2 class="contact-heading">
           <span data-en="Let's" data-fr="Travaillons">Let's</span><br>
           <span data-en="work" data-fr="ensemble">work</span><br>
@@ -1012,12 +1012,20 @@
     document.addEventListener('DOMContentLoaded', () => {
       initHeroAnimation();
       initMagnetic();
+      // Restore saved language
+      const savedLang = localStorage.getItem('lang');
+      if (savedLang === 'fr') setLang('fr');
     });
 
-    // setLang stub (full implementation in Task 11)
     function setLang(lang) {
+      document.querySelectorAll('[data-en]').forEach(el => {
+        const val = el.getAttribute('data-' + lang);
+        if (val !== null) el.textContent = val;
+      });
       document.getElementById('btn-en').classList.toggle('active', lang === 'en');
       document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+      document.documentElement.lang = lang;
+      localStorage.setItem('lang', lang);
     }
   </script>
 </body>
