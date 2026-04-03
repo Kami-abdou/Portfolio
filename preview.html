@@ -358,6 +358,12 @@
       animation: slideUp 0.65s var(--ease-out) both;
     }
 
+    /* ── MAGNETIC ── */
+    .hero-name, #heroFeatured {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+
   </style>
 </head>
 <body>
@@ -559,7 +565,35 @@
       }, 1300);
     }
 
-    document.addEventListener('DOMContentLoaded', initHeroAnimation);
+    // Hero magnetic effect (desktop only)
+    function initMagnetic() {
+      if (!window.matchMedia('(hover: hover)').matches) return;
+
+      const hero     = document.getElementById('hero');
+      const heroName = document.querySelector('.hero-name');
+      const featured = document.getElementById('heroFeatured');
+
+      hero.addEventListener('mousemove', e => {
+        const rect = hero.getBoundingClientRect();
+        const cx = rect.left + rect.width  / 2;
+        const cy = rect.top  + rect.height / 2;
+        const dx = (e.clientX - cx) * 0.04;
+        const dy = (e.clientY - cy) * 0.04;
+
+        heroName.style.transform = `translate(${dx}px, ${dy}px)`;
+        featured.style.transform = `translate(${dx * 0.5}px, ${dy * 0.5}px)`;
+      }, { passive: true });
+
+      hero.addEventListener('mouseleave', () => {
+        heroName.style.transform  = '';
+        featured.style.transform  = '';
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initHeroAnimation();
+      initMagnetic();
+    });
 
     // setLang stub (full implementation in Task 11)
     function setLang(lang) {
