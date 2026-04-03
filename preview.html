@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
   <title>Abdallah Yaackoubi — Product Designer</title>
   <style>
 
@@ -39,14 +40,116 @@
     img { display: block; max-width: 100%; }
     button { border: none; background: none; cursor: pointer; font: inherit; }
 
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      transition: background 0.4s, backdrop-filter 0.4s, border-color 0.4s;
+      border-bottom: 1px solid transparent;
+    }
+    .nav.scrolled {
+      background: rgba(8,8,8,0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom-color: var(--w08);
+    }
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 20px var(--pad-x);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 0.72rem; font-weight: 800;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--w55);
+    }
+    .nav-links {
+      display: none; /* hidden on mobile, shown on tablet+ */
+      gap: 28px;
+    }
+    .nav-links a {
+      font-size: 0.68rem; color: var(--w28);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+
+    .nav-avail {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--red);
+      border: 1px solid var(--red-border);
+      border-radius: 999px; padding: 5px 12px;
+    }
+    .avail-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--red);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    .lang-switcher {
+      display: flex; border: 1px solid var(--w08); border-radius: 999px; overflow: hidden;
+    }
+    .lang-btn {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--w28); padding: 6px 12px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .lang-btn.active  { color: var(--white); background: var(--w08); }
+    .lang-btn:hover:not(.active) { color: var(--w55); }
+
+    /* Tablet+ nav links */
+    @media (min-width: 768px) {
+      .nav-links { display: flex; }
+    }
+
   </style>
 </head>
 <body>
 
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <span class="nav-logo">AY</span>
+      <div class="nav-links">
+        <a href="#work"    data-en="Work"    data-fr="Travaux">Work</a>
+        <a href="#about"   data-en="About"   data-fr="À propos">About</a>
+        <a href="#contact" data-en="Contact" data-fr="Contact">Contact</a>
+      </div>
+      <div class="nav-right">
+        <span class="nav-avail">
+          <span class="avail-dot"></span>
+          <span data-en="Available" data-fr="Disponible">Available</span>
+        </span>
+        <div class="lang-switcher">
+          <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+          <button class="lang-btn"        id="btn-fr" onclick="setLang('fr')">FR</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
   <!-- content goes here -->
 
   <script>
-    // scripts go here
+    // Nav scroll state
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // setLang stub (full implementation in Task 11)
+    function setLang(lang) {
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+      document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+    }
   </script>
 </body>
 </html>
