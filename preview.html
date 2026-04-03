@@ -16,7 +16,10 @@
       --w55:       rgba(255,255,255,0.55);
       --w28:       rgba(255,255,255,0.28);
       --w18:       rgba(255,255,255,0.18);
+      --w15:       rgba(255,255,255,0.15);
+      --w12:       rgba(255,255,255,0.12);
       --w08:       rgba(255,255,255,0.08);
+      --w06:       rgba(255,255,255,0.06);
       --w04:       rgba(255,255,255,0.04);
       --red:       #d42828;
       --red-faint: rgba(212,40,40,0.08);
@@ -25,6 +28,9 @@
       --max-w:     1400px;
       --pad-x:     max(24px, 6vw);
     }
+
+    /* Scroll reveal — animated by IntersectionObserver in Task 12 */
+    .reveal { opacity: 1; }
 
     /* ── RESET ── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -411,6 +417,10 @@
       letter-spacing: 0.2em; text-transform: uppercase; color: var(--w18);
     }
 
+    @media (min-width: 768px) {
+      .about-inner { gap: 48px; }
+    }
+
     /* About desktop sidebar */
     @media (min-width: 1024px) {
       .about-inner { grid-template-columns: 120px 1fr; }
@@ -448,13 +458,13 @@
 
     .project-row {
       display: grid;
-      grid-template-columns: 28px 1fr auto 20px;
+      grid-template-columns: 28px 1fr 20px;
       align-items: center;
-      gap: 16px;
-      padding: 16px 0;
+      gap: 12px;
+      padding: 14px 0;
       border-bottom: 1px solid var(--w04);
       position: relative;
-      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.35s var(--ease-out);
     }
     .project-row::before {
       content: '';
@@ -475,11 +485,11 @@
       color: var(--white); letter-spacing: -0.02em;
     }
     .pr-sub {
-      display: block; margin-top: 3px;
+      display: none; margin-top: 3px;
       font-size: 0.65rem; color: var(--w28);
       letter-spacing: 0.08em; text-transform: uppercase;
     }
-    .pr-tags { display: flex; gap: 6px; }
+    .pr-tags { display: none; gap: 6px; }
     .pr-tag {
       font-size: 0.58rem; padding: 3px 9px; border-radius: 999px;
       letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600;
@@ -493,11 +503,10 @@
     }
     .project-row:hover .pr-arrow { color: var(--white); transform: rotate(-45deg); }
 
-    /* Hide tags and sub on mobile */
-    @media (max-width: 767px) {
-      .project-row { grid-template-columns: 28px 1fr 20px; gap: 12px; padding: 14px 0; }
-      .pr-tags { display: none; }
-      .pr-sub { display: none; }
+    @media (min-width: 768px) {
+      .project-row { grid-template-columns: 28px 1fr auto 20px; gap: 16px; padding: 16px 0; }
+      .pr-tags { display: flex; }
+      .pr-sub { display: block; }
     }
 
     /* ── CONTACT ── */
@@ -515,7 +524,7 @@
     }
     .contact-heading em {
       color: transparent;
-      -webkit-text-stroke: 1px rgba(255,255,255,0.15);
+      -webkit-text-stroke: 1px var(--w15);
       font-style: normal;
     }
     .contact-sub {
@@ -528,10 +537,10 @@
       border: 1px solid var(--w08); border-radius: 10px;
       background: var(--w04);
       min-height: 56px;
-      transition: background 0.3s, border-color 0.3s, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background 0.3s, border-color 0.3s, transform 0.35s var(--ease-out);
     }
     .contact-link:hover {
-      background: rgba(255,255,255,0.06);
+      background: var(--w06);
       border-color: var(--red-border);
       transform: translateX(5px);
     }
@@ -568,7 +577,7 @@
       text-align: center;
     }
     .footer-copy {
-      font-size: 0.6rem; color: rgba(255,255,255,0.12); letter-spacing: 0.12em;
+      font-size: 0.6rem; color: var(--w12); letter-spacing: 0.12em;
     }
     .footer-links { display: flex; gap: 20px; }
     .footer-links a {
@@ -672,7 +681,7 @@
   <section class="about" id="about">
     <div class="about-inner">
       <div class="about-sidebar">
-        <span class="about-sidebar-label">About</span>
+        <span class="about-sidebar-label" data-en="About" data-fr="À propos">About</span>
         <span class="about-sidebar-num" aria-hidden="true">02</span>
       </div>
       <div class="about-content reveal">
@@ -719,7 +728,7 @@
             <span class="pr-tag tag-red" data-en="Case Study" data-fr="Étude de cas">Case Study</span>
             <span class="pr-tag tag-grey">2022–2024</span>
           </div>
-          <span class="pr-arrow">→</span>
+          <span class="pr-arrow" aria-hidden="true">→</span>
         </a>
 
         <a href="#" class="project-row reveal" data-cursor="project">
@@ -732,7 +741,7 @@
             <span class="pr-tag tag-red" data-en="Case Study" data-fr="Étude de cas">Case Study</span>
             <span class="pr-tag tag-grey">2023</span>
           </div>
-          <span class="pr-arrow">→</span>
+          <span class="pr-arrow" aria-hidden="true">→</span>
         </a>
 
         <a href="#" class="project-row reveal" data-cursor="project">
@@ -745,7 +754,7 @@
             <span class="pr-tag tag-red" data-en="Case Study" data-fr="Étude de cas">Case Study</span>
             <span class="pr-tag tag-grey">2023</span>
           </div>
-          <span class="pr-arrow">→</span>
+          <span class="pr-arrow" aria-hidden="true">→</span>
         </a>
 
         <a href="#" class="project-row reveal" data-cursor="project">
@@ -758,7 +767,7 @@
             <span class="pr-tag tag-grey" data-en="Project" data-fr="Projet">Project</span>
             <span class="pr-tag tag-grey">2023</span>
           </div>
-          <span class="pr-arrow">→</span>
+          <span class="pr-arrow" aria-hidden="true">→</span>
         </a>
 
         <a href="#" class="project-row reveal" data-cursor="project">
@@ -771,7 +780,7 @@
             <span class="pr-tag tag-grey" data-en="Project" data-fr="Projet">Project</span>
             <span class="pr-tag tag-grey">2023</span>
           </div>
-          <span class="pr-arrow">→</span>
+          <span class="pr-arrow" aria-hidden="true">→</span>
         </a>
 
         <a href="#" class="project-row reveal" data-cursor="project">
@@ -784,7 +793,7 @@
             <span class="pr-tag tag-grey" data-en="Project" data-fr="Projet">Project</span>
             <span class="pr-tag tag-grey">2023</span>
           </div>
-          <span class="pr-arrow">→</span>
+          <span class="pr-arrow" aria-hidden="true">→</span>
         </a>
 
         <a href="#" class="project-row reveal" data-cursor="project">
@@ -797,7 +806,7 @@
             <span class="pr-tag tag-grey" data-en="Project" data-fr="Projet">Project</span>
             <span class="pr-tag tag-grey">2023</span>
           </div>
-          <span class="pr-arrow">→</span>
+          <span class="pr-arrow" aria-hidden="true">→</span>
         </a>
 
       </div>
@@ -812,7 +821,7 @@
         <h2 class="contact-heading">
           <span data-en="Let's" data-fr="Travaillons">Let's</span><br>
           <span data-en="work" data-fr="ensemble">work</span><br>
-          <em data-en="together." data-fr="ensemble.">together.</em>
+          <em data-en="together." data-fr=".">together.</em>
         </h2>
         <p class="contact-sub"
            data-en="Open to freelance projects, collabs, and good conversations."
@@ -826,21 +835,21 @@
             <span class="cl-label" data-en="Email" data-fr="Email">Email</span>
             <span class="cl-val">abdouyaackoubi@gmail.com</span>
           </div>
-          <span class="cl-arrow">→</span>
+          <span class="cl-arrow" aria-hidden="true">→</span>
         </a>
         <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener" class="contact-link">
           <div>
-            <span class="cl-label">LinkedIn</span>
+            <span class="cl-label" data-en="LinkedIn" data-fr="LinkedIn">LinkedIn</span>
             <span class="cl-val">/in/abdou-yaackoubi</span>
           </div>
-          <span class="cl-arrow">→</span>
+          <span class="cl-arrow" aria-hidden="true">→</span>
         </a>
         <a href="https://www.behance.net/Abdou_Yaackoubi" target="_blank" rel="noopener" class="contact-link">
           <div>
-            <span class="cl-label">Behance</span>
+            <span class="cl-label" data-en="Behance" data-fr="Behance">Behance</span>
             <span class="cl-val">/Abdou_Yaackoubi</span>
           </div>
-          <span class="cl-arrow">→</span>
+          <span class="cl-arrow" aria-hidden="true">→</span>
         </a>
       </div>
     </div>
@@ -849,11 +858,11 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <span class="footer-copy">© 2025 Abdallah Yaackoubi · All rights reserved</span>
+      <span class="footer-copy">© 2026 Abdallah Yaackoubi · All rights reserved</span>
       <div class="footer-links">
         <a href="https://www.behance.net/Abdou_Yaackoubi" target="_blank" rel="noopener">Behance</a>
         <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="UX UI Design Portfolio/CV-Abdallah_Yaackoubi.pdf" target="_blank">CV</a>
+        <a href="UX UI Design Portfolio/CV-Abdallah_Yaackoubi.pdf" target="_blank" rel="noopener">CV</a>
       </div>
     </div>
   </footer>
