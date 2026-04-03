@@ -323,18 +323,26 @@
       .hero-right {
         flex: 1; border-radius: 0; border: none;
         display: grid; grid-template-rows: 1fr auto;
+        opacity: 1; /* ensure visible even without JS animation */
       }
       .hero-featured { flex: 1; min-height: unset; }
     }
 
     /* DESKTOP: full split */
     @media (min-width: 1024px) {
+      .hero {
+        height: 100svh;
+        min-height: unset;
+        overflow: hidden;
+      }
       .hero-inner {
         flex-direction: row;
         align-items: stretch;
         gap: 0;
         padding-top: 0;
         padding-bottom: 0;
+        height: 100%;
+        min-height: unset;
       }
       .hero-left {
         flex: 0 0 46%;
@@ -611,7 +619,7 @@
     }
     .footer-links a:hover { color: var(--w55); }
 
-    @media (min-width: 768px) {
+    @media (min-width: 1024px) {
       .footer-inner {
         flex-direction: row; justify-content: space-between;
         text-align: left;
