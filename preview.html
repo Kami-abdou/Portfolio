@@ -160,6 +160,9 @@
       letter-spacing: 0.12em; text-transform: uppercase;
       color: rgba(255,255,255,0.85);
     }
+    html[lang="fr"] .cursor-ring.on-project::after {
+      content: 'VOIR →';
+    }
 
     /* Hide on touch devices */
     @media (hover: none) {
@@ -858,7 +861,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <span class="footer-copy">© 2026 Abdallah Yaackoubi · All rights reserved</span>
+      <span class="footer-copy" data-en="© 2026 Abdallah Yaackoubi · All rights reserved" data-fr="© 2026 Abdallah Yaackoubi · Tous droits réservés">© 2026 Abdallah Yaackoubi · All rights reserved</span>
       <div class="footer-links">
         <a href="https://www.behance.net/Abdou_Yaackoubi" target="_blank" rel="noopener">Behance</a>
         <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener">LinkedIn</a>
@@ -1018,6 +1021,7 @@
     });
 
     function setLang(lang) {
+      if (lang !== 'en' && lang !== 'fr') return;
       document.querySelectorAll('[data-en]').forEach(el => {
         const val = el.getAttribute('data-' + lang);
         if (val !== null) el.textContent = val;
@@ -1026,6 +1030,9 @@
       document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
       document.documentElement.lang = lang;
       localStorage.setItem('lang', lang);
+      document.title = lang === 'fr'
+        ? 'Abdallah Yaackoubi — Designer Produit'
+        : 'Abdallah Yaackoubi — Product Designer';
     }
   </script>
 </body>
