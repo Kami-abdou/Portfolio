@@ -160,6 +160,176 @@
       .cursor-dot, .cursor-ring { display: none; }
     }
 
+    /* ── HERO ── */
+    .hero {
+      min-height: 100svh;
+      padding-top: 72px; /* nav height */
+      background: var(--bg);
+    }
+    .hero-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--pad-x);
+      min-height: calc(100svh - 72px);
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      padding-top: 40px;
+      padding-bottom: 48px;
+    }
+
+    /* LEFT */
+    .hero-left {
+      display: flex; flex-direction: column; gap: 32px;
+      position: relative;
+    }
+    .hero-left::before {
+      content: '';
+      position: absolute; left: calc(-1 * var(--pad-x)); top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--red) 0%, transparent 100%);
+    }
+    .hero-eyebrow {
+      font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--w18);
+      opacity: 0; /* animated in Task 5 */
+    }
+    .hero-name {
+      line-height: 0.88;
+      letter-spacing: -0.045em;
+    }
+    .name-line {
+      display: block;
+      font-size: clamp(3.5rem, 14vw, 9rem);
+      font-weight: 900;
+    }
+    .name-line.solid { color: var(--white); }
+    .name-line.ghost {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,0.12);
+    }
+
+    /* META */
+    .hero-meta {
+      display: flex; flex-direction: column; gap: 10px;
+      opacity: 0; /* animated in Task 5 */
+    }
+    .hero-meta-row { display: flex; align-items: baseline; gap: 12px; }
+    .meta-label {
+      font-size: 0.6rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--w18); min-width: 52px;
+    }
+    .meta-val { font-size: 0.8rem; color: var(--w55); }
+
+    /* RIGHT */
+    .hero-right {
+      display: flex; flex-direction: column; gap: 0;
+      border: 1px solid var(--w08); border-radius: 10px; overflow: hidden;
+      opacity: 0; /* animated in Task 5 */
+    }
+
+    .hero-featured {
+      display: flex; flex-direction: column; justify-content: flex-end;
+      position: relative;
+      background: #0d0a0a;
+      padding: 28px 24px 24px;
+      min-height: 200px;
+      transition: background 0.3s;
+    }
+    .hero-featured:hover { background: #120c0c; }
+
+    .featured-top-bar {
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--red) 0%, transparent 70%);
+      transform: scaleX(0); transform-origin: left;
+      /* animated in Task 5 */
+    }
+    .featured-badge {
+      position: absolute; top: 16px; right: 16px;
+      font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--red); border: 1px solid var(--red-border);
+      background: var(--red-faint); border-radius: 999px; padding: 3px 10px;
+    }
+    .featured-body { position: relative; z-index: 1; }
+    .featured-label {
+      font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--w18); margin-bottom: 8px;
+    }
+    .featured-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 900; letter-spacing: -0.03em; color: var(--white);
+    }
+    .featured-sub {
+      font-size: 0.68rem; color: var(--w28);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-top: 6px;
+    }
+
+    .hero-desc-block {
+      padding: 20px 24px;
+      border-top: 1px solid var(--w08);
+      background: var(--bg-2);
+    }
+    .hero-desc {
+      font-size: 0.82rem; color: var(--w28); line-height: 1.75;
+    }
+
+    /* TABLET: side-by-side split */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .hero-inner {
+        flex-direction: row;
+        gap: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      .hero-left {
+        flex: 0 0 44%;
+        justify-content: space-between;
+        padding: 48px 36px 48px 0;
+        border-right: 1px solid var(--w08);
+      }
+      .hero-right {
+        flex: 1; border-radius: 0; border: none;
+        display: grid; grid-template-rows: 1fr auto;
+      }
+      .hero-featured { flex: 1; min-height: unset; }
+    }
+
+    /* DESKTOP: full split */
+    @media (min-width: 1024px) {
+      .hero-inner {
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      .hero-left {
+        flex: 0 0 46%;
+        justify-content: space-between;
+        padding: 60px 48px 60px 0;
+        border-right: 1px solid var(--w08);
+      }
+      .hero-left::before {
+        left: calc(-1 * var(--pad-x));
+      }
+      .hero-eyebrow { font-size: 0.65rem; }
+      .name-line { font-size: clamp(5rem, 8.5vw, 9rem); }
+      .hero-right {
+        flex: 1;
+        border-radius: 0; border: none;
+        display: grid;
+        grid-template-rows: 1fr auto;
+      }
+      .hero-featured {
+        min-height: unset;
+        flex: 1;
+        padding: 48px 40px 36px;
+      }
+      .hero-desc-block { padding: 28px 40px; }
+    }
+
   </style>
 </head>
 <body>
@@ -190,7 +360,60 @@
     </div>
   </nav>
 
-  <!-- content goes here -->
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+
+      <!-- LEFT: name + meta -->
+      <div class="hero-left">
+        <div class="hero-top">
+          <p class="hero-eyebrow" data-en="Product Designer · Freelance" data-fr="Designer Produit · Freelance">
+            Product Designer · Freelance
+          </p>
+          <h1 class="hero-name" id="heroName">
+            <span class="name-line solid" id="nameLine1"></span>
+            <span class="name-line ghost" id="nameLine2"></span>
+          </h1>
+        </div>
+        <div class="hero-meta" id="heroMeta">
+          <div class="hero-meta-row">
+            <span class="meta-label" data-en="Based"  data-fr="Basé">Based</span>
+            <span class="meta-val"   data-en="Tunisia" data-fr="Tunisie">Tunisia</span>
+          </div>
+          <div class="hero-meta-row">
+            <span class="meta-label" data-en="Years"  data-fr="Expérience">Years</span>
+            <span class="meta-val"   data-en="5+ years · 8 startups" data-fr="5+ ans · 8 startups">5+ years · 8 startups</span>
+          </div>
+          <div class="hero-meta-row">
+            <span class="meta-label" data-en="Focus"  data-fr="Focus">Focus</span>
+            <span class="meta-val"   data-en="UX · UI · AI Workflows" data-fr="UX · UI · IA">UX · UI · AI Workflows</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: featured project + description -->
+      <div class="hero-right" id="heroRight">
+        <a href="#" class="hero-featured" data-cursor="project" id="heroFeatured">
+          <div class="featured-top-bar"></div>
+          <span class="featured-badge" data-en="Featured" data-fr="En vedette">Featured</span>
+          <div class="featured-body">
+            <p class="featured-label" data-en="Case Study — 01" data-fr="Étude de cas — 01">Case Study — 01</p>
+            <h2 class="featured-title">Steer</h2>
+            <p class="featured-sub"   data-en="Automotive · Chief Product Officer" data-fr="Automobile · Chief Product Officer">Automotive · Chief Product Officer</p>
+          </div>
+        </a>
+        <div class="hero-desc-block">
+          <p class="hero-desc"
+             data-en="Designing digital products that feel intentional — from UX strategy to polished interfaces and AI-enhanced workflows."
+             data-fr="Concevoir des produits numériques qui ont du sens — de la stratégie UX aux interfaces soignées et aux workflows IA.">
+            Designing digital products that feel intentional — from UX strategy to polished interfaces and AI-enhanced workflows.
+          </p>
+        </div>
+      </a>
+      </div>
+
+    </div>
+  </section>
 
   <script>
     // Custom cursor
