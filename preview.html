@@ -198,7 +198,14 @@
     const cursorRing = document.getElementById('cursorRing');
     let ringX = 0, ringY = 0, mouseX = 0, mouseY = 0;
 
-    // Only activate on hover-capable devices
+    // Cursor state management — globally accessible for other tasks
+    function setCursorState(state) {
+      cursorDot.classList.toggle('hidden',      state === 'project');
+      cursorRing.classList.toggle('on-link',    state === 'link');
+      cursorRing.classList.toggle('on-project', state === 'project');
+    }
+
+    // Only activate tracking on hover-capable devices
     if (window.matchMedia('(hover: hover)').matches) {
       document.addEventListener('mousemove', e => {
         mouseX = e.clientX;
@@ -207,7 +214,6 @@
         cursorDot.style.top  = mouseY + 'px';
       }, { passive: true });
 
-      // Ring follows with spring lag via rAF
       function animateRing() {
         ringX += (mouseX - ringX) * 0.12;
         ringY += (mouseY - ringY) * 0.12;
@@ -216,13 +222,6 @@
         requestAnimationFrame(animateRing);
       }
       animateRing();
-
-      // Cursor state management
-      function setCursorState(state) {
-        cursorDot.classList.toggle('hidden',      state === 'project');
-        cursorRing.classList.toggle('on-link',    state === 'link');
-        cursorRing.classList.toggle('on-project', state === 'project');
-      }
 
       document.addEventListener('mouseover', e => {
         const el = e.target.closest('[data-cursor="project"]');
