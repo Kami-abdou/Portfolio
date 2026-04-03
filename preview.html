@@ -110,9 +110,63 @@
       .nav-links { display: flex; }
     }
 
+    /* ── CURSOR ── */
+    @media (hover: hover) {
+      body { cursor: none; }
+      a, button, [data-cursor] { cursor: none; }
+    }
+
+    .cursor-dot, .cursor-ring {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      border-radius: 50%; pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+    .cursor-dot {
+      width: 7px; height: 7px;
+      background: var(--white);
+      transition: opacity 0.2s, width 0.2s, height 0.2s;
+    }
+    .cursor-ring {
+      width: 34px; height: 34px;
+      border: 1px solid rgba(255,255,255,0.28);
+      transition:
+        width  0.38s var(--ease-out),
+        height 0.38s var(--ease-out),
+        border-color 0.25s,
+        background 0.25s;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* States */
+    .cursor-dot.hidden   { opacity: 0; }
+    .cursor-ring.on-link {
+      width: 46px; height: 46px;
+      border-color: var(--red-border);
+    }
+    .cursor-ring.on-project {
+      width: 80px; height: 80px;
+      border-color: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.04);
+    }
+    .cursor-ring.on-project::after {
+      content: 'VIEW →';
+      font-size: 0.58rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* Hide on touch devices */
+    @media (hover: none) {
+      .cursor-dot, .cursor-ring { display: none; }
+    }
+
   </style>
 </head>
 <body>
+
+  <!-- CURSOR (desktop only) -->
+  <div class="cursor-dot"  id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
 
   <!-- NAV -->
   <nav class="nav" id="nav">
@@ -139,6 +193,46 @@
   <!-- content goes here -->
 
   <script>
+    // Custom cursor
+    const cursorDot  = document.getElementById('cursorDot');
+    const cursorRing = document.getElementById('cursorRing');
+    let ringX = 0, ringY = 0, mouseX = 0, mouseY = 0;
+
+    // Only activate on hover-capable devices
+    if (window.matchMedia('(hover: hover)').matches) {
+      document.addEventListener('mousemove', e => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursorDot.style.left = mouseX + 'px';
+        cursorDot.style.top  = mouseY + 'px';
+      }, { passive: true });
+
+      // Ring follows with spring lag via rAF
+      function animateRing() {
+        ringX += (mouseX - ringX) * 0.12;
+        ringY += (mouseY - ringY) * 0.12;
+        cursorRing.style.left = ringX + 'px';
+        cursorRing.style.top  = ringY + 'px';
+        requestAnimationFrame(animateRing);
+      }
+      animateRing();
+
+      // Cursor state management
+      function setCursorState(state) {
+        cursorDot.classList.toggle('hidden',      state === 'project');
+        cursorRing.classList.toggle('on-link',    state === 'link');
+        cursorRing.classList.toggle('on-project', state === 'project');
+      }
+
+      document.addEventListener('mouseover', e => {
+        const el = e.target.closest('[data-cursor="project"]');
+        const lk = e.target.closest('a, button');
+        if (el)      setCursorState('project');
+        else if (lk) setCursorState('link');
+        else         setCursorState('default');
+      });
+    }
+
     // Nav scroll state
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => {
