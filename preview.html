@@ -7,6 +7,7 @@
   <meta property="og:title" content="Abdallah Yaackoubi — Product Designer">
   <meta property="og:description" content="UX, UI, and AI workflows. 5+ years, 8 startups, based in Tunisia.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://abdallahyaackoubi.com">
   <meta name="color-scheme" content="dark">
   <title>Abdallah Yaackoubi — Product Designer</title>
   <style>
@@ -51,6 +52,7 @@
     .d4 { transition-delay: 0.36s; }
     .d5 { transition-delay: 0.48s; }
     @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
       .reveal {
         opacity: 1;
         transform: none;
@@ -71,6 +73,12 @@
     a { text-decoration: none; color: inherit; }
     img { display: block; max-width: 100%; }
     button { border: none; background: none; cursor: pointer; font: inherit; }
+
+    :focus-visible {
+      outline: 2px solid var(--red);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
 
     /* ── NAV ── */
     .nav {
@@ -656,8 +664,8 @@
           <span data-en="Available" data-fr="Disponible">Available</span>
         </span>
         <div class="lang-switcher">
-          <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
-          <button class="lang-btn"        id="btn-fr" onclick="setLang('fr')">FR</button>
+          <button class="lang-btn active" id="btn-en">EN</button>
+          <button class="lang-btn"        id="btn-fr">FR</button>
         </div>
       </div>
     </div>
@@ -902,7 +910,7 @@
       <div class="footer-links">
         <a href="https://www.behance.net/Abdou_Yaackoubi" target="_blank" rel="noopener">Behance</a>
         <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="UX UI Design Portfolio/CV-Abdallah_Yaackoubi.pdf" target="_blank" rel="noopener">CV</a>
+        <a href="UX%20UI%20Design%20Portfolio/CV-Abdallah_Yaackoubi.pdf" target="_blank" rel="noopener">CV</a>
       </div>
     </div>
   </footer>
@@ -940,10 +948,16 @@
       });
 
       function animateRing() {
-        ringX += (mouseX - ringX) * 0.12;
-        ringY += (mouseY - ringY) * 0.12;
-        cursorRing.style.left = ringX + 'px';
-        cursorRing.style.top  = ringY + 'px';
+        const dx = mouseX - ringX;
+        const dy = mouseY - ringY;
+        ringX += dx * 0.12;
+        ringY += dy * 0.12;
+
+        if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+          cursorRing.style.left = ringX + 'px';
+          cursorRing.style.top  = ringY + 'px';
+        }
+
         requestAnimationFrame(animateRing);
       }
       animateRing();
@@ -1062,6 +1076,9 @@
     document.addEventListener('DOMContentLoaded', () => {
       initHeroAnimation();
       initMagnetic();
+      // Wire up lang buttons before restoring saved language
+      document.getElementById('btn-en').addEventListener('click', () => setLang('en'));
+      document.getElementById('btn-fr').addEventListener('click', () => setLang('fr'));
       // Restore saved language
       const savedLang = localStorage.getItem('lang');
       if (savedLang === 'fr') setLang('fr');
@@ -1084,6 +1101,8 @@
     function setLang(lang) {
       if (lang !== 'en' && lang !== 'fr') return;
       document.querySelectorAll('[data-en]').forEach(el => {
+        // Skip elements that contain child elements (only translate leaf text nodes)
+        if (el.children.length > 0) return;
         const val = el.getAttribute('data-' + lang);
         if (val !== null) el.textContent = val;
       });
