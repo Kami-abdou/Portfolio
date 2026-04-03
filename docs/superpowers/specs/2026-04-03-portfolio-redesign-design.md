@@ -90,7 +90,7 @@ Custom cursor replaces default. Two layers:
 │   ABDA              │  │                   │ │
 │   LLAH              │  │  Steer            │ │
 │                     │  │  Automotive · CPO │ │
-│   Based  Morocco    │  └──────────────────┘ │
+│   Based  Tunisia    │  └──────────────────┘ │
 │   Years  5+ · 8     │                       │
 │   Focus  UX·UI·AI   │  Designing products   │
 │                     │  that feel intentional│
@@ -220,6 +220,67 @@ Featured project in hero: **Steer** (most prominent case study, CPO role).
 | Marquee | Removed — adds noise, reduces focus |
 | Services grid | Removed |
 | Breathing glow orbs | Removed |
+
+---
+
+## Responsive Design
+
+### Breakpoints
+
+| Name | Width | Target |
+|---|---|---|
+| Desktop | `≥ 1024px` | Full split layout |
+| Tablet | `768px – 1023px` | Adapted split, smaller type |
+| Mobile | `< 768px` | Single column, stacked |
+
+### Desktop (≥ 1024px)
+Full design as specced — split hero, sidebar about, all columns intact.
+
+### Tablet (768px – 1023px)
+- Hero: split maintained but left panel shrinks to 44%, type scale reduced ~15%
+- About: sidebar collapses to top label row (horizontal), no vertical text
+- Work list: unchanged
+- Contact: split maintained, columns narrower
+- Nav: links visible, lang switcher kept
+
+### Mobile (< 768px)
+
+**Nav:**
+- Logo left, lang switcher right — nav links hidden (no hamburger menu needed; anchor links reachable by scroll)
+
+**Hero:**
+- Stacks to single column
+- Name fills full width: `clamp(3.5rem, 14vw, 5.5rem)`
+- Ghost second line kept
+- Featured project card moves below name, full width, `200px` tall
+- Meta rows (Based / Years / Focus) in a 2-col grid below card
+
+**About:**
+- Sidebar hidden — "About" label inline above text
+- Stats in a row of 3 across full width
+
+**Work list:**
+- Tags hidden on small screens to reduce clutter
+- Row padding reduced: `14px 16px`
+- Arrow always visible (no hover needed on touch)
+
+**Contact:**
+- Stacks: heading full width, then link cards below
+- Link cards full width, taller tap targets (`min-height: 56px`)
+
+**Footer:**
+- Stacks: copy on top, links below centered
+
+### Cursor
+- Custom cursor is **desktop-only** — hidden on touch devices (`@media (hover: none)`)
+- Default cursor restored on mobile
+- Magnetic effect disabled on touch
+
+### Typography scaling
+All heading sizes use `clamp()` so they scale fluidly:
+- Hero name: `clamp(3.5rem, 10vw, 9rem)`
+- Section headings: `clamp(1.8rem, 4vw, 3.5rem)`
+- Contact heading: `clamp(2rem, 5vw, 4rem)`
 
 ---
 
