@@ -29,8 +29,30 @@
       --pad-x:     max(24px, 6vw);
     }
 
-    /* Scroll reveal — animated by IntersectionObserver in Task 12 */
-    .reveal { opacity: 1; }
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity  0.8s var(--ease-out),
+        transform 0.8s var(--ease-out);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.26s; }
+    .d4 { transition-delay: 0.36s; }
+    .d5 { transition-delay: 0.48s; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+    }
 
     /* ── RESET ── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1018,6 +1040,20 @@
       // Restore saved language
       const savedLang = localStorage.getItem('lang');
       if (savedLang === 'fr') setLang('fr');
+
+      // Scroll reveal
+      const revealEls = document.querySelectorAll('.reveal');
+      if (revealEls.length) {
+        const revealObserver = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12 });
+        revealEls.forEach(el => revealObserver.observe(el));
+      }
     });
 
     function setLang(lang) {
