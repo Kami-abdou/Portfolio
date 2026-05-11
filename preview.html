@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="pdp.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=JetBrains+Mono:wght@400;500;600;700;800&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Bebas+Neue&family=Archivo:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&family=Noto+Naskh+Arabic:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
 
     /* ── RESET ── */
@@ -18,7 +18,7 @@
     body {
       background: var(--bg);
       color: var(--fg);
-      font-family: 'Space Grotesk', system-ui, sans-serif;
+      font-family: 'Inter', 'Archivo', system-ui, sans-serif;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       cursor: none;
@@ -28,24 +28,24 @@
     img { display: block; max-width: 100%; }
     button { border: none; background: none; cursor: none; font: inherit; color: inherit; }
 
-    /* ── TOKENS ── */
+    /* ── TOKENS (Brandin brutalist dark) ── */
     :root {
-      --bg:      #050505;
-      --bg-alt:  #0a0a0a;
-      --fg:      #f0f0f0;
-      --muted:   rgba(240,240,240,0.5);
-      --accent:  #E4FE9A;
-      --border:  rgba(255,255,255,0.06);
-      --g30:     rgba(255,255,255,0.30);
-      --g18:     rgba(255,255,255,0.18);
-      --g10:     rgba(255,255,255,0.10);
-      --g06:     rgba(255,255,255,0.06);
-      --g03:     rgba(255,255,255,0.03);
-      --red:     #ff3366;
-      --mono:    'DM Mono', monospace;
-      --serif:   'Cormorant Garamond', Georgia, serif;
-      --typewriter: 'JetBrains Mono', 'Courier New', monospace;
-      --pixel:   'VT323', 'JetBrains Mono', monospace;
+      --bg:      #0F0F0F;
+      --bg-alt:  #161616;
+      --fg:      #F3F3F0;
+      --muted:   rgba(243,243,240,0.55);
+      --accent:  #F3F3F0;
+      --border:  rgba(243,243,240,0.08);
+      --g30:     rgba(243,243,240,0.30);
+      --g18:     rgba(243,243,240,0.18);
+      --g10:     rgba(243,243,240,0.10);
+      --g06:     rgba(243,243,240,0.06);
+      --g03:     rgba(243,243,240,0.03);
+      --red:     #E54B2A;
+      --mono:    'JetBrains Mono', 'DM Mono', monospace;
+      --display: 'Archivo', 'Inter', system-ui, sans-serif;
+      --bebas:   'Bebas Neue', 'Archivo', sans-serif;
+      --arabic:  'Noto Naskh Arabic', 'Inter', sans-serif;
       --ease:    cubic-bezier(0.16, 1, 0.3, 1);
       --ease2:   cubic-bezier(0.22, 1, 0.36, 1);
       --spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -165,16 +165,66 @@
     @media (max-width:900px) { .side-panel { display: none; } }
 
     /* ══════════════════════════════════════
-       HERO
+       HERO  (Brandin brutalist)
     ══════════════════════════════════════ */
-    .hero-spacer { height: 220vh; }
+    .hero-spacer { height: 130vh; }
     .hero-scene {
-      position: sticky; top: 0; height: 100vh; overflow: hidden;
+      position: sticky; top: 0; min-height: 100dvh; height: 100vh; overflow: hidden;
     }
     .hero-card {
       position: absolute; inset: 0;
       transform-origin: center center;
+      background: var(--bg);
       animation: heroIn 1.1s cubic-bezier(0.16,1,0.3,1) 2.1s both;
+    }
+
+    /* photo backdrop — pdp.png as base, large-scale duotone treatment */
+    .hero-photo {
+      position: absolute; inset: 0;
+      background-image: url('pdp.png');
+      background-size: cover; background-position: center 28%;
+      filter: grayscale(.95) contrast(1.05) brightness(.55);
+      opacity: 0.42;
+      animation: heroPhotoIn 1.6s var(--ease) 2.3s both;
+    }
+    .hero-vignette {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse at center, transparent 38%, var(--bg) 95%),
+        linear-gradient(to bottom, rgba(0,0,0,.35) 0%, transparent 30%, transparent 60%, rgba(0,0,0,.6) 100%);
+    }
+    body.light .hero-photo { filter: grayscale(.95) contrast(1) brightness(.92); opacity: .35; }
+    body.light .hero-vignette {
+      background:
+        radial-gradient(ellipse at center, transparent 38%, var(--bg) 95%),
+        linear-gradient(to bottom, rgba(255,255,255,.25) 0%, transparent 30%, transparent 60%, rgba(255,255,255,.4) 100%);
+    }
+    @keyframes heroPhotoIn { from { opacity: 0; transform: scale(1.08); } to { opacity: 0.42; transform: none; } }
+    body.light .hero-photo { animation-name: heroPhotoInLight; }
+    @keyframes heroPhotoInLight { from { opacity: 0; transform: scale(1.08); } to { opacity: 0.35; transform: none; } }
+
+    /* corner meta tags */
+    .hero-meta {
+      position: absolute; z-index: 5; pointer-events: none;
+      display: flex; flex-direction: column; gap: 4px;
+      font-family: var(--mono);
+      font-size: .62rem; font-weight: 500;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+      animation: fadeUp .8s var(--ease) 2.5s both;
+    }
+    .hero-meta .hm-arabic {
+      font-family: var(--arabic); font-size: .82rem; font-weight: 500;
+      letter-spacing: 0; text-transform: none; color: var(--muted);
+      direction: rtl;
+    }
+    .hero-meta .hm-arrow { font-size: 1rem; font-family: var(--mono); color: var(--fg); margin-top: 4px; }
+    .hero-meta.tl { top: clamp(80px, 12vh, 130px); left: var(--pad); }
+    .hero-meta.tr { top: clamp(80px, 12vh, 130px); right: var(--pad); align-items: flex-end; }
+    .hero-meta.bl { bottom: clamp(40px, 8vh, 80px); left: var(--pad); }
+    .hero-meta.br { bottom: clamp(40px, 8vh, 80px); right: var(--pad); align-items: flex-end; text-align: right; }
+    @media (max-width: 767px) {
+      .hero-meta { font-size: .55rem; }
+      .hero-meta.tl, .hero-meta.tr { top: 76px; }
     }
     @keyframes heroIn {
       from {
@@ -285,9 +335,9 @@
     .toast-arrow { color: var(--g30); }
     .toast-val { color: var(--accent); font-weight: 600; }
 
-    /* ── HERO CONTENT (centered layout) ── */
+    /* ── HERO CONTENT (Brandin: eyebrow + huge wordmark + location) ── */
     .hero-content {
-      position: absolute; inset: 0;
+      position: absolute; inset: 0; z-index: 4;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       padding: 80px var(--pad) 60px;
@@ -295,10 +345,30 @@
     }
 
     .hero-eyebrow {
-      font-family: var(--typewriter); font-size: 0.7rem; font-weight: 500;
-      letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted);
-      margin-bottom: 22px;
-      animation: fadeUp .7s var(--ease) 2.1s both;
+      font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+      letter-spacing: 0.32em; text-transform: uppercase; color: var(--fg);
+      margin-bottom: 28px;
+      animation: fadeUp .7s var(--ease) 2.4s both;
+    }
+
+    .hero-name {
+      font-family: var(--bebas);
+      font-size: clamp(3.5rem, 14vw, 14rem);
+      font-weight: 400; letter-spacing: 0.005em; line-height: 0.92;
+      color: var(--fg);
+      text-wrap: balance;
+      white-space: nowrap;
+      animation: fadeUp .9s var(--ease) 2.55s both;
+    }
+
+    .hero-location {
+      font-family: var(--mono); font-size: clamp(.7rem, .9vw, .8rem); font-weight: 400;
+      letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+      margin-top: 28px; line-height: 1.7;
+      animation: fadeUp .7s var(--ease) 2.75s both;
+    }
+    @media (max-width: 767px) {
+      .hero-name { font-size: clamp(2.6rem, 14vw, 5rem); white-space: normal; line-height: .95; }
     }
 
     /* SOLID name — above the drag box, NOT draggable */
@@ -390,35 +460,52 @@
       to   { opacity:1; transform:translateY(0); }
     }
 
-    /* ── MARQUEE ── */
+    /* ── MARQUEE (Brandin: minimal mono ticker) ── */
     .marquee-section {
-      overflow: hidden; padding: 16px 0;
-      background: var(--red);
+      overflow: hidden; padding: 18px 0;
+      background: var(--bg);
+      border-top: 1px solid var(--g10); border-bottom: 1px solid var(--g10);
     }
     .marquee-track {
       display: flex; white-space: nowrap;
-      animation: marqueeRoll 28s linear infinite;
+      animation: marqueeRoll 38s linear infinite;
       width: max-content;
     }
     .marquee-track span {
-      font-family: var(--serif); font-size: 1.05rem; font-weight: 400; font-style: italic;
-      letter-spacing: .04em; color: rgba(255,255,255,0.9); padding: 0 28px;
+      font-family: var(--display); font-size: clamp(1rem, 1.6vw, 1.4rem); font-weight: 900;
+      letter-spacing: -.01em; color: var(--fg); padding: 0 28px;
+      text-transform: uppercase;
     }
-    .marquee-track .sep { color: rgba(255,255,255,.4); padding: 0 4px; font-style: normal; }
+    .marquee-track .sep { color: var(--muted); padding: 0 4px; font-weight: 400; }
     @keyframes marqueeRoll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
     .marquee-section:hover .marquee-track { animation-play-state: paused; }
-    body.light .marquee-section { background: var(--red); }
-    body.light .marquee-track span { color: rgba(255,255,255,0.9); }
-    body.light .marquee-track .sep { color: rgba(255,255,255,.4); }
 
-    /* ── SHARED SECTION ── */
+    /* ── SHARED SECTION (Brandin numbered + bilingual) ── */
     .section-inner { padding-left: var(--pad); padding-right: var(--pad); }
     .section-hdr {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 22px 0 18px; border-bottom: 1px solid var(--g10);
+      display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 24px;
+      padding: 36px 0 22px; border-bottom: 1px solid var(--g10);
     }
-    .section-lbl { font-size: .6rem; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--muted); }
-    .section-meta { font-size: .6rem; color: var(--muted); letter-spacing: .1em; }
+    .section-num {
+      font-family: var(--mono); font-size: .68rem; font-weight: 500;
+      letter-spacing: .14em; color: var(--muted);
+    }
+    .section-lbl {
+      font-family: var(--display);
+      font-size: clamp(1.4rem, 3vw, 2.2rem); font-weight: 900;
+      letter-spacing: -.025em; text-transform: uppercase; color: var(--fg);
+      line-height: 1;
+    }
+    .section-lbl .ar {
+      font-family: var(--arabic); font-weight: 500; font-size: .58em;
+      letter-spacing: 0; text-transform: none; color: var(--muted);
+      direction: rtl; margin-left: 14px; display: inline-block; vertical-align: middle;
+    }
+    .section-meta { font-family: var(--mono); font-size: .62rem; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+    @media (max-width: 767px) {
+      .section-hdr { grid-template-columns: 1fr; gap: 8px; padding: 28px 0 16px; }
+      .section-lbl .ar { display: block; margin-left: 0; margin-top: 4px; }
+    }
 
     /* ── REVEAL ── */
     .reveal { opacity: 0; transform: translateY(32px); transition: opacity .8s var(--ease2), transform .8s var(--ease2); }
@@ -463,7 +550,7 @@
     .work-card:hover { background: color-mix(in srgb, var(--bg-alt) 88%, var(--fg)); }
     .work-card-left { padding: 80px var(--pad); display: flex; flex-direction: column; justify-content: center; border-right: 1px solid var(--g10); }
     .work-card-cat { font-family: var(--mono); font-size: .58rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
-    .work-card-title { font-family: var(--serif); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 700; font-style: italic; letter-spacing: -.01em; color: var(--fg); line-height: .93; margin-bottom: 18px; }
+    .work-card-title { font-family: var(--bebas); font-size: clamp(2.8rem, 6vw, 6rem); font-weight: 400; letter-spacing: 0; color: var(--fg); line-height: .92; margin-bottom: 18px; text-transform: uppercase; }
     .work-card-desc { font-size: .85rem; color: var(--muted); line-height: 1.7; max-width: 400px; margin-bottom: 30px; }
     .work-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
     .work-tag { font-family: var(--mono); font-size: .55rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--g10); padding: 4px 10px; transition: border-color .2s, color .2s; }
@@ -485,8 +572,8 @@
     /* ── BIO ── */
     .bio { border-top: 1px solid var(--g10); }
     .bio-inner { padding: 100px var(--pad); }
-    .bio-heading { font-family: var(--serif); font-size: clamp(2.8rem, 8vw, 8rem); font-weight: 700; letter-spacing: -.01em; line-height: .88; margin-bottom: 44px; }
-    .bio-heading em { color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,.18); font-style: italic; font-weight: 600; }
+    .bio-heading { font-family: var(--bebas); font-size: clamp(3rem, 9vw, 9rem); font-weight: 400; letter-spacing: 0; line-height: .92; margin-bottom: 44px; text-transform: uppercase; }
+    .bio-heading em { color: transparent; -webkit-text-stroke: 1px var(--g30); font-style: normal; font-weight: 400; }
     .bio-body { font-size: clamp(.95rem, 1.4vw, 1.15rem); color: var(--muted); line-height: 1.7; max-width: 580px; margin-bottom: 40px; }
     .bio-body strong { color: var(--fg); font-weight: 700; }
     .bio-stats { display: flex; gap: 48px; padding-top: 32px; border-top: 1px solid var(--g10); margin-bottom: 40px; }
@@ -502,8 +589,8 @@
     .principles-hdr { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
     .principles-lbl { font-family: var(--mono); font-size: .6rem; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--red); }
     .principles-lbl::before { content: '—— '; }
-    .principles-title { font-family: var(--serif); font-size: clamp(3rem, 8vw, 7.5rem); font-weight: 700; letter-spacing: -.01em; line-height: .9; margin-bottom: 28px; }
-    .principles-title span { color: var(--red); font-style: italic; }
+    .principles-title { font-family: var(--bebas); font-size: clamp(3rem, 9vw, 9rem); font-weight: 400; letter-spacing: 0; line-height: .92; margin-bottom: 28px; text-transform: uppercase; }
+    .principles-title span { color: var(--red); font-style: normal; }
     .principles-sub { font-size: clamp(.95rem, 1.4vw, 1.1rem); color: var(--muted); line-height: 1.65; max-width: 500px; margin-bottom: 72px; }
     .principles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .pc { position: relative; background: #0c0c0c; border: 1px solid var(--g10); border-radius: 14px; padding: 40px 40px 44px; overflow: hidden; transition: border-color .3s, transform .35s var(--ease); }
@@ -518,21 +605,21 @@
     @media (max-width:767px) { .principles-grid { grid-template-columns: 1fr; } .pc { padding: 32px 28px 36px; } .principles { padding: 80px 0 100px; } }
 
     /* ══════════════════════════════════════
-       LIGHT MODE (naive cream palette)
+       LIGHT MODE (off-white inversion)
     ══════════════════════════════════════ */
     body.light {
-      --bg:     #F5F1EA;
-      --bg-alt: #EFEAE0;
-      --fg:     #0B0B0B;
-      --muted:  rgba(11,11,11,0.55);
+      --bg:     #F3F3F0;
+      --bg-alt: #E8E8E3;
+      --fg:     #0F0F0F;
+      --muted:  rgba(15,15,15,0.55);
+      --accent: #0F0F0F;
+      --border: rgba(0,0,0,0.08);
       --g30:    rgba(0,0,0,0.30);
       --g18:    rgba(0,0,0,0.18);
       --g10:    rgba(0,0,0,0.10);
       --g06:    rgba(0,0,0,0.06);
       --g03:    rgba(0,0,0,0.03);
-      --border: rgba(0,0,0,0.08);
-      --red:    #d9103a;
-      --accent: #0B0B0B;
+      --red:    #C73E1F;
     }
     /* hero dot grid — very subtle in naive mode */
     body.light .hero-grid {
@@ -582,8 +669,22 @@
 
     /* ── FOOTER ── */
     footer { border-top: 1px solid var(--g10); padding: 80px var(--pad) 40px; }
-    .footer-cta { font-family: var(--serif); font-size: clamp(4.5rem, 16vw, 15rem); font-weight: 700; letter-spacing: -.01em; line-height: .82; margin-bottom: 64px; }
-    .footer-cta .outline { display: block; color: transparent; -webkit-text-stroke: 1px var(--red); font-style: italic; }
+    .footer-cta { font-family: var(--bebas); font-size: clamp(5rem, 18vw, 18rem); font-weight: 400; letter-spacing: 0; line-height: .88; margin-bottom: 64px; text-transform: uppercase; }
+    .footer-cta .outline { display: block; color: transparent; -webkit-text-stroke: 1.5px var(--fg); }
+    .world-clocks {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0; padding: 32px 0; margin-bottom: 24px;
+      border-top: 1px solid var(--g10); border-bottom: 1px solid var(--g10);
+    }
+    .wc { display: flex; flex-direction: column; gap: 8px; padding: 0 24px 0 0; border-right: 1px solid var(--g06); }
+    .wc:last-child { border-right: none; }
+    .wc-label { font-family: var(--mono); font-size: .62rem; font-weight: 500; letter-spacing: .16em; color: var(--muted); text-transform: uppercase; }
+    .wc-time { font-family: var(--bebas); font-size: clamp(1.8rem, 3vw, 2.6rem); letter-spacing: .03em; color: var(--fg); font-variant-numeric: tabular-nums; line-height: 1; }
+    @media (max-width: 767px) {
+      .world-clocks { grid-template-columns: repeat(2, 1fr); gap: 24px 0; }
+      .wc { border-right: none; border-bottom: 1px solid var(--g06); padding-bottom: 16px; }
+      .wc:nth-child(2n) { border-right: none; }
+    }
     .footer-contacts { display: flex; flex-wrap: wrap; border-top: 1px solid var(--g10); }
     .fci { flex: 1; min-width: 180px; display: flex; align-items: center; justify-content: space-between; padding: 22px 32px 22px 0; border-bottom: 1px solid var(--g10); border-right: 1px solid var(--g10); transition: background .25s; cursor: none; }
     .fci:last-child { border-right: none; padding-right: 0; }
@@ -699,59 +800,22 @@
   <div class="hero-spacer">
     <div class="hero-scene" id="heroScene">
       <div class="hero-card" id="heroCard">
-        <div class="hero-grid"></div>
-        <div class="hero-cloud" aria-hidden="true"></div>
-        <div class="hero-cloud two" aria-hidden="true"></div>
-        <div class="hero-landscape" aria-hidden="true"></div>
-
-        <!-- Figma-style YOU selection overlay -->
-        <div class="you-sel" id="youSel">
-          <div class="you-sel-lbl">You</div>
-        </div>
-
-        <!-- Red dx/dy pill -->
-        <div class="redline-pill" id="redlinePill">dx: 0, dy: 0</div>
-
-        <!-- Designer reaction bubble -->
-        <div class="designer-bubble" id="designerBubble">
-          <div class="designer-bubble-inner">
-            <span class="designer-bubble-name">Abdou</span>
-            <span class="designer-bubble-msg" id="bubbleMsg"></span>
-          </div>
-        </div>
-
-        <!-- Toast -->
-        <div class="toast-hero" id="toastHero">
-          <div class="toast-inner">
-            <span class="toast-prop">content</span>
-            <span class="toast-arrow">→</span>
-            <span class="toast-val" id="toastVal">editing...</span>
-          </div>
-        </div>
+        <!-- Full-bleed photographic backdrop -->
+        <div class="hero-photo" aria-hidden="true"></div>
+        <div class="hero-vignette" aria-hidden="true"></div>
 
         <!-- Hero content -->
         <div class="hero-content">
-
-          <p class="hero-eyebrow">Designing with intention, pixel by pixel.</p>
-
-          <!-- Solid name — fixed, above drag box -->
-          <span class="hero-name-solid" id="heroSolid"></span>
-
-          <!-- Drag zone — dashed box around outline name -->
-          <div class="hero-drag-zone" id="heroDragZone">
-            <span class="drag-hint-pill">✦ grab & drag</span>
-            <div class="drag-outline-box">
-              <span class="drag-corner tl"></span>
-              <span class="drag-corner tr"></span>
-              <span class="drag-corner bl"></span>
-              <span class="drag-corner br"></span>
-              <span class="hero-name-outline" id="heroOutline"></span>
-            </div>
-          </div>
-
-          <p class="hero-subtitle">Precision structure, bold creative vision.</p>
+          <p class="hero-eyebrow">PRODUCT DESIGNER</p>
+          <h1 class="hero-name" id="heroName">ABDOU YAACKOUBI</h1>
+          <p class="hero-location">Based in Tunis, Tunisia<br>specializing in UX, UI &amp; AI workflows</p>
         </div>
 
+        <!-- Corner meta (Brandin-style) -->
+        <div class="hero-meta tl"><span class="hm-label">// PORTFOLIO</span><span class="hm-arabic">المعرض</span></div>
+        <div class="hero-meta tr"><span class="hm-label">2020 — 2026</span></div>
+        <div class="hero-meta bl"><span class="hm-label">SCROLL</span><span class="hm-arrow">↓</span></div>
+        <div class="hero-meta br"><span class="hm-label">// 5+ YEARS</span><span class="hm-arabic">+٥ سنوات</span></div>
       </div>
     </div>
   </div>
@@ -759,28 +823,28 @@
   <!-- MARQUEE -->
   <div class="marquee-section" aria-hidden="true">
     <div class="marquee-track">
-      <span>UX Design</span><span class="sep">•</span>
-      <span>UI Design</span><span class="sep">•</span>
-      <span>Product Strategy</span><span class="sep">•</span>
-      <span>AI Workflows</span><span class="sep">•</span>
-      <span>Interaction Design</span><span class="sep">•</span>
-      <span>Design Systems</span><span class="sep">•</span>
-      <span>5+ Years Experience</span><span class="sep">•</span>
-      <span>Abdou Yaackoubi</span><span class="sep">•</span>
-      <span>UX Design</span><span class="sep">•</span>
-      <span>UI Design</span><span class="sep">•</span>
-      <span>Product Strategy</span><span class="sep">•</span>
-      <span>AI Workflows</span><span class="sep">•</span>
-      <span>Interaction Design</span><span class="sep">•</span>
-      <span>Design Systems</span><span class="sep">•</span>
-      <span>5+ Years Experience</span><span class="sep">•</span>
-      <span>Abdou Yaackoubi</span><span class="sep">•</span>
+      <span>UX Design</span><span class="sep">★</span>
+      <span>UI Design</span><span class="sep">★</span>
+      <span>Product Strategy</span><span class="sep">★</span>
+      <span>AI Workflows</span><span class="sep">★</span>
+      <span>Interaction Design</span><span class="sep">★</span>
+      <span>Design Systems</span><span class="sep">★</span>
+      <span>5+ Years Experience</span><span class="sep">★</span>
+      <span>Abdou Yaackoubi</span><span class="sep">★</span>
+      <span>UX Design</span><span class="sep">★</span>
+      <span>UI Design</span><span class="sep">★</span>
+      <span>Product Strategy</span><span class="sep">★</span>
+      <span>AI Workflows</span><span class="sep">★</span>
+      <span>Interaction Design</span><span class="sep">★</span>
+      <span>Design Systems</span><span class="sep">★</span>
+      <span>5+ Years Experience</span><span class="sep">★</span>
+      <span>Abdou Yaackoubi</span><span class="sep">★</span>
     </div>
   </div>
 
   <!-- WORKED WITH -->
   <section class="worked-with section-inner" id="worked-with">
-    <div class="section-hdr reveal"><span class="section-lbl">Worked With</span><span class="section-meta">11 Companies</span></div>
+    <div class="section-hdr reveal"><span class="section-num">// 01</span><span class="section-lbl">CLIENTS<span class="ar">العملاء</span></span><span class="section-meta">11 COMPANIES</span></div>
     <div class="clients-table">
       <div class="clients-head"><span>Company</span><span>Sector</span></div>
       <div class="client-row reveal rd1"><span class="client-name">InstaDeep</span><span class="client-sector">AI & Deep Tech</span></div>
@@ -799,7 +863,7 @@
 
   <!-- FEATURED WORK -->
   <section class="featured-work" id="featured-work">
-    <div class="section-inner"><div class="section-hdr reveal"><span class="section-lbl">Featured Work</span><span class="section-meta">07 Projects</span></div></div>
+    <div class="section-inner"><div class="section-hdr reveal"><span class="section-num">// 02</span><span class="section-lbl">SELECTED WORK<span class="ar">مختارات الأعمال</span></span><span class="section-meta">07 PROJECTS</span></div></div>
 
   <div class="fw-deck">
     <div class="fw-wrapper">
@@ -892,7 +956,8 @@
   <!-- BIO -->
   <section class="bio reveal" id="bio">
     <div class="bio-inner">
-      <h2 class="bio-heading">THE DESIGNER<br><em>BEHIND THE WORK.</em></h2>
+      <div class="section-hdr reveal" style="margin-bottom:48px"><span class="section-num">// 03</span><span class="section-lbl">ABOUT<span class="ar">نبذة</span></span><span class="section-meta">THE DESIGNER</span></div>
+      <h2 class="bio-heading">THE DESIGNER<br><em>BEHIND THE WORK</em></h2>
       <p class="bio-body">I love working in the realm between <strong>UX and UI design</strong>. User-centered thinking, interaction design, and interfaces that feel fun and human — that's what drives me. Currently a full-time freelancer designing for <strong>Steer</strong>, <strong>Hyphen Group</strong> and <strong>Inspire</strong>.</p>
       <div class="bio-stats">
         <div><span class="bio-stat-num">5+</span><span class="bio-stat-lbl">Years</span></div>
@@ -906,9 +971,7 @@
   <!-- PRINCIPLES & VALUES -->
   <section class="principles reveal" id="principles">
     <div class="principles-inner">
-      <div class="principles-hdr">
-        <span class="principles-lbl">Principles &amp; Values</span>
-      </div>
+      <div class="section-hdr reveal" style="margin-bottom:48px"><span class="section-num">// 04</span><span class="section-lbl">PRINCIPLES<span class="ar">المبادئ</span></span><span class="section-meta">VALUES &amp; FRAMEWORKS</span></div>
       <h2 class="principles-title">What I <span>stand for</span></h2>
       <p class="principles-sub">The principles I keep coming back to — the ones that shape how I think, design, and collaborate on every project.</p>
       <div class="principles-grid">
@@ -952,6 +1015,15 @@
   <!-- FOOTER -->
   <footer id="contact">
     <h2 class="footer-cta">LET'S<br><span class="outline">TALK.</span></h2>
+
+    <!-- World clocks (Brandin signature) -->
+    <div class="world-clocks reveal" aria-hidden="true">
+      <div class="wc"><span class="wc-label">// TUNIS</span><span class="wc-time" data-tz="Africa/Tunis">00:00:00</span></div>
+      <div class="wc"><span class="wc-label">// NEW YORK</span><span class="wc-time" data-tz="America/New_York">00:00:00</span></div>
+      <div class="wc"><span class="wc-label">// LONDON</span><span class="wc-time" data-tz="Europe/London">00:00:00</span></div>
+      <div class="wc"><span class="wc-label">// TOKYO</span><span class="wc-time" data-tz="Asia/Tokyo">00:00:00</span></div>
+    </div>
+
     <div class="footer-contacts">
       <a href="mailto:abdouyaackoubi@gmail.com" class="fci"><div><span class="fci-label">Email</span><span class="fci-val">abdouyaackoubi@gmail.com</span></div><span class="fci-arrow">→</span></a>
       <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener" class="fci"><div><span class="fci-label">LinkedIn</span><span class="fci-val">/in/abdou-yaackoubi</span></div><span class="fci-arrow">→</span></a>
@@ -984,10 +1056,23 @@
     /* ── CLOCK ── */
     const clockEl = document.getElementById('navClock');
     const clockMQ = window.matchMedia('(max-width: 767px)');
+    const wcEls = document.querySelectorAll('.wc-time');
+    function fmtTime(d, tz) {
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false, timeZone: tz
+      }).formatToParts(d).reduce((a,p) => (a[p.type]=p.value, a), {});
+      return `${parts.hour}:${parts.minute}:${parts.second}`;
+    }
     function tick() {
-      if (clockMQ.matches) return;
-      const d = new Date(), h = String(d.getHours()).padStart(2,'0'), m = String(d.getMinutes()).padStart(2,'0'), s = String(d.getSeconds()).padStart(2,'0');
-      clockEl.textContent = `Tunisia — ${h}:${m}:${s} CET`;
+      const d = new Date();
+      if (!clockMQ.matches) {
+        clockEl.textContent = `Tunisia — ${fmtTime(d, 'Africa/Tunis')} CET`;
+      }
+      wcEls.forEach(el => {
+        const tz = el.getAttribute('data-tz');
+        el.textContent = fmtTime(d, tz);
+      });
     }
     tick(); setInterval(tick, 1000);
 
@@ -1029,8 +1114,7 @@
         w.appendChild(l); el.appendChild(w);
       });
     }
-    buildLetters(document.getElementById('heroSolid'),   'HI, I AM',  2000);
-    buildLetters(document.getElementById('heroOutline'), 'ABDOU YAACKOUBI', 2150);
+    /* heroName uses CSS keyframes; no letter-by-letter rebuild needed */
 
     /* ── HERO SCROLL EXIT ANIMATION ── */
     const heroCard    = document.getElementById('heroCard');
@@ -1073,10 +1157,11 @@
     window.addEventListener('scroll', onScroll, { passive: true });
 
     /* ════════════════════════════════════
-       DRAG INTERACTION — full system
+       DRAG INTERACTION — disabled (Brandin redesign removed drag zone)
     ════════════════════════════════════ */
     const scene     = document.getElementById('heroScene');
     const dragZone  = document.getElementById('heroDragZone');
+    if (dragZone) (() => {
     const youSel    = document.getElementById('youSel');
     const redPill   = document.getElementById('redlinePill');
     const toast     = document.getElementById('toastHero');
@@ -1269,6 +1354,7 @@
     dragZone.addEventListener('touchstart', e => startDrag(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
     document.addEventListener('touchmove', e => { const t = e.touches[0]; moveDrag(t.clientX, t.clientY); }, { passive: true });
     document.addEventListener('touchend', endDrag);
+    })();
 
     /* ── SCROLL REVEAL ── */
     if ('IntersectionObserver' in window) {
@@ -1332,8 +1418,8 @@
       colorSchemeMeta.content = light ? 'light' : 'dark';
     };
     const stored = localStorage.getItem(THEME_KEY);
-    // Default to light (naive cream) on first visit
-    applyTheme(stored ? stored === 'light' : true);
+    // Default to dark (Brandin) on first visit
+    applyTheme(stored ? stored === 'light' : false);
     themeToggle.addEventListener('click', () => {
       const isLight = !document.body.classList.contains('light');
       applyTheme(isLight);
