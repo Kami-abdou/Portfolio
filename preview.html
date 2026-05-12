@@ -713,107 +713,79 @@
       .client-arrow { display: none; }
     }
 
-    /* ── FEATURED WORK (Brandin: grid of full-bleed tiles) ── */
+    /* ── FEATURED WORK (sticky-card-stack) ── */
     .featured-work { border-top: 1px solid var(--g10); }
-    .fw-deck {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
-      padding: 40px var(--pad) 80px;
+    .fw-deck { position: relative; }
+    .fw-wrapper {
+      position: sticky; top: 0;
+      height: 100vh;
+      perspective: 1200px;
     }
-    .work-tile {
-      position: relative; display: block;
-      overflow: hidden;
-      aspect-ratio: 4 / 5;
-      background: var(--bg-alt);
-      cursor: none;
-      transition: transform .35s var(--ease);
+    .work-card {
+      display: grid; grid-template-columns: 1fr 1fr;
+      width: 100%; height: 100vh;
+      background: var(--bg-alt); border-bottom: 1px solid var(--g10);
+      overflow: hidden; transform-origin: top center;
+      will-change: transform, opacity, filter;
+      transition: background .35s; cursor: none;
     }
-    .work-tile.wide { aspect-ratio: 16 / 10; }
-    .work-tile.tall { aspect-ratio: 3 / 4; }
-    .work-tile:nth-child(3n) { grid-column: span 2; aspect-ratio: 21 / 9; }
-
-    .work-tile-img {
-      position: absolute; inset: 0;
-      background-size: cover; background-position: center;
-      filter: grayscale(.6) contrast(1.05);
-      transform: scale(1.02);
-      transition: transform .8s var(--ease), filter .5s var(--ease);
-    }
-    .work-tile:hover .work-tile-img { transform: scale(1.06); filter: grayscale(0) contrast(1); }
-
-    .work-tile-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 45%, transparent 65%);
-      pointer-events: none;
-      opacity: .85;
-      transition: opacity .35s var(--ease);
-    }
-    .work-tile:hover .work-tile-overlay { opacity: 1; }
-
-    .work-tile-meta {
-      position: absolute; left: 24px; top: 22px; right: 24px;
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      font-family: var(--mono); font-size: .6rem; font-weight: 500;
-      letter-spacing: .16em; text-transform: uppercase;
-      color: rgba(243,243,240,0.9); z-index: 2;
-    }
-    .work-tile-meta .num { font-weight: 600; }
-    .work-tile-meta .year { opacity: .65; }
-
-    .work-tile-foot {
-      position: absolute; left: 24px; right: 24px; bottom: 22px; z-index: 2;
-      display: flex; align-items: end; justify-content: space-between; gap: 16px;
-    }
-    .work-tile-title {
-      font-family: var(--bebas); font-size: clamp(1.8rem, 3.2vw, 3.4rem);
-      font-weight: 400; line-height: .92; letter-spacing: -.005em;
-      color: #F3F3F0; text-transform: uppercase;
-    }
-    .work-tile-cat {
-      font-family: var(--mono); font-size: .62rem; font-weight: 500;
-      letter-spacing: .16em; text-transform: uppercase;
-      color: rgba(243,243,240,0.7);
-      padding-bottom: 6px;
-      max-width: 40%; text-align: right;
-    }
-    .work-tile-arrow {
-      position: absolute; top: 22px; right: 24px; z-index: 3;
-      width: 36px; height: 36px;
-      border: 1px solid rgba(243,243,240,0.35);
-      border-radius: 999px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--mono); font-size: .9rem; color: #F3F3F0;
-      opacity: 0; transform: scale(.7);
-      transition: opacity .35s var(--ease), transform .35s var(--ease), background .25s, color .25s;
-    }
-    .work-tile:hover .work-tile-arrow { opacity: 1; transform: scale(1); }
-    .work-tile:hover .work-tile-arrow { background: #F3F3F0; color: #0F0F0F; border-color: #F3F3F0; }
-
-    @media (max-width: 767px) {
-      .fw-deck { grid-template-columns: 1fr; gap: 16px; padding: 28px var(--pad) 56px; }
-      .work-tile, .work-tile.wide, .work-tile.tall { aspect-ratio: 3 / 4; }
-      .work-tile:nth-child(3n) { grid-column: auto; aspect-ratio: 3 / 4; }
-      .work-tile-meta, .work-tile-arrow { right: 16px; left: auto; }
-      .work-tile-meta { left: 16px; }
-      .work-tile-foot { left: 16px; right: 16px; bottom: 16px; }
+    .work-card:hover { background: color-mix(in srgb, var(--bg-alt) 88%, var(--fg)); }
+    .work-card-left { padding: 80px var(--pad); display: flex; flex-direction: column; justify-content: center; border-right: 1px solid var(--g10); }
+    .work-card-cat { font-family: var(--mono); font-size: .58rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    .work-card-title { font-family: var(--bebas); font-size: clamp(2.8rem, 6vw, 6rem); font-weight: 400; letter-spacing: 0; color: var(--fg); line-height: .92; margin-bottom: 18px; text-transform: uppercase; }
+    .work-card-desc { font-size: .85rem; color: var(--muted); line-height: 1.7; max-width: 400px; margin-bottom: 30px; }
+    .work-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
+    .work-tag { font-family: var(--mono); font-size: .55rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--g10); padding: 4px 10px; transition: border-color .2s, color .2s; }
+    .work-card:hover .work-tag { border-color: var(--g18); color: var(--fg); }
+    .work-card-cta { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: .62rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); transition: color .2s, gap .3s var(--ease); }
+    .work-card:hover .work-card-cta { color: var(--red); gap: 18px; }
+    .work-card-right { display: flex; align-items: center; justify-content: center; padding: 48px 40px; background: var(--g03); transition: background .35s; }
+    .work-card:hover .work-card-right { background: var(--g06); }
+    .work-img-box { width: 100%; aspect-ratio: 16/10; border: 1px solid var(--g10); display: flex; align-items: center; justify-content: center; transition: border-color .3s; }
+    .work-card:hover .work-img-box { border-color: var(--g18); }
+    .work-img-box span { font-family: var(--mono); font-size: .58rem; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+    @media (max-width:900px) {
+      .fw-wrapper { height: auto; position: relative; }
+      .work-card { grid-template-columns: 1fr; height: auto; min-height: 60vh; }
+      .work-card-left { padding: 52px var(--pad); border-right: none; }
+      .work-card-right { display: none; }
     }
 
-    /* ── BIO ── */
+    /* ── BIO (Brandin split-column) ── */
     .bio { border-top: 1px solid var(--g10); }
     .bio-inner { padding: 100px var(--pad); }
-    .bio-heading { font-family: var(--bebas); font-size: clamp(3rem, 9vw, 9rem); font-weight: 400; letter-spacing: 0; line-height: .92; margin-bottom: 44px; text-transform: uppercase; }
+    .bio-grid {
+      display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(40px, 6vw, 96px);
+      margin-bottom: 80px; align-items: start;
+    }
+    .bio-heading { font-family: var(--bebas); font-size: clamp(3rem, 9vw, 9rem); font-weight: 400; letter-spacing: 0; line-height: .92; margin-bottom: 32px; text-transform: uppercase; }
     .bio-heading em { color: transparent; -webkit-text-stroke: 1px var(--g30); font-style: normal; font-weight: 400; }
-    .bio-body { font-size: clamp(.95rem, 1.4vw, 1.15rem); color: var(--muted); line-height: 1.7; max-width: 580px; margin-bottom: 40px; }
+    .bio-eyebrow { font-family: var(--mono); font-size: .65rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    .bio-eyebrow .ar { font-family: var(--arabic); font-size: 1.1em; letter-spacing: 0; text-transform: none; margin-left: 8px; color: var(--muted); direction: rtl; }
+    .bio-body { font-family: var(--display); font-size: clamp(1rem, 1.4vw, 1.2rem); color: var(--fg); line-height: 1.65; max-width: 560px; margin-bottom: 40px; font-weight: 400; }
     .bio-body strong { color: var(--fg); font-weight: 700; }
-    .bio-stats { display: flex; gap: 48px; padding-top: 32px; border-top: 1px solid var(--g10); margin-bottom: 40px; }
-    .bio-stat-num { display: block; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 700; letter-spacing: -.04em; color: var(--red); line-height: 1; }
-    .bio-stat-lbl { display: block; margin-top: 4px; font-family: var(--mono); font-size: .58rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
-    .bio-link { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: .62rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--g18); padding: 14px 28px; transition: color .2s, border-color .2s, gap .25s var(--ease); }
-    .bio-link:hover { color: var(--fg); border-color: var(--g30); gap: 16px; }
-    .bio-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 80px; }
+    .bio-body p + p { margin-top: 18px; }
+    .bio-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+      padding: 32px 0; border-top: 1px solid var(--g10); border-bottom: 1px solid var(--g10);
+      margin-bottom: 32px;
+    }
+    .bio-stat { padding-right: 16px; border-right: 1px solid var(--g06); }
+    .bio-stat:last-child { border-right: none; padding-right: 0; }
+    .bio-stat-num { display: block; font-family: var(--bebas); font-size: clamp(2.4rem, 4.5vw, 3.6rem); font-weight: 400; letter-spacing: 0; color: var(--fg); line-height: 1; }
+    .bio-stat-lbl { display: block; margin-top: 8px; font-family: var(--mono); font-size: .58rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+    .bio-link {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--mono); font-size: .65rem; font-weight: 500;
+      letter-spacing: .18em; text-transform: uppercase; color: var(--fg);
+      border-bottom: 1px solid var(--g30); padding: 4px 0;
+      transition: color .2s, border-color .2s, gap .25s var(--ease);
+    }
+    .bio-link:hover { color: var(--muted); border-bottom-color: var(--fg); gap: 16px; }
+    .bio-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .bio-photo { position: relative; overflow: hidden; }
     .bio-photo img {
-      width: 100%; height: 480px; object-fit: cover; object-position: center;
+      width: 100%; height: clamp(360px, 50vw, 540px); object-fit: cover; object-position: center;
       filter: grayscale(.85) contrast(1.05);
       transition: filter .6s var(--ease), transform .8s var(--ease);
       display: block;
@@ -827,32 +799,58 @@
       padding: 5px 10px;
     }
     body.light .bio-photo figcaption { background: rgba(243,243,240,0.7); color: var(--fg); }
-    @media (max-width:767px) {
+    @media (max-width:900px) {
+      .bio-grid { grid-template-columns: 1fr; gap: 32px; margin-bottom: 56px; }
       .bio-inner { padding: 64px var(--pad); }
-      .bio-photos { grid-template-columns: 1fr; margin-top: 48px; }
-      .bio-photo img { height: 360px; }
+      .bio-photos { grid-template-columns: 1fr; }
+      .bio-stats { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width:560px) {
+      .bio-stats { grid-template-columns: 1fr 1fr; gap: 16px 0; }
+      .bio-stat:nth-child(2) { border-right: none; }
     }
 
-    /* ── PRINCIPLES ── */
-    .principles { border-top: 1px solid var(--g10); padding: 120px 0 140px; }
+    /* ── PRINCIPLES (Brandin numbered split-column list) ── */
+    .principles { border-top: 1px solid var(--g10); padding: 100px 0 120px; }
     .principles-inner { padding: 0 var(--pad); }
-    .principles-hdr { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
-    .principles-lbl { font-family: var(--mono); font-size: .6rem; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--red); }
-    .principles-lbl::before { content: '—— '; }
-    .principles-title { font-family: var(--bebas); font-size: clamp(3rem, 9vw, 9rem); font-weight: 400; letter-spacing: 0; line-height: .92; margin-bottom: 28px; text-transform: uppercase; }
-    .principles-title span { color: var(--red); font-style: normal; }
-    .principles-sub { font-size: clamp(.95rem, 1.4vw, 1.1rem); color: var(--muted); line-height: 1.65; max-width: 500px; margin-bottom: 72px; }
-    .principles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .pc { position: relative; background: #0c0c0c; border: 1px solid var(--g10); border-radius: 14px; padding: 40px 40px 44px; overflow: hidden; transition: border-color .3s, transform .35s var(--ease); }
-    .pc:hover { border-color: var(--g18); transform: translateY(-4px); }
-    .pc-num-lbl { font-family: var(--mono); font-size: .58rem; font-weight: 700; letter-spacing: .22em; color: var(--muted); margin-bottom: 24px; display: block; }
-    .pc-ghost { position: absolute; top: 50%; right: -10px; transform: translateY(-50%); font-size: clamp(6rem, 12vw, 10rem); font-weight: 900; color: rgba(255,255,255,.04); letter-spacing: -.06em; line-height: 1; pointer-events: none; user-select: none; }
-    .pc-title { font-family: var(--serif); font-size: clamp(1.6rem, 2.4vw, 2.2rem); font-weight: 700; letter-spacing: -.01em; margin-bottom: 20px; line-height: 1.1; }
-    .pc-body { font-size: .95rem; color: var(--muted); line-height: 1.7; max-width: 420px; margin-bottom: 32px; }
-    .pc-line { width: 38px; height: 3px; background: var(--red); border-radius: 2px; }
-    /* Glow variant on last card */
-    .pc.glow::after { content: ''; position: absolute; bottom: 0; right: 0; width: 55%; height: 60%; background: radial-gradient(ellipse at 80% 80%, rgba(255,51,102,.12) 0%, transparent 70%); pointer-events: none; }
-    @media (max-width:767px) { .principles-grid { grid-template-columns: 1fr; } .pc { padding: 32px 28px 36px; } .principles { padding: 80px 0 100px; } }
+    .principles-title { font-family: var(--bebas); font-size: clamp(3rem, 9vw, 9rem); font-weight: 400; letter-spacing: 0; line-height: .92; margin: 32px 0 28px; text-transform: uppercase; }
+    .principles-title span { color: var(--fg); -webkit-text-stroke: 1px var(--fg); text-stroke: 1px var(--fg); }
+    body.light .principles-title span { color: var(--fg); }
+    .principles-title em { color: transparent; -webkit-text-stroke: 1px var(--g30); font-style: normal; font-weight: 400; }
+    .principles-sub { font-family: var(--display); font-size: clamp(1rem, 1.4vw, 1.2rem); color: var(--muted); line-height: 1.65; max-width: 540px; margin-bottom: 72px; }
+    .principles-list { display: flex; flex-direction: column; border-top: 1px solid var(--g10); }
+    .pc {
+      display: grid; grid-template-columns: 80px 1.1fr 1fr; gap: clamp(20px, 4vw, 60px);
+      padding: 36px 0; border-bottom: 1px solid var(--g10);
+      align-items: start;
+      transition: padding-left .4s var(--ease), background .25s;
+      cursor: none; position: relative;
+    }
+    .pc:hover { padding-left: 16px; }
+    .pc-num-lbl {
+      font-family: var(--mono); font-size: .65rem; font-weight: 500;
+      letter-spacing: .14em; color: var(--muted);
+      padding-top: 10px;
+    }
+    .pc-num-lbl::before { content: '// '; }
+    .pc-title {
+      font-family: var(--bebas); font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 400; letter-spacing: 0; line-height: .95;
+      color: var(--fg); text-transform: uppercase;
+      transition: color .25s;
+    }
+    .pc-body {
+      font-family: var(--display); font-size: clamp(.95rem, 1.2vw, 1.05rem);
+      color: var(--muted); line-height: 1.65; max-width: 460px; font-weight: 400;
+      padding-top: 6px; transition: color .25s;
+    }
+    .pc:hover .pc-body { color: var(--fg); }
+    .pc-ghost, .pc-line { display: none; }
+    @media (max-width:767px) {
+      .pc { grid-template-columns: 56px 1fr; }
+      .pc-body { grid-column: 2; margin-top: 8px; }
+      .principles { padding: 72px 0 88px; }
+    }
 
     /* ══════════════════════════════════════
        LIGHT MODE (off-white inversion)
@@ -1151,97 +1149,116 @@
     <div class="section-inner"><div class="section-hdr reveal"><span class="section-num">// 02</span><span class="section-lbl">SELECTED WORK<span class="ar">مختارات الأعمال</span></span><span class="section-meta">07 PROJECTS</span></div></div>
 
   <div class="fw-deck">
-    <a href="https://brindle-astronaut-ecc.notion.site/Steer-3835a28e22534338a0089dffc204dd0e" target="_blank" rel="noopener" class="work-tile reveal">
-      <div class="work-tile-img" style="background-image:url('https://picsum.photos/seed/steer-auto/1200/1500')"></div>
-      <div class="work-tile-overlay"></div>
-      <div class="work-tile-meta"><span class="num">// 01</span><span class="year">2025</span></div>
-      <span class="work-tile-arrow">↗</span>
-      <div class="work-tile-foot">
-        <h3 class="work-tile-title">Steer</h3>
-        <span class="work-tile-cat">Product Design<br>Automotive</span>
-      </div>
-    </a>
-
-    <a href="https://brindle-astronaut-ecc.notion.site/Konnect-7eec3cffe6324393be1ecffa4572556e" target="_blank" rel="noopener" class="work-tile reveal">
-      <div class="work-tile-img" style="background-image:url('https://picsum.photos/seed/konnect-fintech/1200/1500')"></div>
-      <div class="work-tile-overlay"></div>
-      <div class="work-tile-meta"><span class="num">// 02</span><span class="year">2023</span></div>
-      <span class="work-tile-arrow">↗</span>
-      <div class="work-tile-foot">
-        <h3 class="work-tile-title">Konnect</h3>
-        <span class="work-tile-cat">Product Design<br>Fintech</span>
-      </div>
-    </a>
-
-    <a href="https://brindle-astronaut-ecc.notion.site/Fissa3-31d52a51065a4fffa27a723efd0c3d26" target="_blank" rel="noopener" class="work-tile reveal">
-      <div class="work-tile-img" style="background-image:url('https://picsum.photos/seed/fissa3-delivery/2100/900')"></div>
-      <div class="work-tile-overlay"></div>
-      <div class="work-tile-meta"><span class="num">// 03</span><span class="year">2024</span></div>
-      <span class="work-tile-arrow">↗</span>
-      <div class="work-tile-foot">
-        <h3 class="work-tile-title">Fissa3</h3>
-        <span class="work-tile-cat">UX/UI Design<br>Food Delivery</span>
-      </div>
-    </a>
-
-    <a href="https://brindle-astronaut-ecc.notion.site/Groupado-f94d481a9c1e4d5893ee29caa9cce305" target="_blank" rel="noopener" class="work-tile reveal">
-      <div class="work-tile-img" style="background-image:url('https://picsum.photos/seed/groupado-social/1200/1500')"></div>
-      <div class="work-tile-overlay"></div>
-      <div class="work-tile-meta"><span class="num">// 04</span><span class="year">2022</span></div>
-      <span class="work-tile-arrow">↗</span>
-      <div class="work-tile-foot">
-        <h3 class="work-tile-title">Groupado</h3>
-        <span class="work-tile-cat">UI Design<br>Social Platform</span>
-      </div>
-    </a>
-
-    <a href="https://brindle-astronaut-ecc.notion.site/UnDrive-Website-ef0eeda940ea416c94692f0ba08d6770" target="_blank" rel="noopener" class="work-tile reveal">
-      <div class="work-tile-img" style="background-image:url('https://picsum.photos/seed/undrive-auto/1200/1500')"></div>
-      <div class="work-tile-overlay"></div>
-      <div class="work-tile-meta"><span class="num">// 05</span><span class="year">2022</span></div>
-      <span class="work-tile-arrow">↗</span>
-      <div class="work-tile-foot">
-        <h3 class="work-tile-title">UnDrive</h3>
-        <span class="work-tile-cat">Web Design<br>Automotive</span>
-      </div>
-    </a>
-
-    <a href="https://brindle-astronaut-ecc.notion.site/Fixerloop-0993676831c142da9b9329f8cad8589b" target="_blank" rel="noopener" class="work-tile reveal">
-      <div class="work-tile-img" style="background-image:url('https://picsum.photos/seed/fixerloop-home/2100/900')"></div>
-      <div class="work-tile-overlay"></div>
-      <div class="work-tile-meta"><span class="num">// 06</span><span class="year">2023</span></div>
-      <span class="work-tile-arrow">↗</span>
-      <div class="work-tile-foot">
-        <h3 class="work-tile-title">Fixerloop</h3>
-        <span class="work-tile-cat">UX/UI Design<br>Home Services</span>
-      </div>
-    </a>
-
-    <a href="https://brindle-astronaut-ecc.notion.site/PharmaDrive-cca4868d33bf45a290ed387e324f9e0f" target="_blank" rel="noopener" class="work-tile reveal">
-      <div class="work-tile-img" style="background-image:url('https://picsum.photos/seed/pharma-health/1200/1500')"></div>
-      <div class="work-tile-overlay"></div>
-      <div class="work-tile-meta"><span class="num">// 07</span><span class="year">2021</span></div>
-      <span class="work-tile-arrow">↗</span>
-      <div class="work-tile-foot">
-        <h3 class="work-tile-title">PharmaDrive</h3>
-        <span class="work-tile-cat">Mobile Design<br>Healthcare</span>
-      </div>
-    </a>
+    <div class="fw-wrapper">
+      <a href="https://brindle-astronaut-ecc.notion.site/Steer-3835a28e22534338a0089dffc204dd0e" target="_blank" rel="noopener" class="work-card">
+        <div class="work-card-left">
+          <p class="work-card-cat">Product Design · Automotive</p>
+          <h2 class="work-card-title">Steer</h2>
+          <p class="work-card-desc">End-to-end reinvention of automotive retail — a C2C marketplace and B2B platform combining digital inspection tech, a pricing algorithm, and stock management tools for used car professionals.</p>
+          <div class="work-card-tags"><span class="work-tag">UX Design</span><span class="work-tag">UI Design</span><span class="work-tag">Product Strategy</span></div>
+          <span class="work-card-cta">View Case Study →</span>
+        </div>
+        <div class="work-card-right"><div class="work-img-box"><span>Case Study 01</span></div></div>
+      </a>
+    </div>
+    <div class="fw-wrapper">
+      <a href="https://brindle-astronaut-ecc.notion.site/Konnect-7eec3cffe6324393be1ecffa4572556e" target="_blank" rel="noopener" class="work-card">
+        <div class="work-card-left">
+          <p class="work-card-cat">Product Design · Fintech</p>
+          <h2 class="work-card-title">Konnect</h2>
+          <p class="work-card-desc">Tunisia's pioneer digital wallet — redesigned from scratch at T-ledger to enable secure online payments, money transfers, phone credits, and bank connections. 2,000+ active users, powered by blockchain.</p>
+          <div class="work-card-tags"><span class="work-tag">UX Design</span><span class="work-tag">UI Design</span><span class="work-tag">Prototyping</span></div>
+          <span class="work-card-cta">View Case Study →</span>
+        </div>
+        <div class="work-card-right"><div class="work-img-box"><span>Case Study 02</span></div></div>
+      </a>
+    </div>
+    <div class="fw-wrapper">
+      <a href="https://brindle-astronaut-ecc.notion.site/Fissa3-31d52a51065a4fffa27a723efd0c3d26" target="_blank" rel="noopener" class="work-card">
+        <div class="work-card-left">
+          <p class="work-card-cat">UX/UI Design · Food Delivery</p>
+          <h2 class="work-card-title">Fissa3</h2>
+          <p class="work-card-desc">A full food delivery experience built for restaurants — real-time GPS tracking, predictive search, push notifications, and seamless order management with 5% platform fees and 45-day free trial.</p>
+          <div class="work-card-tags"><span class="work-tag">UX Design</span><span class="work-tag">UI Design</span><span class="work-tag">Mobile</span></div>
+          <span class="work-card-cta">View Case Study →</span>
+        </div>
+        <div class="work-card-right"><div class="work-img-box"><span>Case Study 03</span></div></div>
+      </a>
+    </div>
+    <div class="fw-wrapper">
+      <a href="https://brindle-astronaut-ecc.notion.site/Groupado-f94d481a9c1e4d5893ee29caa9cce305" target="_blank" rel="noopener" class="work-card">
+        <div class="work-card-left">
+          <p class="work-card-cat">UI Design · Social Platform</p>
+          <h2 class="work-card-title">Groupado</h2>
+          <p class="work-card-desc">A platform that lets creators publish workshops, classes, and local experiences — and lets learners find and join them. Built over 8 months after Groupado opened its first Tunisia office.</p>
+          <div class="work-card-tags"><span class="work-tag">UX Design</span><span class="work-tag">UI Design</span><span class="work-tag">Web</span></div>
+          <span class="work-card-cta">View Project →</span>
+        </div>
+        <div class="work-card-right"><div class="work-img-box"><span>Project 04</span></div></div>
+      </a>
+    </div>
+    <div class="fw-wrapper">
+      <a href="https://brindle-astronaut-ecc.notion.site/UnDrive-Website-ef0eeda940ea416c94692f0ba08d6770" target="_blank" rel="noopener" class="work-card">
+        <div class="work-card-left">
+          <p class="work-card-cat">Web Design · Automotive</p>
+          <h2 class="work-card-title">UnDrive</h2>
+          <p class="work-card-desc">A location-aware driving school discovery platform — users search by city, filter by needs, and find the right school in a few clicks. Built as a freelancer at Inspire development agency.</p>
+          <div class="work-card-tags"><span class="work-tag">UX Design</span><span class="work-tag">UI Design</span><span class="work-tag">Web</span></div>
+          <span class="work-card-cta">View Project →</span>
+        </div>
+        <div class="work-card-right"><div class="work-img-box"><span>Project 05</span></div></div>
+      </a>
+    </div>
+    <div class="fw-wrapper">
+      <a href="https://brindle-astronaut-ecc.notion.site/Fixerloop-0993676831c142da9b9329f8cad8589b" target="_blank" rel="noopener" class="work-card">
+        <div class="work-card-left">
+          <p class="work-card-cat">UX/UI Design · Home Services</p>
+          <h2 class="work-card-title">Fixerloop</h2>
+          <p class="work-card-desc">A full redesign of Fixerloop's mobile app — fixing usability failures, incompatible colors, and unclear flows. The result: a clean, trustworthy platform connecting homeowners with service professionals.</p>
+          <div class="work-card-tags"><span class="work-tag">UX Design</span><span class="work-tag">UI Design</span><span class="work-tag">Mobile</span></div>
+          <span class="work-card-cta">View Project →</span>
+        </div>
+        <div class="work-card-right"><div class="work-img-box"><span>Project 06</span></div></div>
+      </a>
+    </div>
+    <div class="fw-wrapper">
+      <a href="https://brindle-astronaut-ecc.notion.site/PharmaDrive-cca4868d33bf45a290ed387e324f9e0f" target="_blank" rel="noopener" class="work-card">
+        <div class="work-card-left">
+          <p class="work-card-cat">Mobile Design · Healthcare</p>
+          <h2 class="work-card-title">PharmaDrive</h2>
+          <p class="work-card-desc">A pharmacy management mobile app designed for T+ informatique (France, 2021) — prescription management, pharmaceutical product search, real-time notifications, and secure payment flows.</p>
+          <div class="work-card-tags"><span class="work-tag">UI Design</span><span class="work-tag">Mobile</span><span class="work-tag">Healthcare</span></div>
+          <span class="work-card-cta">View Project →</span>
+        </div>
+        <div class="work-card-right"><div class="work-img-box"><span>Project 07</span></div></div>
+      </a>
+    </div>
   </div>
   </section>
 
   <!-- BIO -->
   <section class="bio reveal" id="bio">
     <div class="bio-inner">
-      <div class="section-hdr reveal" style="margin-bottom:48px"><span class="section-num">// 03</span><span class="section-lbl">ABOUT<span class="ar">نبذة</span></span><span class="section-meta">THE DESIGNER</span></div>
-      <h2 class="bio-heading">THE DESIGNER<br><em>BEHIND THE WORK</em></h2>
-      <p class="bio-body">I love working in the realm between <strong>UX and UI design</strong>. User-centered thinking, interaction design, and interfaces that feel fun and human — that's what drives me. Currently a full-time freelancer designing for <strong>Steer</strong>, <strong>Hyphen Group</strong> and <strong>Inspire</strong>.</p>
-      <div class="bio-stats">
-        <div><span class="bio-stat-num">5+</span><span class="bio-stat-lbl">Years</span></div>
-        <div><span class="bio-stat-num">8</span><span class="bio-stat-lbl">Startups</span></div>
-        <div><span class="bio-stat-num">3</span><span class="bio-stat-lbl">Industries</span></div>
+      <div class="section-hdr reveal"><span class="section-num">// 03</span><span class="section-lbl">ABOUT<span class="ar">نبذة</span></span><span class="section-meta">THE DESIGNER</span></div>
+
+      <div class="bio-grid">
+        <div class="bio-left">
+          <span class="bio-eyebrow">// PROFILE <span class="ar">السيرة</span></span>
+          <h2 class="bio-heading">THE DESIGNER<br><em>BEHIND THE WORK</em></h2>
+        </div>
+        <div class="bio-right">
+          <div class="bio-body">
+            <p>I work in the realm between <strong>UX and UI design</strong>. User-centered thinking, interaction design, and interfaces that feel fun and human — that's what drives me.</p>
+            <p>Currently a full-time freelancer designing for <strong>Steer</strong>, <strong>Hyphen Group</strong>, and <strong>Inspire</strong>. Previously shipped product at <strong>InstaDeep</strong>, <strong>Konnect</strong>, <strong>Tunisie Telecom</strong>, and <strong>Renault</strong>.</p>
+          </div>
+          <div class="bio-stats">
+            <div class="bio-stat"><span class="bio-stat-num">5+</span><span class="bio-stat-lbl">Years</span></div>
+            <div class="bio-stat"><span class="bio-stat-num">11</span><span class="bio-stat-lbl">Clients</span></div>
+            <div class="bio-stat"><span class="bio-stat-num">8</span><span class="bio-stat-lbl">Industries</span></div>
+          </div>
+          <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener" class="bio-link">View Full Profile →</a>
+        </div>
       </div>
-      <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener" class="bio-link">View Full Profile →</a>
 
       <!-- Travel/lifestyle photo grid -->
       <div class="bio-photos reveal">
@@ -1260,41 +1277,33 @@
   <!-- PRINCIPLES & VALUES -->
   <section class="principles reveal" id="principles">
     <div class="principles-inner">
-      <div class="section-hdr reveal" style="margin-bottom:48px"><span class="section-num">// 04</span><span class="section-lbl">PRINCIPLES<span class="ar">المبادئ</span></span><span class="section-meta">VALUES &amp; FRAMEWORKS</span></div>
-      <h2 class="principles-title">What I <span>stand for</span></h2>
+      <div class="section-hdr reveal"><span class="section-num">// 04</span><span class="section-lbl">PRINCIPLES<span class="ar">المبادئ</span></span><span class="section-meta">VALUES &amp; FRAMEWORKS</span></div>
+      <h2 class="principles-title">WHAT I <em>STAND FOR</em></h2>
       <p class="principles-sub">The principles I keep coming back to — the ones that shape how I think, design, and collaborate on every project.</p>
-      <div class="principles-grid">
+      <div class="principles-list">
 
         <div class="pc reveal">
           <span class="pc-num-lbl">01</span>
-          <span class="pc-ghost">01</span>
           <h3 class="pc-title">Design with intention</h3>
           <p class="pc-body">Every pixel, every interaction, every layout decision has a reason. I don't decorate — I build meaning into structure.</p>
-          <div class="pc-line"></div>
         </div>
 
         <div class="pc reveal">
           <span class="pc-num-lbl">02</span>
-          <span class="pc-ghost">02</span>
           <h3 class="pc-title">Put users at the center</h3>
           <p class="pc-body">Real people with real problems — that's where every decision starts. Empathy isn't a phase of the process, it's the foundation.</p>
-          <div class="pc-line"></div>
         </div>
 
         <div class="pc reveal">
           <span class="pc-num-lbl">03</span>
-          <span class="pc-ghost">03</span>
           <h3 class="pc-title">Precision meets creativity</h3>
           <p class="pc-body">Structure and boldness aren't opposites. I build tight systems that leave room for unexpected, memorable moments.</p>
-          <div class="pc-line"></div>
         </div>
 
-        <div class="pc glow reveal">
+        <div class="pc reveal">
           <span class="pc-num-lbl">04</span>
-          <span class="pc-ghost">04</span>
           <h3 class="pc-title">Communicate clearly</h3>
           <p class="pc-body">The best design work means nothing if you can't explain the why. Clarity in conversation is just as important as clarity on screen.</p>
-          <div class="pc-line"></div>
         </div>
 
       </div>
@@ -1660,7 +1669,44 @@
     sectionIds.forEach(id => { const el = document.getElementById(id); if (el) so.observe(el); });
     dots.forEach((d,i) => d.addEventListener('click', () => { const el = document.getElementById(sectionIds[i]); if (el) el.scrollIntoView({ behavior:'smooth' }); }));
 
-    /* Featured Work animation now driven by IntersectionObserver via .reveal */
+    /* ── FEATURED WORK DECK (sticky-card-stack) ── */
+    (function() {
+      const fwWrappers = document.querySelectorAll('.fw-wrapper');
+      if (!fwWrappers.length) return;
+      const n = fwWrappers.length;
+
+      function animateFeaturedWork() {
+        const vh = window.innerHeight;
+        for (let i = 0; i < n; i++) {
+          const card = fwWrappers[i].querySelector('.work-card');
+          if (!card) continue;
+          const rect = fwWrappers[i].getBoundingClientRect();
+
+          /* entry tilt: rotateX 2.5° → 0° as card top moves vh → 0 */
+          const entryProg = clamp(1 - rect.top / vh, 0, 1);
+          const rotX      = 2.5 * (1 - entryProg);
+
+          /* exit: driven by next card entering */
+          if (i < n - 1) {
+            const nextTop  = fwWrappers[i + 1].getBoundingClientRect().top;
+            const exitProg = clamp(1 - nextTop / vh, 0, 1);
+            if (exitProg > 0) {
+              card.style.transform = `scale(${(1 - 0.08 * exitProg).toFixed(4)}) translateY(${(-30 * exitProg).toFixed(2)}px)`;
+              card.style.opacity   = (1 - 0.85 * exitProg).toFixed(4);
+              card.style.filter    = `blur(${(6 * exitProg).toFixed(2)}px)`;
+              continue;
+            }
+          }
+
+          card.style.transform = rotX > 0.05 ? `rotateX(${rotX.toFixed(2)}deg)` : '';
+          card.style.opacity   = '';
+          card.style.filter    = '';
+        }
+      }
+
+      window.addEventListener('scroll', animateFeaturedWork, { passive: true });
+      animateFeaturedWork();
+    })();
 
     /* ── THEME TOGGLE ── */
     const THEME_KEY       = 'theme';
