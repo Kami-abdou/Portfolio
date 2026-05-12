@@ -41,7 +41,8 @@
       --g10:     rgba(243,243,240,0.10);
       --g06:     rgba(243,243,240,0.06);
       --g03:     rgba(243,243,240,0.03);
-      --red:     #E54B2A;
+      --red:     #FF3D2A;
+      --accent-red: #FF3D2A;
       --mono:    'JetBrains Mono', 'DM Mono', monospace;
       --display: 'Archivo', 'Inter', system-ui, sans-serif;
       --bebas:   'Bebas Neue', 'Archivo', sans-serif;
@@ -124,24 +125,43 @@
     .nav-connect:hover { background: var(--fg); color: var(--bg); border-color: var(--fg); }
     .nav-connect:hover .ar { color: var(--bg); opacity: .65; }
 
-    /* Hamburger button (Brandin: 3 lines → animates to X) */
+    /* Hamburger button (Brandin Salient: lines-button x2 simple-transform) */
     .hamburger {
-      width: 36px; height: 36px;
-      display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 5px; padding: 0; background: transparent; border: 1px solid var(--g18);
-      border-radius: 999px; cursor: none;
-      transition: background .2s, border-color .2s;
+      width: 44px; height: 30px;
+      position: relative;
+      padding: 0; background: transparent; border: none; cursor: none;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: opacity .25s;
     }
-    .hamburger:hover { background: var(--g06); border-color: var(--g30); }
-    .hamburger-line {
-      display: block; width: 16px; height: 1.5px;
+    .lines-button {
+      position: relative;
+      display: inline-block;
+      width: 22px; height: 14px;
+    }
+    .lines, .lines::before, .lines::after {
+      display: block; position: absolute;
+      width: 22px; height: 1.5px;
       background: var(--fg);
-      transition: transform .35s var(--ease), opacity .25s var(--ease);
-      transform-origin: center;
+      transition: transform .45s cubic-bezier(0.215, 0.61, 0.355, 1),
+                  background .25s,
+                  width .35s var(--ease),
+                  opacity .25s;
     }
-    body.menu-open .hamburger-line:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
-    body.menu-open .hamburger-line:nth-child(2) { opacity: 0; }
-    body.menu-open .hamburger-line:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+    .lines { top: 50%; left: 0; transform: translateY(-50%); }
+    .lines::before { content: ''; top: -6px; left: 0; }
+    .lines::after  { content: ''; top:  6px; left: 0; width: 16px; }
+    /* simple-transform hover: middle line shrinks, top/bottom shift slightly */
+    .hamburger:hover .lines { width: 18px; }
+    .hamburger:hover .lines::before { width: 22px; }
+    .hamburger:hover .lines::after { width: 22px; }
+    /* open state: middle hides, top+bottom rotate to X */
+    body.menu-open .lines { background: transparent; }
+    body.menu-open .lines::before { top: 0; transform: rotate(45deg); width: 22px; background: var(--fg); }
+    body.menu-open .lines::after  { top: 0; transform: rotate(-45deg); width: 22px; background: var(--fg); }
+    /* Red accent on hover */
+    .hamburger:hover .lines,
+    .hamburger:hover .lines::before,
+    .hamburger:hover .lines::after { background: var(--accent-red); }
 
     /* Slide-out menu panel */
     .menu-backdrop {
@@ -501,8 +521,8 @@
       color: var(--fg);
       text-wrap: balance;
       white-space: nowrap;
-      animation: fadeUp .9s var(--ease) 2.55s both;
     }
+    .hero-name .char { transition-duration: 1.1s; }
 
     .hero-location {
       font-family: var(--mono); font-size: clamp(.7rem, .9vw, .8rem); font-weight: 400;
@@ -654,6 +674,76 @@
     .reveal { opacity: 0; transform: translateY(32px); transition: opacity .8s var(--ease2), transform .8s var(--ease2); }
     .reveal.vis { opacity: 1; transform: none; }
     .rd1 { transition-delay: .08s; } .rd2 { transition-delay: .18s; } .rd3 { transition-delay: .28s; }
+
+    /* ── BRANDIN LETTER-REVEAL-BOTTOM (split-heading animation) ──
+       Splits a heading into per-character spans inside per-word wrappers.
+       Each character slides up from below the baseline with stagger. */
+    .split-heading { display: inline-block; }
+    .split-heading .word {
+      display: inline-block;
+      vertical-align: top;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .split-heading .char {
+      display: inline-block;
+      transform: translateY(105%);
+      transition: transform .9s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .split-heading.vis .char { transform: translateY(0); }
+    /* Word-level fallback (data-split="word") */
+    .split-heading.by-word .word > .char {
+      transform: translateY(110%);
+    }
+
+    /* ── TEXT-REVEAL LINK HOVER (Brandin nav lhe="text_reveal") ──
+       Two stacked copies of the text. On hover the original slides up,
+       the duplicate slides up from below into its place. */
+    .text-reveal {
+      position: relative; display: inline-block;
+      overflow: hidden; vertical-align: middle;
+      line-height: 1.2; padding: 2px 0;
+    }
+    .text-reveal > span {
+      display: block;
+      transition: transform .55s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    .text-reveal > span::after {
+      content: attr(data-hover);
+      position: absolute;
+      left: 0; top: 100%; width: 100%;
+      color: var(--accent-red);
+    }
+    .text-reveal:hover > span,
+    a:hover > .text-reveal > span,
+    .menu-link:hover .text-reveal > span {
+      transform: translateY(-100%);
+    }
+
+    /* ── BORDER-DRAW-IN ROW (Brandin has_border_animation) ──
+       Each row gets a top hairline that draws left → right when scrolled into view. */
+    .draw-border {
+      position: relative;
+    }
+    .draw-border::before {
+      content: ''; position: absolute;
+      left: 0; top: 0;
+      width: 0; height: 1px;
+      background: var(--g18);
+      transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .draw-border.vis::before { width: 100%; }
+    .draw-border.delay-1::before { transition-delay: .08s; }
+    .draw-border.delay-2::before { transition-delay: .16s; }
+    .draw-border.delay-3::before { transition-delay: .24s; }
+    .draw-border.delay-4::before { transition-delay: .32s; }
+    .draw-border.delay-5::before { transition-delay: .40s; }
+    .draw-border.delay-6::before { transition-delay: .48s; }
+    .draw-border.delay-7::before { transition-delay: .56s; }
+    .draw-border.delay-8::before { transition-delay: .64s; }
+    .draw-border.delay-9::before { transition-delay: .72s; }
+    .draw-border.delay-10::before { transition-delay: .80s; }
+    .draw-border.delay-11::before { transition-delay: .88s; }
     @media (prefers-reduced-motion:reduce) {
       .reveal,.hero-card,.hero-name-solid,.hero-name-outline,.hero-eyebrow,.hero-subtitle,.drag-hint-pill { animation:none!important; opacity:1!important; transform:none!important; }
       .marquee-track { animation:none; }
@@ -867,7 +957,8 @@
       --g10:    rgba(0,0,0,0.10);
       --g06:    rgba(0,0,0,0.06);
       --g03:    rgba(0,0,0,0.03);
-      --red:    #C73E1F;
+      --red:    #E5341B;
+      --accent-red: #E5341B;
     }
     /* hero dot grid — very subtle in naive mode */
     body.light .hero-grid {
@@ -1033,12 +1124,10 @@
     <a href="#hero-anchor" class="nav-name">ABDOU YAACKOUBI</a>
     <span class="nav-clock" id="navClock">Tunisia — 00:00:00 CET</span>
     <div class="nav-right">
-      <a class="nav-connect" href="#contact">Connect <span class="ar">تواصل</span></a>
+      <a class="nav-connect" href="#contact"><span class="text-reveal"><span data-hover="Connect">Connect</span></span> <span class="ar">تواصل</span></a>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle colour mode"><span class="t-icon"></span></button>
       <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
+        <i class="lines-button x2"><i class="lines"></i></i>
       </button>
     </div>
   </nav>
@@ -1052,11 +1141,11 @@
         <button class="menu-close" id="menuClose" aria-label="Close menu">CLOSE <span class="x">×</span></button>
       </div>
       <nav class="menu-links">
-        <a class="menu-link" href="#featured-work" data-num="01"><span class="num">01</span><span class="label">WORK</span><span class="ar">الأعمال</span></a>
-        <a class="menu-link" href="#worked-with" data-num="02"><span class="num">02</span><span class="label">CLIENTS</span><span class="ar">العملاء</span></a>
-        <a class="menu-link" href="#bio" data-num="03"><span class="num">03</span><span class="label">ABOUT</span><span class="ar">نبذة</span></a>
-        <a class="menu-link" href="#principles" data-num="04"><span class="num">04</span><span class="label">PRINCIPLES</span><span class="ar">المبادئ</span></a>
-        <a class="menu-link" href="#contact" data-num="05"><span class="num">05</span><span class="label">CONNECT</span><span class="ar">تواصل</span></a>
+        <a class="menu-link" href="#featured-work" data-num="01"><span class="num">01</span><span class="label"><span class="text-reveal"><span data-hover="WORK">WORK</span></span></span><span class="ar">الأعمال</span></a>
+        <a class="menu-link" href="#worked-with" data-num="02"><span class="num">02</span><span class="label"><span class="text-reveal"><span data-hover="CLIENTS">CLIENTS</span></span></span><span class="ar">العملاء</span></a>
+        <a class="menu-link" href="#bio" data-num="03"><span class="num">03</span><span class="label"><span class="text-reveal"><span data-hover="ABOUT">ABOUT</span></span></span><span class="ar">نبذة</span></a>
+        <a class="menu-link" href="#principles" data-num="04"><span class="num">04</span><span class="label"><span class="text-reveal"><span data-hover="PRINCIPLES">PRINCIPLES</span></span></span><span class="ar">المبادئ</span></a>
+        <a class="menu-link" href="#contact" data-num="05"><span class="num">05</span><span class="label"><span class="text-reveal"><span data-hover="CONNECT">CONNECT</span></span></span><span class="ar">تواصل</span></a>
       </nav>
       <div class="menu-foot">
         <div class="menu-foot-col">
@@ -1090,7 +1179,7 @@
         <!-- Hero content -->
         <div class="hero-content">
           <p class="hero-eyebrow">PRODUCT DESIGNER</p>
-          <h1 class="hero-name" id="heroName">ABDOU YAACKOUBI</h1>
+          <h1 class="hero-name split-heading" id="heroName" data-split data-base-delay="2400" data-stagger="48">ABDOU YAACKOUBI</h1>
           <p class="hero-location">Based in Tunis, Tunisia<br>specializing in UX, UI &amp; AI workflows</p>
         </div>
 
@@ -1130,17 +1219,17 @@
     <div class="section-hdr reveal"><span class="section-num">// 01</span><span class="section-lbl">CLIENTS<span class="ar">العملاء</span></span><span class="section-meta">11 COMPANIES</span></div>
     <div class="clients-table">
       <div class="clients-head"><span>// IDX</span><span>Company</span><span>Sector</span><span>Info</span></div>
-      <div class="client-row reveal rd1"><span class="c-idx">01</span><span class="client-name">InstaDeep</span><span class="client-sector">AI &amp; Deep Tech</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd2"><span class="c-idx">02</span><span class="client-name">Steer AI</span><span class="client-sector">Automotive</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd1"><span class="c-idx">03</span><span class="client-name">Nvidia</span><span class="client-sector">Technology</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd2"><span class="c-idx">04</span><span class="client-name">Renault</span><span class="client-sector">Automotive</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd1"><span class="c-idx">05</span><span class="client-name">Tunisie Telecom</span><span class="client-sector">Telecommunications</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd2"><span class="c-idx">06</span><span class="client-name">Cha9a9a</span><span class="client-sector">E-commerce</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd1"><span class="c-idx">07</span><span class="client-name">Konnect</span><span class="client-sector">Fintech</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd2"><span class="c-idx">08</span><span class="client-name">Groupado</span><span class="client-sector">Social Platform</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd1"><span class="c-idx">09</span><span class="client-name">Hyphen Group</span><span class="client-sector">Creative Agency</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd2"><span class="c-idx">10</span><span class="client-name">Inspire</span><span class="client-sector">Development Agency</span><span class="client-arrow">↗</span></div>
-      <div class="client-row reveal rd1"><span class="c-idx">11</span><span class="client-name">Fixerloop</span><span class="client-sector">Home Services</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">01</span><span class="client-name">InstaDeep</span><span class="client-sector">AI &amp; Deep Tech</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">02</span><span class="client-name">Steer AI</span><span class="client-sector">Automotive</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">03</span><span class="client-name">Nvidia</span><span class="client-sector">Technology</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">04</span><span class="client-name">Renault</span><span class="client-sector">Automotive</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">05</span><span class="client-name">Tunisie Telecom</span><span class="client-sector">Telecommunications</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">06</span><span class="client-name">Cha9a9a</span><span class="client-sector">E-commerce</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">07</span><span class="client-name">Konnect</span><span class="client-sector">Fintech</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">08</span><span class="client-name">Groupado</span><span class="client-sector">Social Platform</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">09</span><span class="client-name">Hyphen Group</span><span class="client-sector">Creative Agency</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">10</span><span class="client-name">Inspire</span><span class="client-sector">Development Agency</span><span class="client-arrow">↗</span></div>
+      <div class="client-row reveal draw-border"><span class="c-idx">11</span><span class="client-name">Fixerloop</span><span class="client-sector">Home Services</span><span class="client-arrow">↗</span></div>
     </div>
   </section>
 
@@ -1244,7 +1333,7 @@
       <div class="bio-grid">
         <div class="bio-left">
           <span class="bio-eyebrow">// PROFILE <span class="ar">السيرة</span></span>
-          <h2 class="bio-heading">THE DESIGNER<br><em>BEHIND THE WORK</em></h2>
+          <h2 class="bio-heading reveal">THE DESIGNER<br><em>BEHIND THE WORK</em></h2>
         </div>
         <div class="bio-right">
           <div class="bio-body">
@@ -1282,25 +1371,25 @@
       <p class="principles-sub">The principles I keep coming back to — the ones that shape how I think, design, and collaborate on every project.</p>
       <div class="principles-list">
 
-        <div class="pc reveal">
+        <div class="pc reveal draw-border">
           <span class="pc-num-lbl">01</span>
           <h3 class="pc-title">Design with intention</h3>
           <p class="pc-body">Every pixel, every interaction, every layout decision has a reason. I don't decorate — I build meaning into structure.</p>
         </div>
 
-        <div class="pc reveal">
+        <div class="pc reveal draw-border">
           <span class="pc-num-lbl">02</span>
           <h3 class="pc-title">Put users at the center</h3>
           <p class="pc-body">Real people with real problems — that's where every decision starts. Empathy isn't a phase of the process, it's the foundation.</p>
         </div>
 
-        <div class="pc reveal">
+        <div class="pc reveal draw-border">
           <span class="pc-num-lbl">03</span>
           <h3 class="pc-title">Precision meets creativity</h3>
           <p class="pc-body">Structure and boldness aren't opposites. I build tight systems that leave room for unexpected, memorable moments.</p>
         </div>
 
-        <div class="pc reveal">
+        <div class="pc reveal draw-border">
           <span class="pc-num-lbl">04</span>
           <h3 class="pc-title">Communicate clearly</h3>
           <p class="pc-body">The best design work means nothing if you can't explain the why. Clarity in conversation is just as important as clarity on screen.</p>
@@ -1661,6 +1750,61 @@
     } else {
       document.querySelectorAll('.reveal').forEach(el => el.classList.add('vis'));
     }
+
+    /* ── BRANDIN SPLIT-HEADING (letter-reveal-bottom) ──
+       For every element with [data-split], splits text into per-word, per-char
+       spans so the .split-heading.vis rule can animate them up from below. */
+    function splitHeading(el) {
+      if (el.dataset.splitDone) return;
+      const baseDelay = parseInt(el.dataset.baseDelay || '0', 10);
+      const stagger   = parseInt(el.dataset.stagger || '32', 10);
+      const text = el.textContent;
+      const frag = document.createDocumentFragment();
+      const words = text.split(/(\s+)/);
+      let idx = 0;
+      words.forEach(w => {
+        if (/^\s+$/.test(w)) { frag.appendChild(document.createTextNode(' ')); return; }
+        const word = document.createElement('span');
+        word.className = 'word';
+        [...w].forEach(c => {
+          const ch = document.createElement('span');
+          ch.className = 'char';
+          ch.textContent = c;
+          ch.style.transitionDelay = (baseDelay + idx * stagger) + 'ms';
+          word.appendChild(ch);
+          idx++;
+        });
+        frag.appendChild(word);
+      });
+      el.textContent = '';
+      el.appendChild(frag);
+      el.classList.add('split-heading');
+      el.dataset.splitDone = '1';
+    }
+    const splitObs = ('IntersectionObserver' in window)
+      ? new IntersectionObserver(en => en.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); splitObs.unobserve(e.target); } }), { threshold: .25 })
+      : null;
+    document.querySelectorAll('[data-split]').forEach(el => {
+      splitHeading(el);
+      if (splitObs) splitObs.observe(el); else el.classList.add('vis');
+    });
+
+    /* ── BRANDIN BORDER-DRAW-IN ──
+       Wraps elements with .draw-border so the ::before hairline animates left→right
+       once the element enters the viewport. */
+    const drawObs = ('IntersectionObserver' in window)
+      ? new IntersectionObserver(en => en.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); drawObs.unobserve(e.target); } }), { threshold: .15 })
+      : null;
+    /* Auto-stagger draw-border rows inside a shared parent */
+    document.querySelectorAll('.clients-table, .principles-list').forEach(parent => {
+      parent.querySelectorAll('.draw-border').forEach((el, i) => {
+        const d = Math.min(i + 1, 11);
+        el.classList.add('delay-' + d);
+      });
+    });
+    document.querySelectorAll('.draw-border').forEach(el => {
+      if (drawObs) drawObs.observe(el); else el.classList.add('vis');
+    });
 
     /* ── SIDE DOTS ── */
     const sectionIds = ['hero-anchor','worked-with','featured-work','bio','principles','contact'];
