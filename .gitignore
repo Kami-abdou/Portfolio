@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Editor / tooling
+.superpowers/
+.claude/
+
+# Logs / temp
+*.log
+/tmp/
+
+# Local server
+serve.py
