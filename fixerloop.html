@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Fixerloop — a mobile product. UI / UX design. Selected screens by Abdou Yaackoubi.">
+  <meta name="color-scheme" content="light">
+  <title>Fixerloop · Project — Abdou Yaackoubi</title>
+  <link rel="icon" type="image/png" href="pdp.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav class="nav" id="topnav">
+    <div class="nav-inner">
+      <a href="preview.html" class="nav-name">
+        <span class="avatar" aria-hidden="true"></span>
+        <span>Abdou Yaackoubi</span>
+      </a>
+      <div class="nav-links">
+        <a href="preview.html#works">Works</a>
+        <a href="preview.html#contact">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <header class="cs-hero">
+    <div class="wrap">
+      <a href="preview.html#works" class="cs-back"><span class="arr">←</span> Back to work</a>
+      <p class="cs-eyebrow">Project · 2023</p>
+      <h1 class="cs-title">Fixerloop<span class="dot">.</span></h1>
+      <p class="cs-lede">A mobile product — UI / UX design. Selected screens below.</p>
+
+      <div class="cs-meta">
+        <div class="cell"><div class="k">Role</div><div class="v">UI / UX Designer</div></div>
+        <div class="cell"><div class="k">Type</div><div class="v">Mobile app</div></div>
+        <div class="cell"><div class="k">Year</div><div class="v">2023</div></div>
+        <div class="cell"><div class="k">Discipline</div><div class="v">UI · UX</div></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── BODY ── -->
+  <main class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="cs-gallery">
+        <figure class="cs-figure reveal"><img src="assets/projects/fixerloop/screen-1.jpg" alt="Fixerloop selected screen" loading="lazy"><figcaption>Selected screen</figcaption></figure>
+        <figure class="cs-figure reveal"><img src="assets/projects/fixerloop/screen-2.jpg" alt="Fixerloop selected screen" loading="lazy"><figcaption>Selected screen</figcaption></figure>
+        <figure class="cs-figure reveal"><img src="assets/projects/fixerloop/screen-3.jpg" alt="Fixerloop selected screen" loading="lazy"><figcaption>Selected screen</figcaption></figure>
+      </div>
+
+      <!-- next project -->
+      <nav class="cs-next">
+        <a href="undrive.html">
+          <span><span class="lbl">Next project</span><span class="nm">UnDrive</span></span>
+          <span class="big-arrow">→</span>
+        </a>
+      </nav>
+    </div>
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>© 2026 Abdou Yaackoubi</span>
+      <div class="footer-links">
+        <a href="preview.html">Home</a>
+        <a href="preview.html#works">Works</a>
+        <a href="preview.html#contact">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById('topnav');
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    if ('IntersectionObserver' in window) {
+      const ro = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); ro.unobserve(e.target); } });
+      }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
+      document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('vis'));
+    }
+  </script>
+
+</body>
+</html>
