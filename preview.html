@@ -4,15 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Portfolio of Abdou Yaackoubi — Product Designer">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="dark">
   <title>Abdou Yaackoubi · Product Designer</title>
   <link rel="icon" type="image/png" href="pdp.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Blinker:wght@200;300;400;600;700;800&family=Sulphur+Point:wght@300;400;700&family=Big+Shoulders+Display:wght@100..900&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
+
+
+  <!-- ── SCROLL PROGRESS BAR (F) ── -->
+  <div id="scroll-progress" aria-hidden="true"><div class="bar"></div></div>
 
   <!-- ── NAV ── -->
   <nav class="nav" id="topnav">
@@ -24,8 +28,8 @@
       <div class="nav-links">
         <a href="#top" class="is-active">Home</a>
         <a href="#about">About</a>
-        <a href="#works">Works</a>
-        <a href="#sketches">More</a>
+        <a href="#works">Work</a>
+        <a href="#playground">Playground</a>
         <a href="#contact">Contact</a>
       </div>
     </div>
@@ -43,18 +47,15 @@
       <span class="badge"><span class="dot"></span>Open for select projects · 2026</span>
 
       <h1 class="hero-title">
-        <span class="muted">Product designer</span><br>
-        Abdou&nbsp;Yaackoubi<span style="color:var(--accent)">.</span>
+        <span class="hero-line muted" data-split="mask">Product designer</span>
+        <span class="hero-line" data-split="mask">Abdou Yaackoubi.</span>
       </h1>
 
       <div class="hero-status">
-        <span class="at">Currently Senior Product Designer at</span>
+        <span class="at">Currently at</span>
         <span class="studio">InstaDeep</span>
       </div>
 
-      <p class="hero-lede">
-        Short positioning sentence goes here — one or two lines describing what you do and the kind of work you want. Replace the <em>highlighted bits</em> with your tone. (Placeholder copy — fill in later.)
-      </p>
     </div>
   </header>
 
@@ -63,142 +64,105 @@
     <div class="wrap">
       <div class="section-head reveal">
         <h2>About me</h2>
-        <span class="count">01</span>
+        <span class="count">01 · profile</span>
       </div>
 
-      <div class="about-body reveal">
-        <p>
-          I am a senior Product Designer with a decade of experience building scalable digital experiences. Currently, I work full-time at <em>InstaDeep</em>, where I specialize in Product Design and robust Design Systems tailored for complex, next-generation AI products.
-        </p>
-        <p>
-          My journey has taken me from hands-on design for fast-growing startups across fintech, e-learning, and healthtech, to serving as <em>Chief Product Officer (CPO) at Steer</em>, where I led product strategy and advanced tech trends in the automotive space.
-        </p>
-        <p>
-          Today, I operate seamlessly at the <em>intersection of UX strategy, advanced interface design, and emerging technology</em>. My focus is turning highly technical, AI-driven capabilities into intuitive, high-performing user experiences that bridge the gap between complex backend data and elegant frontend design.
-        </p>
-        <p>
-          Outside the design sandbox, you can find me optimizing my routine at the gym, diving into video games, or recharging with family and friends.
-        </p>
-      </div>
+      <div class="about-grid">
+        <!-- LEFT: bio + skill tags -->
+        <div class="about-left reveal">
+          <div class="about-body">
+            <p>
+              Senior Product Designer at <em>InstaDeep</em>, focused on Product Design and Design Systems for next-generation AI products.
+            </p>
+            <p>
+              Seven years shaping interfaces across fintech, e-learning, and automotive — most recently as <em>Chief Product Officer at Steer</em>. I work at the intersection of UX strategy, interface design, and emerging technology.
+            </p>
+          </div>
 
-      <div class="about-bullets reveal">
-        <div class="about-bullet"><span class="icn">★</span><span>Senior Product Designer · InstaDeep · AI products</span><span class="when">Jan 2024 — Present</span></div>
-        <div class="about-bullet"><span class="icn">◆</span><span>Chief Product Officer · Steer · Automotive</span><span class="when">Oct 2021 — Nov 2023</span></div>
-        <div class="about-bullet"><span class="icn">●</span><span>UX / UI Designer · Groupado · EdTech</span><span class="when">Feb 2021 — Sep 2021</span></div>
-        <div class="about-bullet"><span class="icn">○</span><span>UX / UI Designer · T-ledger · Fintech</span><span class="when">Jan 2020 — Jan 2021</span></div>
+          <div class="about-skills">
+            <span class="chip">Product Design</span>
+            <span class="chip">Design Systems</span>
+            <span class="chip">AI Products</span>
+            <span class="chip">UX Strategy</span>
+            <span class="chip">Prototyping</span>
+            <span class="chip">Product Strategy</span>
+          </div>
+        </div>
+
+        <!-- RIGHT: stats + timeline -->
+        <aside class="about-right reveal">
+          <div class="about-stats">
+            <div class="stat"><span class="stat-num">6+</span><span class="stat-lbl">Years</span></div>
+            <div class="stat"><span class="stat-num">4</span><span class="stat-lbl">Senior roles</span></div>
+            <div class="stat"><span class="stat-num">3</span><span class="stat-lbl">Industries</span></div>
+          </div>
+
+          <div class="about-bullets">
+            <div class="about-bullet">
+              <span class="icn">★</span>
+              <div class="who"><span class="role">Senior Product Designer</span><span class="where">InstaDeep · AI</span></div>
+              <span class="when">2024 →</span>
+            </div>
+            <div class="about-bullet">
+              <span class="icn">◆</span>
+              <div class="who"><span class="role">Chief Product Officer</span><span class="where">Steer · Automotive</span></div>
+              <span class="when">2021 — 23</span>
+            </div>
+            <div class="about-bullet">
+              <span class="icn">●</span>
+              <div class="who"><span class="role">UX / UI Designer</span><span class="where">Groupado · EdTech</span></div>
+              <span class="when">2021</span>
+            </div>
+            <div class="about-bullet">
+              <span class="icn">○</span>
+              <div class="who"><span class="role">UX / UI Designer</span><span class="where">T-ledger · Fintech</span></div>
+              <span class="when">2020</span>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   </section>
 
-  <!-- ── WORKS ── -->
+  <!-- ── FEATURED WORK ── -->
   <section class="section" id="works">
     <div class="wrap">
       <div class="section-head reveal">
-        <h2>Selected work</h2>
-        <span class="count">02 · 04 projects</span>
+        <h2>Featured work</h2>
+        <span class="count">02 · selected</span>
       </div>
 
-      <div class="works-grid">
-        <a href="steer.html" class="work reveal">
-          <div class="work-thumb">
-            <div class="cover cover--maroon">
-              <span class="cover-ghost" aria-hidden="true">S</span>
-              <span class="cover-tag">Automotive · 2022</span>
-              <span class="cover-name">Steer<i>.</i></span>
-            </div>
-          </div>
-          <div class="work-body">
-            <div class="meta">
-              <span class="name">Steer</span>
-              <span class="role">Chief Product Officer · Automotive</span>
-            </div>
-            <span class="work-arrow">↗</span>
-          </div>
-        </a>
-
-        <a href="groupado.html" class="work reveal">
-          <div class="work-thumb">
-            <div class="cover cover--red">
-              <span class="cover-ghost" aria-hidden="true">G</span>
-              <span class="cover-tag">EdTech · 2021</span>
-              <span class="cover-name">Groupado<i>.</i></span>
-            </div>
-          </div>
-          <div class="work-body">
-            <div class="meta">
-              <span class="name">Groupado</span>
-              <span class="role">UX / UI Designer · EdTech marketplace</span>
-            </div>
-            <span class="work-arrow">↗</span>
-          </div>
-        </a>
-
-        <a href="konnect.html" class="work reveal">
-          <div class="work-thumb">
-            <div class="cover cover--ink">
-              <span class="cover-ghost" aria-hidden="true">K</span>
-              <span class="cover-tag">Fintech · 2020</span>
-              <span class="cover-name">Konnect<i>.</i></span>
-            </div>
-          </div>
-          <div class="work-body">
-            <div class="meta">
-              <span class="name">Konnect</span>
-              <span class="role">UX / UI Designer · Fintech</span>
-            </div>
-            <span class="work-arrow">↗</span>
-          </div>
-        </a>
-
-        <a href="fissa3.html" class="work reveal">
-          <div class="work-thumb">
-            <div class="cover cover--sand">
-              <span class="cover-ghost" aria-hidden="true">F</span>
-              <span class="cover-tag">Food delivery · 2020</span>
-              <span class="cover-name">Fissa3<i>.</i></span>
-            </div>
-          </div>
-          <div class="work-body">
-            <div class="meta">
-              <span class="name">Fissa3</span>
-              <span class="role">UX / UI Designer · Food delivery</span>
-            </div>
-            <span class="work-arrow">↗</span>
-          </div>
+      <!-- Outlined project list. Duplicate a .pl-item block per project. -->
+      <div class="proj-list">
+        <a class="pl-item reveal" href="#">
+          <span class="pl-idx">01</span>
+          <h3 class="pl-title">Project name</h3>
+          <span class="pl-meta">Role · Year</span>
+          <span class="pl-arrow">&#8599;</span>
         </a>
       </div>
+      <p class="pl-empty">More case studies in progress.</p>
     </div>
   </section>
 
-  <!-- ── OTHER PROJECTS ── -->
-  <section class="section" id="sketches">
+  <!-- ── PLAYGROUND ── -->
+  <section class="section" id="playground">
     <div class="wrap">
       <div class="section-head reveal">
-        <h2>Other projects I'm proud of</h2>
-        <span class="count">03 · 03 projects</span>
+        <h2>Playground</h2>
+        <span class="count">03 · experiments</span>
       </div>
-      <div class="sketches-grid">
-        <a href="fixerloop.html" class="sketch reveal">
-          <div class="cover cover--ink cover--sm">
-            <span class="cover-ghost" aria-hidden="true">F</span>
-            <span class="cover-arr">↗</span>
-            <span class="cover-name">Fixerloop<i>.</i></span>
+      <p class="section-lede reveal">
+        Side explorations, tools, and things built to answer a question.
+      </p>
+      <div class="play-grid">
+        <div class="play reveal">
+          <div class="play-cover"><span class="play-ghost" aria-hidden="true">01</span></div>
+          <div class="play-body">
+            <span class="play-name">Experiment</span>
+            <span class="play-role">Type · Year</span>
           </div>
-        </a>
-        <a href="undrive.html" class="sketch reveal">
-          <div class="cover cover--sand cover--sm">
-            <span class="cover-ghost" aria-hidden="true">U</span>
-            <span class="cover-arr">↗</span>
-            <span class="cover-name">UnDrive<i>.</i></span>
-          </div>
-        </a>
-        <a href="pharmadrive.html" class="sketch reveal">
-          <div class="cover cover--red cover--sm">
-            <span class="cover-ghost" aria-hidden="true">P</span>
-            <span class="cover-arr">↗</span>
-            <span class="cover-name">PharmaDrive<i>.</i></span>
-          </div>
-        </a>
+        </div>
       </div>
     </div>
   </section>
@@ -208,7 +172,7 @@
     <div class="wrap">
       <div class="section-head reveal">
         <h2>Find me</h2>
-        <span class="count">04</span>
+        <span class="count">04 · social</span>
       </div>
       <div class="social-grid">
         <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener" class="social reveal">
@@ -252,6 +216,82 @@
   </footer>
 
   <script>
+
+    /* ── (F) SCROLL PROGRESS BAR — width tracks scroll depth ── */
+    (function() {
+      const bar = document.querySelector('#scroll-progress .bar');
+      if (!bar) return;
+      const update = () => {
+        const doc = document.documentElement;
+        const scrollTop = doc.scrollTop || document.body.scrollTop;
+        const max = doc.scrollHeight - doc.clientHeight;
+        const pct = max > 0 ? (scrollTop / max) * 100 : 0;
+        bar.style.width = pct + '%';
+      };
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update, { passive: true });
+      update();
+    })();
+
+    /* ── (A) WHOLE-LINE MASK REVEAL —
+           For every [data-split="mask"], wrap its contents in a single
+           .line-inner so the entire line slides up as one solid block.
+           IntersectionObserver adds .is-in to trigger. ── */
+    (function() {
+      // Auto-tag every section-head h2 and the contact heading
+      document.querySelectorAll('.section-head h2, .contact h2').forEach(h => {
+        if (!h.hasAttribute('data-split')) h.setAttribute('data-split', 'mask');
+      });
+
+      function splitEl(el) {
+        if (el.dataset.splitDone) return;
+        const inner = document.createElement('span');
+        inner.className = 'line-inner';
+        while (el.firstChild) inner.appendChild(el.firstChild);
+        el.appendChild(inner);
+        el.dataset.splitDone = '1';
+      }
+
+      const splits = [...document.querySelectorAll('[data-split="mask"]')];
+      splits.forEach(splitEl);
+
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            if (e.isIntersecting) {
+              // Delay hero splits until loader is done
+              const isHero = e.target.closest('.hero');
+              const delay = isHero ? 1800 : 0;
+              setTimeout(() => e.target.classList.add('is-in'), delay);
+              io.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.2, rootMargin: '0px 0px -6% 0px' });
+        splits.forEach(el => io.observe(el));
+      } else {
+        splits.forEach(el => el.classList.add('is-in'));
+      }
+    })();
+
+    /* ── (C) SLIDE-UP HOVER — auto-wrap link text nodes to duplicate them ── */
+    (function() {
+      const selectors = [
+        '.work .name',
+        '.social .lbl',
+        '.footer-links a'
+      ];
+      const wrap = (el) => {
+        if (el.dataset.slideupDone) return;
+        const text = el.textContent.trim();
+        if (!text) return;
+        el.dataset.slideupDone = '1';
+        el.innerHTML = `<span class="hover-slideup"><span data-hover="${text}">${text}</span></span>`;
+      };
+      selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(wrap);
+      });
+    })();
+
     /* Sticky-nav border */
     const nav = document.getElementById('topnav');
     const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
@@ -291,5 +331,7 @@
     }
   </script>
 
+  <script src="assets/motion.js" defer></script>
+  <script src="assets/cursor.js" defer></script>
 </body>
 </html>
