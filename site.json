@@ -1,0 +1,38 @@
+{
+  "name": "Abdallah Yaackoubi",
+  "title": "UX/UI Designer",
+  "tagline": "I love working in the realm between UX and UI design.",
+  "intro": "Things that make me excited are user-centred design, interaction design, and making interfaces feel fun and human.",
+  "currently": "Full-time freelancer, designing interfaces for Steer, Hyphen Group and Inspire.",
+  "about": [
+    "I entered the UX/UI design field on 1 January 2020. Since then I have worked with eight startups across fintech, food delivery, online courses, automotive, pharmacy and development.",
+    "I joined Steer as Chief Product Officer, where I led a small team exploring new technology trends in the automotive industry and designing and developing a range of automotive services. In practice the role was product design and product management.",
+    "I am now fully focused on designing interfaces as a freelancer, supporting companies and projects in that capacity.",
+    "Outside of work I am obsessed with video games and enjoy the gym, and I cherish time with family and friends."
+  ],
+  "profileImage": "site/profile.png",
+  "cv": "site/CV-Abdallah-Yaackoubi.pdf",
+  "email": "abdouyaackoubi@gmail.com",
+  "links": [
+    { "label": "Behance", "url": "https://www.behance.net/Abdou_Yaackoubi" },
+    { "label": "LinkedIn", "url": "https://www.linkedin.com/in/abdou-yaackoubi/" },
+    { "label": "Email", "url": "mailto:abdouyaackoubi@gmail.com" }
+  ],
+  "sections": {
+    "caseStudies": {
+      "heading": "Case studies",
+      "description": "Projects where I can show the thinking, not just the outcome.",
+      "slugs": ["steer", "konnect", "fissa3", "groupado"]
+    },
+    "otherProjects": {
+      "heading": "Other projects I'm proud of",
+      "description": "Shorter pieces of work.",
+      "slugs": ["pharmadrive", "fixerloop", "undrive", "smarthub"]
+    }
+  },
+  "todo": [
+    "The bio says 'eight startups' — this portfolio shows eight projects but some share a client (Konnect and Fissa3 were both T-ledger). Count deliberately before publishing.",
+    "Decide whether to keep 'Chief Product Officer' as the headline for Steer or describe it as product design and management. Both are in the copy now.",
+    "Client logos (Tunisie Telecom, Renault, Hyphen, Hive, Inspire, Cha9a9a) were deliberately left out per your instruction — the partners image is available in the Notion export if you change your mind."
+  ]
+}

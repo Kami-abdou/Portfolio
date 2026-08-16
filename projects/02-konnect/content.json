@@ -1,0 +1,78 @@
+{
+  "slug": "konnect",
+  "order": 2,
+  "category": "case-study",
+  "title": "Konnect",
+  "tagline": "The first digital wallet in Tunisia",
+  "summary": "Konnect set out to solve online payment in a country where it barely worked. I joined T-ledger as the only designer among more than fifteen engineers and two product managers, ran the full design process, and rebuilt the application end to end. The team still uses that design today.",
+  "role": "Product Designer — sole designer",
+  "client": "T-ledger",
+  "year": "2020–2021",
+  "duration": "February 2020 – January 2021",
+  "team": "One designer (me), 15+ engineers, 2 product managers",
+  "status": "Shipped — live on iOS and Android",
+  "tags": ["UX Design", "UI Design", "Prototyping", "Product Strategy", "Fintech"],
+  "platforms": ["iOS", "Android", "Web"],
+  "tools": ["Figma", "Jira"],
+  "links": [
+    { "label": "konnect.network", "url": "https://konnect.network/" },
+    { "label": "iOS App Store", "url": "https://apps.apple.com/us/app/konnect-pay/id1560555304" },
+    { "label": "Google Play", "url": "https://play.google.com/store/apps/details?id=network.konnect.konnect" }
+  ],
+  "metrics": [
+    { "label": "Users in Tunisia", "value": "~2,000" },
+    { "label": "Design team", "value": "1 — me" },
+    { "label": "Engineers supported", "value": "15+" }
+  ],
+  "cover": "assets/01-desktop-47.png",
+  "sections": [
+    {
+      "id": "context",
+      "heading": "Overview",
+      "body": "Konnect began designing its mobile application with the ambition of becoming the biggest digital wallet platform in Tunisia. The goal of this particular piece of work was to identify what was actually broken about online payment in the country, and — with the beta already out — determine the critical features and set the priorities for the next iteration of the product.",
+      "images": []
+    },
+    {
+      "id": "problem",
+      "heading": "The problem",
+      "body": "Back in 2020 Tunisia had a serious problem with online payments: for most people, they simply did not work. Konnect answered that with a digital wallet that lets users pay online, send and receive money by bank transfer, buy phone credit, and connect straight to their bank account — all secured with blockchain. Designing the first online digital wallet in a market meant there was no local convention to lean on, so we focused on the SaaS side, particularly B2B and C2B, and built the user-centred design from there.",
+      "images": [
+        { "src": "assets/p2-understanding-the-problem.png", "alt": "Understanding the problem: research into online payment in Tunisia", "caption": "Understanding the problem." }
+      ]
+    },
+    {
+      "id": "role",
+      "heading": "I was the whole design team",
+      "body": "I joined Konnect as a product designer in early 2020 as the only designer in a company of more than fifteen engineers and two product managers. I supported design across every part of the business and led UX and UI on the key parts of the application side of the platform. Over that year I implemented a design process where there had been none, learned to work with the development team and built a real communication channel with them, established a design system, and designed the final brand and identity of Konnect.",
+      "images": []
+    },
+    {
+      "id": "process",
+      "heading": "UX process",
+      "body": "The work ran on a discover, define, ideate, implement loop — research and synthesis feeding a sharp problem definition, then concepts and design feeding a solution. Working with the CTO meant constant back and forth, which is the reason the final product ended up functional rather than merely drawn.",
+      "images": [
+        { "src": "assets/p1-ux-process.png", "alt": "The Konnect UX process: discover, define, ideate, implement", "caption": "Discover, define, ideate, implement." }
+      ]
+    },
+    {
+      "id": "validation",
+      "heading": "Validating the design",
+      "body": "Validation was how we kept the product honest. Define the objectives clearly, involve stakeholders from the start, hold regular design reviews, use prototypes rather than descriptions, gather remote feedback with proper tooling, actively encourage criticism, run usability testing with real users, document every decision and change, handle disagreement professionally, and iterate. Each of those exists because skipping it cost us something at least once.",
+      "images": [
+        { "src": "assets/p3-validating-the-design.png", "alt": "Design validation artefacts for Konnect", "caption": "Validating the design." }
+      ]
+    },
+    {
+      "id": "outcome",
+      "heading": "The outcome",
+      "body": "Konnect Networks is now a pioneer in the Tunisian payment industry, helping businesses of every size grow by offering multiple payment methods through one simple interface, with the stated mission of becoming the most trusted PSP in the country by simplifying complex financial flows. The CTO was a genuine collaborator — full of ideas, and we got a great deal done in every session. The part I am most pleased about is that the team still uses my design today, and you can see the effect in how consistent the product has stayed as it has grown.",
+      "images": [
+        { "src": "assets/01-desktop-47.png", "alt": "Konnect platform screen", "caption": "Konnect platform." }
+      ]
+    }
+  ],
+  "todo": [
+    "Four more Konnect desktop screens are in the Figma file but weren't exported before the Figma rate limit hit. They'll be added on the next pass.",
+    "The ~2,000 user figure comes from your Notion and is from 2023 — worth updating if you know the current number."
+  ]
+}

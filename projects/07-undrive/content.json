@@ -1,0 +1,51 @@
+{
+  "slug": "undrive",
+  "order": 7,
+  "category": "project",
+  "title": "UnDrive",
+  "tagline": "Finding the right driving school, in a few clicks",
+  "summary": "A platform for searching driving schools by location and filtering on the details that actually matter to a learner. Designed as a freelancer with Inspire, a development agency.",
+  "role": "UX / UI Designer (freelance)",
+  "client": "Inspire — development agency",
+  "year": "TODO",
+  "duration": "TODO",
+  "team": "Collaborative project with the Inspire team",
+  "status": "TODO — confirm whether UnDrive launched",
+  "tags": ["UX Design", "UI Design", "Web"],
+  "platforms": ["Website"],
+  "tools": ["Figma"],
+  "links": [],
+  "metrics": [],
+  "cover": "assets/n1-homepage.png",
+  "sections": [
+    {
+      "id": "context",
+      "heading": "Intro",
+      "body": "As a freelancer at Inspire, a development agency, we worked on a project for a driving school. The platform lets users search for driving schools in any location and filter on the details that decide whether a school suits them.",
+      "images": []
+    },
+    {
+      "id": "solution",
+      "heading": "The solution",
+      "body": "The result was an intuitive platform where location-based search and detailed filtering combine into a personalised result rather than a generic directory listing. Choosing a driving school that fits your specific requirements comes down to a few clicks, which is a meaningful improvement on ringing round or taking a recommendation on trust.",
+      "images": []
+    },
+    {
+      "id": "screens",
+      "heading": "The outcome",
+      "body": "The homepage and its search entry point, an individual driving school page, and the filtered search listing.",
+      "images": [
+        { "src": "assets/n1-homepage.png", "alt": "UnDrive homepage with location search", "caption": "Homepage." },
+        { "src": "assets/n2-driving-school-page.png", "alt": "Individual driving school page on UnDrive", "caption": "Driving school page." },
+        { "src": "assets/n3-search-listing.png", "alt": "UnDrive filtered search results listing", "caption": "Search listing." }
+      ]
+    }
+  ],
+  "todo": [
+    "UnDrive has no designs in the portfolio Figma file — these three images come from your Notion export. Send its Figma link and I'll pull proper screens.",
+    "What year was this?",
+    "Which market — France or Tunisia? The screens are in French.",
+    "Did it launch? Is there a live URL?",
+    "This is the thinnest project in the set. Either it gets more substance or consider cutting it."
+  ]
+}

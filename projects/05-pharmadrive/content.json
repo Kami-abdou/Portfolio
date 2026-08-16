@@ -1,0 +1,57 @@
+{
+  "slug": "pharmadrive",
+  "order": 5,
+  "category": "project",
+  "title": "PharmaDrive",
+  "tagline": "Pharmacy management and medication access, on web and Android",
+  "summary": "A French pharmacy platform covering both sides of the counter: customers ordering medication and managing prescriptions, and pharmacies running their operations. Designed as a freelancer with T+ informatique across a web platform and an Android app.",
+  "role": "UX / UI Designer (freelance)",
+  "client": "T+ informatique — France",
+  "year": "2021",
+  "duration": "TODO",
+  "team": "TODO",
+  "status": "TODO — confirm whether PharmaDrive shipped",
+  "tags": ["UX Design", "UI Design", "Healthcare", "Mobile", "Web"],
+  "platforms": ["Web", "Android"],
+  "tools": ["Figma"],
+  "links": [],
+  "metrics": [],
+  "cover": "assets/n2-screens.png",
+  "sections": [
+    {
+      "id": "context",
+      "heading": "Intro",
+      "body": "In 2021 I worked as a freelancer with T+ informatique, a startup based in France, designing a platform for pharmacies and pharmaceutical products. It spans a web application and an Android app, in French, and it addresses two different users who happen to stand on opposite sides of the same counter.",
+      "images": []
+    },
+    {
+      "id": "problem",
+      "heading": "The problem",
+      "body": "Getting medication is slower and more frustrating than it needs to be. Queues, paperwork, and the particular anxiety of not knowing whether the pharmacy you are walking to actually stocks what you were prescribed. On the other side, pharmacy owners are running operations on processes that do not talk to each other.",
+      "images": []
+    },
+    {
+      "id": "solution",
+      "heading": "The solution",
+      "body": "The platform simplifies prescription management, lets people search for and order pharmaceutical products directly, and gives pharmacies tools to streamline how they operate. Real-time notifications keep an order visible as it moves, and secure payment closes the loop. The design brief was convenience on the customer side and operational clarity on the pharmacy side, without either one compromising the other.",
+      "images": []
+    },
+    {
+      "id": "screens",
+      "heading": "The outcome",
+      "body": "Onboarding, prescription management ('Mes ordonnances'), product search and ordering, and a donations flow ('Dons') across web and Android.",
+      "images": [
+        { "src": "assets/n1-onboarding.png", "alt": "PharmaDrive onboarding screens", "caption": "Onboarding." },
+        { "src": "assets/n2-screens.png", "alt": "PharmaDrive application screens", "caption": "Application screens." },
+        { "src": "assets/n3-screens.png", "alt": "PharmaDrive application screens", "caption": "Application screens." }
+      ]
+    }
+  ],
+  "todo": [
+    "This is the largest project in the Figma file — roughly 10 desktop screens and 14 Android screens — and none of them were exported before the Figma rate limit hit. They're the priority on the next pass.",
+    "What is the 'Dons' (donations) screen for? Donating unused medication, or something else? It's unusual and probably the most interesting thing here.",
+    "How long did the engagement run?",
+    "Did it ship? A pharmacy count or a launch date would help.",
+    "The Notion write-up still contains the placeholder '[Your App Name]' — I've written around it, but confirm the product's real public name."
+  ]
+}
