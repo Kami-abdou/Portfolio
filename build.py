@@ -156,6 +156,21 @@ def write_tokens_css():
 
 # ─────────────────────────────────────────── page chrome
 
+def wordmark():
+    """The logo as two stacked lines, the second indented.
+
+    Splits on the first space so a middle name would ride with the surname
+    rather than creating a third line the layout does not allow for.
+    """
+    parts = SITE["name"].split(" ", 1)
+    first = parts[0]
+    rest = parts[1] if len(parts) > 1 else ""
+    lines = '<span class="wordmark__line">%s</span>' % e(first)
+    if rest:
+        lines += '<span class="wordmark__line wordmark__line--in">%s</span>' % e(rest)
+    return lines
+
+
 def head(title, description, *, depth=0, image=None, page_url=""):
     up = "../" * depth
     og_image = ('\n  <meta property="og:image" content="%s">' % e(image)) if image else ""
@@ -177,7 +192,7 @@ def head(title, description, *, depth=0, image=None, page_url=""):
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-head">
     <div class="shell site-head__inner">
-      <a class="site-head__name" href="{up}index.html">{e(SITE['name'])}</a>
+      <a class="site-head__name" href="{up}index.html" aria-label="{e(SITE['name'])} — home">{wordmark()}</a>
       <nav aria-label="Primary">
         <a href="{up}index.html#work">Work</a>
         <a href="{up}about.html">About</a>
@@ -273,6 +288,9 @@ def build_index(projects):
     # them. The row text is repeated so the strip can loop seamlessly: the
     # track holds two identical halves and slides exactly -50%.
     #
+    # Durations are staggered per row (42/50/58s) so the rows never drift into
+    # sync and read as one moving block.
+    #
     # The wall is rendered twice — once behind the portrait at full strength,
     # once in front at low opacity. That is what makes the type appear to
     # pass across the photograph. Both copies share one animation definition,
@@ -288,7 +306,7 @@ def build_index(projects):
             out.append(
                 '<div class="wall__row wall__row--%s" style="--dur: %ds">'
                 '<div class="wall__track">%s%s</div></div>'
-                % ("rev" if idx % 2 else "fwd", 26 + idx * 5, reps, reps))
+                % ("rev" if idx % 2 else "fwd", 42 + idx * 8, reps, reps))
         cls = "wall wall--ghost" if ghost else "wall"
         return '<div class="%s" aria-hidden="true">%s</div>' % (cls, "".join(out))
 

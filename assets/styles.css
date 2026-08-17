@@ -56,7 +56,6 @@ a { color: inherit; }
   position: sticky; top: 0; z-index: 20;
   background: color-mix(in srgb, var(--color-bg) 88%, transparent);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--color-border);
 }
 .site-head__inner {
   display: flex; align-items: center; justify-content: space-between;
@@ -844,3 +843,24 @@ body::after {
   .wall__track { animation: none; }
   .wall--ghost { display: none; }
 }
+
+/* ── stacked wordmark ────────────────────────────────
+   Two lines, surname indented, in the condensed poster face.
+   Reads as a mark rather than a line of text. */
+.site-head__name {
+  display: block;
+  font-family: var(--font-poster);
+  font-weight: 400;
+  font-size: clamp(1.05rem, 1.9vw, 1.5rem);
+  line-height: 0.82;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+.wordmark__line { display: block; }
+/* the indent is the whole idea; scale it with the type */
+.wordmark__line--in { padding-left: 1.15em; }
+
+/* the header sits directly on the hero now, so give the row some air */
+.site-head__inner { align-items: start; padding-block: var(--space-6); }
+.site-head nav { padding-top: 0.2em; }
