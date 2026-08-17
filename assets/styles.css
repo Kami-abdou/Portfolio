@@ -469,3 +469,101 @@ body::after {
   pointer-events: none; opacity: 0.03;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+
+/* ══════════════════════════════════════════════════════════
+   ENHANCEMENTS
+   Every hiding rule is scoped to html.js, which enhance.js sets
+   as its first act. Without JS nothing is hidden — the page just
+   loses the animation. Learned the hard way: never let a reveal
+   be the only thing standing between a visitor and the content.
+   ══════════════════════════════════════════════════════════ */
+.js .rise {
+  opacity: 0;
+  transform: translateY(26px);
+  filter: blur(8px);
+  transition:
+    opacity .6s ease,
+    transform .85s var(--ease-out),
+    filter .85s var(--ease-out);
+}
+.js .rise.is-in { opacity: 1; transform: none; filter: blur(0); }
+
+/* ── index numbers on cards ──────────────────────── */
+.card__media { position: relative; }
+.card__num {
+  position: absolute; z-index: 2;
+  top: var(--space-4); left: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-bg) 62%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+/* ── variable column count, set per row from the markup ── */
+@media (min-width: 900px) {
+  .grid--sm, .grid--lg {
+    grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
+  }
+}
+
+/* ── in-page section index ───────────────────────── */
+.toc { margin-bottom: var(--space-8); }
+.toc__label {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+.toc__list {
+  list-style: none; margin: 0; padding: 0;
+  counter-reset: toc;
+  border-left: 1px solid var(--color-border);
+}
+.toc__list li { counter-increment: toc; }
+.toc__list a {
+  display: block;
+  padding: var(--space-2) var(--space-4);
+  margin-left: -1px;
+  border-left: 1px solid transparent;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-faint);
+  text-decoration: none;
+  transition: color .25s var(--ease-out), border-color .25s var(--ease-out);
+}
+.toc__list a::before {
+  content: counter(toc, decimal-leading-zero);
+  margin-right: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  opacity: 0.6;
+}
+.toc__list a:hover { color: var(--color-text); }
+.toc__list a.is-current {
+  color: var(--color-text);
+  border-left-color: var(--color-accent);
+}
+/* the index only makes sense once it can sit beside the prose */
+@media (max-width: 899px) { .toc { display: none; } }
+
+/* ── reading progress ────────────────────────────── */
+.progress {
+  position: sticky; top: 0; z-index: 15;
+  height: 2px; margin-bottom: calc(var(--space-2) * -1);
+  background: var(--color-border);
+}
+.progress__bar {
+  display: block; height: 100%;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* ── hero: let the name breathe, and add a hairline close ── */
+.hero__name { text-wrap: balance; }
+.hero { border-bottom: 1px solid var(--color-border); }

@@ -170,6 +170,7 @@ def foot(depth=0):
     </div>
   </footer>
   <script src="{up}assets/lightbox.js" defer></script>
+  <script src="{up}assets/enhance.js" defer></script>
 </body>
 </html>
 """
@@ -199,9 +200,11 @@ def project_card(project, *, large):
     size = png_size(ROOT / "projects" / project["_dir"] / project["cover"])
     dims = ' width="%d" height="%d"' % size if size else ""
     cls = "card card--lg" if large else "card"
+    num = "%02d" % project.get("order", 0)
     return f"""        <li>
           <a class="{cls}" href="projects/{e(project['slug'])}.html">
             <span class="card__media">
+              <span class="card__num" aria-hidden="true">{num}</span>
               <img src="{e(cover)}" alt="{e(project['title'])} cover" {dims} loading="lazy" decoding="async">
             </span>
             <span class="card__body">
@@ -244,7 +247,7 @@ def build_index(projects):
         <h2>{e(meta['heading'])}</h2>
         <p>{e(meta['description'])}</p>
       </div>
-      <ul class="grid {'grid--lg' if large else 'grid--sm'}">
+      <ul class="grid {'grid--lg' if large else 'grid--sm'}" style="--cols: {2 if large else 4}">
 {cards}
       </ul>
     </section>
@@ -339,8 +342,19 @@ def build_project(project, prev_p, next_p):
             "<li>%s</li>" % e(t) for t in project["tags"])
 
     # Asymmetric header: narrative on the left, facts pinned on the right.
+    toc_html = ""
+    toc_items = [sec for sec in project.get("sections", []) if sec.get("id")]
+    if len(toc_items) > 2:
+        rows = "".join(
+            '<li><a href="#%s">%s</a></li>' % (e(sec["id"]), e(sec["heading"]))
+            for sec in toc_items)
+        toc_html = ('<nav class="toc" aria-label="On this page">'
+                    '<p class="toc__label">On this page</p>'
+                    '<ol class="toc__list">%s</ol></nav>' % rows)
+
     out.append(f"""
     <article class="project">
+      <div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
       <header class="shell project__head">
         <div class="project__intro">
           <p class="eyebrow">{e('Case study' if project['category'] == 'case-study' else 'Project')}</p>
@@ -352,6 +366,7 @@ def build_project(project, prev_p, next_p):
           {links_html}
         </div>
         <aside class="project__meta">
+          {toc_html}
           {facts_html}
         </aside>
       </header>
