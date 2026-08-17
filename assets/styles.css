@@ -717,3 +717,24 @@ body::after {
 /* the name block and the role belong together; push the gap below instead */
 .hero__name { margin-bottom: 0; }
 .hero__tagline { margin-top: var(--space-12); }
+
+/* ── hero portrait: tall crop, hard mono ─────────────
+   The portrait is a 9:16 shot, so the square slot cropped it badly.
+   A 2:3 frame keeps the composition and gives the hero a vertical
+   column to sit against. The mono treatment stays on permanently —
+   it is the look, not a hover trick. */
+.hero__portrait {
+  aspect-ratio: 2 / 3;
+  max-width: 340px;
+  justify-self: end;
+  align-self: end;
+}
+.hero__portrait img {
+  filter: var(--filter-mono);
+  transition: transform 1s var(--ease-out);
+}
+.hero__portrait:hover img { transform: scale(1.04); }
+
+@media (max-width: 899px) {
+  .hero__portrait { max-width: 260px; justify-self: start; }
+}

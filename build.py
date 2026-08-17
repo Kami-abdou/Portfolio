@@ -43,13 +43,37 @@ def usable(value):
 
 
 def png_size(path):
-    """Read width/height from a PNG header so <img> can reserve space."""
+    """Intrinsic size of a PNG or JPEG, so <img> can reserve space.
+
+    Named for PNG because that was all the export produced, but the
+    portrait is a JPEG and every <img> must carry width/height or the
+    page reflows as images load.
+    """
     try:
         with open(path, "rb") as fh:
             head = fh.read(24)
-        if head[:8] == b"\x89PNG\r\n\x1a\n":
-            return struct.unpack(">II", head[16:24])
-    except OSError:
+            if head[:8] == b"\x89PNG\r\n\x1a\n":
+                return struct.unpack(">II", head[16:24])
+            if head[:2] == b"\xff\xd8":                 # JPEG: walk to a SOF marker
+                fh.seek(2)
+                while True:
+                    byte = fh.read(1)
+                    while byte and byte != b"\xff":
+                        byte = fh.read(1)
+                    if not byte:
+                        return None
+                    marker = fh.read(1)
+                    while marker == b"\xff":
+                        marker = fh.read(1)
+                    if not marker:
+                        return None
+                    if marker[0] in (0xC0, 0xC1, 0xC2, 0xC3):
+                        fh.read(3)
+                        height, width = struct.unpack(">HH", fh.read(4))
+                        return width, height
+                    length = struct.unpack(">H", fh.read(2))[0]
+                    fh.seek(length - 2, 1)
+    except (OSError, struct.error):
         pass
     return None
 
@@ -250,7 +274,8 @@ def build_index(projects):
         '<span class="roles" data-roles aria-hidden="true">%s</span>'
         '</p>' % (e(" · ".join(roles)), items))
 
-    psize = png_size(ROOT / SITE["profileImage"])
+    hero_img = SITE.get("heroImage") or SITE["profileImage"]
+    psize = png_size(ROOT / hero_img)
     pdims = ' width="%d" height="%d"' % psize if psize else ""
     out.append(f"""
     <section class="hero shell">
@@ -262,7 +287,7 @@ def build_index(projects):
         <p class="hero__now"><span class="dot" aria-hidden="true"></span>{e(SITE['currently'])}</p>
       </div>
       <figure class="hero__portrait">
-        <img src="{e(SITE['profileImage'])}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
+        <img src="{e(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
       </figure>
     </section>
 """)
