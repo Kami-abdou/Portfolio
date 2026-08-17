@@ -54,6 +54,16 @@ def png_size(path):
     return None
 
 
+def masked(text):
+    """Wrap text so it can slide up from behind a mask.
+
+    The outer span clips; the inner one is what moves. Used on the oversized
+    headings only — at that scale a whole-line reveal reads far better than
+    a per-character stagger.
+    """
+    return '<span class="mask"><span class="mask__in">%s</span></span>' % e(text)
+
+
 def paragraphs(body):
     """Split a body string into <p> blocks on blank lines."""
     out = []
@@ -188,7 +198,8 @@ def figure(img, project_dir, depth):
     tall = ' data-tall="true"' if size and size[1] > 2200 else ""
     caption = img.get("caption")
     cap_html = "\n          <figcaption>%s</figcaption>" % e(caption) if caption else ""
-    return f"""        <figure class="shot"{tall}>
+    bleed = "" if tall else " shot--bleed"
+    return f"""        <figure class="shot{bleed}"{tall}>
           <button class="shot__btn" type="button" data-full="{e(src)}" aria-label="Open full image: {e(img.get('alt',''))}">
             <img src="{e(src)}" alt="{e(img.get('alt',''))}"{dims} loading="lazy" decoding="async">
           </button>{cap_html}
@@ -225,13 +236,20 @@ def build_index(projects):
         image="site/profile.png",
     )]
 
+    psize = png_size(ROOT / SITE["profileImage"])
+    pdims = ' width="%d" height="%d"' % psize if psize else ""
     out.append(f"""
     <section class="hero shell">
-      <h1 class="hero__name">{e(SITE['name'])}</h1>
-      <p class="hero__title">{e(SITE['title'])}</p>
-      <p class="hero__tagline">{e(SITE['tagline'])}</p>
-      <p class="hero__intro">{e(SITE['intro'])}</p>
-      <p class="hero__now"><span class="dot" aria-hidden="true"></span>{e(SITE['currently'])}</p>
+      <div class="hero__text">
+        <h1 class="hero__name">{masked(SITE['name'])}</h1>
+        <p class="hero__title">{e(SITE['title'])}</p>
+        <p class="hero__tagline">{e(SITE['tagline'])}</p>
+        <p class="hero__intro">{e(SITE['intro'])}</p>
+        <p class="hero__now"><span class="dot" aria-hidden="true"></span>{e(SITE['currently'])}</p>
+      </div>
+      <figure class="hero__portrait">
+        <img src="{e(SITE['profileImage'])}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
+      </figure>
     </section>
 """)
 
@@ -244,7 +262,7 @@ def build_index(projects):
         out.append(f"""
     <section class="band shell"{anchor}>
       <div class="band__head">
-        <h2>{e(meta['heading'])}</h2>
+        <h2>{masked(meta['heading'])}</h2>
         <p>{e(meta['description'])}</p>
       </div>
       <ul class="grid {'grid--lg' if large else 'grid--sm'}" style="--cols: {2 if large else 4}">
@@ -258,7 +276,7 @@ def build_index(projects):
     )
     out.append(f"""
     <section class="band band--contact shell" id="contact">
-      <h2>Let's talk</h2>
+      <h2>{masked("Let's talk")}</h2>
       <p class="lede">Open to freelance and full-time product design work.</p>
       <div class="btn-row">
         {contact_links}
@@ -279,7 +297,7 @@ def build_about():
     out = [head("About — %s" % SITE["name"], SITE["intro"], image=SITE["profileImage"])]
     out.append(f"""
     <article class="shell about">
-      <h1>About</h1>
+      <h1>{masked("About")}</h1>
       <div class="about__grid">
         <figure class="about__portrait">
           <img src="{e(SITE['profileImage'])}" alt="Portrait of {e(SITE['name'])}"{dims} decoding="async">
@@ -358,7 +376,7 @@ def build_project(project, prev_p, next_p):
       <header class="shell project__head">
         <div class="project__intro">
           <p class="eyebrow">{e('Case study' if project['category'] == 'case-study' else 'Project')}</p>
-          <h1>{e(project['title'])}</h1>
+          <h1>{masked(project['title'])}</h1>
           <p class="project__tagline">{e(project['tagline'])}</p>
           <p class="prose project__summary">{e(project['summary'])}</p>
           {tags_html}
@@ -391,7 +409,7 @@ def build_project(project, prev_p, next_p):
                    % (e(prev_p["slug"]), e(prev_p["title"])))
     if next_p:
         nav.append('<a class="pager__link pager__link--next" href="%s.html">'
-                   '<span>Next</span><strong>%s</strong></a>'
+                   '<span>Next project</span><strong>%s</strong></a>'
                    % (e(next_p["slug"]), e(next_p["title"])))
     out.append("""
       <nav class="shell pager" aria-label="More projects">

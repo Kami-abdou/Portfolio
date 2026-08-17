@@ -31,6 +31,14 @@
       el.classList.add('rise');
       watcher.observe(el);
     });
+
+    /* Masked headings observe themselves. Relying on an enclosing wrapper
+       is fragile — a heading that sits outside one would stay translated
+       off-screen forever. The hero is excluded; it animates on load. */
+    document.querySelectorAll('.mask').forEach(function (el) {
+      if (el.closest('.hero')) return;
+      watcher.observe(el);
+    });
   }
 
   /* ── reading progress ────────────────────────────
