@@ -268,11 +268,14 @@ def build_index(projects):
     items = "".join(
         '<span class="roles__item%s">%s</span>' % (" is-on" if i == 0 else "", e(r))
         for i, r in enumerate(roles))
+    # The h1 must still say who this is even though the name is not shown
+    # here, so the accessible text carries name + every role while the
+    # animated list is hidden from assistive tech.
     roles_html = (
-        '<p class="hero__title">'
-        '<span class="visually-hidden">%s</span>'
+        '<h1 class="hero__lead">'
+        '<span class="visually-hidden">%s — %s</span>'
         '<span class="roles" data-roles aria-hidden="true">%s</span>'
-        '</p>' % (e(" · ".join(roles)), items))
+        '</h1>' % (e(SITE["name"]), e(", ".join(roles)), items))
 
     hero_img = SITE.get("heroImage") or SITE["profileImage"]
     psize = png_size(ROOT / hero_img)
@@ -280,11 +283,9 @@ def build_index(projects):
     out.append(f"""
     <section class="hero shell">
       <div class="hero__text">
-        <h1 class="hero__name">{masked(SITE['name'])}</h1>
         {roles_html}
         <p class="hero__tagline">{e(SITE['tagline'])}</p>
         <p class="hero__intro">{e(SITE['intro'])}</p>
-        <p class="hero__now"><span class="dot" aria-hidden="true"></span>{e(SITE['currently'])}</p>
       </div>
       <figure class="hero__portrait">
         <img src="{e(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">

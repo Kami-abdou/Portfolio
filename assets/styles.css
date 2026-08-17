@@ -111,20 +111,6 @@ a { color: inherit; }
   max-width: var(--prose-width);
   color: var(--color-text-muted);
 }
-.hero__now {
-  display: inline-flex; align-items: center; gap: var(--space-2);
-  margin: var(--space-8) 0 0;
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-}
-.dot {
-  width: 7px; height: 7px; flex: none;
-  border-radius: var(--radius-full);
-  background: var(--color-accent);
-}
 
 /* ── bands + grids ───────────────────────────────── */
 .band { padding-block: var(--space-16); }
@@ -738,3 +724,23 @@ body::after {
 @media (max-width: 899px) {
   .hero__portrait { max-width: 260px; justify-self: start; }
 }
+
+/* ── hero lead: the cycling role IS the heading ───────
+   The name moved out of the hero (it still carries the wordmark,
+   the page title and the footer), so the role list is now the h1.
+   Size is capped well below the old name scale because the longest
+   role has to fit the text column on one line — the slot relies on
+   nowrap to keep a fixed height. */
+.hero__lead {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
+  font-size: clamp(2.25rem, 6vw, 5rem);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+}
+.hero__lead .roles__item { color: var(--color-text); }
+/* the accent lands on the one that is currently up */
+.hero__lead .roles__item.is-on { color: var(--color-accent); }
+.hero__tagline { margin-top: var(--space-8); }
