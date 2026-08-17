@@ -1,6 +1,13 @@
 {
   "name": "Abdallah Yaackoubi",
   "title": "UX/UI Designer",
+  "roles": [
+    "UX/UI Designer",
+    "Product Designer",
+    "Interaction Design",
+    "Design Systems",
+    "User Research"
+  ],
   "tagline": "I love working in the realm between UX and UI design.",
   "intro": "Things that make me excited are user-centred design, interaction design, and making interfaces feel fun and human.",
   "currently": "Full-time freelancer, designing interfaces for Steer, Hyphen Group and Inspire.",
@@ -14,20 +21,39 @@
   "cv": "site/CV-Abdallah-Yaackoubi.pdf",
   "email": "abdouyaackoubi@gmail.com",
   "links": [
-    { "label": "Behance", "url": "https://www.behance.net/Abdou_Yaackoubi" },
-    { "label": "LinkedIn", "url": "https://www.linkedin.com/in/abdou-yaackoubi/" },
-    { "label": "Email", "url": "mailto:abdouyaackoubi@gmail.com" }
+    {
+      "label": "Behance",
+      "url": "https://www.behance.net/Abdou_Yaackoubi"
+    },
+    {
+      "label": "LinkedIn",
+      "url": "https://www.linkedin.com/in/abdou-yaackoubi/"
+    },
+    {
+      "label": "Email",
+      "url": "mailto:abdouyaackoubi@gmail.com"
+    }
   ],
   "sections": {
     "caseStudies": {
       "heading": "Case studies",
       "description": "Projects where I can show the thinking, not just the outcome.",
-      "slugs": ["steer", "konnect", "fissa3", "groupado"]
+      "slugs": [
+        "steer",
+        "konnect",
+        "fissa3",
+        "groupado"
+      ]
     },
     "otherProjects": {
       "heading": "Other projects I'm proud of",
       "description": "Shorter pieces of work.",
-      "slugs": ["pharmadrive", "fixerloop", "undrive", "smarthub"]
+      "slugs": [
+        "pharmadrive",
+        "fixerloop",
+        "undrive",
+        "smarthub"
+      ]
     }
   },
   "todo": [

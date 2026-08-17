@@ -655,3 +655,45 @@ body::after {
   .pager__link--next strong { font-size: var(--font-size-3xl); }
 }
 .pager__link strong { transition: color .3s var(--ease-out); }
+
+/* ══════════════════════════════════════════════════════════
+   CYCLING ROLE LINE
+   One masked slot; the outgoing role slides up and out while the
+   incoming one rises into its place. Items are stacked so the
+   slot never changes height and nothing below it shifts.
+   ══════════════════════════════════════════════════════════ */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+.roles {
+  display: block; position: relative;
+  overflow: hidden;
+  /* reserve one line so the swap can't nudge the layout */
+  height: calc(var(--font-size-lg) * var(--line-height-snug));
+}
+.roles__item {
+  display: block;
+  position: absolute; inset-inline: 0; top: 0;
+  line-height: var(--line-height-snug);
+  white-space: nowrap;
+  color: var(--color-accent);
+}
+
+/* Without JS the first role simply sits there and the rest are hidden. */
+.roles__item { opacity: 0; }
+.roles__item.is-on { opacity: 1; }
+
+.js .roles__item {
+  opacity: 1;
+  transform: translateY(105%);
+  transition: transform .7s var(--ease-reveal);
+}
+.js .roles__item.is-on  { transform: translateY(0); }
+.js .roles__item.is-out { transform: translateY(-105%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .roles__item { transition: none; }
+}

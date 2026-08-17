@@ -236,13 +236,27 @@ def build_index(projects):
         image="site/profile.png",
     )]
 
+    # Cycling role line. Every role is in the DOM so it survives with JS off
+    # and is indexable; JS reveals one at a time. The live list is aria-hidden
+    # and a static label carries the accessible name, so assistive tech reads
+    # the role once instead of announcing every swap.
+    roles = [r for r in SITE.get("roles", []) if r] or [SITE["title"]]
+    items = "".join(
+        '<span class="roles__item%s">%s</span>' % (" is-on" if i == 0 else "", e(r))
+        for i, r in enumerate(roles))
+    roles_html = (
+        '<p class="hero__title">'
+        '<span class="visually-hidden">%s</span>'
+        '<span class="roles" data-roles aria-hidden="true">%s</span>'
+        '</p>' % (e(" · ".join(roles)), items))
+
     psize = png_size(ROOT / SITE["profileImage"])
     pdims = ' width="%d" height="%d"' % psize if psize else ""
     out.append(f"""
     <section class="hero shell">
       <div class="hero__text">
         <h1 class="hero__name">{masked(SITE['name'])}</h1>
-        <p class="hero__title">{e(SITE['title'])}</p>
+        {roles_html}
         <p class="hero__tagline">{e(SITE['tagline'])}</p>
         <p class="hero__intro">{e(SITE['intro'])}</p>
         <p class="hero__now"><span class="dot" aria-hidden="true"></span>{e(SITE['currently'])}</p>
