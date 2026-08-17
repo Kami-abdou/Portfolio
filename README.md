@@ -51,6 +51,17 @@ Nothing is hardcoded to image counts or grid positions, so no layout work is
 needed. `alt` is required — it's what screen readers announce, and it's already
 written for every existing image.
 
+## Editing the role list
+
+`site.json` -> `roles` drives the cycling hero heading. One constraint: the
+slot relies on `white-space: nowrap` to hold a fixed height, so a role that
+is too wide for the container gets clipped rather than wrapping.
+
+The current ceiling (`7.25rem` in `.hero__lead`) was set by measuring the
+longest role, "Experience Designer", against the container at both extremes:
+roughly 14% slack at 1440px and 16% at 375px. If you add anything longer,
+re-measure and lower the clamp's maximum before publishing.
+
 ## Conventions worth keeping
 
 **`tokens.json` is the only place styling values live.** `styles.css` contains

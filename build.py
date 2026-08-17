@@ -280,16 +280,28 @@ def build_index(projects):
     hero_img = SITE.get("heroImage") or SITE["profileImage"]
     psize = png_size(ROOT / hero_img)
     pdims = ' width="%d" height="%d"' % psize if psize else ""
+    since = SITE.get("since", "")
+    span = ("%s — 2026" % since) if since else ""
     out.append(f"""
-    <section class="hero shell">
-      <div class="hero__text">
+    <section class="hero">
+      <div class="hero__inner shell">
+        <div class="hero__meta">
+          <span>{e(SITE.get('location', ''))}</span>
+          <span>{e(span)}</span>
+        </div>
+
         {roles_html}
-        <p class="hero__tagline">{e(SITE['tagline'])}</p>
-        <p class="hero__intro">{e(SITE['intro'])}</p>
+
+        <div class="hero__foot">
+          <div class="hero__copy">
+            <p class="hero__tagline">{e(SITE['tagline'])}</p>
+            <p class="hero__intro">{e(SITE['intro'])}</p>
+          </div>
+          <figure class="hero__portrait">
+            <img src="{e(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
+          </figure>
+        </div>
       </div>
-      <figure class="hero__portrait">
-        <img src="{e(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
-      </figure>
     </section>
 """)
 

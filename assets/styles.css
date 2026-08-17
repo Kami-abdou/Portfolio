@@ -744,3 +744,73 @@ body::after {
 /* the accent lands on the one that is currently up */
 .hero__lead .roles__item.is-on { color: var(--color-accent); }
 .hero__tagline { margin-top: var(--space-8); }
+
+/* ══════════════════════════════════════════════════════════
+   FULL-VIEWPORT HERO
+   One oversized heading owning the first screen, with metadata
+   anchored top and bottom. Type is pushed as large as the display
+   face allows: the role slot relies on nowrap for a fixed height,
+   so the ceiling is set by the longest role fitting the container,
+   not by taste. Sulphur Point is not condensed, so that ceiling is
+   lower than an ultra-condensed face would permit.
+   ══════════════════════════════════════════════════════════ */
+.hero {
+  display: block;
+  min-height: 100dvh;
+  padding-block: 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.hero__inner {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-8);
+  padding-block: var(--space-16) var(--space-12);
+}
+
+/* metadata as a design element, not fine print */
+.hero__meta {
+  display: flex; justify-content: space-between; gap: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* the heading owns the middle band */
+.hero__lead {
+  align-self: center;
+  /* Ceiling set by measurement, not taste: at 1440px+ the container caps
+     at 1152px, and "Experience Designer" is the longest role. 8rem left
+     only 55px of slack, which one longer role would break. 7.25rem keeps
+     roughly 14% headroom at both extremes. If you add a role longer than
+     "Experience Designer", re-measure before trusting this. */
+  font-size: clamp(2rem, 8.5vw, 7.25rem);
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+}
+
+.hero__foot {
+  display: grid; gap: var(--space-8);
+  align-items: end;
+}
+@media (min-width: 900px) {
+  .hero__foot { grid-template-columns: 1fr auto; gap: var(--space-16); }
+}
+.hero__copy { max-width: var(--prose-width); }
+.hero__tagline { margin: 0; font-size: var(--font-size-xl); line-height: var(--line-height-snug); }
+.hero__intro { margin: var(--space-3) 0 0; }
+
+/* portrait becomes a compact anchor at the foot rather than a column */
+.hero__portrait {
+  aspect-ratio: 3 / 4;
+  max-width: 210px;
+  justify-self: end;
+  margin: 0;
+}
+@media (max-width: 899px) {
+  .hero__portrait { max-width: 150px; justify-self: start; }
+}
