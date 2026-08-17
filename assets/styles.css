@@ -671,8 +671,10 @@ body::after {
 .roles {
   display: block; position: relative;
   overflow: hidden;
-  /* reserve one line so the swap can't nudge the layout */
-  height: calc(var(--font-size-lg) * var(--line-height-snug));
+  /* reserve one line so the swap can't nudge the layout.
+     Derived from the element's own font-size, so resizing the role
+     type can never leave the slot the wrong height. */
+  height: calc(1em * var(--line-height-snug));
 }
 .roles__item {
   display: block;
@@ -697,3 +699,21 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   .roles__item { transition: none; }
 }
+
+/* ── give the cycling role real presence ─────────────
+   At body size it read as a caption under a 130px name. It is the
+   only moving thing in the hero, so it needs to be scaled like a
+   feature and sit tight under the name as part of the same block. */
+.hero__title {
+  margin-top: var(--space-4);
+  font-size: var(--font-size-xl);
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
+  letter-spacing: -0.01em;
+}
+@media (min-width: 900px) {
+  .hero__title { font-size: var(--font-size-2xl); }
+}
+/* the name block and the role belong together; push the gap below instead */
+.hero__name { margin-bottom: 0; }
+.hero__tagline { margin-top: var(--space-12); }
