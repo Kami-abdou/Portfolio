@@ -1,0 +1,61 @@
+/* Self-hosted webfonts — no CDN at runtime, per BUILD.md.
+   Blinker and Sulphur Point are both SIL Open Font License 1.1,
+   which permits redistribution alongside the site.
+   Regenerate with: python3 tools/fetch-fonts.py
+*/
+
+@font-face {
+  font-family: 'Blinker';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('fonts/blinker-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Blinker';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/blinker-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Blinker';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/blinker-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Blinker';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('fonts/blinker-800.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Sulphur Point';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('fonts/sulphur-point-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Sulphur Point';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/sulphur-point-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Sulphur Point';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/sulphur-point-700.woff2') format('woff2');
+}

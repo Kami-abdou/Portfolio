@@ -88,10 +88,11 @@ a { color: inherit; }
 .hero { padding-block: var(--space-24) var(--space-16); }
 .hero__name {
   margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
   font-size: var(--font-size-3xl);
   line-height: var(--line-height-tight);
   letter-spacing: -0.03em;
-  font-weight: var(--font-weight-bold);
 }
 .hero__title {
   margin: var(--space-2) 0 0;
@@ -129,6 +130,8 @@ a { color: inherit; }
 .band { padding-block: var(--space-16); }
 .band__head { margin-bottom: var(--space-12); }
 .band__head h2 {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
   margin: 0;
   font-size: var(--font-size-2xl);
   line-height: var(--line-height-tight);
@@ -150,16 +153,23 @@ a { color: inherit; }
   display: block; overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: var(--color-bg-alt);
+  background: var(--color-bg-raised);
   aspect-ratio: 4 / 3;
+  transition: border-color .35s var(--ease-out), background .35s var(--ease-out);
 }
 .card--lg .card__media { aspect-ratio: 3 / 2; }
 .card__media img {
   width: 100%; height: 100%;
   object-fit: cover; object-position: top;
-  transition: transform .6s var(--ease, cubic-bezier(.22,1,.36,1));
+  transition: transform .7s var(--ease-out);
+}
+.card:hover .card__media {
+  border-color: var(--color-border-strong);
+  background: var(--color-bg-raised-hover);
 }
 .card:hover .card__media img { transform: scale(1.03); }
+.card:hover .card__title { color: var(--color-accent); }
+.card__title { transition: color .3s var(--ease-out); }
 .card__body { display: block; padding-top: var(--space-4); }
 .card__title {
   display: block;
@@ -195,6 +205,8 @@ a { color: inherit; }
 .btn--solid:hover { filter: brightness(1.08); }
 
 .band--contact h2 {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
   margin: 0;
   font-size: var(--font-size-3xl);
   line-height: var(--line-height-tight);
@@ -205,6 +217,8 @@ a { color: inherit; }
 /* ── about ───────────────────────────────────────── */
 .about { padding-block: var(--space-16); }
 .about h1 {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
   margin: 0 0 var(--space-12);
   font-size: var(--font-size-3xl);
   letter-spacing: -0.03em;
@@ -233,6 +247,8 @@ a { color: inherit; }
   color: var(--color-text-muted);
 }
 .project__head h1 {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
   margin: 0;
   font-size: var(--font-size-3xl);
   line-height: var(--line-height-tight);
@@ -304,11 +320,13 @@ a { color: inherit; }
 .shot { margin: 0; }
 .shot__btn {
   display: block; width: 100%; padding: 0; cursor: zoom-in;
-  background: var(--color-bg-alt);
+  background: var(--color-bg-raised);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  transition: border-color .3s var(--ease-out);
 }
+.shot__btn:hover { border-color: var(--color-border-strong); }
 .shot__btn img { width: 100%; }
 /* 4000px-tall exports would otherwise dominate the page */
 .shot[data-tall="true"] .shot__btn img {
@@ -362,10 +380,92 @@ a { color: inherit; }
 /* ── wider screens ───────────────────────────────── */
 @media (min-width: 900px) {
   .hero__name { font-size: var(--font-size-4xl); }
-  .band--contact h2, .project__head h1, .about h1 { font-size: var(--font-size-4xl); }
+  .band--contact h2, .project__head h1, .about h1 {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular); font-size: var(--font-size-4xl); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
   html { scroll-behavior: auto; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   Asymmetric project header — narrative left, facts pinned right.
+   Reference sites in this genre lean on uneven column ratios
+   rather than even halves; it stops the page feeling like a form.
+   ══════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+  .project__head {
+    display: grid;
+    grid-template-columns: 1.3fr minmax(240px, 0.7fr);
+    gap: var(--space-16);
+    align-items: start;
+  }
+  .project__meta {
+    position: sticky;
+    top: calc(var(--space-16) + var(--space-8));
+  }
+  .project__meta .facts { margin-top: 0; }
+}
+.project__intro { min-width: 0; }
+.project__meta { min-width: 0; }
+
+/* facts read as a spec sheet: mono labels, tight rows */
+.facts dt {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+@media (min-width: 900px) {
+  .facts__row { grid-template-columns: 1fr; gap: var(--space-1); }
+}
+
+/* metrics sit on a raised surface so numbers feel deliberate */
+.metric {
+  padding: var(--space-6);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.metric__value {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-accent);
+}
+.metric__label { color: var(--color-text-faint); }
+
+/* section headings pick up the display face too */
+.project__section h2 {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-2xl);
+}
+.project__section .prose p { color: var(--color-text-muted); }
+.project__section .prose p:first-child { color: var(--color-text); }
+
+/* tags as faint chips on a tinted surface */
+.tags li {
+  background: var(--color-bg-raised);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.03em;
+}
+
+/* pager gains the display face and an accent arrow */
+.pager__link strong { font-family: var(--font-display); font-weight: var(--font-weight-regular); }
+.pager__link span { font-family: var(--font-mono); font-size: var(--font-size-xs); letter-spacing: 0.06em; text-transform: uppercase; }
+.pager__link--prev strong::before { content: "\2190\00a0"; color: var(--color-accent); }
+.pager__link--next strong::after  { content: "\00a0\2192"; color: var(--color-accent); }
+
+/* eyebrow gets the accent dot treatment */
+.eyebrow { color: var(--color-accent); }
+
+/* subtle grain so large dark areas don't band */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 90;
+  pointer-events: none; opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
