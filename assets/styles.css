@@ -1,3 +1,9 @@
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
 /* ══════════════════════════════════════════════════════════
    Abdallah Yaackoubi — portfolio
    Every colour, size and space comes from assets/tokens.css,
@@ -642,67 +648,7 @@ body::after {
 }
 .pager__link strong { transition: color .3s var(--ease-out); }
 
-/* ══════════════════════════════════════════════════════════
-   CYCLING ROLE LINE
-   One masked slot; the outgoing role slides up and out while the
-   incoming one rises into its place. Items are stacked so the
-   slot never changes height and nothing below it shifts.
-   ══════════════════════════════════════════════════════════ */
-.visually-hidden {
-  position: absolute; width: 1px; height: 1px;
-  margin: -1px; padding: 0; overflow: hidden;
-  clip-path: inset(50%); white-space: nowrap; border: 0;
-}
 
-.roles {
-  display: block; position: relative;
-  overflow: hidden;
-  /* reserve one line so the swap can't nudge the layout.
-     Derived from the element's own font-size, so resizing the role
-     type can never leave the slot the wrong height. */
-  height: calc(1em * var(--line-height-snug));
-}
-.roles__item {
-  display: block;
-  position: absolute; inset-inline: 0; top: 0;
-  line-height: var(--line-height-snug);
-  white-space: nowrap;
-  color: var(--color-accent);
-}
-
-/* Without JS the first role simply sits there and the rest are hidden. */
-.roles__item { opacity: 0; }
-.roles__item.is-on { opacity: 1; }
-
-.js .roles__item {
-  opacity: 1;
-  transform: translateY(105%);
-  transition: transform .7s var(--ease-reveal);
-}
-.js .roles__item.is-on  { transform: translateY(0); }
-.js .roles__item.is-out { transform: translateY(-105%); }
-
-@media (prefers-reduced-motion: reduce) {
-  .roles__item { transition: none; }
-}
-
-/* ── give the cycling role real presence ─────────────
-   At body size it read as a caption under a 130px name. It is the
-   only moving thing in the hero, so it needs to be scaled like a
-   feature and sit tight under the name as part of the same block. */
-.hero__title {
-  margin-top: var(--space-4);
-  font-size: var(--font-size-xl);
-  font-family: var(--font-display);
-  font-weight: var(--font-weight-regular);
-  letter-spacing: -0.01em;
-}
-@media (min-width: 900px) {
-  .hero__title { font-size: var(--font-size-2xl); }
-}
-/* the name block and the role belong together; push the gap below instead */
-.hero__name { margin-bottom: 0; }
-.hero__tagline { margin-top: var(--space-12); }
 
 /* ── hero portrait: tall crop, hard mono ─────────────
    The portrait is a 9:16 shot, so the square slot cropped it badly.
@@ -725,25 +671,6 @@ body::after {
   .hero__portrait { max-width: 260px; justify-self: start; }
 }
 
-/* ── hero lead: the cycling role IS the heading ───────
-   The name moved out of the hero (it still carries the wordmark,
-   the page title and the footer), so the role list is now the h1.
-   Size is capped well below the old name scale because the longest
-   role has to fit the text column on one line — the slot relies on
-   nowrap to keep a fixed height. */
-.hero__lead {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: var(--font-weight-regular);
-  font-size: clamp(2.25rem, 6vw, 5rem);
-  line-height: var(--line-height-tight);
-  letter-spacing: -0.03em;
-  color: var(--color-text);
-}
-.hero__lead .roles__item { color: var(--color-text); }
-/* the accent lands on the one that is currently up */
-.hero__lead .roles__item.is-on { color: var(--color-accent); }
-.hero__tagline { margin-top: var(--space-8); }
 
 /* ══════════════════════════════════════════════════════════
    FULL-VIEWPORT HERO
@@ -813,4 +740,107 @@ body::after {
 }
 @media (max-width: 899px) {
   .hero__portrait { max-width: 150px; justify-self: start; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MARQUEE WALL HERO
+   Rows of oversized condensed type scrolling horizontally with the
+   portrait sitting over them. Each track holds the words twice and
+   slides exactly -50%, so the loop is seamless with no JS.
+
+   The wall is rendered twice: once behind the portrait at full
+   strength, once in front at low opacity. That front copy is what
+   makes the type read as passing across the photograph. Both copies
+   use the same animation, so they stay in step on their own.
+   ══════════════════════════════════════════════════════════ */
+.hero {
+  position: relative;
+  min-height: 100dvh;
+  display: flex; flex-direction: column; justify-content: center;
+  gap: clamp(4px, 1vw, 14px);
+  overflow: hidden;
+  padding-block: var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wall {
+  display: flex; flex-direction: column;
+  gap: clamp(4px, 1vw, 14px);
+  width: 100%;
+}
+/* the front copy is a ghost laid over the portrait */
+.wall--ghost {
+  position: absolute; inset-block: 50%; inset-inline: 0;
+  transform: translateY(-50%);
+  z-index: 3; pointer-events: none;
+  opacity: 0.16;
+}
+
+.wall__row { overflow: hidden; }
+.wall__track {
+  display: flex; width: max-content;
+  animation: wallSlide var(--dur, 30s) linear infinite;
+  will-change: transform;
+}
+.wall__row--rev .wall__track { animation-direction: reverse; }
+
+.wall__word {
+  font-family: var(--font-poster);
+  font-weight: 400;
+  font-size: clamp(3.5rem, 13vw, 11rem);
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding-inline: 0.11em;
+  color: var(--color-text);
+}
+/* middle row picks up the accent, as one band of colour in the stack */
+.wall__row:nth-child(2) .wall__word { color: var(--color-accent); }
+
+@keyframes wallSlide {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* portrait sits between the two wall copies */
+.hero .hero__portrait {
+  position: absolute; z-index: 2;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(190px, 26vw, 340px);
+  aspect-ratio: 3 / 4;
+  max-width: none; margin: 0;
+  border-radius: 0;
+  border: 0;
+  background: none;
+  overflow: hidden;
+}
+.hero .hero__portrait img { filter: var(--filter-mono); }
+
+/* corner metadata pinned to the foot of the hero */
+.hero__meta {
+  position: absolute; z-index: 4;
+  inset-inline: 0; bottom: var(--space-8);
+  display: flex; justify-content: space-between; gap: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+/* the copy that used to sit inside the hero now follows it */
+.hero-copy { padding-block: var(--space-16) 0; }
+.hero-copy .hero__tagline {
+  margin: 0; max-width: var(--prose-width);
+  font-size: var(--font-size-xl); line-height: var(--line-height-snug);
+}
+.hero-copy .hero__intro {
+  margin: var(--space-3) 0 0; max-width: var(--prose-width);
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wall__track { animation: none; }
+  .wall--ghost { display: none; }
 }

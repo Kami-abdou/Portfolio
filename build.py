@@ -265,43 +265,56 @@ def build_index(projects):
     # and a static label carries the accessible name, so assistive tech reads
     # the role once instead of announcing every swap.
     roles = [r for r in SITE.get("roles", []) if r] or [SITE["title"]]
-    items = "".join(
-        '<span class="roles__item%s">%s</span>' % (" is-on" if i == 0 else "", e(r))
-        for i, r in enumerate(roles))
-    # The h1 must still say who this is even though the name is not shown
-    # here, so the accessible text carries name + every role while the
-    # animated list is hidden from assistive tech.
-    roles_html = (
-        '<h1 class="hero__lead">'
-        '<span class="visually-hidden">%s — %s</span>'
-        '<span class="roles" data-roles aria-hidden="true">%s</span>'
-        '</h1>' % (e(SITE["name"]), e(", ".join(roles)), items))
-
     hero_img = SITE.get("heroImage") or SITE["profileImage"]
     psize = png_size(ROOT / hero_img)
     pdims = ' width="%d" height="%d"' % psize if psize else ""
+    # ── Marquee wall hero ──────────────────────────────────────────
+    # One row per role, each scrolling horizontally, portrait sitting over
+    # them. The row text is repeated so the strip can loop seamlessly: the
+    # track holds two identical halves and slides exactly -50%.
+    #
+    # The wall is rendered twice — once behind the portrait at full strength,
+    # once in front at low opacity. That is what makes the type appear to
+    # pass across the photograph. Both copies share one animation definition,
+    # so they stay in step without any JS.
     since = SITE.get("since", "")
     span = ("%s — 2026" % since) if since else ""
+
+    def wall(rows, *, ghost):
+        out = []
+        for idx, role in enumerate(rows):
+            reps = "".join(
+                '<span class="wall__word">%s</span>' % e(role) for _ in range(8))
+            out.append(
+                '<div class="wall__row wall__row--%s" style="--dur: %ds">'
+                '<div class="wall__track">%s%s</div></div>'
+                % ("rev" if idx % 2 else "fwd", 26 + idx * 5, reps, reps))
+        cls = "wall wall--ghost" if ghost else "wall"
+        return '<div class="%s" aria-hidden="true">%s</div>' % (cls, "".join(out))
+
+    wall_rows = roles[:3] if len(roles) >= 3 else roles
+
     out.append(f"""
     <section class="hero">
-      <div class="hero__inner shell">
-        <div class="hero__meta">
-          <span>{e(SITE.get('location', ''))}</span>
-          <span>{e(span)}</span>
-        </div>
+      <h1 class="visually-hidden">{e(SITE['name'])} — {e(", ".join(roles))}</h1>
 
-        {roles_html}
+      {wall(wall_rows, ghost=False)}
 
-        <div class="hero__foot">
-          <div class="hero__copy">
-            <p class="hero__tagline">{e(SITE['tagline'])}</p>
-            <p class="hero__intro">{e(SITE['intro'])}</p>
-          </div>
-          <figure class="hero__portrait">
-            <img src="{e(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
-          </figure>
-        </div>
+      <figure class="hero__portrait">
+        <img src="{e(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
+      </figure>
+
+      {wall(wall_rows, ghost=True)}
+
+      <div class="hero__meta shell">
+        <span>{e(SITE.get('location', ''))}</span>
+        <span>{e(span)}</span>
       </div>
+    </section>
+
+    <section class="hero-copy shell">
+      <p class="hero__tagline">{e(SITE['tagline'])}</p>
+      <p class="hero__intro">{e(SITE['intro'])}</p>
     </section>
 """)
 
