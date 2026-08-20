@@ -53,14 +53,25 @@ written for every existing image.
 
 ## Editing the role list
 
-`site.json` -> `roles` drives the cycling hero heading. One constraint: the
-slot relies on `white-space: nowrap` to hold a fixed height, so a role that
-is too wide for the container gets clipped rather than wrapping.
+`site.json` -> `roles` drives the hero. The first three become the scrolling
+rows of the marquee wall; all of them appear in the hidden `<h1>` that
+carries the page's accessible heading.
 
-The current ceiling (`7.25rem` in `.hero__lead`) was set by measuring the
-longest role, "Experience Designer", against the container at both extremes:
-roughly 14% slack at 1440px and 16% at 375px. If you add anything longer,
-re-measure and lower the clamp's maximum before publishing.
+Scroll speed lives in `build.py`, in the `wall()` helper:
+
+```python
+'<div class="wall__row wall__row--%s" style="--dur: %ds">'
+% ("rev" if idx % 2 else "fwd", 58 + idx * 10, ...)
+#                                ^^        ^^
+#                          base seconds   per-row stagger
+```
+
+Raise the base to slow every row. Keep the stagger non-zero — rows have
+different track lengths, so equal durations would let them drift into
+alignment and read as one moving block instead of three bands.
+
+Adding a fourth role does not add a fourth row; change `roles[:3]` in the
+hero builder if you want more.
 
 ## Conventions worth keeping
 

@@ -237,8 +237,7 @@ def figure(img, project_dir, depth):
     tall = ' data-tall="true"' if size and size[1] > 2200 else ""
     caption = img.get("caption")
     cap_html = "\n          <figcaption>%s</figcaption>" % e(caption) if caption else ""
-    bleed = "" if tall else " shot--bleed"
-    return f"""        <figure class="shot{bleed}"{tall}>
+    return f"""        <figure class="shot"{tall}>
           <button class="shot__btn" type="button" data-full="{e(src)}" aria-label="Open full image: {e(img.get('alt',''))}">
             <img src="{e(src)}" alt="{e(img.get('alt',''))}"{dims} loading="lazy" decoding="async">
           </button>{cap_html}
@@ -288,7 +287,7 @@ def build_index(projects):
     # them. The row text is repeated so the strip can loop seamlessly: the
     # track holds two identical halves and slides exactly -50%.
     #
-    # Durations are staggered per row (42/50/58s) so the rows never drift into
+    # Durations are staggered per row (58/68/78s) so the rows never drift into
     # sync and read as one moving block.
     #
     # The wall is rendered twice — once behind the portrait at full strength,
@@ -306,7 +305,7 @@ def build_index(projects):
             out.append(
                 '<div class="wall__row wall__row--%s" style="--dur: %ds">'
                 '<div class="wall__track">%s%s</div></div>'
-                % ("rev" if idx % 2 else "fwd", 42 + idx * 8, reps, reps))
+                % ("rev" if idx % 2 else "fwd", 58 + idx * 10, reps, reps))
         cls = "wall wall--ghost" if ghost else "wall"
         return '<div class="%s" aria-hidden="true">%s</div>' % (cls, "".join(out))
 

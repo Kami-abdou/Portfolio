@@ -5,7 +5,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   Abdallah Yaackoubi — portfolio
+   Abdou Yaackoubi — portfolio
    Every colour, size and space comes from assets/tokens.css,
    which build.py generates from tokens.json. Nothing is
    hardcoded here except structural values (borders, ratios).
@@ -91,19 +91,6 @@ a { color: inherit; }
 
 /* ── hero ────────────────────────────────────────── */
 .hero { padding-block: var(--space-24) var(--space-16); }
-.hero__name {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: var(--font-weight-regular);
-  font-size: var(--font-size-3xl);
-  line-height: var(--line-height-tight);
-  letter-spacing: -0.03em;
-}
-.hero__title {
-  margin: var(--space-2) 0 0;
-  font-size: var(--font-size-lg);
-  color: var(--color-text-muted);
-}
 .hero__tagline {
   margin: var(--space-8) 0 0;
   max-width: var(--prose-width);
@@ -370,7 +357,6 @@ a { color: inherit; }
 
 /* ── wider screens ───────────────────────────────── */
 @media (min-width: 900px) {
-  .hero__name { font-size: var(--font-size-4xl); }
   .band--contact h2, .project__head h1, .about h1 {
   font-family: var(--font-display);
   font-weight: var(--font-weight-regular); font-size: var(--font-size-4xl); }
@@ -556,7 +542,6 @@ body::after {
 }
 
 /* ── hero: let the name breathe, and add a hairline close ── */
-.hero__name { text-wrap: balance; }
 .hero { border-bottom: 1px solid var(--color-border); }
 
 /* ══════════════════════════════════════════════════════════
@@ -588,13 +573,11 @@ body::after {
 @keyframes maskUp { from { transform: translateY(105%); } to { transform: none; } }
 
 /* ── scale ─────────────────────────────────────── */
-.hero__name { font-size: var(--font-size-4xl); letter-spacing: -0.035em; }
 .band--contact h2 { font-size: var(--font-size-4xl); letter-spacing: -0.035em; }
 .project__head h1 { font-size: var(--font-size-4xl); letter-spacing: -0.035em; }
 .about h1 { font-size: var(--font-size-3xl); }
 .band__head h2 { font-size: var(--font-size-3xl); }
 @media (min-width: 900px) {
-  .hero__name, .band--contact h2, .project__head h1 { font-size: var(--font-size-4xl); }
 }
 
 /* ── hero: name left, portrait right ───────────── */
@@ -606,7 +589,6 @@ body::after {
     padding-block: var(--space-24) var(--space-24);
   }
 }
-.hero__text { min-width: 0; }
 .hero__portrait {
   margin: 0; overflow: hidden;
   border: 1px solid var(--color-border);
@@ -623,22 +605,6 @@ body::after {
 }
 .hero__portrait:hover img { filter: grayscale(0); transform: scale(1.03); }
 
-/* ── full-bleed image sequence ─────────────────────
-   Images are the content, so they break the container.
-   Tall exports opt out — they need the cap to stay readable. */
-@media (min-width: 900px) {
-  .shot--bleed .shot__btn {
-    border-radius: 0;
-    border-inline: 0;
-  }
-  .shots:has(.shot--bleed) { max-width: none; padding-inline: 0; }
-  .shots:has(.shot--bleed) figcaption {
-    max-width: var(--max-width);
-    margin-inline: auto;
-    padding-inline: var(--gutter);
-  }
-}
-
 /* ── oversized next-project teaser ─────────────── */
 .pager { align-items: end; gap: var(--space-8); }
 .pager__link strong { font-size: var(--font-size-2xl); letter-spacing: -0.025em; line-height: var(--line-height-tight); }
@@ -646,8 +612,6 @@ body::after {
   .pager__link--next strong { font-size: var(--font-size-3xl); }
 }
 .pager__link strong { transition: color .3s var(--ease-out); }
-
-
 
 /* ── hero portrait: tall crop, hard mono ─────────────
    The portrait is a 9:16 shot, so the square slot cropped it badly.
@@ -670,7 +634,6 @@ body::after {
   .hero__portrait { max-width: 260px; justify-self: start; }
 }
 
-
 /* ══════════════════════════════════════════════════════════
    FULL-VIEWPORT HERO
    One oversized heading owning the first screen, with metadata
@@ -686,13 +649,6 @@ body::after {
   padding-block: 0;
   border-bottom: 1px solid var(--color-border);
 }
-.hero__inner {
-  min-height: 100dvh;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: var(--space-8);
-  padding-block: var(--space-16) var(--space-12);
-}
 
 /* metadata as a design element, not fine print */
 .hero__meta {
@@ -707,26 +663,9 @@ body::after {
 }
 
 /* the heading owns the middle band */
-.hero__lead {
-  align-self: center;
-  /* Ceiling set by measurement, not taste: at 1440px+ the container caps
-     at 1152px, and "Experience Designer" is the longest role. 8rem left
-     only 55px of slack, which one longer role would break. 7.25rem keeps
-     roughly 14% headroom at both extremes. If you add a role longer than
-     "Experience Designer", re-measure before trusting this. */
-  font-size: clamp(2rem, 8.5vw, 7.25rem);
-  text-transform: uppercase;
-  letter-spacing: -0.035em;
-}
 
-.hero__foot {
-  display: grid; gap: var(--space-8);
-  align-items: end;
-}
 @media (min-width: 900px) {
-  .hero__foot { grid-template-columns: 1fr auto; gap: var(--space-16); }
 }
-.hero__copy { max-width: var(--prose-width); }
 .hero__tagline { margin: 0; font-size: var(--font-size-xl); line-height: var(--line-height-snug); }
 .hero__intro { margin: var(--space-3) 0 0; }
 
@@ -864,3 +803,61 @@ body::after {
 /* the header sits directly on the hero now, so give the row some air */
 .site-head__inner { align-items: start; padding-block: var(--space-6); }
 .site-head nav { padding-top: 0.2em; }
+
+/* ══════════════════════════════════════════════════════════
+   IMAGE GRID
+   Screens were previously full-bleed and stacked, one per row at
+   70vh, which turned a 600-word case study into twelve screens of
+   scrolling. They now sit two-up and shorter, so a section reads as
+   one block of evidence instead of a slideshow. Nothing is lost:
+   every tile still opens full size in the lightbox, which is where
+   detail belongs.
+   ══════════════════════════════════════════════════════════ */
+.shots {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  margin-block: var(--space-8) var(--space-12);
+}
+@media (min-width: 700px) {
+  .shots { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+  /* a lone image has no pair to sit beside, so let it run the full width */
+  .shots .shot:only-child { grid-column: 1 / -1; }
+}
+
+.shot__btn { border-radius: var(--radius-md); }
+.shot__btn img {
+  width: 100%;
+  max-height: 38vh;
+  object-fit: cover;
+  object-position: top;
+}
+/* a single wide tile can afford more height */
+.shots .shot:only-child .shot__btn img { max-height: 56vh; }
+
+/* the very tall exports are previews by definition — click to read them */
+.shot[data-tall="true"] .shot__btn img { max-height: 38vh; }
+.shot[data-tall="true"] .shot__btn::after {
+  content: "Full screen";
+  position: absolute; right: var(--space-3); bottom: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-mono); font-size: var(--font-size-xs);
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
+  backdrop-filter: blur(6px);
+  border-radius: var(--radius-sm);
+}
+.shot__btn { position: relative; }
+
+.shot figcaption {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-faint);
+  max-width: none;
+  padding-inline: 0;
+  text-align: left;
+}
