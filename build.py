@@ -409,24 +409,33 @@ def build_project(project, prev_p, next_p):
         image="../projects/%s/%s" % (d, project["cover"]),
     )]
 
-    facts = "".join(
-        "<div class=\"facts__row\"><dt>%s</dt><dd>%s</dd></div>" % (e(f.capitalize()), e(project[f]))
-        for f in FACTS if usable(project.get(f))
-    )
-    for key, label in LIST_FACTS:
-        if project.get(key):
-            facts += "<div class=\"facts__row\"><dt>%s</dt><dd>%s</dd></div>" % (
-                e(label), e(", ".join(project[key])))
-    facts_html = '<dl class="facts">%s</dl>' % facts if facts else ""
+    def facts_block(label, rows):
+        if not rows:
+            return ""
+        body = "".join(
+            '<div class="facts__row"><dt>%s</dt><dd>%s</dd></div>' % (e(k), e(v))
+            for k, v in rows)
+        return ('<div class="facts-group"><p class="facts-group__label">%s</p>'
+                '<dl class="facts">%s</dl></div>' % (e(label), body))
 
+    # engagement facts and craft facts answer different questions, so they are
+    # two labelled blocks rather than one undifferentiated table
+    engagement = [(f.capitalize(), project[f]) for f in FACTS if usable(project.get(f))]
+    toolkit = [(label, ", ".join(project[key]))
+               for key, label in LIST_FACTS if project.get(key)]
+    facts_html = facts_block("The engagement", engagement) + facts_block("Toolkit", toolkit)
+
+    # Research numbers read as findings when they are set large with a short
+    # caption underneath, rather than as a row of small stats in the header.
     metrics_html = ""
     if project.get("metrics"):
         cells = "".join(
-            '<div class="metric"><span class="metric__value">%s</span>'
-            '<span class="metric__label">%s</span></div>' % (e(m["value"]), e(m["label"]))
+            '<div class="insight"><span class="insight__value">%s</span>'
+            '<span class="insight__label">%s</span></div>' % (e(m["value"]), e(m["label"]))
             for m in project["metrics"]
         )
-        metrics_html = '<div class="metrics">%s</div>' % cells
+        metrics_html = ('<section class="insights shell" aria-label="Research at a glance">'
+                        '<div class="insights__grid">%s</div></section>' % cells)
 
     links_html = ""
     if project.get("links"):
@@ -440,6 +449,9 @@ def build_project(project, prev_p, next_p):
     if project.get("tags"):
         tags_html = '<ul class="tags">%s</ul>' % "".join(
             "<li>%s</li>" % e(t) for t in project["tags"])
+
+    csize = png_size(ROOT / "projects" / d / project["cover"])
+    cover_dims = ' width="%d" height="%d"' % csize if csize else ""
 
     # Asymmetric header: narrative on the left, facts pinned on the right.
     toc_html = ""
@@ -462,7 +474,6 @@ def build_project(project, prev_p, next_p):
           <p class="project__tagline">{e(project['tagline'])}</p>
           <p class="prose project__summary">{e(project['summary'])}</p>
           {tags_html}
-          {metrics_html}
           {links_html}
         </div>
         <aside class="project__meta">
@@ -470,14 +481,20 @@ def build_project(project, prev_p, next_p):
           {facts_html}
         </aside>
       </header>
+
+      <figure class="cover-band">
+        <img src="{e(d)}/{e(project['cover'])}" alt="{e(project['title'])} cover"{cover_dims} loading="eager" decoding="async">
+      </figure>
+
+      {metrics_html}
 """)
 
-    for section in project.get("sections", []):
+    for idx, section in enumerate(project.get("sections", []), start=1):
         figs = "\n".join(figure(img, d, depth=1) for img in section.get("images", []))
         figs_html = '\n      <div class="shots">\n%s\n      </div>' % figs if figs else ""
         out.append(f"""
       <section class="shell project__section" id="{e(section.get('id',''))}">
-        <h2>{e(section['heading'])}</h2>
+        <h2><span class="project__num" aria-hidden="true">{'%02d' % idx}</span>{e(section['heading'])}</h2>
         <div class="prose">
         {paragraphs(section.get('body'))}
         </div>
