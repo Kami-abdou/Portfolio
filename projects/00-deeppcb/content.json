@@ -1,0 +1,60 @@
+{
+  "slug": "deeppcb",
+  "order": 0,
+  "category": "case-study",
+  "title": "DeepPCB",
+  "tagline": "TODO — one line describing what DeepPCB is and what the site had to do",
+  "summary": "A ten-page marketing site for DeepPCB, covering the home page, an enterprise page and pricing, an editorial section with blog index and article template, and the supporting help, contact, terms and error pages.",
+  "role": "TODO — your role and scope on this. Did you own the whole site, or the design of specific pages?",
+  "client": "InstaDeep",
+  "year": "TODO — confirm the year",
+  "duration": "TODO",
+  "team": "TODO — who else was involved, and who wrote the copy?",
+  "status": "TODO — is this live, and at what URL?",
+  "tags": ["Web Design", "Marketing Site", "Design System"],
+  "platforms": ["Website"],
+  "tools": ["Figma"],
+  "links": [],
+  "metrics": [
+    { "label": "Pages designed", "value": "10" }
+  ],
+  "cover": "assets/p01-home.png",
+  "sections": [
+    {
+      "id": "intro",
+      "heading": "Intro",
+      "body": "TODO — what is DeepPCB, who is it for, and what was the site meant to achieve? Two or three sentences is enough. This is the only part a recruiter is certain to read.",
+      "images": []
+    },
+    {
+      "id": "pages",
+      "heading": "The pages",
+      "body": "Ten pages at desktop width: the home page, an enterprise page and pricing, an editorial pair of blog index and article template, and the supporting help, contact, terms and 404 pages.\n\nDesigning the whole set rather than only the home page is what keeps a marketing site coherent — the legal and error pages are where consistency usually breaks down.",
+      "images": [
+        { "src": "assets/p01-home.png", "alt": "DeepPCB home page, full length", "caption": "Home." },
+        { "src": "assets/p02-enterprise.png", "alt": "DeepPCB enterprise page, full length", "caption": "Enterprise." },
+        { "src": "assets/p03-pricing.png", "alt": "DeepPCB pricing page showing the plan tiers", "caption": "Pricing." },
+        { "src": "assets/p04-our-mission.png", "alt": "DeepPCB mission page, full length", "caption": "Our mission." },
+        { "src": "assets/p05-blog.png", "alt": "DeepPCB blog index page", "caption": "Blog index." },
+        { "src": "assets/p06-article.png", "alt": "DeepPCB article template", "caption": "Article template." },
+        { "src": "assets/p07-help.png", "alt": "DeepPCB help page", "caption": "Help." },
+        { "src": "assets/p08-contact.png", "alt": "DeepPCB contact page", "caption": "Contact." },
+        { "src": "assets/p09-terms.png", "alt": "DeepPCB terms of service page", "caption": "Terms of service." },
+        { "src": "assets/p10-404.png", "alt": "DeepPCB 404 error page", "caption": "404." }
+      ]
+    },
+    {
+      "id": "outcome",
+      "heading": "The outcome",
+      "body": "TODO — what happened after launch? Anything measurable is worth more than a description: traffic, sign-ups, time to publish a new page, or what the team could do afterwards that they could not before.",
+      "images": []
+    }
+  ],
+  "todo": [
+    "Everything marked TODO above is a real gap. Fields whose value starts with TODO are skipped by the build, so the page renders cleanly without them — but role, year and status are the first things a recruiter looks for.",
+    "The client is set to InstaDeep on the basis that you work there as Senior Product Designer and described this as your project. Correct it if the arrangement was different.",
+    "Category is set to case-study because this is your most recent and most senior work. It currently has no narrative, so it reads as a gallery. Write the Intro and Outcome sections and it becomes a real case study.",
+    "The export is the design only. If the site is live, a link would be stronger evidence than any screenshot.",
+    "Ten pages at 1920px are 19.4 MB in total. Worth compressing before publishing — see optimize-images.sh."
+  ]
+}

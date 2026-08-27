@@ -266,6 +266,8 @@ def project_card(project, *, large):
     dims = ' width="%d" height="%d"' % size if size else ""
     cls = "card card--lg" if large else "card"
     num = "%02d" % project.get("order", 0)
+    # cards show the tagline, so the TODO rule has to hold here as well
+    tagline = project["tagline"] if usable(project.get("tagline")) else ""
     return f"""        <li>
           <a class="{cls}" href="projects/{e(project['slug'])}.html">
             <span class="card__media">
@@ -274,7 +276,7 @@ def project_card(project, *, large):
             </span>
             <span class="card__body">
               <span class="card__title">{e(project['title'])}</span>
-              <span class="card__tagline">{e(project['tagline'])}</span>
+              <span class="card__tagline">{e(tagline)}</span>
             </span>
           </a>
         </li>"""
@@ -466,12 +468,25 @@ def build_project(project, prev_p, next_p):
         tags_html = '<ul class="tags">%s</ul>' % "".join(
             "<li>%s</li>" % e(t) for t in project["tags"])
 
+    # BUILD.md: skip any field whose value starts with TODO. That has to hold
+    # for prose too, not just the facts table — a placeholder tagline or an
+    # unwritten section body would otherwise ship straight to the page.
+    tagline_html = ('<p class="project__tagline">%s</p>' % e(project["tagline"])
+                    if usable(project.get("tagline")) else "")
+
     csize = png_size(ROOT / "projects" / d / project["cover"])
     cover_dims = ' width="%d" height="%d"' % csize if csize else ""
 
+    # A section whose body is still a placeholder and which has no images has
+    # nothing to render, so it is dropped rather than left as a bare heading.
+    live_sections = [
+        sec for sec in project.get("sections", [])
+        if usable(sec.get("body")) or sec.get("images")
+    ]
+
     # Asymmetric header: narrative on the left, facts pinned on the right.
     toc_html = ""
-    toc_items = [sec for sec in project.get("sections", []) if sec.get("id")]
+    toc_items = [sec for sec in live_sections if sec.get("id")]
     if len(toc_items) > 2:
         rows = "".join(
             '<li><a href="#%s">%s</a></li>' % (e(sec["id"]), e(sec["heading"]))
@@ -491,7 +506,7 @@ def build_project(project, prev_p, next_p):
       <header class="shell project__head">
         <p class="eyebrow">{e('Case study' if project['category'] == 'case-study' else 'Project')}</p>
         <h1>{masked(project['title'])}</h1>
-        <p class="project__tagline">{e(project['tagline'])}</p>
+        {tagline_html}
         <p class="prose project__summary">{e(project['summary'])}</p>
         {tags_html}
         {links_html}
@@ -511,20 +526,20 @@ def build_project(project, prev_p, next_p):
         <div class="project__main">
 """)
 
-    for idx, section in enumerate(project.get("sections", []), start=1):
+    for idx, section in enumerate(live_sections, start=1):
         section_imgs = section.get("images", [])
         figs = "\n".join(figure(img, d, depth=1) for img in section_imgs)
         # a grid of phone screens wants more, narrower columns
         phones = sum(1 for img in section_imgs
                      if is_phone(png_size(ROOT / "projects" / d / img["src"])))
         variant = " shots--phone" if section_imgs and phones == len(section_imgs) else ""
+        body_html = ('<div class="prose">%s</div>' % paragraphs(section.get("body"))
+                     if usable(section.get("body")) else "")
         figs_html = ('\n      <div class="shots%s">\n%s\n      </div>' % (variant, figs)) if figs else ""
         out.append(f"""
       <section class="project__section" id="{e(section.get('id',''))}">
         <h2><span class="project__num" aria-hidden="true">{'%02d' % idx}</span>{e(section['heading'])}</h2>
-        <div class="prose">
-        {paragraphs(section.get('body'))}
-        </div>
+        {body_html}
       </section>{figs_html}
 """)
 
