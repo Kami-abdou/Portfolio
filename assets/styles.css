@@ -359,20 +359,6 @@ a { color: inherit; }
    Reference sites in this genre lean on uneven column ratios
    rather than even halves; it stops the page feeling like a form.
    ══════════════════════════════════════════════════════════ */
-@media (min-width: 900px) {
-  .project__head {
-    display: grid;
-    grid-template-columns: 1.3fr minmax(240px, 0.7fr);
-    gap: var(--space-16);
-    align-items: start;
-  }
-  .project__meta {
-    position: sticky;
-    top: calc(var(--space-16) + var(--space-8));
-  }
-  .project__meta .facts { margin-top: 0; }
-}
-.project__intro { min-width: 0; }
 .project__meta { min-width: 0; }
 
 /* facts read as a spec sheet: mono labels, tight rows */
@@ -918,3 +904,74 @@ body::after {
   color: var(--color-text-faint);
 }
 .facts-group .facts { margin-top: 0; }
+
+/* ══════════════════════════════════════════════════════════
+   CASE STUDY LAYOUT
+   The sidebar has to stay put for the length of the article, so it
+   lives in a grid spanning the whole reading section. position:
+   sticky is relative to the nearest scrolling ancestor but bounded
+   by its containing block — inside the header it ran out after a
+   couple of hundred pixels. Here the block is the full article.
+   ══════════════════════════════════════════════════════════ */
+.project__head { padding-block: var(--space-16) var(--space-12); }
+.project__layout { display: block; }
+.project__main { min-width: 0; }
+
+@media (min-width: 1000px) {
+  .project__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: var(--space-16);
+    align-items: start;
+  }
+  /* sidebar second in the DOM so the prose is read first, placed right */
+  .project__meta { grid-column: 2; grid-row: 1; }
+  .project__main { grid-column: 1; grid-row: 1; }
+
+  .project__meta {
+    position: sticky;
+    /* clears the sticky site header */
+    top: var(--space-16);
+    max-height: calc(100dvh - var(--space-24));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* hide the scrollbar; the panel is short and a bar reads as chrome */
+    scrollbar-width: none;
+  }
+  .project__meta::-webkit-scrollbar { display: none; }
+
+  /* sections and images are inside the column now, so they must not
+     re-apply the page shell or they would double the gutters */
+  .project__main .shots {
+    max-width: none;
+    padding-inline: 0;
+    margin-inline: 0;
+  }
+}
+
+/* below the breakpoint the sidebar drops under the prose */
+@media (max-width: 999px) {
+  .project__meta { margin-top: var(--space-16); }
+}
+
+/* ── phone screens ───────────────────────────────────
+   A 375x812 screen cover-fitted into a wide short tile shows only its
+   top third. Phone screens are therefore contained, not cropped, and
+   given a denser grid since each one is narrow. build.py tags them
+   from their intrinsic dimensions, so this needs no per-image config. */
+.shots--phone { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+@media (min-width: 700px) {
+  .shots--phone { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+.shot[data-phone="true"] .shot__btn {
+  background: var(--color-bg-alt);
+  padding: var(--space-2);
+}
+.shot[data-phone="true"] .shot__btn img {
+  max-height: 48vh;
+  object-fit: contain;
+  object-position: center;
+  border-radius: var(--radius-sm);
+}
+/* the phone tiles are small, so a corner hint would crowd them */
+.shot[data-phone="true"] .shot__btn::after { content: none; }

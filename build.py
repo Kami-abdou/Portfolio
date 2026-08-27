@@ -78,6 +78,19 @@ def png_size(path):
     return None
 
 
+def is_phone(size):
+    """True for a narrow portrait screenshot, i.e. a phone screen.
+
+    These must not be cropped: cover-fitting a 375x812 screen into a wide
+    short tile shows only its top third. They get a denser grid and are
+    contained rather than cropped.
+    """
+    if not size:
+        return False
+    w, h = size
+    return w <= 520 and (w / h) < 0.7
+
+
 def masked(text):
     """Wrap text so it can slide up from behind a mask.
 
@@ -235,6 +248,9 @@ def figure(img, project_dir, depth):
     dims = ' width="%d" height="%d"' % size if size else ""
     # Very tall exports (4000px+) get capped in CSS and opened via the lightbox.
     tall = ' data-tall="true"' if size and size[1] > 2200 else ""
+    if is_phone(size):
+        tall += ' data-phone="true"'
+        tall = tall.replace(' data-tall="true"', "")   # phones are capped differently
     caption = img.get("caption")
     cap_html = "\n          <figcaption>%s</figcaption>" % e(caption) if caption else ""
     return f"""        <figure class="shot"{tall}>
@@ -464,22 +480,21 @@ def build_project(project, prev_p, next_p):
                     '<p class="toc__label">On this page</p>'
                     '<ol class="toc__list">%s</ol></nav>' % rows)
 
+    # The sidebar has to stick for the length of the article, so it sits in a
+    # grid whose height is the whole reading section — not inside the header,
+    # where its containing block ended after a couple of hundred pixels.
+    # Title, cover and insights stay full width above that grid.
     out.append(f"""
     <article class="project">
       <div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
+
       <header class="shell project__head">
-        <div class="project__intro">
-          <p class="eyebrow">{e('Case study' if project['category'] == 'case-study' else 'Project')}</p>
-          <h1>{masked(project['title'])}</h1>
-          <p class="project__tagline">{e(project['tagline'])}</p>
-          <p class="prose project__summary">{e(project['summary'])}</p>
-          {tags_html}
-          {links_html}
-        </div>
-        <aside class="project__meta">
-          {toc_html}
-          {facts_html}
-        </aside>
+        <p class="eyebrow">{e('Case study' if project['category'] == 'case-study' else 'Project')}</p>
+        <h1>{masked(project['title'])}</h1>
+        <p class="project__tagline">{e(project['tagline'])}</p>
+        <p class="prose project__summary">{e(project['summary'])}</p>
+        {tags_html}
+        {links_html}
       </header>
 
       <figure class="cover-band">
@@ -487,13 +502,25 @@ def build_project(project, prev_p, next_p):
       </figure>
 
       {metrics_html}
+
+      <div class="project__layout shell">
+        <aside class="project__meta">
+          {toc_html}
+          {facts_html}
+        </aside>
+        <div class="project__main">
 """)
 
     for idx, section in enumerate(project.get("sections", []), start=1):
-        figs = "\n".join(figure(img, d, depth=1) for img in section.get("images", []))
-        figs_html = '\n      <div class="shots">\n%s\n      </div>' % figs if figs else ""
+        section_imgs = section.get("images", [])
+        figs = "\n".join(figure(img, d, depth=1) for img in section_imgs)
+        # a grid of phone screens wants more, narrower columns
+        phones = sum(1 for img in section_imgs
+                     if is_phone(png_size(ROOT / "projects" / d / img["src"])))
+        variant = " shots--phone" if section_imgs and phones == len(section_imgs) else ""
+        figs_html = ('\n      <div class="shots%s">\n%s\n      </div>' % (variant, figs)) if figs else ""
         out.append(f"""
-      <section class="shell project__section" id="{e(section.get('id',''))}">
+      <section class="project__section" id="{e(section.get('id',''))}">
         <h2><span class="project__num" aria-hidden="true">{'%02d' % idx}</span>{e(section['heading'])}</h2>
         <div class="prose">
         {paragraphs(section.get('body'))}
@@ -511,6 +538,9 @@ def build_project(project, prev_p, next_p):
                    '<span>Next project</span><strong>%s</strong></a>'
                    % (e(next_p["slug"]), e(next_p["title"])))
     out.append("""
+        </div><!-- /.project__main -->
+      </div><!-- /.project__layout -->
+
       <nav class="shell pager" aria-label="More projects">
         %s
       </nav>
