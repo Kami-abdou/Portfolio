@@ -23,7 +23,6 @@ TOKENS = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
 
 # Fields rendered in the facts table, in order.
 FACTS = ["role", "client", "year", "duration", "team", "status"]
-LIST_FACTS = [("platforms", "Platforms"), ("tools", "Tools")]
 
 
 # ─────────────────────────────────────────── helpers
@@ -76,6 +75,29 @@ def png_size(path):
     except (OSError, struct.error):
         pass
     return None
+
+
+def tool_chips(tools, depth=0):
+    """Render tools as chips, using a real icon when one has been supplied.
+
+    Brand marks are trademarked and are not bundled with the site, so an
+    icon appears only if assets/tools/<slug>.svg exists. Otherwise the chip
+    falls back to a monogram set in the site's own type — a hand-redrawn
+    logo looks worse than no logo.
+    """
+    up = "../" * depth
+    out = []
+    for name in tools:
+        slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+        icon_file = ROOT / "assets" / "tools" / ("%s.svg" % slug)
+        if icon_file.is_file():
+            mark = ('<img class="tool__icon" src="%sassets/tools/%s.svg" alt="" '
+                    'width="18" height="18" loading="lazy">' % (up, slug))
+        else:
+            mark = '<span class="tool__mono" aria-hidden="true">%s</span>' % e(name[0])
+        out.append('<li class="tool">%s<span class="tool__name">%s</span></li>'
+                   % (mark, e(name)))
+    return '<ul class="tools">%s</ul>' % "".join(out)
 
 
 def is_phone(size):
@@ -439,9 +461,17 @@ def build_project(project, prev_p, next_p):
     # engagement facts and craft facts answer different questions, so they are
     # two labelled blocks rather than one undifferentiated table
     engagement = [(f.capitalize(), project[f]) for f in FACTS if usable(project.get(f))]
-    toolkit = [(label, ", ".join(project[key]))
-               for key, label in LIST_FACTS if project.get(key)]
-    facts_html = facts_block("The engagement", engagement) + facts_block("Toolkit", toolkit)
+    facts_html = facts_block("The engagement", engagement)
+    # Platforms and Toolkit are groups whose label already names the field, so
+    # they render as bare values — a "Platforms" row under a "Platforms" heading
+    # says the same word twice.
+    if project.get("platforms"):
+        facts_html += ('<div class="facts-group"><p class="facts-group__label">Platforms</p>'
+                       '<p class="facts-group__value">%s</p></div>'
+                       % e(", ".join(project["platforms"])))
+    if project.get("tools"):
+        facts_html += ('<div class="facts-group"><p class="facts-group__label">Toolkit</p>'
+                       '%s</div>' % tool_chips(project["tools"], depth=1))
 
     # Research numbers read as findings when they are set large with a short
     # caption underneath, rather than as a row of small stats in the header.
