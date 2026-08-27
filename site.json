@@ -12,11 +12,12 @@
   ],
   "tagline": "I love working in the realm between UX and UI design.",
   "intro": "Things that make me excited are user-centred design, interaction design, and making interfaces feel fun and human.",
-  "currently": "Full-time freelancer, designing interfaces for Steer, Hyphen Group and Inspire.",
+  "currently": "Full-time product designer at InstaDeep, working on DeepPCB.",
+  "contactLede": "Full-time at InstaDeep. Open to conversations about product design work.",
   "about": [
     "I entered the UX/UI design field on 1 January 2020. Since then I have worked with eight startups across fintech, food delivery, online courses, automotive, pharmacy and development.",
     "I joined Steer as Chief Product Officer, where I led a small team exploring new technology trends in the automotive industry and designing and developing a range of automotive services. In practice the role was product design and product management.",
-    "I am now fully focused on designing interfaces as a freelancer, supporting companies and projects in that capacity.",
+    "I am now a full-time product designer at InstaDeep, working on DeepPCB — their AI-powered, cloud-native PCB routing software.",
     "Outside of work I am obsessed with video games and enjoy the gym, and I cherish time with family and friends."
   ],
   "profileImage": "site/profile.png",
@@ -63,6 +64,7 @@
   "todo": [
     "The bio says 'eight startups' — this portfolio shows eight projects but some share a client (Konnect and Fissa3 were both T-ledger). Count deliberately before publishing.",
     "Decide whether to keep 'Chief Product Officer' as the headline for Steer or describe it as product design and management. Both are in the copy now.",
-    "Client logos (Tunisie Telecom, Renault, Hyphen, Hive, Inspire, Cha9a9a) were deliberately left out per your instruction — the partners image is available in the Notion export if you change your mind."
+    "Client logos (Tunisie Telecom, Renault, Hyphen, Hive, Inspire, Cha9a9a) were deliberately left out per your instruction — the partners image is available in the Notion export if you change your mind.",
+    "Your bio said 'full-time freelancer' in two places, which contradicted being full-time at InstaDeep. Both are corrected, but the wording is mine — adjust the voice. Also: 'UX/UI Designer' is still the site title while you describe yourself as a product designer, and about[1] still frames Steer in the present of your career. Worth a read-through."
   ]
 }

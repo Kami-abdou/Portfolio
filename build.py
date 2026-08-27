@@ -377,7 +377,7 @@ def build_index(projects):
     out.append(f"""
     <section class="band band--contact shell" id="contact">
       <h2>{masked("Let's talk")}</h2>
-      <p class="lede">Open to freelance and full-time product design work.</p>
+      <p class="lede">{e(SITE.get("contactLede", ""))}</p>
       <div class="btn-row">
         {contact_links}
       </div>
