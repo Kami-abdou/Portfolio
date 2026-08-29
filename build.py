@@ -267,6 +267,11 @@ def figure(img, project_dir, depth):
     src = "%s/%s" % (project_dir, img["src"]) if depth else "projects/%s/%s" % (project_dir, img["src"])
     disk = ROOT / "projects" / project_dir / img["src"]
     size = png_size(disk)
+    # The grid shows a ~400px thumbnail; the lightbox opens up to 1200px. Point
+    # the lightbox at the .full derivative when optimize-images.py made one, so
+    # the page downloads thumbnails and fetches full pixels only on click.
+    full_disk = disk.with_name(disk.stem + ".full" + disk.suffix)
+    full = src.rsplit("/", 1)[0] + "/" + full_disk.name if full_disk.is_file() else src
     dims = ' width="%d" height="%d"' % size if size else ""
     # Very tall exports (4000px+) get capped in CSS and opened via the lightbox.
     tall = ' data-tall="true"' if size and size[1] > 2200 else ""
@@ -276,7 +281,7 @@ def figure(img, project_dir, depth):
     caption = img.get("caption")
     cap_html = "\n          <figcaption>%s</figcaption>" % e(caption) if caption else ""
     return f"""        <figure class="shot"{tall}>
-          <button class="shot__btn" type="button" data-full="{e(src)}" aria-label="Open full image: {e(img.get('alt',''))}">
+          <button class="shot__btn" type="button" data-full="{e(full)}" aria-label="Open full image: {e(img.get('alt',''))}">
             <img src="{e(src)}" alt="{e(img.get('alt',''))}"{dims} loading="lazy" decoding="async">
           </button>{cap_html}
         </figure>"""

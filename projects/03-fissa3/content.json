@@ -22,7 +22,7 @@
     { "label": "Platform fee", "value": "5%" },
     { "label": "Free trial for restaurants", "value": "45 days" }
   ],
-  "cover": "assets/p7-hi-fi.png",
+  "cover": "assets/p7-hi-fi.jpg",
   "sections": [
     {
       "id": "context",
@@ -42,8 +42,8 @@
       "body": "Research came first, deliberately drawing on a wide range of perspectives rather than a single assumed customer. That produced two people we designed against. Kayn is a developer who often works from home and is tired after work; he cannot cook a decent meal and does not want to go out for one. He wants food at any time in any place, any payment method he likes, easy tracking, and food that is actually fresh — and what puts him off is app prices differing from restaurant prices, delivery riders not answering the phone, and the wrong food arriving. Caitlyn is a student studying BCA who spends most of her time on campus. She wants food at her hostel door, saved time and a clear price — and her frustrations are late delivery, a time-consuming app process, and not being able to find her previous orders.",
       "images": [
         { "src": "assets/p1-user-findings.png", "alt": "User research findings for Fissa3", "caption": "Research findings." },
-        { "src": "assets/p2-user-personas.png", "alt": "Fissa3 personas: Kayn the remote developer and Caitlyn the student", "caption": "Personas." },
-        { "src": "assets/p3-empathy-mapping.png", "alt": "Empathy mapping for Fissa3 users", "caption": "Empathy mapping." }
+        { "src": "assets/p2-user-personas.jpg", "alt": "Fissa3 personas: Kayn the remote developer and Caitlyn the student", "caption": "Personas." },
+        { "src": "assets/p3-empathy-mapping.jpg", "alt": "Empathy mapping for Fissa3 users", "caption": "Empathy mapping." }
       ]
     },
     {
@@ -59,9 +59,9 @@
       "heading": "Solving them",
       "body": "Restaurant profiles let customers judge quality and leave reviews before ordering. Predictive search with filters made finding a specific dish fast instead of exploratory. Live updates and GPS geolocation let customers watch the order move and know when it would arrive, which removed the phone call. Push notifications carried new offers and order history, which gave people a reason to return. Order customisation let people add options and ingredients and see what others thought of a dish, with the action buttons kept in the same place so nobody had to hunt for them. And addresses became plural — several saved locations, each with a written landmark, because a Tunis address alone is often not enough to find a door.",
       "images": [
-        { "src": "assets/p5-sketching.png", "alt": "Early sketches for the Fissa3 app", "caption": "Sketching." },
+        { "src": "assets/p5-sketching.jpg", "alt": "Early sketches for the Fissa3 app", "caption": "Sketching." },
         { "src": "assets/p6-wireframes.png", "alt": "Wireframes for the Fissa3 ordering flow", "caption": "Wireframes." },
-        { "src": "assets/p7-hi-fi.png", "alt": "High-fidelity Fissa3 screens", "caption": "High fidelity." }
+        { "src": "assets/p7-hi-fi.jpg", "alt": "High-fidelity Fissa3 screens", "caption": "High fidelity." }
       ]
     }
   ],

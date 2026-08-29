@@ -22,7 +22,7 @@
     { "label": "Survey designed for", "value": "20 participants" },
     { "label": "Interviewed in person", "value": "15 people" }
   ],
-  "cover": "assets/01-homepage.png",
+  "cover": "assets/01-homepage.jpg",
   "sections": [
     {
       "id": "context",
@@ -49,9 +49,9 @@
       "heading": "User research",
       "body": "I wrote a survey for people who had bought a used car, were considering one, or wanted a transparent diagnosis of a car they already owned. It was designed for 20 participants and I sat down with 15 of them to gather their answers from lived experience. The questions covered age, employment, budget, what they look for in a car, where they bought it, how long it took, what deceptions they ran into when viewing cars, the profile of the sellers, and what the mechanic cost them. The answers gave me a clear read on their frustrations and goals, and became the foundation for everything that followed.",
       "images": [
-        { "src": "assets/p2-survey-answers.png", "alt": "Aggregated survey results from 15 used-car buyers", "caption": "Survey results." },
-        { "src": "assets/p4-user-persona.png", "alt": "Steer user personas built from the survey", "caption": "Personas derived from the research." },
-        { "src": "assets/p5-user-journey.png", "alt": "User journey map for buying a used car", "caption": "User journey." }
+        { "src": "assets/p2-survey-answers.jpg", "alt": "Aggregated survey results from 15 used-car buyers", "caption": "Survey results." },
+        { "src": "assets/p4-user-persona.jpg", "alt": "Steer user personas built from the survey", "caption": "Personas derived from the research." },
+        { "src": "assets/p5-user-journey.jpg", "alt": "User journey map for buying a used car", "caption": "User journey." }
       ]
     },
     {
@@ -67,7 +67,7 @@
       "heading": "The solution",
       "body": "The platform rests on scalable digital inspection technology paired with a pricing algorithm, so an inspection is efficient, repeatable and trustworthy rather than a cost you pay again at every viewing. On top of that sits a marketplace with customer services designed to make both buying and selling feel supported instead of adversarial.",
       "images": [
-        { "src": "assets/p6-user-flow.png", "alt": "User flow through the Steer platform", "caption": "User flow." }
+        { "src": "assets/p6-user-flow.jpg", "alt": "User flow through the Steer platform", "caption": "User flow." }
       ]
     },
     {
@@ -75,9 +75,9 @@
       "heading": "The corporate site",
       "body": "We built the B2B-facing website to present the work: what Steer does, who it is for, and how a professional gets started.",
       "images": [
-        { "src": "assets/01-homepage.png", "alt": "Steer homepage", "caption": "Homepage." },
-        { "src": "assets/02-solution-page.png", "alt": "Steer solution page describing the inspection and pricing platform", "caption": "Solution page." },
-        { "src": "assets/04-login-free-trial.png", "alt": "Steer login and free trial screen", "caption": "Login and free trial." },
+        { "src": "assets/01-homepage.jpg", "alt": "Steer homepage", "caption": "Homepage." },
+        { "src": "assets/02-solution-page.jpg", "alt": "Steer solution page describing the inspection and pricing platform", "caption": "Solution page." },
+        { "src": "assets/04-login-free-trial.jpg", "alt": "Steer login and free trial screen", "caption": "Login and free trial." },
         { "src": "assets/03-faq.png", "alt": "Steer FAQ section", "caption": "FAQ." }
       ]
     }

@@ -11,3 +11,14 @@
 
 # Local server
 serve.py
+
+# Original full-resolution exports. Kept locally so optimize-images.py can
+# re-derive at any quality, but never committed or published: ~48 MB of pixels
+# no visitor downloads. Recoverable from git history (commit e31a246) if lost.
+projects/*/assets/_src/
+
+# Working notes — candid, and not for public reading.
+notes/
+
+# Build bookkeeping
+.image-renames.json

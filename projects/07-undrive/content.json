@@ -16,7 +16,7 @@
   "tools": ["Figma"],
   "links": [],
   "metrics": [],
-  "cover": "assets/n1-homepage.png",
+  "cover": "assets/n1-homepage.jpg",
   "sections": [
     {
       "id": "context",
@@ -35,9 +35,9 @@
       "heading": "The outcome",
       "body": "The homepage and its search entry point, an individual driving school page, and the filtered search listing.",
       "images": [
-        { "src": "assets/n1-homepage.png", "alt": "UnDrive homepage with location search", "caption": "Homepage." },
-        { "src": "assets/n2-driving-school-page.png", "alt": "Individual driving school page on UnDrive", "caption": "Driving school page." },
-        { "src": "assets/n3-search-listing.png", "alt": "UnDrive filtered search results listing", "caption": "Search listing." }
+        { "src": "assets/n1-homepage.jpg", "alt": "UnDrive homepage with location search", "caption": "Homepage." },
+        { "src": "assets/n2-driving-school-page.jpg", "alt": "Individual driving school page on UnDrive", "caption": "Driving school page." },
+        { "src": "assets/n3-search-listing.jpg", "alt": "UnDrive filtered search results listing", "caption": "Search listing." }
       ]
     }
   ],

@@ -19,7 +19,7 @@
     { "label": "Time on the project", "value": "8 months" },
     { "label": "Offices", "value": "Tunis (1st), Dubai (2nd)" }
   ],
-  "cover": "assets/n1-homepage.png",
+  "cover": "assets/n1-homepage.jpg",
   "sections": [
     {
       "id": "context",
@@ -38,7 +38,7 @@
       "heading": "The solution",
       "body": "Groupado gives users the ability to create and publish their own classes, workshops and learning experiences, and the tools to promote and sell them. The homepage was designed around search: rather than a generic hero, we built the slider around places and locations, weighting the keywords tied to the product and to the destinations that already ranked well and were most trusted. SEO drove the structure of the page rather than being retrofitted onto it.",
       "images": [
-        { "src": "assets/n1-homepage.png", "alt": "Groupado homepage with location-led slider", "caption": "Homepage — structured around search visibility." }
+        { "src": "assets/n1-homepage.jpg", "alt": "Groupado homepage with location-led slider", "caption": "Homepage — structured around search visibility." }
       ]
     },
     {
@@ -52,8 +52,8 @@
       "heading": "The outcome",
       "body": "The result was a platform covering the full loop — discovering an experience, understanding what it involves, choosing between online and local, and messaging the person running it.",
       "images": [
-        { "src": "assets/n2-outcome-1.png", "alt": "Groupado experience page", "caption": "Experience page." },
-        { "src": "assets/n3-outcome-2.png", "alt": "Groupado platform screen", "caption": "Platform screen." }
+        { "src": "assets/n2-outcome-1.jpg", "alt": "Groupado experience page", "caption": "Experience page." },
+        { "src": "assets/n3-outcome-2.jpg", "alt": "Groupado platform screen", "caption": "Platform screen." }
       ]
     }
   ],

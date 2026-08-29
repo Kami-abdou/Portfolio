@@ -24,7 +24,7 @@
     { "label": "Design team", "value": "1 — me" },
     { "label": "Engineers supported", "value": "15+" }
   ],
-  "cover": "assets/01-desktop-47.png",
+  "cover": "assets/01-desktop-47.jpg",
   "sections": [
     {
       "id": "context",
@@ -37,7 +37,7 @@
       "heading": "The problem",
       "body": "Back in 2020 Tunisia had a serious problem with online payments: for most people, they simply did not work. Konnect answered that with a digital wallet that lets users pay online, send and receive money by bank transfer, buy phone credit, and connect straight to their bank account — all secured with blockchain. Designing the first online digital wallet in a market meant there was no local convention to lean on, so we focused on the SaaS side, particularly B2B and C2B, and built the user-centred design from there.",
       "images": [
-        { "src": "assets/p2-understanding-the-problem.png", "alt": "Understanding the problem: research into online payment in Tunisia", "caption": "Understanding the problem." }
+        { "src": "assets/p2-understanding-the-problem.jpg", "alt": "Understanding the problem: research into online payment in Tunisia", "caption": "Understanding the problem." }
       ]
     },
     {
@@ -59,7 +59,7 @@
       "heading": "Validating the design",
       "body": "Validation was how we kept the product honest. Define the objectives clearly, involve stakeholders from the start, hold regular design reviews, use prototypes rather than descriptions, gather remote feedback with proper tooling, actively encourage criticism, run usability testing with real users, document every decision and change, handle disagreement professionally, and iterate. Each of those exists because skipping it cost us something at least once.",
       "images": [
-        { "src": "assets/p3-validating-the-design.png", "alt": "Design validation artefacts for Konnect", "caption": "Validating the design." }
+        { "src": "assets/p3-validating-the-design.jpg", "alt": "Design validation artefacts for Konnect", "caption": "Validating the design." }
       ]
     },
     {
@@ -67,7 +67,7 @@
       "heading": "The outcome",
       "body": "Konnect Networks is now a pioneer in the Tunisian payment industry, helping businesses of every size grow by offering multiple payment methods through one simple interface, with the stated mission of becoming the most trusted PSP in the country by simplifying complex financial flows. The CTO was a genuine collaborator — full of ideas, and we got a great deal done in every session. The part I am most pleased about is that the team still uses my design today, and you can see the effect in how consistent the product has stayed as it has grown.",
       "images": [
-        { "src": "assets/01-desktop-47.png", "alt": "Konnect platform screen", "caption": "Konnect platform." }
+        { "src": "assets/01-desktop-47.jpg", "alt": "Konnect platform screen", "caption": "Konnect platform." }
       ]
     }
   ],

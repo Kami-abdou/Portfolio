@@ -43,7 +43,7 @@
       "value": "356"
     }
   ],
-  "cover": "assets/n1-outcome-1.png",
+  "cover": "assets/n1-outcome-1.jpg",
   "sections": [
     {
       "id": "context",
@@ -226,7 +226,7 @@
           "caption": "Company profile 10"
         },
         {
-          "src": "assets/b04-company-profile-11.png",
+          "src": "assets/b04-company-profile-11.jpg",
           "alt": "Fixerloop company profile setup — Company profile 11",
           "caption": "Company profile 11"
         },
@@ -385,17 +385,17 @@
           "caption": "Orders"
         },
         {
-          "src": "assets/d05-sp-profile-full-1.png",
+          "src": "assets/d05-sp-profile-full-1.jpg",
           "alt": "Fixerloop provider app — Profile full 1",
           "caption": "Profile full 1"
         },
         {
-          "src": "assets/d06-sp-profile-full-2.png",
+          "src": "assets/d06-sp-profile-full-2.jpg",
           "alt": "Fixerloop provider app — Profile full 2",
           "caption": "Profile full 2"
         },
         {
-          "src": "assets/d07-sp-profile-full-3.png",
+          "src": "assets/d07-sp-profile-full-3.jpg",
           "alt": "Fixerloop provider app — Profile full 3",
           "caption": "Profile full 3"
         },
@@ -533,7 +533,7 @@
       "body": "Welcome and signup, customer home and explore, browsing and filtering service providers, the full provider profile with ratings and verification, provider-side orders and requests, and an in-progress order with chat.",
       "images": [
         {
-          "src": "assets/n1-outcome-1.png",
+          "src": "assets/n1-outcome-1.jpg",
           "alt": "Fixerloop app screens after the redesign",
           "caption": "Redesigned screens."
         },

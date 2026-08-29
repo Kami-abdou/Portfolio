@@ -32,7 +32,7 @@
       "value": "10"
     }
   ],
-  "cover": "assets/p01-home.png",
+  "cover": "assets/p01-home.jpg",
   "sections": [
     {
       "id": "intro",
@@ -46,37 +46,37 @@
       "body": "Ten pages at desktop width: the home page, an enterprise page and pricing, an editorial pair of blog index and article template, and the supporting help, contact, terms and 404 pages.\n\nDesigning the whole set rather than only the home page is what keeps a marketing site coherent — the legal and error pages are where consistency usually breaks down.",
       "images": [
         {
-          "src": "assets/p01-home.png",
+          "src": "assets/p01-home.jpg",
           "alt": "DeepPCB home page, full length",
           "caption": "Home."
         },
         {
-          "src": "assets/p02-enterprise.png",
+          "src": "assets/p02-enterprise.jpg",
           "alt": "DeepPCB enterprise page, full length",
           "caption": "Enterprise."
         },
         {
-          "src": "assets/p03-pricing.png",
+          "src": "assets/p03-pricing.jpg",
           "alt": "DeepPCB pricing page showing the plan tiers",
           "caption": "Pricing."
         },
         {
-          "src": "assets/p04-our-mission.png",
+          "src": "assets/p04-our-mission.jpg",
           "alt": "DeepPCB mission page, full length",
           "caption": "Our mission."
         },
         {
-          "src": "assets/p05-blog.png",
+          "src": "assets/p05-blog.jpg",
           "alt": "DeepPCB blog index page",
           "caption": "Blog index."
         },
         {
-          "src": "assets/p06-article.png",
+          "src": "assets/p06-article.jpg",
           "alt": "DeepPCB article template",
           "caption": "Article template."
         },
         {
-          "src": "assets/p07-help.png",
+          "src": "assets/p07-help.jpg",
           "alt": "DeepPCB help page",
           "caption": "Help."
         },
@@ -86,7 +86,7 @@
           "caption": "Contact."
         },
         {
-          "src": "assets/p09-terms.png",
+          "src": "assets/p09-terms.jpg",
           "alt": "DeepPCB terms of service page",
           "caption": "Terms of service."
         },

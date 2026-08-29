@@ -16,7 +16,7 @@
   "tools": ["Figma"],
   "links": [],
   "metrics": [],
-  "cover": "assets/n2-screens.png",
+  "cover": "assets/n2-screens.jpg",
   "sections": [
     {
       "id": "context",
@@ -41,9 +41,9 @@
       "heading": "The outcome",
       "body": "Onboarding, prescription management ('Mes ordonnances'), product search and ordering, and a donations flow ('Dons') across web and Android.",
       "images": [
-        { "src": "assets/n1-onboarding.png", "alt": "PharmaDrive onboarding screens", "caption": "Onboarding." },
-        { "src": "assets/n2-screens.png", "alt": "PharmaDrive application screens", "caption": "Application screens." },
-        { "src": "assets/n3-screens.png", "alt": "PharmaDrive application screens", "caption": "Application screens." }
+        { "src": "assets/n1-onboarding.jpg", "alt": "PharmaDrive onboarding screens", "caption": "Onboarding." },
+        { "src": "assets/n2-screens.jpg", "alt": "PharmaDrive application screens", "caption": "Application screens." },
+        { "src": "assets/n3-screens.jpg", "alt": "PharmaDrive application screens", "caption": "Application screens." }
       ]
     }
   ],
