@@ -1,4 +1,4 @@
-# Abdallah Yaackoubi — portfolio
+# Abdou Yaackoubi — portfolio
 
 Static site. Plain HTML, CSS and JavaScript — no framework, no npm, no build
 step at runtime and no CDN. Open `index.html` directly, or drop the folder on

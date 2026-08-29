@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static site generator for Abdallah Yaackoubi's portfolio.
+"""Static site generator for Abdou Yaackoubi's portfolio.
 
 Reads site.json, tokens.json and projects/*/content.json, then writes plain
 HTML to disk. There is no runtime data fetching: fetch() is blocked on
