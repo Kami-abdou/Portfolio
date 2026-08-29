@@ -70,129 +70,14 @@
           "caption": "SMS verification 1"
         },
         {
-          "src": "assets/a02-sms-verification.png",
-          "alt": "Fixerloop onboarding — SMS verification",
-          "caption": "SMS verification"
-        },
-        {
-          "src": "assets/a03-verification-screen.png",
-          "alt": "Fixerloop onboarding — Verification screen",
-          "caption": "Verification screen"
-        },
-        {
-          "src": "assets/a04-email-verification-1.png",
-          "alt": "Fixerloop onboarding — Email verification 1",
-          "caption": "Email verification 1"
-        },
-        {
-          "src": "assets/a05-email-verification-2.png",
-          "alt": "Fixerloop onboarding — Email verification 2",
-          "caption": "Email verification 2"
-        },
-        {
-          "src": "assets/a06-email-verification.png",
-          "alt": "Fixerloop onboarding — Email verification",
-          "caption": "Email verification"
-        },
-        {
-          "src": "assets/a07-forgot-password.png",
-          "alt": "Fixerloop onboarding — Forgot password",
-          "caption": "Forgot password"
-        },
-        {
-          "src": "assets/a08-login-1.png",
-          "alt": "Fixerloop onboarding — Login 1",
-          "caption": "Login 1"
-        },
-        {
-          "src": "assets/a09-login-2.png",
-          "alt": "Fixerloop onboarding — Login 2",
-          "caption": "Login 2"
-        },
-        {
           "src": "assets/a10-login.png",
           "alt": "Fixerloop onboarding — Login",
           "caption": "Login"
         },
         {
-          "src": "assets/a11-password-reset-1.png",
-          "alt": "Fixerloop onboarding — Password reset 1",
-          "caption": "Password reset 1"
-        },
-        {
-          "src": "assets/a12-password-reset.png",
-          "alt": "Fixerloop onboarding — Password reset",
-          "caption": "Password reset"
-        },
-        {
-          "src": "assets/a13-sign-up-1.png",
-          "alt": "Fixerloop onboarding — Sign up 1",
-          "caption": "Sign up 1"
-        },
-        {
-          "src": "assets/a14-sign-up-13.png",
-          "alt": "Fixerloop onboarding — Sign up 13",
-          "caption": "Sign up 13"
-        },
-        {
-          "src": "assets/a15-sign-up-14.png",
-          "alt": "Fixerloop onboarding — Sign up 14",
-          "caption": "Sign up 14"
-        },
-        {
-          "src": "assets/a16-sign-up-4.png",
-          "alt": "Fixerloop onboarding — Sign up 4",
-          "caption": "Sign up 4"
-        },
-        {
-          "src": "assets/a17-sign-up-7.png",
-          "alt": "Fixerloop onboarding — Sign up 7",
-          "caption": "Sign up 7"
-        },
-        {
           "src": "assets/a18-sign-up-sp-1.png",
           "alt": "Fixerloop onboarding — Sign up SP 1",
           "caption": "Sign up SP 1"
-        },
-        {
-          "src": "assets/a19-sign-up-sp.png",
-          "alt": "Fixerloop onboarding — Sign up SP",
-          "caption": "Sign up SP"
-        },
-        {
-          "src": "assets/a20-verification-1.png",
-          "alt": "Fixerloop onboarding — Verification 1",
-          "caption": "Verification 1"
-        },
-        {
-          "src": "assets/a21-verification-preview-1.png",
-          "alt": "Fixerloop onboarding — Verification preview 1",
-          "caption": "Verification preview 1"
-        },
-        {
-          "src": "assets/a22-verification-preview.png",
-          "alt": "Fixerloop onboarding — Verification preview",
-          "caption": "Verification preview"
-        },
-        {
-          "src": "assets/a23-verification-upload-document.png",
-          "alt": "Fixerloop onboarding — Verification upload document",
-          "caption": "Verification upload document"
-        },
-        {
-          "src": "assets/a24-welcome-screen.png",
-          "alt": "Fixerloop onboarding — Welcome screen",
-          "caption": "Welcome screen"
-        },
-        {
-          "src": "assets/a25-welcome-1.png",
-          "alt": "Fixerloop onboarding — Welcome 1",
-          "caption": "Welcome 1"
-        },
-        {
-          "src": "assets/a26-welcome-2.png",
-          "alt": "Fixerloop onboarding — Welcome 2",
-          "caption": "Welcome 2"
         },
         {
           "src": "assets/a27-welcome.png",
@@ -212,59 +97,9 @@
           "caption": "Membership"
         },
         {
-          "src": "assets/b02-company-profile-1.png",
-          "alt": "Fixerloop company profile setup — Company profile 1",
-          "caption": "Company profile 1"
-        },
-        {
-          "src": "assets/b03-company-profile-10.png",
-          "alt": "Fixerloop company profile setup — Company profile 10",
-          "caption": "Company profile 10"
-        },
-        {
-          "src": "assets/b04-company-profile-11.jpg",
-          "alt": "Fixerloop company profile setup — Company profile 11",
-          "caption": "Company profile 11"
-        },
-        {
-          "src": "assets/b05-company-profile-12.png",
-          "alt": "Fixerloop company profile setup — Company profile 12",
-          "caption": "Company profile 12"
-        },
-        {
-          "src": "assets/b06-company-profile-2.png",
-          "alt": "Fixerloop company profile setup — Company profile 2",
-          "caption": "Company profile 2"
-        },
-        {
           "src": "assets/b07-company-profile-3.png",
           "alt": "Fixerloop company profile setup — Company profile 3",
           "caption": "Company profile 3"
-        },
-        {
-          "src": "assets/b08-company-profile-4.png",
-          "alt": "Fixerloop company profile setup — Company profile 4",
-          "caption": "Company profile 4"
-        },
-        {
-          "src": "assets/b09-company-profile-7.png",
-          "alt": "Fixerloop company profile setup — Company profile 7",
-          "caption": "Company profile 7"
-        },
-        {
-          "src": "assets/b10-company-profile-8.png",
-          "alt": "Fixerloop company profile setup — Company profile 8",
-          "caption": "Company profile 8"
-        },
-        {
-          "src": "assets/b11-company-profile-9.png",
-          "alt": "Fixerloop company profile setup — Company profile 9",
-          "caption": "Company profile 9"
-        },
-        {
-          "src": "assets/b12-company-profile-done.png",
-          "alt": "Fixerloop company profile setup — Company profile done",
-          "caption": "Company profile done"
         },
         {
           "src": "assets/b13-settings-edit-company-profile.png",
@@ -284,69 +119,14 @@
           "caption": "SPs — empty state"
         },
         {
-          "src": "assets/c02-customer-sps-1.png",
-          "alt": "Fixerloop customer app — SPs 1",
-          "caption": "SPs 1"
-        },
-        {
-          "src": "assets/c03-customer-sps-2.png",
-          "alt": "Fixerloop customer app — SPs 2",
-          "caption": "SPs 2"
-        },
-        {
-          "src": "assets/c04-customer-sps-3.png",
-          "alt": "Fixerloop customer app — SPs 3",
-          "caption": "SPs 3"
-        },
-        {
-          "src": "assets/c05-customer-sps.png",
-          "alt": "Fixerloop customer app — SPs",
-          "caption": "SPs"
-        },
-        {
           "src": "assets/c06-customer-edit-profile.png",
           "alt": "Fixerloop customer app — Edit profile",
           "caption": "Edit profile"
         },
         {
-          "src": "assets/c07-customer-explore-1.png",
-          "alt": "Fixerloop customer app — Explore 1",
-          "caption": "Explore 1"
-        },
-        {
-          "src": "assets/c08-customer-explore-2.png",
-          "alt": "Fixerloop customer app — Explore 2",
-          "caption": "Explore 2"
-        },
-        {
-          "src": "assets/c09-customer-explore.png",
-          "alt": "Fixerloop customer app — Explore",
-          "caption": "Explore"
-        },
-        {
           "src": "assets/c10-customer-favorite-list-es.png",
           "alt": "Fixerloop customer app — Favorite list, empty state",
           "caption": "Favorite list — empty state"
-        },
-        {
-          "src": "assets/c11-customer-favorite-list.png",
-          "alt": "Fixerloop customer app — Favorite list",
-          "caption": "Favorite list"
-        },
-        {
-          "src": "assets/c12-customer-home-1.png",
-          "alt": "Fixerloop customer app — Home 1",
-          "caption": "Home 1"
-        },
-        {
-          "src": "assets/c13-customer-home-2.png",
-          "alt": "Fixerloop customer app — Home 2",
-          "caption": "Home 2"
-        },
-        {
-          "src": "assets/c14-customer-home.png",
-          "alt": "Fixerloop customer app — Home",
-          "caption": "Home"
         },
         {
           "src": "assets/c15-customer-sub-services.png",
@@ -366,49 +146,9 @@
           "caption": "Appointment"
         },
         {
-          "src": "assets/d02-sp-home.png",
-          "alt": "Fixerloop provider app — Home",
-          "caption": "Home"
-        },
-        {
-          "src": "assets/d03-sp-orders-es.png",
-          "alt": "Fixerloop provider app — Orders, empty state",
-          "caption": "Orders — empty state"
-        },
-        {
-          "src": "assets/d04-sp-orders.png",
-          "alt": "Fixerloop provider app — Orders",
-          "caption": "Orders"
-        },
-        {
-          "src": "assets/d05-sp-profile-full-1.jpg",
-          "alt": "Fixerloop provider app — Profile full 1",
-          "caption": "Profile full 1"
-        },
-        {
           "src": "assets/d06-sp-profile-full-2.jpg",
           "alt": "Fixerloop provider app — Profile full 2",
           "caption": "Profile full 2"
-        },
-        {
-          "src": "assets/d07-sp-profile-full-3.jpg",
-          "alt": "Fixerloop provider app — Profile full 3",
-          "caption": "Profile full 3"
-        },
-        {
-          "src": "assets/d08-sp-profile-full.png",
-          "alt": "Fixerloop provider app — Profile full",
-          "caption": "Profile full"
-        },
-        {
-          "src": "assets/d09-sp-requests-es.png",
-          "alt": "Fixerloop provider app — Requests, empty state",
-          "caption": "Requests — empty state"
-        },
-        {
-          "src": "assets/d10-sp-requests.png",
-          "alt": "Fixerloop provider app — Requests",
-          "caption": "Requests"
         },
         {
           "src": "assets/d11-sp-view-photo-full.png",
@@ -428,54 +168,9 @@
           "caption": "Chat"
         },
         {
-          "src": "assets/e02-orders-details.png",
-          "alt": "Fixerloop order — Details",
-          "caption": "Details"
-        },
-        {
-          "src": "assets/e03-orders-in-progress-1.png",
-          "alt": "Fixerloop order — In progress 1",
-          "caption": "In progress 1"
-        },
-        {
-          "src": "assets/e04-orders-in-progress.png",
-          "alt": "Fixerloop order — In progress",
-          "caption": "In progress"
-        },
-        {
-          "src": "assets/e05-orders-new-deadline.png",
-          "alt": "Fixerloop order — New deadline",
-          "caption": "New deadline"
-        },
-        {
-          "src": "assets/e06-orders-orders.png",
-          "alt": "Fixerloop order — Orders",
-          "caption": "Orders"
-        },
-        {
           "src": "assets/e07-orders-request-details-1.png",
           "alt": "Fixerloop order — Request details 1",
           "caption": "Request details 1"
-        },
-        {
-          "src": "assets/e08-orders-request-details-2.png",
-          "alt": "Fixerloop order — Request details 2",
-          "caption": "Request details 2"
-        },
-        {
-          "src": "assets/e09-orders-request-details.png",
-          "alt": "Fixerloop order — Request details",
-          "caption": "Request details"
-        },
-        {
-          "src": "assets/e10-orders-requests.png",
-          "alt": "Fixerloop order — Requests",
-          "caption": "Requests"
-        },
-        {
-          "src": "assets/e11-orders-review.png",
-          "alt": "Fixerloop order — Review",
-          "caption": "Review"
         },
         {
           "src": "assets/e12-orders-time-up.png",
@@ -493,16 +188,6 @@
           "src": "assets/f01-buttom-bar.png",
           "alt": "Fixerloop system — Buttom bar",
           "caption": "Buttom bar"
-        },
-        {
-          "src": "assets/f02-notifications.png",
-          "alt": "Fixerloop system — Notifications",
-          "caption": "Notifications"
-        },
-        {
-          "src": "assets/f03-settings-1.png",
-          "alt": "Fixerloop system — Settings 1",
-          "caption": "Settings 1"
         },
         {
           "src": "assets/f04-settings.png",
@@ -530,11 +215,6 @@
       "images": [
         {
           "src": "assets/n1-outcome-1.jpg",
-          "alt": "Fixerloop app screens after the redesign",
-          "caption": "Redesigned screens."
-        },
-        {
-          "src": "assets/n2-outcome-2.png",
           "alt": "Fixerloop app screens after the redesign",
           "caption": "Redesigned screens."
         },

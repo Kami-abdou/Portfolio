@@ -9,8 +9,8 @@
   "client": "Groupado",
   "year": "February 2021 — September 2021",
   "duration": "8 months",
-  "team": "TODO",
-  "status": "TODO — confirm whether Groupado launched publicly",
+  "team": "Groupado's team; I covered design.",
+  "status": "Live — groupado.com is still running",
   "tags": [
     "UX Design",
     "UI Design",
@@ -24,7 +24,12 @@
   "tools": [
     "Figma"
   ],
-  "links": [],
+  "links": [
+    {
+      "label": "Groupado today",
+      "url": "https://groupado.com/en/"
+    }
+  ],
   "metrics": [
     {
       "label": "Time on the project",
@@ -70,7 +75,7 @@
     {
       "id": "outcome",
       "heading": "The outcome",
-      "body": "Eight months at Groupado, from February to September 2021. I redesigned the website and worked on a second product I am not able to show.\n\nWhat is here is the marketplace loop — discovering an experience, understanding what it involves, choosing between online and local, and messaging the person running it. The rest of what I did there sits under an agreement, which is the honest reason this case study is shorter than the time I spent on it.",
+      "body": "Eight months at Groupado, from February to September 2021. I redesigned the website and worked on a second product I am not able to show.\n\nWhat is here is the marketplace loop — discovering an experience, understanding what it involves, choosing between online and local, and messaging the person running it. The rest of what I did there sits under an agreement, which is the honest reason this case study is shorter than the time I spent on it.\n\nGroupado is still going. It now runs training across Tunisia, Dubai and Côte d'Ivoire, and lists GIZ and Poulina Group among its partners.",
       "images": [
         {
           "src": "assets/n2-outcome-1.jpg",

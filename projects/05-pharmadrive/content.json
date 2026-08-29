@@ -10,7 +10,7 @@
   "year": "2021",
   "duration": "TODO",
   "team": "TODO",
-  "status": "TODO — confirm whether PharmaDrive shipped",
+  "status": "Discontinued — no longer live",
   "tags": [
     "UX Design",
     "UI Design",
@@ -50,7 +50,7 @@
     {
       "id": "outcome",
       "heading": "The outcome",
-      "body": "A freelance interface job. I designed the screens across web and Android: onboarding, prescription management (\"Mes ordonnances\"), product search and ordering, and a donations flow (\"Dons\").\n\nThe scope was interface work rather than research, and it is worth saying so. What it demonstrates is handling a regulated, detail-heavy domain — prescriptions and medication ordering leave very little room for a charming interface that is wrong.",
+      "body": "A freelance interface job. I designed the screens across web and Android: onboarding, prescription management (\"Mes ordonnances\"), product search and ordering, and a donations flow (\"Dons\").\n\nThe scope was interface work rather than research, and it is worth saying so. What it demonstrates is handling a regulated, detail-heavy domain — prescriptions and medication ordering leave very little room for a charming interface that is wrong.\n\nThe product no longer exists.",
       "images": [
         {
           "src": "assets/n1-onboarding.jpg",

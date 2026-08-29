@@ -41,13 +41,19 @@
       "value": "Every demo"
     }
   ],
-  "cover": "assets/cover.png",
+  "cover": "assets/cover.jpg",
   "sections": [
     {
       "id": "intro",
       "heading": "Intro",
       "body": "InstaDeep needed one visual and behavioural language across its product surfaces. I built the design system that provides it, and I still own it.\n\nIt covers the usual ground — components, type, colour, spacing — and then the part most systems leave undefined: how things move.",
-      "images": []
+      "images": [
+        {
+          "src": "assets/cover.jpg",
+          "alt": "InstaDeep Design System cover — the InstaDeep logo over the brand's blue gradient, with a footer reading 'Need help with the design? Contact Abdou on Slack'",
+          "caption": "The system's cover. The footer names me as the person to ask — which is the shortest proof of ownership I have."
+        }
+      ]
     },
     {
       "id": "motion",
