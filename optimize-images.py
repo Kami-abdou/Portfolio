@@ -156,7 +156,46 @@ def render(src, dest, width, transparent):
         cmd += ["--resampleWidth", str(width)]
     cmd += [str(src), "--out", str(dest)]
     subprocess.run(cmd, capture_output=True)
-    return dest.exists() and dest.stat().st_size > 0
+    if not (dest.exists() and dest.stat().st_size > 0):
+        return False
+    # Re-encoding an already-compressed file at the same dimensions can make it
+    # larger — profile.png grew 742 KB -> 850 KB this way. When the format is
+    # unchanged, keep whichever is smaller.
+    if dest.suffix.lower() == src.suffix.lower() and dest.stat().st_size > src.stat().st_size:
+        shutil.copy2(src, dest)
+    return True
+
+
+def optimise_site_images():
+    """The portrait and profile shots in site/.
+
+    These are not project figures — there is no lightbox behind them, so they
+    need one size only. The portrait ships at 2252px for a 340px slot, which
+    made it the single heaviest asset on the home page.
+    """
+    site = ROOT / "site"
+    if not site.is_dir():
+        return 0, 0
+    src_dir = site / "_src"
+    src_dir.mkdir(exist_ok=True)
+    before = after = 0
+    for name in ("portrait.jpg", "profile.png"):
+        live = site / name
+        stash = src_dir / name
+        if live.is_file() and not stash.exists():
+            shutil.copy2(live, stash)
+        if not stash.exists():
+            continue
+        before += stash.stat().st_size
+        transparent = uses_transparency(stash)
+        ext = ".png" if transparent else ".jpg"
+        out = site / (stash.stem + ext)
+        render(stash, out, THUMB_W, transparent)
+        if out.exists():
+            after += out.stat().st_size
+            if live.exists() and live.resolve() != out.resolve():
+                live.unlink()
+    return before, after
 
 
 def main():
@@ -213,7 +252,13 @@ def main():
             after += thumb.stat().st_size + (full.stat().st_size if full.exists() else 0)
             made += 1
 
+    sb, sa = optimise_site_images()
+    before += sb
+    after += sa
+
     (ROOT / ".image-renames.json").write_text(json.dumps(renames, indent=2))
+    if sb:
+        print(f"  site/      : {sb / 1024:.0f} KB -> {sa / 1024:.0f} KB")
     print(f"  processed  : {made} resized, {kept} left as-is")
     print(f"  before     : {before / 1024 / 1024:.1f} MB")
     print(f"  after      : {after / 1024 / 1024:.1f} MB  "
