@@ -342,6 +342,43 @@ def figure(img, project_dir, depth):
         </figure>"""
 
 
+def viewer(images, project_dir, depth, label="Component browser"):
+    """A screen-in-screen browser: one frame, tabs to move between views.
+
+    Progressive enhancement. Without JS every panel renders in sequence, so
+    the content is always reachable; enhance.js hides all but one and turns
+    the tabs live. Nothing here is hidden by CSS alone.
+    """
+    if not images:
+        return ""
+    up = "%s/" % project_dir if depth else "projects/%s/" % project_dir
+    panels, tabs = [], []
+    for i, img in enumerate(images):
+        src = up + img["src"]
+        disk = ROOT / "projects" / project_dir / img["src"]
+        size = png_size(disk)
+        dims = ' width="%d" height="%d"' % size if size else ""
+        on = " is-on" if i == 0 else ""
+        panels.append(
+            '<div class="viewer__panel%s" id="vp-%d" role="tabpanel" aria-labelledby="vt-%d">'
+            '<img src="%s" alt="%s"%s loading="lazy" decoding="async">'
+            '%s</div>'
+            % (on, i, i, e(src), e(img.get("alt", "")), dims,
+               ('<p class="viewer__cap">%s</p>' % e(img["caption"])) if img.get("caption") else ""))
+        tabs.append(
+            '<button class="viewer__tab%s" id="vt-%d" role="tab" type="button" '
+            'aria-controls="vp-%d" aria-selected="%s" data-i="%d">%s</button>'
+            % (on, i, i, "true" if i == 0 else "false", i,
+               e(img.get("label") or img.get("caption") or "View %d" % (i + 1))))
+    return (
+        '<div class="viewer" data-viewer>'
+        '<div class="viewer__frame"><div class="viewer__bar" aria-hidden="true">'
+        '<span></span><span></span><span></span></div>'
+        '<div class="viewer__stage">%s</div></div>'
+        '<div class="viewer__tabs" role="tablist" aria-label="%s">%s</div>'
+        '</div>' % ("".join(panels), e(label), "".join(tabs)))
+
+
 def project_card(project, *, large):
     cover = "projects/%s/%s" % (project["_dir"], project["cover"])
     size = png_size(ROOT / "projects" / project["_dir"] / project["cover"])
@@ -624,6 +661,16 @@ def build_project(project, prev_p, next_p):
 
     for idx, section in enumerate(live_sections, start=1):
         section_imgs = section.get("images", [])
+        # a section marked "viewer" renders as a browsable frame instead of a grid
+        if section.get("viewer") and section_imgs:
+            out.append(f"""
+      <section class="project__section" id="{e(section.get('id',''))}">
+        <h2><span class="project__num" aria-hidden="true">{'%02d' % idx}</span>{e(section['heading'])}</h2>
+        {('<div class="prose">%s</div>' % paragraphs(section.get("body"))) if usable(section.get("body")) else ""}
+        {viewer(section_imgs, d, depth=1, label=section['heading'])}
+      </section>
+""")
+            continue
         figs = "\n".join(figure(img, d, depth=1) for img in section_imgs)
         # a grid of phone screens wants more, narrower columns
         phones = sum(1 for img in section_imgs

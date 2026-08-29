@@ -1,13 +1,12 @@
 {
   "slug": "smarthub",
-  "order": 9,
+  "order": 99,
   "category": "project",
   "title": "Smarthub",
   "tagline": "Designing the brand I run",
   "summary": "Smarthub is my own 360° agency — design and digital marketing, from websites and video games to branding and SEO. Eight pages covering every service line, the careers page, and the positioning that ties them together. Designing for yourself is harder than designing for a client, because there is nobody to say no to you.",
   "role": "Founder — design and brand",
   "client": "Smarthub (my own agency)",
-  "year": "2024 — present",
   "duration": "TODO",
   "team": "TODO",
   "status": "In progress — not launched yet",
@@ -105,5 +104,6 @@
       "images": [],
       "body": "Smarthub is my own agency, so this is the one project where I was the client as well as the designer.\n\nThat is the reason it is worth showing. Every other case study here involves persuading somebody else to accept a decision. This one shows what I do when the brief, the positioning and the brand are all mine — eight pages, a service structure, and a careers page written for people I would want to hire.\n\nSmarthub has not launched yet. It is still being built."
     }
-  ]
+  ],
+  "year": "TODO"
 }

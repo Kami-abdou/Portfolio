@@ -94,3 +94,41 @@
   }
 })();
 
+
+/* Screen-in-screen viewer: tabs swap which panel is shown.
+   Panels render visible by default; the .js class hides the inactive ones,
+   so a failed script leaves every view reachable rather than blank. */
+(function () {
+  var boxes = document.querySelectorAll('[data-viewer]');
+  if (!boxes.length) return;
+
+  Array.prototype.forEach.call(boxes, function (box) {
+    var tabs = box.querySelectorAll('.viewer__tab');
+    var panels = box.querySelectorAll('.viewer__panel');
+    if (!tabs.length) return;
+
+    function show(i) {
+      Array.prototype.forEach.call(panels, function (p, n) {
+        p.classList.toggle('is-on', n === i);
+      });
+      Array.prototype.forEach.call(tabs, function (t, n) {
+        t.classList.toggle('is-on', n === i);
+        t.setAttribute('aria-selected', n === i ? 'true' : 'false');
+        t.tabIndex = n === i ? 0 : -1;
+      });
+    }
+
+    Array.prototype.forEach.call(tabs, function (tab, i) {
+      tab.addEventListener('click', function () { show(i); });
+      tab.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        var next = (i + d + tabs.length) % tabs.length;
+        tabs[next].focus();
+        show(next);
+      });
+    });
+    show(0);
+  });
+})();
