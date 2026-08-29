@@ -11,12 +11,24 @@
   "duration": "TODO",
   "team": "TODO",
   "status": "TODO — confirm whether the site is live",
-  "tags": ["Web Design", "Branding", "UI Design", "Self-initiated"],
-  "platforms": ["Website"],
-  "tools": ["Figma"],
+  "tags": [
+    "Web Design",
+    "Branding",
+    "UI Design",
+    "Self-initiated"
+  ],
+  "platforms": [
+    "Website"
+  ],
+  "tools": [
+    "Figma"
+  ],
   "links": [],
   "metrics": [
-    { "label": "Pages designed", "value": "8" }
+    {
+      "label": "Pages designed",
+      "value": "8"
+    }
   ],
   "cover": "assets/01-homepage.jpg",
   "sections": [
@@ -31,7 +43,11 @@
       "heading": "The positioning",
       "body": "The argument the site makes is that strategic design methodology is what empowers a client, whether that client is an early-stage startup working on an MVP or an established company chasing growth. The team designs across every digital touchpoint, from SaaS user experiences through to brand and web design — which is a wide claim, so the site has to substantiate it service by service rather than asserting it once on the homepage.",
       "images": [
-        { "src": "assets/01-homepage.jpg", "alt": "Smarthub homepage", "caption": "Homepage." }
+        {
+          "src": "assets/01-homepage.jpg",
+          "alt": "Smarthub homepage",
+          "caption": "Homepage."
+        }
       ]
     },
     {
@@ -39,12 +55,36 @@
       "heading": "A page per service",
       "body": "Rather than one services page listing everything, each line got its own page with its own argument. Web design and development is sold on autonomy — sites clients can keep updating and optimising without needing a developer every time. Graphic design and branding rests on visual identity as the thing that makes a business stand out and stick in memory. 3D characters, animation and visual effects covers film, video games and advertising campaigns. SEO is explained rather than name-dropped: optimising technical configuration, content relevance and link popularity so pages become findable and rank better. Web maintenance and support, and social media management, complete the set.",
       "images": [
-        { "src": "assets/02-web-design-development.jpg", "alt": "Smarthub web design and development service page", "caption": "Web design & development." },
-        { "src": "assets/03-graphic-design-branding.jpg", "alt": "Smarthub graphic design and branding service page", "caption": "Graphic design & branding." },
-        { "src": "assets/05-3d-animation-games.jpg", "alt": "Smarthub 3D characters, animation and video games service page", "caption": "3D, animation & video games." },
-        { "src": "assets/06-seo.jpg", "alt": "Smarthub SEO service page", "caption": "Search engine optimisation." },
-        { "src": "assets/04-web-maintenance-support.jpg", "alt": "Smarthub web maintenance and support service page", "caption": "Web maintenance & support." },
-        { "src": "assets/07-social-media-management.jpg", "alt": "Smarthub social media and management service page", "caption": "Social media & management." }
+        {
+          "src": "assets/02-web-design-development.jpg",
+          "alt": "Smarthub web design and development service page",
+          "caption": "Web design & development."
+        },
+        {
+          "src": "assets/03-graphic-design-branding.jpg",
+          "alt": "Smarthub graphic design and branding service page",
+          "caption": "Graphic design & branding."
+        },
+        {
+          "src": "assets/05-3d-animation-games.jpg",
+          "alt": "Smarthub 3D characters, animation and video games service page",
+          "caption": "3D, animation & video games."
+        },
+        {
+          "src": "assets/06-seo.jpg",
+          "alt": "Smarthub SEO service page",
+          "caption": "Search engine optimisation."
+        },
+        {
+          "src": "assets/04-web-maintenance-support.jpg",
+          "alt": "Smarthub web maintenance and support service page",
+          "caption": "Web maintenance & support."
+        },
+        {
+          "src": "assets/07-social-media-management.jpg",
+          "alt": "Smarthub social media and management service page",
+          "caption": "Social media & management."
+        }
       ]
     },
     {
@@ -52,15 +92,12 @@
       "heading": "Careers",
       "body": "A dedicated careers page, on the basis that an agency selling creative talent has to look like somewhere talent would want to work.",
       "images": [
-        { "src": "assets/08-careers.jpg", "alt": "Smarthub careers page", "caption": "Careers." }
+        {
+          "src": "assets/08-careers.jpg",
+          "alt": "Smarthub careers page",
+          "caption": "Careers."
+        }
       ]
     }
-  ],
-  "todo": [
-    "When did you design this, and is Smarthub currently trading?",
-    "Is the site live? A URL would help.",
-    "Do you have a logo or brand assets beyond the site? Branding work would strengthen this given it's your own agency.",
-    "The homepage copy contains a typo — 'Smartbub' instead of 'Smarthub'. Worth fixing in Figma.",
-    "Decide how prominently to feature your own agency next to client work; some people put it last, some lead with it."
   ]
 }

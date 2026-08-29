@@ -11,13 +11,29 @@
   "duration": "8 months",
   "team": "TODO",
   "status": "TODO — confirm whether Groupado launched publicly",
-  "tags": ["UX Design", "UI Design", "Web", "Marketplace"],
-  "platforms": ["Website", "Mobile app"],
-  "tools": ["Figma"],
+  "tags": [
+    "UX Design",
+    "UI Design",
+    "Web",
+    "Marketplace"
+  ],
+  "platforms": [
+    "Website",
+    "Mobile app"
+  ],
+  "tools": [
+    "Figma"
+  ],
   "links": [],
   "metrics": [
-    { "label": "Time on the project", "value": "8 months" },
-    { "label": "Offices", "value": "Tunis (1st), Dubai (2nd)" }
+    {
+      "label": "Time on the project",
+      "value": "8 months"
+    },
+    {
+      "label": "Offices",
+      "value": "Tunis (1st), Dubai (2nd)"
+    }
   ],
   "cover": "assets/n1-homepage.jpg",
   "sections": [
@@ -38,7 +54,11 @@
       "heading": "The solution",
       "body": "Groupado gives users the ability to create and publish their own classes, workshops and learning experiences, and the tools to promote and sell them. The homepage was designed around search: rather than a generic hero, we built the slider around places and locations, weighting the keywords tied to the product and to the destinations that already ranked well and were most trusted. SEO drove the structure of the page rather than being retrofitted onto it.",
       "images": [
-        { "src": "assets/n1-homepage.jpg", "alt": "Groupado homepage with location-led slider", "caption": "Homepage — structured around search visibility." }
+        {
+          "src": "assets/n1-homepage.jpg",
+          "alt": "Groupado homepage with location-led slider",
+          "caption": "Homepage — structured around search visibility."
+        }
       ]
     },
     {
@@ -52,15 +72,17 @@
       "heading": "The outcome",
       "body": "The result was a platform covering the full loop — discovering an experience, understanding what it involves, choosing between online and local, and messaging the person running it.",
       "images": [
-        { "src": "assets/n2-outcome-1.jpg", "alt": "Groupado experience page", "caption": "Experience page." },
-        { "src": "assets/n3-outcome-2.jpg", "alt": "Groupado platform screen", "caption": "Platform screen." }
+        {
+          "src": "assets/n2-outcome-1.jpg",
+          "alt": "Groupado experience page",
+          "caption": "Experience page."
+        },
+        {
+          "src": "assets/n3-outcome-2.jpg",
+          "alt": "Groupado platform screen",
+          "caption": "Platform screen."
+        }
       ]
     }
-  ],
-  "todo": [
-    "Six Groupado screens from the Figma file (PC, Online Experience, Experience type, Explore experiences, Messages, and one more) weren't exported before the Figma rate limit hit. They'll be added on the next pass.",
-    "Did Groupado launch? Any creator or experience numbers would strengthen this a lot.",
-    "You mention a mobile application — is it in a separate Figma file? Send it and I'll add the mobile screens.",
-    "Confirm team size and who else was designing."
   ]
 }

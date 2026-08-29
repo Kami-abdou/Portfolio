@@ -11,9 +11,17 @@
   "duration": "TODO",
   "team": "Collaborative project with the Inspire team",
   "status": "TODO — confirm whether UnDrive launched",
-  "tags": ["UX Design", "UI Design", "Web"],
-  "platforms": ["Website"],
-  "tools": ["Figma"],
+  "tags": [
+    "UX Design",
+    "UI Design",
+    "Web"
+  ],
+  "platforms": [
+    "Website"
+  ],
+  "tools": [
+    "Figma"
+  ],
   "links": [],
   "metrics": [],
   "cover": "assets/n1-homepage.jpg",
@@ -35,17 +43,22 @@
       "heading": "The outcome",
       "body": "The homepage and its search entry point, an individual driving school page, and the filtered search listing.",
       "images": [
-        { "src": "assets/n1-homepage.jpg", "alt": "UnDrive homepage with location search", "caption": "Homepage." },
-        { "src": "assets/n2-driving-school-page.jpg", "alt": "Individual driving school page on UnDrive", "caption": "Driving school page." },
-        { "src": "assets/n3-search-listing.jpg", "alt": "UnDrive filtered search results listing", "caption": "Search listing." }
+        {
+          "src": "assets/n1-homepage.jpg",
+          "alt": "UnDrive homepage with location search",
+          "caption": "Homepage."
+        },
+        {
+          "src": "assets/n2-driving-school-page.jpg",
+          "alt": "Individual driving school page on UnDrive",
+          "caption": "Driving school page."
+        },
+        {
+          "src": "assets/n3-search-listing.jpg",
+          "alt": "UnDrive filtered search results listing",
+          "caption": "Search listing."
+        }
       ]
     }
-  ],
-  "todo": [
-    "UnDrive has no designs in the portfolio Figma file — these three images come from your Notion export. Send its Figma link and I'll pull proper screens.",
-    "What year was this?",
-    "Which market — France or Tunisia? The screens are in French.",
-    "Did it launch? Is there a live URL?",
-    "This is the thinnest project in the set. Either it gets more substance or consider cutting it."
   ]
 }

@@ -60,11 +60,5 @@
         "smarthub"
       ]
     }
-  },
-  "todo": [
-    "The bio says 'eight startups' — this portfolio shows eight projects but some share a client (Konnect and Fissa3 were both T-ledger). Count deliberately before publishing.",
-    "Decide whether to keep 'Chief Product Officer' as the headline for Steer or describe it as product design and management. Both are in the copy now.",
-    "Client logos (Tunisie Telecom, Renault, Hyphen, Hive, Inspire, Cha9a9a) were deliberately left out per your instruction — the partners image is available in the Notion export if you change your mind.",
-    "Your bio said 'full-time freelancer' in two places, which contradicted being full-time at InstaDeep. Both are corrected, but the wording is mine — adjust the voice. Also: 'UX/UI Designer' is still the site title while you describe yourself as a product designer, and about[1] still frames Steer in the present of your career. Worth a read-through."
-  ]
+  }
 }

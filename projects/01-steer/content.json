@@ -11,16 +11,39 @@
   "duration": "Ongoing",
   "team": "Small product team; I led design and worked directly with the developer through build",
   "status": "In development",
-  "tags": ["Product Design", "UX Design", "UI Design", "Product Strategy"],
-  "platforms": ["Web app", "Corporate website"],
-  "tools": ["Figma", "Miro"],
+  "tags": [
+    "Product Design",
+    "UX Design",
+    "UI Design",
+    "Product Strategy"
+  ],
+  "platforms": [
+    "Web app",
+    "Corporate website"
+  ],
+  "tools": [
+    "Figma",
+    "Miro"
+  ],
   "links": [
-    { "label": "Corporate page (Figma)", "url": "https://www.figma.com/file/U2lrWQfNfT0k23bikH39gS/Coorporate-Page" },
-    { "label": "V1 dashboard (Figma)", "url": "https://www.figma.com/file/sd6CIVD7b5OA8gLJEG6cZi/V1-dashboard" }
+    {
+      "label": "Corporate page (Figma)",
+      "url": "https://www.figma.com/file/U2lrWQfNfT0k23bikH39gS/Coorporate-Page"
+    },
+    {
+      "label": "V1 dashboard (Figma)",
+      "url": "https://www.figma.com/file/sd6CIVD7b5OA8gLJEG6cZi/V1-dashboard"
+    }
   ],
   "metrics": [
-    { "label": "Survey designed for", "value": "20 participants" },
-    { "label": "Interviewed in person", "value": "15 people" }
+    {
+      "label": "Survey designed for",
+      "value": "20 participants"
+    },
+    {
+      "label": "Interviewed in person",
+      "value": "15 people"
+    }
   ],
   "cover": "assets/01-homepage.jpg",
   "sections": [
@@ -41,7 +64,11 @@
       "heading": "Design process",
       "body": "We started by building an identity for the startup and grounding it in market research, working the problem statement and the solution together before touching any interface. Once we understood the market we brainstormed, and I produced low-fidelity designs. We validated those, moved to high fidelity, then walked the developer through them and I followed every step of the build. Miro carried the thinking, Figma carried the design.",
       "images": [
-        { "src": "assets/p1-design-process.png", "alt": "The Steer design process, from research through to high-fidelity design", "caption": "The multi-step process used to uncover problems, generate ideas and communicate them in low and high fidelity." }
+        {
+          "src": "assets/p1-design-process.png",
+          "alt": "The Steer design process, from research through to high-fidelity design",
+          "caption": "The multi-step process used to uncover problems, generate ideas and communicate them in low and high fidelity."
+        }
       ]
     },
     {
@@ -49,9 +76,21 @@
       "heading": "User research",
       "body": "I wrote a survey for people who had bought a used car, were considering one, or wanted a transparent diagnosis of a car they already owned. It was designed for 20 participants and I sat down with 15 of them to gather their answers from lived experience. The questions covered age, employment, budget, what they look for in a car, where they bought it, how long it took, what deceptions they ran into when viewing cars, the profile of the sellers, and what the mechanic cost them. The answers gave me a clear read on their frustrations and goals, and became the foundation for everything that followed.",
       "images": [
-        { "src": "assets/p2-survey-answers.jpg", "alt": "Aggregated survey results from 15 used-car buyers", "caption": "Survey results." },
-        { "src": "assets/p4-user-persona.jpg", "alt": "Steer user personas built from the survey", "caption": "Personas derived from the research." },
-        { "src": "assets/p5-user-journey.jpg", "alt": "User journey map for buying a used car", "caption": "User journey." }
+        {
+          "src": "assets/p2-survey-answers.jpg",
+          "alt": "Aggregated survey results from 15 used-car buyers",
+          "caption": "Survey results."
+        },
+        {
+          "src": "assets/p4-user-persona.jpg",
+          "alt": "Steer user personas built from the survey",
+          "caption": "Personas derived from the research."
+        },
+        {
+          "src": "assets/p5-user-journey.jpg",
+          "alt": "User journey map for buying a used car",
+          "caption": "User journey."
+        }
       ]
     },
     {
@@ -59,7 +98,11 @@
       "heading": "Competitor analysis",
       "body": "Mapping the existing players showed where the market left buyers unprotected, and where verified inspection data could become the thing that differentiated Steer rather than just another listing site.",
       "images": [
-        { "src": "assets/p3-competitor-analysis.png", "alt": "Competitor analysis of used-car marketplaces", "caption": "Competitor analysis." }
+        {
+          "src": "assets/p3-competitor-analysis.png",
+          "alt": "Competitor analysis of used-car marketplaces",
+          "caption": "Competitor analysis."
+        }
       ]
     },
     {
@@ -67,7 +110,11 @@
       "heading": "The solution",
       "body": "The platform rests on scalable digital inspection technology paired with a pricing algorithm, so an inspection is efficient, repeatable and trustworthy rather than a cost you pay again at every viewing. On top of that sits a marketplace with customer services designed to make both buying and selling feel supported instead of adversarial.",
       "images": [
-        { "src": "assets/p6-user-flow.jpg", "alt": "User flow through the Steer platform", "caption": "User flow." }
+        {
+          "src": "assets/p6-user-flow.jpg",
+          "alt": "User flow through the Steer platform",
+          "caption": "User flow."
+        }
       ]
     },
     {
@@ -75,17 +122,27 @@
       "heading": "The corporate site",
       "body": "We built the B2B-facing website to present the work: what Steer does, who it is for, and how a professional gets started.",
       "images": [
-        { "src": "assets/01-homepage.jpg", "alt": "Steer homepage", "caption": "Homepage." },
-        { "src": "assets/02-solution-page.jpg", "alt": "Steer solution page describing the inspection and pricing platform", "caption": "Solution page." },
-        { "src": "assets/04-login-free-trial.jpg", "alt": "Steer login and free trial screen", "caption": "Login and free trial." },
-        { "src": "assets/03-faq.png", "alt": "Steer FAQ section", "caption": "FAQ." }
+        {
+          "src": "assets/01-homepage.jpg",
+          "alt": "Steer homepage",
+          "caption": "Homepage."
+        },
+        {
+          "src": "assets/02-solution-page.jpg",
+          "alt": "Steer solution page describing the inspection and pricing platform",
+          "caption": "Solution page."
+        },
+        {
+          "src": "assets/04-login-free-trial.jpg",
+          "alt": "Steer login and free trial screen",
+          "caption": "Login and free trial."
+        },
+        {
+          "src": "assets/03-faq.png",
+          "alt": "Steer FAQ section",
+          "caption": "FAQ."
+        }
       ]
     }
-  ],
-  "todo": [
-    "Confirm the start date — the Notion bio says you joined Steer as CPO 'two years ago', which I've read as 2022. Fix if wrong.",
-    "Is Steer live? A launch date, user count or partner count belongs in metrics.",
-    "The B2B dashboard (V1 dashboard Figma file) isn't in this portfolio file. Send the link and I'll pull screens — the dashboard is the more impressive artefact.",
-    "Name the team size you led, if you're comfortable doing so."
   ]
 }

@@ -103,12 +103,5 @@
       "body": "TODO — what happened after launch? Anything measurable is worth more than a description: traffic, sign-ups, time to publish a new page, or what the team could do afterwards that they could not before.",
       "images": []
     }
-  ],
-  "todo": [
-    "Year, duration, team and status are still TODO. Fields whose value starts with TODO are skipped by the build, so the page renders cleanly without them, but the year in particular is one of the first things a recruiter looks for.",
-    "The Outcome section is unwritten and currently does not render. Anything measurable is worth more than a description: traffic, sign-ups, trial starts, or how quickly the team can publish a new page now.",
-    "The Intro describes the product and the audience problem. It does not claim a process, because you have not described one. If you ran research, wrote the copy, or built a page template the team reuses, that belongs here and would strengthen it considerably.",
-    "If deeppcb.com is public, a live link would be stronger evidence than any screenshot.",
-    "Ten pages at 1920px total 19.4 MB. Worth compressing before publishing — see optimize-images.sh."
   ]
 }

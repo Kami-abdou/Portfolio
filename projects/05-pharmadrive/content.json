@@ -11,9 +11,20 @@
   "duration": "TODO",
   "team": "TODO",
   "status": "TODO — confirm whether PharmaDrive shipped",
-  "tags": ["UX Design", "UI Design", "Healthcare", "Mobile", "Web"],
-  "platforms": ["Web", "Android"],
-  "tools": ["Figma"],
+  "tags": [
+    "UX Design",
+    "UI Design",
+    "Healthcare",
+    "Mobile",
+    "Web"
+  ],
+  "platforms": [
+    "Web",
+    "Android"
+  ],
+  "tools": [
+    "Figma"
+  ],
   "links": [],
   "metrics": [],
   "cover": "assets/n2-screens.jpg",
@@ -41,17 +52,22 @@
       "heading": "The outcome",
       "body": "Onboarding, prescription management ('Mes ordonnances'), product search and ordering, and a donations flow ('Dons') across web and Android.",
       "images": [
-        { "src": "assets/n1-onboarding.jpg", "alt": "PharmaDrive onboarding screens", "caption": "Onboarding." },
-        { "src": "assets/n2-screens.jpg", "alt": "PharmaDrive application screens", "caption": "Application screens." },
-        { "src": "assets/n3-screens.jpg", "alt": "PharmaDrive application screens", "caption": "Application screens." }
+        {
+          "src": "assets/n1-onboarding.jpg",
+          "alt": "PharmaDrive onboarding screens",
+          "caption": "Onboarding."
+        },
+        {
+          "src": "assets/n2-screens.jpg",
+          "alt": "PharmaDrive application screens",
+          "caption": "Application screens."
+        },
+        {
+          "src": "assets/n3-screens.jpg",
+          "alt": "PharmaDrive application screens",
+          "caption": "Application screens."
+        }
       ]
     }
-  ],
-  "todo": [
-    "This is the largest project in the Figma file — roughly 10 desktop screens and 14 Android screens — and none of them were exported before the Figma rate limit hit. They're the priority on the next pass.",
-    "What is the 'Dons' (donations) screen for? Donating unused medication, or something else? It's unusual and probably the most interesting thing here.",
-    "How long did the engagement run?",
-    "Did it ship? A pharmacy count or a launch date would help.",
-    "The Notion write-up still contains the placeholder '[Your App Name]' — I've written around it, but confirm the product's real public name."
   ]
 }
