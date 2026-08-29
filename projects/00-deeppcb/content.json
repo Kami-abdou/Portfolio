@@ -5,12 +5,12 @@
   "title": "DeepPCB",
   "tagline": "The marketing site for an AI-powered, cloud-native PCB routing tool",
   "summary": "A ten-page marketing site for DeepPCB, covering the home page, an enterprise page and pricing, an editorial section with blog index and article template, and the supporting help, contact, terms and error pages.",
-  "role": "Product Designer, full-time at InstaDeep",
+  "role": "Senior Product Designer, full-time at InstaDeep",
   "client": "InstaDeep",
   "year": "TODO — confirm the year",
   "duration": "TODO",
   "team": "TODO — who else was involved, and who wrote the copy?",
-  "status": "TODO — is this live, and at what URL?",
+  "status": "Live at deeppcb.ai — ongoing, still being refined",
   "tags": [
     "Web Design",
     "Marketing Site",
@@ -23,13 +23,23 @@
     "Figma",
     "Illustrator",
     "Photoshop",
-    "Framer"
+    "Framer",
+    "VWO"
   ],
-  "links": [],
+  "links": [
+    {
+      "label": "DeepPCB",
+      "url": "https://deeppcb.ai/"
+    }
+  ],
   "metrics": [
     {
       "label": "Pages designed",
       "value": "10"
+    },
+    {
+      "label": "Testing",
+      "value": "A/B, full funnel"
     }
   ],
   "cover": "assets/p01-home.jpg",
@@ -100,7 +110,7 @@
     {
       "id": "outcome",
       "heading": "The outcome",
-      "body": "TODO — what happened after launch? Anything measurable is worth more than a description: traffic, sign-ups, time to publish a new page, or what the team could do afterwards that they could not before.",
+      "body": "The site is live at deeppcb.ai, and the work did not stop at launch — we have kept refining the design since.\n\nThe current focus is measurement rather than opinion. I run A/B tests in VWO across the whole funnel, from the landing page through to the most-used feature inside the application, so changes ship on evidence of what people actually do rather than on preference or seniority.\n\nDeepPCB itself is InstaDeep's reinforcement-learning router: it places and routes boards with no human in the loop, reports 96% mean completion and DRC-clean output by default, and is used by hardware teams to cut design cycles that used to run for weeks.",
       "images": []
     }
   ]

@@ -1,23 +1,23 @@
 {
   "name": "Abdou Yaackoubi",
-  "title": "Product Designer",
+  "title": "Senior Product Designer",
   "location": "Tunis, Tunisia",
   "since": "2020",
   "roles": [
+    "Senior Product Designer",
     "Product Designer",
-    "UX/UI Designer",
     "Interaction Design",
     "Design Systems",
     "Experience Designer"
   ],
   "tagline": "I love working in the realm between UX and UI design.",
   "intro": "Things that make me excited are user-centred design, interaction design, and making interfaces feel fun and human.",
-  "currently": "Full-time product designer at InstaDeep, working on DeepPCB.",
-  "contactLede": "Full-time at InstaDeep. Open to conversations about product design work.",
+  "currently": "Senior product designer at InstaDeep, working on DeepPCB.",
+  "contactLede": "Senior product designer at InstaDeep. Open to conversations about product design work.",
   "about": [
     "I entered the UX/UI design field on 1 January 2020. Since then I have worked with eight startups across fintech, food delivery, online courses, automotive, pharmacy and development.",
-    "From October 2021 to November 2023 I was Chief Product Officer at Steer, leading a small team building automotive services while being the only person in design and product. The company went on to raise in France and is now based in Versailles.",
-    "I am now a full-time product designer at InstaDeep, working on DeepPCB — their AI-powered, cloud-native PCB routing software.",
+    "From October 2021 to November 2023 I was Chief Product Officer at Steer, leading a small team of front-end and back-end engineers while being the only person in design and product. The company went on to raise in France and is now based in Versailles.",
+    "I am now a senior product designer at InstaDeep, working on DeepPCB — their AI-powered, cloud-native PCB routing software.",
     "Outside of work I am obsessed with video games and enjoy the gym, and I cherish time with family and friends."
   ],
   "profileImage": "site/profile.png",
@@ -63,5 +63,5 @@
   },
   "url": "https://kami-abdou.github.io/Portfolio",
   "shareImage": "site/share-card.png",
-  "heroStatement": "Product designer at InstaDeep, working on DeepPCB — AI-powered PCB routing software. Six years designing products across fintech, delivery, automotive and developer tools."
+  "heroStatement": "Senior product designer at InstaDeep, working on DeepPCB — AI-powered PCB routing software. Six years designing products across fintech, delivery, automotive and developer tools."
 }
