@@ -5,12 +5,12 @@
   "title": "Steer",
   "tagline": "End-to-end solutions to reinvent the automotive retail industry",
   "summary": "A C2C marketplace for used cars built on verified inspection data and a pricing algorithm, plus a B2B web platform for used-car professionals. I set the product direction, ran the research, and designed the identity, the corporate site and the dashboard.",
-  "role": "Chief Product Officer — in practice product design and product management",
+  "role": "Chief Product Officer — sole designer and product lead",
   "client": "Steer",
-  "year": "2022–present",
-  "duration": "Ongoing",
-  "team": "Small product team; I led design and worked directly with the developer through build",
-  "status": "In development",
+  "year": "October 2021 — November 2023",
+  "duration": "2 years",
+  "team": "No other designer. I was the design and product function.",
+  "status": "Shipped — steeraiautos.com is live; the company is now based in Versailles, France",
   "tags": [
     "Product Design",
     "UX Design",
@@ -27,22 +27,22 @@
   ],
   "links": [
     {
-      "label": "Corporate page (Figma)",
-      "url": "https://www.figma.com/file/U2lrWQfNfT0k23bikH39gS/Coorporate-Page"
-    },
-    {
-      "label": "V1 dashboard (Figma)",
-      "url": "https://www.figma.com/file/sd6CIVD7b5OA8gLJEG6cZi/V1-dashboard"
+      "label": "Steer AI today",
+      "url": "https://www.steeraiautos.com/"
     }
   ],
   "metrics": [
     {
-      "label": "Survey designed for",
-      "value": "20 participants"
+      "label": "Design and product team",
+      "value": "1 — me"
     },
     {
       "label": "Interviewed in person",
       "value": "15 people"
+    },
+    {
+      "label": "Where it went",
+      "value": "Investor-backed, Versailles"
     }
   ],
   "cover": "assets/01-homepage.jpg",
@@ -143,6 +143,12 @@
           "caption": "FAQ."
         }
       ]
+    },
+    {
+      "id": "outcome",
+      "heading": "The outcome",
+      "body": "Two years as the entire design function, and the product function with it. From October 2021 to November 2023 I ran the research, the brand, the interface and the roadmap decisions behind them. There was nobody else in design or product.\n\nThat work was what Steer took to investors. The company secured backing from the Versailles Grand Parc incubator in Île-de-France and opened a French entity there. It now builds AI tools for used-vehicle professionals — inspection, pricing, documentation and resale.\n\nThe site has been redesigned since I left. It still runs on the brand I built.",
+      "images": []
     }
   ]
 }
