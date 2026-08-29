@@ -3,10 +3,10 @@
   "order": 4,
   "category": "case-study",
   "title": "Fissa3",
-  "tagline": "Food delivery built as a social and solidarity economy",
+  "tagline": "Food delivery built during the COVID lockdowns",
   "summary": "A Tunisian food delivery platform whose stated purpose was not margin but employment — developing the business of restaurateurs and creating work for people who did not have it. I ran the research, personas and empathy mapping, then took it from task flows through sketches and wireframes to high fidelity.",
   "role": "UX / UI Designer",
-  "client": "T-ledger",
+  "client": "T-ledger — Fissa3 was a project inside it",
   "year": "2020",
   "duration": "January – March 2020",
   "team": "TODO",
@@ -107,6 +107,12 @@
           "caption": "High fidelity."
         }
       ]
+    },
+    {
+      "id": "outcome",
+      "heading": "Why it existed",
+      "body": "Fissa3 was a project inside T-ledger, the same startup Konnect came out of, and it was built during the COVID lockdowns.\n\nThat context set every constraint. Getting food to people had stopped being a convenience problem and become a logistics one, restaurants had lost their dining rooms overnight, and delivery riders were suddenly essential workers. The 5% platform fee and the 45-day free trial for restaurants were not growth tactics — they were what made it plausible to join something new in the middle of a shutdown.\n\nIt was designed fast, for a situation nobody had designed for before.",
+      "images": []
     }
   ]
 }

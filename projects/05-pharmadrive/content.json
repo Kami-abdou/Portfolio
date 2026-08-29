@@ -5,7 +5,7 @@
   "title": "PharmaDrive",
   "tagline": "Pharmacy management and medication access, on web and Android",
   "summary": "A French pharmacy platform covering both sides of the counter: customers ordering medication and managing prescriptions, and pharmacies running their operations. Designed as a freelancer with T+ informatique across a web platform and an Android app.",
-  "role": "UX / UI Designer (freelance)",
+  "role": "UI Designer (freelance)",
   "client": "T+ informatique — France",
   "year": "2021",
   "duration": "TODO",
@@ -48,9 +48,9 @@
       "images": []
     },
     {
-      "id": "screens",
+      "id": "outcome",
       "heading": "The outcome",
-      "body": "Onboarding, prescription management ('Mes ordonnances'), product search and ordering, and a donations flow ('Dons') across web and Android.",
+      "body": "A freelance interface job. I designed the screens across web and Android: onboarding, prescription management (\"Mes ordonnances\"), product search and ordering, and a donations flow (\"Dons\").\n\nThe scope was interface work rather than research, and it is worth saying so. What it demonstrates is handling a regulated, detail-heavy domain — prescriptions and medication ordering leave very little room for a charming interface that is wrong.",
       "images": [
         {
           "src": "assets/n1-onboarding.jpg",

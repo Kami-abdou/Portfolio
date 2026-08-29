@@ -5,7 +5,7 @@
   "title": "UnDrive",
   "tagline": "Finding the right driving school, in a few clicks",
   "summary": "A platform for searching driving schools by location and filtering on the details that actually matter to a learner. Designed as a freelancer with Inspire, a development agency.",
-  "role": "UX / UI Designer (freelance)",
+  "role": "UI Designer (freelance)",
   "client": "Inspire — development agency",
   "year": "TODO",
   "duration": "TODO",
@@ -39,9 +39,9 @@
       "images": []
     },
     {
-      "id": "screens",
+      "id": "outcome",
       "heading": "The outcome",
-      "body": "The homepage and its search entry point, an individual driving school page, and the filtered search listing.",
+      "body": "A freelance interface job for a development agency: the homepage and its search entry point, an individual driving school page, and the filtered search listing.\n\nA small, contained brief — find a driving school, compare a few, choose one — and the whole design problem is making the comparison legible at a glance.",
       "images": [
         {
           "src": "assets/n1-homepage.jpg",
