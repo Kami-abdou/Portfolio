@@ -509,11 +509,17 @@ def viewer(images, project_dir, depth, label="Component browser"):
         size = png_size(disk)
         dims = ' width="%d" height="%d"' % size if size else ""
         on = " is-on" if i == 0 else ""
+        # detailed boards need zoom, so each panel opens in the lightbox; the
+        # .full derivative is used when optimize-images.py has made one
+        full_disk = disk.with_name(disk.stem + ".full" + disk.suffix)
+        full = src.rsplit("/", 1)[0] + "/" + full_disk.name if full_disk.is_file() else src
         panels.append(
             '<div class="viewer__panel%s" id="vp-%d" role="tabpanel" aria-labelledby="vt-%d">'
-            '<img src="%s" alt="%s"%s loading="lazy" decoding="async">'
+            '<button class="shot__btn viewer__zoom" type="button" data-full="%s" '
+            'aria-label="Open full size: %s">'
+            '<img src="%s" alt="%s"%s loading="lazy" decoding="async"></button>'
             '%s</div>'
-            % (on, i, i, e(src), e(img.get("alt", "")), dims,
+            % (on, i, i, e(full), e(img.get("alt", "")), e(src), e(img.get("alt", "")), dims,
                ('<p class="viewer__cap">%s</p>' % e(img["caption"])) if img.get("caption") else ""))
         tabs.append(
             '<button class="viewer__tab%s" id="vt-%d" role="tab" type="button" '

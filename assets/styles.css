@@ -1268,3 +1268,10 @@ html:not(.js) .viewer__tabs { display: none; }
   .lab * { animation-duration: .01ms !important; animation-iteration-count: 1 !important;
            transition-duration: .01ms !important; }
 }
+
+/* viewer images open full size — documentation boards are unreadable otherwise */
+.viewer__zoom {
+  display: block; width: 100%; padding: 0; border: 0; background: none;
+  cursor: zoom-in;
+}
+.viewer__zoom img { display: block; width: 100%; height: auto; }
