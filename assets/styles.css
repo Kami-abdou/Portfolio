@@ -1277,6 +1277,7 @@ html:not(.js) .viewer__tabs { display: none; }
 .viewer__zoom {
   display: block; width: 100%; padding: 0; border: 0; background: none;
   cursor: zoom-in;
+  margin-inline: auto;   /* a view capped below full width centres in the frame */
 }
 /* .shot__btn img crops to a uniform tile — max-height 38vh with object-fit
    cover — which is right for a grid of screenshots and wrong for a board you

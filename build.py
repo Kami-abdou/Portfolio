@@ -514,13 +514,19 @@ def viewer(images, project_dir, depth, label="Component browser"):
         # .full derivative is used when optimize-images.py has made one
         full_disk = disk.with_name(disk.stem + ".full" + disk.suffix)
         full = src.rsplit("/", 1)[0] + "/" + full_disk.name if full_disk.is_file() else src
+        # Never stretch a view past the pixels it actually has. The frame is
+        # ~830 CSS px on a laptop, which is 1660 device pixels at 2x — enough
+        # to make a 580px crop look like a blurry upscale, because it is one.
+        # Capping at natural width keeps every view sharp; narrow ones simply
+        # centre instead of filling.
+        cap = ' style="max-width:%dpx"' % size[0] if size else ""
         panels.append(
             '<div class="viewer__panel%s" id="vp-%d" role="tabpanel" aria-labelledby="vt-%d">'
             '<button class="shot__btn viewer__zoom" type="button" data-full="%s" '
-            'aria-label="Open full size: %s">'
+            'aria-label="Open full size: %s"%s>'
             '<img src="%s" alt="%s"%s loading="lazy" decoding="async"></button>'
             '%s</div>'
-            % (on, i, i, e(full), e(img.get("alt", "")), e(src), e(img.get("alt", "")), dims,
+            % (on, i, i, e(full), e(img.get("alt", "")), cap, e(src), e(img.get("alt", "")), dims,
                ('<p class="viewer__cap">%s</p>' % e(img["caption"])) if img.get("caption") else ""))
         tabs.append(
             '<button class="viewer__tab%s" id="vt-%d" role="tab" type="button" '
