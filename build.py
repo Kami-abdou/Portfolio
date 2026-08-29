@@ -206,6 +206,20 @@ def wordmark():
     return lines
 
 
+def asset_v(rel):
+    """Short content hash for cache-busting.
+
+    Without this a browser keeps serving a stale styles.css or enhance.js
+    after a deploy — which cost real debugging time here, since a cached
+    script silently ran an older version of the file with no error.
+    """
+    f = ROOT / rel
+    if not f.is_file():
+        return ""
+    import hashlib
+    return "?v=" + hashlib.sha1(f.read_bytes()).hexdigest()[:8]
+
+
 def abs_url(path, depth=0):
     """Absolute URL for a site-root-relative path, when site.url is set.
 
@@ -274,9 +288,9 @@ def head(title, description, *, depth=0, image=None, page_url=""):
   <meta name="theme-color" content="{e(TOKENS['color']['bg'])}">
   <link rel="icon" href="{up}assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{up}assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="{up}assets/fonts.css">
-  <link rel="stylesheet" href="{up}assets/tokens.css">
-  <link rel="stylesheet" href="{up}assets/styles.css">
+  <link rel="stylesheet" href="{up}assets/fonts.css{asset_v("assets/fonts.css")}">
+  <link rel="stylesheet" href="{up}assets/tokens.css{asset_v("assets/tokens.css")}">
+  <link rel="stylesheet" href="{up}assets/styles.css{asset_v("assets/styles.css")}">
 {json_ld()}</head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -308,8 +322,8 @@ def foot(depth=0):
       </nav>
     </div>
   </footer>
-  <script src="{up}assets/lightbox.js" defer></script>
-  <script src="{up}assets/enhance.js" defer></script>
+  <script src="{up}assets/lightbox.js{asset_v("assets/lightbox.js")}" defer></script>
+  <script src="{up}assets/enhance.js{asset_v("assets/enhance.js")}" defer></script>
 </body>
 </html>
 """
@@ -340,6 +354,110 @@ def figure(img, project_dir, depth):
             <img src="{e(src)}" alt="{e(img.get('alt',''))}"{dims} loading="lazy" decoding="async">
           </button>{cap_html}
         </figure>"""
+
+
+# Ten interaction patterns, rebuilt as working demos. These are NOT exports of
+# InstaDeep's library — that is internal. They are recreations of the patterns
+# and motion specs, built in this site's own tokens, and the page says so
+# plainly. The point is that motion cannot be shown in a screenshot: a spec of
+# "180ms, ease-out, 4px rise" is a claim until you can watch it happen.
+COMPONENTS = [
+    {"id": "button", "name": "Button",
+     "doc": "Four states. The press is the important one — a 60ms scale to 0.97 makes a click feel received rather than merely registered.",
+     "spec": "hover 160ms · press 60ms · cubic-bezier(.22,1,.36,1)",
+     "html": '<div class="lab__row">'
+             '<button class="c-btn">Primary</button>'
+             '<button class="c-btn c-btn--ghost">Secondary</button>'
+             '<button class="c-btn" disabled>Disabled</button>'
+             '<button class="c-btn c-btn--load" data-lab-load><span>Save</span></button>'
+             '</div>'},
+    {"id": "input", "name": "Input field",
+     "doc": "The label moves rather than disappears, so the field never loses its name. Error state animates in with the message so the change is noticed without being alarming.",
+     "spec": "label 180ms · error shake 240ms",
+     "html": '<div class="lab__row lab__row--col">'
+             '<label class="c-field"><input class="c-field__in" placeholder=" "><span class="c-field__lb">Email</span></label>'
+             '<label class="c-field is-err"><input class="c-field__in" placeholder=" " value="not-an-email"><span class="c-field__lb">Email</span>'
+             '<span class="c-field__msg">Enter a valid address</span></label>'
+             '</div>'},
+    {"id": "toggle", "name": "Toggle",
+     "doc": "The knob leads and the track colour follows slightly behind, which reads as the switch causing the state rather than both changing at once.",
+     "spec": "knob 200ms spring · track 260ms",
+     "html": '<div class="lab__row">'
+             '<button class="c-tog" role="switch" aria-checked="false" data-lab-toggle><span></span></button>'
+             '<button class="c-tog is-on" role="switch" aria-checked="true" data-lab-toggle><span></span></button>'
+             '</div>'},
+    {"id": "toast", "name": "Toast",
+     "doc": "Enters from below with a short rise, holds, then leaves by fading and dropping. Entrance is faster than exit — arrivals should be noticed, departures should not.",
+     "spec": "in 220ms · hold 2.6s · out 320ms",
+     "html": '<div class="lab__row"><button class="c-btn c-btn--ghost" data-lab-toast>Trigger toast</button>'
+             '<div class="c-toast" data-lab-toast-el hidden>Saved</div></div>'},
+    {"id": "modal", "name": "Dialog",
+     "doc": "Scrim and panel move together but at different rates. The panel rises 12px while fading, which keeps it feeling anchored to the page rather than pasted over it.",
+     "spec": "scrim 200ms · panel 260ms rise 12px",
+     "html": '<div class="lab__row"><button class="c-btn c-btn--ghost" data-lab-modal>Open dialog</button>'
+             '<div class="c-modal" data-lab-modal-el hidden><div class="c-modal__box">'
+             '<p class="c-modal__t">Delete this board?</p><p class="c-modal__b">This cannot be undone.</p>'
+             '<div class="lab__row"><button class="c-btn c-btn--ghost" data-lab-modal-close>Cancel</button>'
+             '<button class="c-btn" data-lab-modal-close>Delete</button></div></div></div></div>'},
+    {"id": "tooltip", "name": "Tooltip",
+     "doc": "Delayed on the way in, instant on the way out. A tooltip that appears the moment the cursor crosses it is noise; one that lingers after you leave is in the way.",
+     "spec": "in 120ms after 400ms delay · out 90ms",
+     "html": '<div class="lab__row"><span class="c-tip" tabindex="0">Hover me<span class="c-tip__b" role="tooltip">Routes the board with no human in the loop</span></span></div>'},
+    {"id": "accordion", "name": "Accordion",
+     "doc": "Height animates from the measured content rather than a guess, so it never overshoots. The chevron rotates on the same curve so the two read as one motion.",
+     "spec": "240ms · cubic-bezier(.22,1,.36,1)",
+     "html": '<div class="c-acc" data-lab-acc>'
+             '<button class="c-acc__h" aria-expanded="false">What does the system cover?<span class="c-acc__i" aria-hidden="true"></span></button>'
+             '<div class="c-acc__p"><div>Components, tokens, and the motion and interaction specs that go with them.</div></div>'
+             '</div>'},
+    {"id": "tabs", "name": "Tabs",
+     "doc": "The underline travels between tabs instead of cutting. That movement is what tells you the two panels are siblings rather than separate pages.",
+     "spec": "indicator 260ms · content fade 160ms",
+     "html": '<div class="c-tabs" data-lab-tabs>'
+             '<div class="c-tabs__list" role="tablist">'
+             '<button class="c-tabs__t is-on" role="tab">Overview</button>'
+             '<button class="c-tabs__t" role="tab">Specs</button>'
+             '<button class="c-tabs__t" role="tab">Usage</button>'
+             '<span class="c-tabs__ind" aria-hidden="true"></span></div>'
+             '<div class="c-tabs__p is-on">What it is and when to reach for it.</div>'
+             '<div class="c-tabs__p">Timing, easing, and the states it must support.</div>'
+             '<div class="c-tabs__p">Where it belongs, and where it does not.</div>'
+             '</div>'},
+    {"id": "progress", "name": "Progress",
+     "doc": "Determinate where a length is known, indeterminate where it is not. Using the wrong one is a small lie about how long the wait will be.",
+     "spec": "fill 400ms · indeterminate 1.4s loop",
+     "html": '<div class="lab__row lab__row--col">'
+             '<div class="c-prog"><i style="width:62%"></i></div>'
+             '<div class="c-prog c-prog--ind"><i></i></div></div>'},
+    {"id": "skeleton", "name": "Skeleton",
+     "doc": "A sweep rather than a pulse. It moves in reading order, which suggests content arriving instead of something merely blinking.",
+     "spec": "sweep 1.6s linear loop",
+     "html": '<div class="lab__row lab__row--col c-skel">'
+             '<span class="c-skel__l" style="width:70%"></span>'
+             '<span class="c-skel__l" style="width:92%"></span>'
+             '<span class="c-skel__l" style="width:48%"></span></div>'},
+]
+
+
+def component_lab():
+    """Live component demos with their motion documented beside them."""
+    tabs, panels = [], []
+    for i, c in enumerate(COMPONENTS):
+        on = " is-on" if i == 0 else ""
+        tabs.append('<button class="viewer__tab%s" id="lt-%s" role="tab" type="button" '
+                    'aria-controls="lp-%s" aria-selected="%s" data-i="%d">%s</button>'
+                    % (on, c["id"], c["id"], "true" if i == 0 else "false", i, e(c["name"])))
+        panels.append(
+            '<div class="viewer__panel lab__panel%s" id="lp-%s" role="tabpanel" aria-labelledby="lt-%s">'
+            '<div class="lab__stage">%s</div>'
+            '<div class="lab__doc"><h3>%s</h3><p>%s</p><p class="lab__spec">%s</p></div>'
+            '</div>' % (on, c["id"], c["id"], c["html"], e(c["name"]), e(c["doc"]), e(c["spec"])))
+    return ('<div class="viewer lab" data-viewer>'
+            '<div class="viewer__frame"><div class="viewer__bar" aria-hidden="true">'
+            '<span></span><span></span><span></span></div>'
+            '<div class="viewer__stage">%s</div></div>'
+            '<div class="viewer__tabs" role="tablist" aria-label="Components">%s</div>'
+            '</div>' % ("".join(panels), "".join(tabs)))
 
 
 def auto_images(project_dir, folder):
@@ -693,6 +811,14 @@ def build_project(project, prev_p, next_p):
 
     for idx, section in enumerate(live_sections, start=1):
         section_imgs = section.get("images", [])
+        if section.get("lab"):
+            out.append(f"""
+      <section class="project__section" id="{e(section.get('id',''))}">
+        <h2><span class="project__num" aria-hidden="true">{'%02d' % idx}</span>{e(section['heading'])}</h2>
+        {('<div class="prose">%s</div>' % paragraphs(section.get("body"))) if usable(section.get("body")) else ""}
+        {component_lab()}
+      </section>
+"""); continue
         if section.get("autoImages"):
             section_imgs = section_imgs + auto_images(d, section["autoImages"])
         # a section marked "viewer" renders as a browsable frame instead of a grid
