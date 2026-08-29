@@ -10,7 +10,7 @@
   "year": "2020–2021",
   "duration": "February 2020 – January 2021",
   "team": "One designer (me), 15+ engineers, 2 product managers",
-  "status": "Shipped — live on iOS and Android",
+  "status": "Shipped — launched March 2021, still live and now in its 7th major version",
   "tags": [
     "UX Design",
     "UI Design",
@@ -29,22 +29,18 @@
   ],
   "links": [
     {
-      "label": "konnect.network",
-      "url": "https://konnect.network/"
+      "label": "Konnect today",
+      "url": "https://konnect.network/en/"
     },
     {
-      "label": "iOS App Store",
-      "url": "https://apps.apple.com/us/app/konnect-pay/id1560555304"
-    },
-    {
-      "label": "Google Play",
-      "url": "https://play.google.com/store/apps/details?id=network.konnect.konnect"
+      "label": "Konnect Pay on the App Store",
+      "url": "https://apps.apple.com/tn/app/konnect-pay/id1560555304"
     }
   ],
   "metrics": [
     {
-      "label": "Users in Tunisia",
-      "value": "~2,000"
+      "label": "Shipped",
+      "value": "March 2021 — iOS + Android"
     },
     {
       "label": "Design team",
@@ -108,7 +104,7 @@
     {
       "id": "outcome",
       "heading": "The outcome",
-      "body": "Konnect Networks is now a pioneer in the Tunisian payment industry, helping businesses of every size grow by offering multiple payment methods through one simple interface, with the stated mission of becoming the most trusted PSP in the country by simplifying complex financial flows. The CTO was a genuine collaborator — full of ideas, and we got a great deal done in every session. The part I am most pleased about is that the team still uses my design today, and you can see the effect in how consistent the product has stayed as it has grown.",
+      "body": "The app shipped. Konnect Pay reached the App Store on 29 March 2021, and the design I delivered was the version that launched on iOS and Android.\n\nWhat the company did afterwards is not my work, but it is the context that makes this worth showing. Konnect became the first payment facilitator licensed by the Central Bank of Tunisia, was the only Tunisian company selected for Visa's inaugural Africa Fintech Accelerator, and raised roughly $1.5M from Attijariwafa Ventures, Renew Capital, Digital Africa Ventures, Sunny Side Venture Partners, Plug and Play Africa and 54 Collective. It has since reported about 4% of Tunisia's online payments market, growing around 20% month on month.\n\nThe product has been fully redesigned since and is now on its seventh major version. What I own is the first one — the release that took the company from a pitch to something people could actually hold.",
       "images": [
         {
           "src": "assets/01-desktop-47.jpg",
