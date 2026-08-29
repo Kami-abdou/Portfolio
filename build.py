@@ -342,6 +342,38 @@ def figure(img, project_dir, depth):
         </figure>"""
 
 
+def auto_images(project_dir, folder):
+    """Build an image list from whatever is sitting in a folder.
+
+    Lets new exports appear by dropping files in and re-running the build,
+    with no JSON editing. Filenames drive order and labels:
+
+        01-button.png            -> "Button"
+        02-input-field.png       -> "Input field"
+        03-toast--how-it-enters.png -> "Toast — how it enters"
+
+    A leading "NN-" orders the list and is stripped from the label; "--"
+    becomes an em dash; hyphens become spaces.
+    """
+    base = ROOT / "projects" / project_dir / "assets" / folder
+    if not base.is_dir():
+        return []
+    out = []
+    for f in sorted(base.iterdir()):
+        if f.name.startswith(".") or f.suffix.lower() not in (".png", ".jpg", ".jpeg", ".gif"):
+            continue
+        if ".full." in f.name:
+            continue                       # lightbox variant, not a separate view
+        stem = re.sub(r"^\d+[-_]", "", f.stem)
+        label = stem.replace("--", "\u0000").replace("-", " ").replace("_", " ")
+        label = label.replace("\u0000", " \u2014 ").strip()
+        label = label[:1].upper() + label[1:]
+        out.append({"src": "assets/%s/%s" % (folder, f.name),
+                    "alt": "%s — InstaDeep design system" % label,
+                    "label": label})
+    return out
+
+
 def viewer(images, project_dir, depth, label="Component browser"):
     """A screen-in-screen browser: one frame, tabs to move between views.
 
@@ -661,6 +693,8 @@ def build_project(project, prev_p, next_p):
 
     for idx, section in enumerate(live_sections, start=1):
         section_imgs = section.get("images", [])
+        if section.get("autoImages"):
+            section_imgs = section_imgs + auto_images(d, section["autoImages"])
         # a section marked "viewer" renders as a browsable frame instead of a grid
         if section.get("viewer") and section_imgs:
             out.append(f"""

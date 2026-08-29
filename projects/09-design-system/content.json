@@ -53,7 +53,7 @@
       "id": "browser",
       "heading": "Browse the system",
       "viewer": true,
-      "body": "The system is a working library rather than a document. Step through it here.\n\nMore views land in this frame as they are cleared for publication — components, the type scale, colour, and the motion specs that sit alongside them.",
+      "body": "The system is a working library rather than a document. Step through it here — each view is a component, how it behaves, and what it is for.\n\nViews are added as they are cleared for publication.",
       "images": [
         {
           "src": "assets/cover.jpg",
@@ -61,7 +61,8 @@
           "alt": "InstaDeep Design System cover — the InstaDeep logo over the brand blue, footer reading 'Need help with the design? Contact Abdou on Slack'",
           "caption": "The system's cover. The footer names me as the person to ask."
         }
-      ]
+      ],
+      "autoImages": "components"
     },
     {
       "id": "motion",
