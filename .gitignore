@@ -17,6 +17,11 @@ serve.py
 # no visitor downloads. Recoverable from git history (commit e31a246) if lost.
 projects/*/assets/_src/
 
+# Same rule, same reason. This one was missed: the pattern above is anchored to
+# projects/, so site/_src/ stayed tracked and shipped 1.6 MB of originals whose
+# derivatives sit right beside them.
+site/_src/
+
 # Working notes — candid, and not for public reading.
 notes/
 
