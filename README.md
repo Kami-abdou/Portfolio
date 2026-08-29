@@ -80,8 +80,9 @@ no colour or spacing literals; it references custom properties. Changing the
 accent everywhere is a one-line edit.
 
 **`TODO` values are skipped automatically.** Any field whose value starts with
-`TODO` is left out of the facts table, so placeholders never ship. The `todo`
-arrays in the JSON are internal notes and are never rendered.
+`TODO` is left out of the facts table, so an unfilled fact renders as an absent
+row rather than as the word "TODO". A handful remain — duration and team size on
+the older freelance pieces — and the site reads correctly without them.
 
 **Image dimensions are read from the PNG headers** at build time and written as
 `width`/`height` attributes, so the page doesn't reflow as images load. Very
@@ -90,17 +91,30 @@ one to open it at full size in the lightbox.
 
 ## Known gaps
 
-Some projects are missing screens — a Figma export hit a rate limit partway
-through. Affected: Konnect, Groupado, Fixerloop, PharmaDrive. Adding them is
-the image workflow above; no code changes required.
+The InstaDeep design system page shows one component board. The rest of that
+system is reachable only by opening each board in the Figma desktop app and
+copying a link to the selection — the Figma integration reads the page that is
+currently open, so the boards cannot be enumerated from here. Drop new exports
+into `projects/09-design-system/assets/components/` and they appear on their
+own; see the README in that folder.
 
-`tokens.json` is a sensible scaffold rather than values extracted from the
-Figma file — see the `_note` field inside it. Worth replacing with the real
-tokens when the Figma limit resets.
+That page deliberately excludes the implementation repository. The system may
+be shown; the code may not.
+
+A few freelance projects are missing `duration` and `team` facts. They are
+skipped rather than shown empty.
 
 ## Accessibility
 
 Semantic landmarks, one `<h1>` per page, visible focus rings, a skip link, and
-a lightbox that closes on Escape and keeps focus inside while open. Reduced
-motion is respected. Dark mode follows the system setting via
-`prefers-color-scheme`.
+a lightbox that closes on Escape and keeps focus inside while open. The
+component browser and the interaction lab are real tablists: arrow keys move
+between tabs, and only the selected tab is in the tab order.
+
+Reduced motion is respected — three `prefers-reduced-motion` blocks collapse
+the transitions rather than merely shortening them.
+
+The palette is dark-only and declared as such, via `color-scheme: dark` and a
+matching meta tag, so the browser paints scrollbars, selection and form
+controls to match. There is no light theme; the site does not pretend to
+follow the system setting.

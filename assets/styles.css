@@ -13,7 +13,11 @@
    ══════════════════════════════════════════════════════════ */
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+/* The palette is dark-only, so say so. Without this the browser still assumes
+   a light page and paints the UI it controls for white: scrollbar tracks,
+   text-selection, spinners and form controls. There is no light theme to
+   switch to — this declares the one that exists. */
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; color-scheme: dark; }
 
 body {
   margin: 0;

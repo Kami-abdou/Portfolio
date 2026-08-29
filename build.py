@@ -286,6 +286,7 @@ def head(title, description, *, depth=0, image=None, page_url=""):
   <meta name="twitter:title" content="{e(title)}">
   <meta name="twitter:description" content="{e(description)}">
   <meta name="theme-color" content="{e(TOKENS['color']['bg'])}">
+  <meta name="color-scheme" content="dark">
   <link rel="icon" href="{up}assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{up}assets/apple-touch-icon.png">
   <link rel="stylesheet" href="{up}assets/fonts.css{asset_v("assets/fonts.css")}">
