@@ -3,9 +3,9 @@
   "order": 6,
   "category": "project",
   "title": "Fixerloop",
-  "tagline": "Rescuing a services marketplace its own founder found confusing",
-  "summary": "Fixerloop connects homeowners with professional service providers. The founder came to me because the app was too complicated to use — clashing colours, unclear copy, and a flow he could not defend. I rebuilt it around a proper component library and a design system.",
-  "role": "UX / UI Designer",
+  "tagline": "An interface redesign for a services marketplace its own founder found confusing",
+  "summary": "Fixerloop connects homeowners with professional service providers. The founder came to me because the app had become too complicated to use — clashing colours, unclear copy and a flow he could not defend. The engagement was an interface redesign: 82 screens redrawn across the customer and provider apps, with a component library underneath them.",
+  "role": "UI Designer — interface redesign and component library",
   "client": "Fixerloop",
   "year": "2023",
   "duration": "TODO",
@@ -530,7 +530,7 @@
     {
       "id": "screens",
       "heading": "The outcome",
-      "body": "Welcome and signup, customer home and explore, browsing and filtering service providers, the full provider profile with ratings and verification, provider-side orders and requests, and an in-progress order with chat.",
+      "body": "The app shipped and fixerloop.com is live.\n\nThis was an interface job rather than a research one, and it is worth being exact about that. The founder already had a product that worked; what he had lost was an interface he could defend. So the work was execution at volume — 82 screens redrawn across both apps, and a library of 356 icons across 17 categories underneath them so the next screen would not start from nothing.\n\nWhat I would claim from it is craft and consistency at scale, not a research insight. The result was a founder who could demo his own product again.",
       "images": [
         {
           "src": "assets/n1-outcome-1.jpg",
