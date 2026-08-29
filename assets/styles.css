@@ -1278,4 +1278,16 @@ html:not(.js) .viewer__tabs { display: none; }
   display: block; width: 100%; padding: 0; border: 0; background: none;
   cursor: zoom-in;
 }
-.viewer__zoom img { display: block; width: 100%; height: auto; }
+/* .shot__btn img crops to a uniform tile — max-height 38vh with object-fit
+   cover — which is right for a grid of screenshots and wrong for a board you
+   are meant to read. The zoom button reuses that class, so it inherited the
+   crop: a 900x1915 board was being shown 285px tall, about a quarter of it,
+   with the rest silently clipped. Both properties must be reset, not just
+   width and height. */
+.viewer__zoom img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+}

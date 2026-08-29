@@ -47,3 +47,17 @@ documentation for each. A good set is roughly:
 - screenshots of unreleased product UI or roadmap
 - anything from the DeepCore repository
 - any image containing a Figma share link or access token
+- **any note or comment card signed by someone other than you**
+
+That last one is easy to miss. Figma boards carry annotation cards, and a
+full-board export sweeps them all up. The Buttons board had four: two signed
+Abdou, which are design rationale worth showing, and one signed by a colleague
+discussing implementation. Publishing a colleague's name, avatar and internal
+comments on a public site is not yours to do — and at thumbnail size you will
+not notice it is there.
+
+Crop to the panel you mean to show, then look at the result at full size before
+committing it.
+
+Stray component instances count too: this board had live buttons from an
+internal tool floating beside it, naming systems that are not public.

@@ -53,7 +53,7 @@
       "id": "browser",
       "heading": "Browse the system",
       "viewer": true,
-      "body": "The system is a working library rather than a document. Step through it here — each view is a component, how it behaves, and what it is for.\n\nViews are added as they are cleared for publication.",
+      "body": "The system is a working library rather than a document. What follows is one component taken end to end — the button — because depth shows more than a gallery would: every variant and state, the values behind each one, and the rules for when to reach for which.\n\nStep through the views below. Click any one to read it full size.",
       "images": [],
       "autoImages": "components"
     },
