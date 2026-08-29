@@ -7,9 +7,9 @@
   "summary": "A ten-page marketing site for DeepPCB, covering the home page, an enterprise page and pricing, an editorial section with blog index and article template, and the supporting help, contact, terms and error pages.",
   "role": "Senior Product Designer, full-time at InstaDeep",
   "client": "InstaDeep",
-  "year": "TODO — confirm the year",
-  "duration": "TODO",
-  "team": "TODO — who else was involved, and who wrote the copy?",
+  "year": "January 2024 — present",
+  "duration": "Ongoing",
+  "team": "InstaDeep's DeepPCB team; I cover the design.",
   "status": "Live at deeppcb.ai — ongoing, still being refined",
   "tags": [
     "Web Design",
@@ -106,6 +106,12 @@
           "caption": "404."
         }
       ]
+    },
+    {
+      "id": "design-system",
+      "heading": "A design system for InstaDeep",
+      "body": "Alongside the site I built a design system to represent InstaDeep — a shared set of components and rules the team designs against, so new surfaces ship consistently instead of being redrawn from scratch each time.\n\nIt is deliberately the least visible work here. Nobody notices a design system that is doing its job; they notice the week it saves when the next page has to exist by Friday.",
+      "images": []
     },
     {
       "id": "outcome",
