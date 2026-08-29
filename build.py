@@ -206,9 +206,56 @@ def wordmark():
     return lines
 
 
+def abs_url(path, depth=0):
+    """Absolute URL for a site-root-relative path, when site.url is set.
+
+    Social scrapers and search engines need absolute URLs; a relative
+    og:image silently yields no preview card. Falls back to the relative
+    path so the site still works unpublished or opened from file://.
+    """
+    base = (SITE.get("url") or "").rstrip("/")
+    path = path.lstrip("/")
+    if not base:
+        return ("../" * depth) + path
+    return "%s/%s" % (base, path)
+
+
+def json_ld():
+    """Person schema, so search results can show a name and job title."""
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": SITE["name"],
+        "jobTitle": SITE["title"],
+        "email": "mailto:%s" % SITE["email"],
+        "description": SITE["tagline"],
+        "image": abs_url(SITE.get("profileImage", "")),
+    }
+    if SITE.get("url"):
+        data["url"] = SITE["url"]
+    if SITE.get("location"):
+        data["address"] = {"@type": "PostalAddress", "addressLocality": SITE["location"]}
+    if SITE.get("links"):
+        data["sameAs"] = [l["url"] for l in SITE["links"] if l.get("url", "").startswith("http")]
+    return ('  <script type="application/ld+json">%s</script>\n'
+            % json.dumps(data, ensure_ascii=False, separators=(",", ":")))
+
+
 def head(title, description, *, depth=0, image=None, page_url=""):
     up = "../" * depth
-    og_image = ('\n  <meta property="og:image" content="%s">' % e(image)) if image else ""
+    img = image or SITE.get("shareImage") or SITE.get("profileImage")
+    og_image = ""
+    if img:
+        og_image = (
+            '\n  <meta property="og:image" content="%s">'
+            '\n  <meta property="og:image:alt" content="%s">'
+            % (e(abs_url(img, depth)), e("%s — %s" % (SITE["name"], SITE["title"])))
+        )
+    canonical = ""
+    if SITE.get("url") and page_url:
+        canonical = '\n  <link rel="canonical" href="%s">' % e(abs_url(page_url, depth))
+    og_url = ('\n  <meta property="og:url" content="%s">' % e(abs_url(page_url, depth))
+              if SITE.get("url") and page_url else "")
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -216,13 +263,21 @@ def head(title, description, *, depth=0, image=None, page_url=""):
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{e(title)}</title>
   <meta name="description" content="{e(description)}">
+  <meta name="author" content="{e(SITE['name'])}">{canonical}
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{e(SITE['name'])}">
   <meta property="og:title" content="{e(title)}">
-  <meta property="og:description" content="{e(description)}">{og_image}
+  <meta property="og:description" content="{e(description)}">{og_url}{og_image}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{e(title)}">
+  <meta name="twitter:description" content="{e(description)}">
+  <meta name="theme-color" content="{e(TOKENS['color']['bg'])}">
+  <link rel="icon" href="{up}assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{up}assets/apple-touch-icon.png">
   <link rel="stylesheet" href="{up}assets/fonts.css">
   <link rel="stylesheet" href="{up}assets/tokens.css">
   <link rel="stylesheet" href="{up}assets/styles.css">
-</head>
+{json_ld()}</head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-head">
@@ -315,8 +370,10 @@ def build_index(projects):
     slugs = by_slug(projects)
     out = [head(
         "%s — %s" % (SITE["name"], SITE["title"]),
-        SITE["tagline"] + " " + SITE["intro"],
-        image="site/profile.png",
+        # the statement is concrete (employer, product, span, sectors); the
+        # tagline is a sentiment, which makes a weaker search snippet
+        SITE.get("heroStatement") or (SITE["tagline"] + " " + SITE["intro"]),
+        page_url="index.html",
     )]
 
     # Cycling role line. Every role is in the DOM so it survives with JS off
@@ -367,6 +424,8 @@ def build_index(projects):
       </figure>
 
       {wall(wall_rows, ghost=True)}
+
+      <p class="hero__statement shell">{e(SITE.get('heroStatement', ''))}</p>
 
       <div class="hero__meta shell">
         <span>{e(SITE.get('location', ''))}</span>
@@ -421,7 +480,8 @@ def build_about():
     )
     size = png_size(ROOT / SITE["profileImage"])
     dims = ' width="%d" height="%d"' % size if size else ""
-    out = [head("About — %s" % SITE["name"], SITE["intro"], image=SITE["profileImage"])]
+    out = [head("About — %s" % SITE["name"], SITE["intro"],
+                image=SITE["profileImage"], page_url="about.html")]
     out.append(f"""
     <article class="shell about">
       <h1>{masked("About")}</h1>
@@ -451,7 +511,8 @@ def build_project(project, prev_p, next_p):
         "%s — %s" % (project["title"], SITE["name"]),
         project["summary"],
         depth=1,
-        image="../projects/%s/%s" % (d, project["cover"]),
+        image="projects/%s/%s" % (d, project["cover"]),
+        page_url="projects/%s.html" % project["slug"],
     )]
 
     def facts_block(label, rows):
@@ -604,6 +665,28 @@ def build_project(project, prev_p, next_p):
 
 # ─────────────────────────────────────────── main
 
+def write_sitemap(projects):
+    """sitemap.xml + robots.txt, but only once site.url is set.
+
+    A sitemap of relative paths is worse than none — it tells a crawler
+    nothing it could not already reach, and an absolute one built on the
+    wrong host would point every URL somewhere that does not exist.
+    """
+    base = (SITE.get("url") or "").rstrip("/")
+    if not base:
+        return 0
+    pages = ["index.html", "about.html"] + ["projects/%s.html" % p["slug"] for p in projects]
+    urls = "\n".join(
+        "  <url><loc>%s/%s</loc></url>" % (base, e(page)) for page in pages)
+    (ROOT / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n%s\n</urlset>\n' % urls,
+        encoding="utf-8")
+    (ROOT / "robots.txt").write_text(
+        "User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % base, encoding="utf-8")
+    return len(pages)
+
+
 def main():
     projects = load_projects()
     n_vars = write_tokens_css()
@@ -612,6 +695,7 @@ def main():
     for i, p in enumerate(projects):
         build_project(p, projects[i - 1] if i else None,
                       projects[i + 1] if i + 1 < len(projects) else None)
+    n_urls = write_sitemap(projects)
 
     imgs = sum(len(s.get("images", [])) for p in projects for s in p.get("sections", []))
     print("tokens.css   %d custom properties" % n_vars)
@@ -620,6 +704,10 @@ def main():
              len(SITE["sections"]["otherProjects"]["slugs"])))
     print("about.html   %d paragraphs" % len(SITE["about"]))
     print("projects/    %d pages, %d figures" % (len(projects), imgs))
+    if n_urls:
+        print("sitemap.xml  %d URLs, robots.txt written" % n_urls)
+    else:
+        print('sitemap.xml  skipped — set "url" in site.json to enable')
 
 
 if __name__ == "__main__":

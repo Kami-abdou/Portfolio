@@ -51,6 +51,7 @@
   --max-width: 1200px;
   --prose-width: 68ch;
   --gutter: 1.5rem;
+  --header-height: 5.5rem;
   --breakpoint-sm: 640px;
   --breakpoint-md: 900px;
   --breakpoint-lg: 1200px;
