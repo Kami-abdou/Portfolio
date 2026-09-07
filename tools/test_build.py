@@ -8,6 +8,7 @@ build.py is run as a SUBPROCESS rather than imported: it reads site.json
 into a module global at import time (build.py:22), so an in-process import
 would test a stale copy of the very file most of these tests change.
 """
+import html
 import json
 import pathlib
 import subprocess
@@ -70,7 +71,16 @@ class TestHeroPositioning(BuildCase):
             hits, "heroStatement names no non-AI domain: %r" % self.site["heroStatement"])
 
     def test_hero_statement_is_rendered_on_the_homepage(self):
-        self.assertIn(self.site["heroStatement"], self.html("index.html"))
+        """Compared against the ESCAPED form, which is what build.py writes.
+
+        build.py runs every string through html.escape(..., quote=True) (its
+        e() helper). Asserting the raw site.json value appears verbatim would
+        pass only for copy that happens to contain no apostrophe, ampersand
+        or quote -- so it would fail spuriously the moment the owner exercised
+        the rewrite freedom this class's docstring promises them.
+        """
+        rendered = html.escape(self.site["heroStatement"], quote=True)
+        self.assertIn(rendered, self.html("index.html"))
 
     def test_no_page_claims_specialising_in_ai(self):
         for page in ("index.html", "about.html"):
