@@ -42,6 +42,23 @@ def usable(value):
     return bool(value) and not is_todo(value)
 
 
+def page_format(project):
+    """Which template tier a project page renders at.
+
+    "highlights" pages show cover, summary, images, metrics and links and
+    skip the process narrative. The prose stays in content.json -- it is not
+    rendered, so promoting a project back to a full case study is a matter of
+    deleting one field.
+
+    This replaces `category` as the tier signal. `category` claimed to drive
+    homepage grouping, but site.json's slug arrays have always been the real
+    source of that, and the two drifted: Fissa3 and Groupado are
+    "case-study" yet belong in the Tier-2 band, and Fixerloop was mislabelled
+    "project" while carrying the fullest write-up in the set.
+    """
+    return project.get("format") or "case-study"
+
+
 def content_updated():
     """When the content last changed, as (iso_date, "Month YYYY").
 
@@ -843,10 +860,22 @@ def build_project(project, prev_p, next_p):
         if usable(sec.get("body")) or sec.get("images")
     ]
 
+    # A highlights page keeps the headings and the screens and drops the
+    # prose. Sections with nothing to show once the prose goes are dropped
+    # whole: a heading over an empty div is worse than no section. The source
+    # dicts are copied rather than mutated -- load_projects() hands out the
+    # parsed JSON itself, and blanking a body in place would also blank it for
+    # write_sitemap and the figure count.
+    if page_format(project) == "highlights":
+        live_sections = [dict(sec, body="") for sec in live_sections
+                         if sec.get("images") or sec.get("autoImages")]
+
     # Asymmetric header: narrative on the left, facts pinned on the right.
     toc_html = ""
     toc_items = [sec for sec in live_sections if sec.get("id")]
-    if len(toc_items) > 2:
+    # A highlights page has no prose to navigate, so its TOC would be a list
+    # of links to image blocks.
+    if len(toc_items) > 2 and page_format(project) != "highlights":
         rows = "".join(
             '<li><a href="#%s">%s</a></li>' % (e(sec["id"]), e(sec["heading"]))
             for sec in toc_items)
@@ -863,7 +892,7 @@ def build_project(project, prev_p, next_p):
       <div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
 
       <header class="shell project__head">
-        <p class="eyebrow">{e('Case study' if project['category'] == 'case-study' else 'Project')}</p>
+        <p class="eyebrow">{e('Project' if page_format(project) == 'highlights' else 'Case study')}</p>
         <h1>{masked(project['title'])}</h1>
         {tagline_html}
         <p class="prose project__summary">{e(project['summary'])}</p>

@@ -1,6 +1,7 @@
 {
   "slug": "fissa3",
   "order": 5,
+  "format": "highlights",
   "category": "case-study",
   "title": "Fissa3",
   "tagline": "Food delivery built during the COVID lockdowns",

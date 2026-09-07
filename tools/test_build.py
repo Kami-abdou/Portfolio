@@ -193,5 +193,51 @@ class TestConsolidation(BuildCase):
         self.assertIn("9 pages", self.stdout)
 
 
+class TestHighlightsFormat(BuildCase):
+
+    TIER2 = [("06-fixerloop", "fixerloop"), ("03-fissa3", "fissa3"),
+             ("04-groupado", "groupado"), ("05-pharmadrive", "pharmadrive"),
+             ("07-undrive", "undrive"), ("08-smarthub", "smarthub")]
+
+    def test_all_six_are_flagged(self):
+        for folder, _ in self.TIER2:
+            self.assertEqual(self.content(folder).get("format"), "highlights",
+                             "%s is not flagged" % folder)
+
+    def test_tier_one_is_not_flagged(self):
+        for folder in ("01-steer", "02-konnect", "10-instadeep"):
+            self.assertIsNone(self.content(folder).get("format"),
+                              "%s should stay a full case study" % folder)
+
+    def test_prose_is_not_deleted_only_unrendered(self):
+        """The whole point of the flag: reversible by removing one field."""
+        fixerloop = self.content("06-fixerloop")
+        bodies = [s.get("body") for s in fixerloop["sections"] if s.get("body")]
+        self.assertGreater(len(bodies), 5,
+                           "Fixerloop's narrative was deleted, not just hidden")
+
+    def test_highlights_pages_render_images_but_not_body_prose(self):
+        page = self.html("projects/fixerloop.html")
+        self.assertIn('class="shots', page)
+        body = [s["body"] for s in self.content("06-fixerloop")["sections"]
+                if s.get("body") and not s["body"].startswith("TODO")][0]
+        first_sentence = body.split(".")[0]
+        self.assertNotIn(first_sentence, page,
+                         "highlights page still renders section prose")
+
+    def test_eyebrow_follows_tier_not_category(self):
+        """Fissa3 and Groupado are category:case-study but Tier 2."""
+        for slug in ("fissa3", "groupado", "fixerloop"):
+            self.assertIn(">Project<", self.html("projects/%s.html" % slug),
+                          "%s does not read as a Tier-2 page" % slug)
+        for slug in ("steer", "konnect", "instadeep"):
+            self.assertIn(">Case study<", self.html("projects/%s.html" % slug),
+                          "%s does not read as a case study" % slug)
+
+    def test_highlights_pages_have_no_table_of_contents(self):
+        """A TOC over image blocks with no prose is navigation to nothing."""
+        self.assertNotIn('class="toc"', self.html("projects/undrive.html"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -1,6 +1,7 @@
 {
   "slug": "groupado",
   "order": 6,
+  "format": "highlights",
   "category": "case-study",
   "title": "Groupado",
   "tagline": "A platform where anyone with a skill can teach it",

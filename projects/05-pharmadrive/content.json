@@ -1,6 +1,7 @@
 {
   "slug": "pharmadrive",
   "order": 7,
+  "format": "highlights",
   "category": "project",
   "title": "PharmaDrive",
   "tagline": "Pharmacy management and medication access, on web and Android",

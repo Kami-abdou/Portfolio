@@ -1,6 +1,7 @@
 {
   "slug": "undrive",
   "order": 8,
+  "format": "highlights",
   "category": "project",
   "title": "UnDrive",
   "tagline": "Finding the right driving school, in a few clicks",
