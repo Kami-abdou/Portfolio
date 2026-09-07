@@ -238,6 +238,26 @@ class TestHighlightsFormat(BuildCase):
         """A TOC over image blocks with no prose is navigation to nothing."""
         self.assertNotIn('class="toc"', self.html("projects/undrive.html"))
 
+    def test_a_lone_section_is_not_numbered(self):
+        """A leading "01" claims a position in a sequence that does not exist.
+
+        Trimming prose leaves PharmaDrive and UnDrive with a single live
+        section, and theirs happens to be titled "The outcome" -- so "01 The
+        outcome" invited "the outcome of what?" exactly where the setup used
+        to be. Pages that do have a sequence keep their numbers.
+        """
+        for slug in ("pharmadrive", "undrive"):
+            page = self.html("projects/%s.html" % slug)
+            self.assertEqual(page.count("project__section"), 1,
+                             "%s is no longer a single-section page" % slug)
+            self.assertNotIn("project__num", page,
+                             "%s numbers its only section" % slug)
+        for slug in ("fixerloop", "steer"):
+            page = self.html("projects/%s.html" % slug)
+            self.assertEqual(page.count("project__section"),
+                             page.count("project__num"),
+                             "%s lost its section numbering" % slug)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

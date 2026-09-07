@@ -916,7 +916,16 @@ def build_project(project, prev_p, next_p):
         <div class="project__main">
 """)
 
+    # A leading "01" claims a position in a sequence. On a page with exactly
+    # one live section there is no sequence, and the number reads as a
+    # numbering bug rather than as structure -- most visibly on the highlights
+    # pages whose single survivor is titled "The outcome", where "01 The
+    # outcome" invites the question "the outcome of what?".
+    numbered = len(live_sections) > 1
+
     for idx, section in enumerate(live_sections, start=1):
+        num_html = ('<span class="project__num" aria-hidden="true">%02d</span>'
+                    % idx) if numbered else ""
         section_imgs = section.get("images", [])
         if section.get("autoImages"):
             section_imgs = section_imgs + auto_images(d, section["autoImages"])
@@ -924,7 +933,7 @@ def build_project(project, prev_p, next_p):
         if section.get("viewer") and section_imgs:
             out.append(f"""
       <section class="project__section" id="{e(section.get('id',''))}">
-        <h2><span class="project__num" aria-hidden="true">{'%02d' % idx}</span>{e(section['heading'])}</h2>
+        <h2>{num_html}{e(section['heading'])}</h2>
         {('<div class="prose">%s</div>' % paragraphs(section.get("body"))) if usable(section.get("body")) else ""}
         {viewer(section_imgs, d, depth=1, label=section['heading'])}
       </section>
@@ -940,7 +949,7 @@ def build_project(project, prev_p, next_p):
         figs_html = ('\n      <div class="shots%s">\n%s\n      </div>' % (variant, figs)) if figs else ""
         out.append(f"""
       <section class="project__section" id="{e(section.get('id',''))}">
-        <h2><span class="project__num" aria-hidden="true">{'%02d' % idx}</span>{e(section['heading'])}</h2>
+        <h2>{num_html}{e(section['heading'])}</h2>
         {body_html}
       </section>{figs_html}
 """)
