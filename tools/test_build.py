@@ -134,5 +134,35 @@ class TestInstaDeepEntry(BuildCase):
         self.assertGreater(width, height, "cover %s is portrait" % project["cover"])
 
 
+class TestConsolidation(BuildCase):
+
+    def test_absorbed_pages_are_gone(self):
+        for stale in ("deeppcb.html", "design-system.html"):
+            self.assertFalse((ROOT / "projects" / stale).is_file(),
+                             "projects/%s should have been absorbed" % stale)
+
+    def test_nothing_links_to_the_absorbed_pages(self):
+        for page in ("index.html", "about.html"):
+            body = self.html(page)
+            for stale in ("deeppcb.html", "design-system.html"):
+                self.assertNotIn(stale, body, "%s still links %s" % (page, stale))
+
+    def test_about_page_links_the_merged_entry(self):
+        self.assertIn('href="projects/instadeep.html"', self.html("about.html"))
+
+    def test_orders_are_contiguous_from_one(self):
+        """order is visible: project_card renders it as the card number, and it
+        drives the prev/next pager. Gaps and a stray 99 show up on screen."""
+        import glob
+        orders = sorted(
+            json.loads(pathlib.Path(f).read_text(encoding="utf-8"))["order"]
+            for f in glob.glob(str(ROOT / "projects" / "*" / "content.json")))
+        self.assertEqual(orders, list(range(1, len(orders) + 1)))
+
+    def test_nine_project_pages_and_eleven_sitemap_urls(self):
+        self.assertIn("11 URLs", self.stdout)
+        self.assertIn("9 pages", self.stdout)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

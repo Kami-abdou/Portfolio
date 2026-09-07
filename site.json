@@ -26,7 +26,7 @@
       "role": "Senior Product Designer",
       "years": "Jan 2024 — present",
       "note": "AI products, and the design system every InstaDeep product surface and demo runs on.",
-      "projects": ["deeppcb", "design-system"]
+      "projects": ["instadeep"]
     },
     {
       "company": "Steer",
@@ -90,20 +90,19 @@
       "heading": "Case studies",
       "description": "Projects where I can show the thinking, not just the outcome.",
       "slugs": [
-        "deeppcb",
-        "design-system",
         "steer",
         "konnect",
-        "fissa3",
-        "groupado"
+        "instadeep"
       ]
     },
     "otherProjects": {
       "heading": "Other projects I'm proud of",
       "description": "Shorter pieces of work.",
       "slugs": [
-        "pharmadrive",
         "fixerloop",
+        "fissa3",
+        "groupado",
+        "pharmadrive",
         "undrive",
         "smarthub"
       ]
