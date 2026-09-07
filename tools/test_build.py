@@ -282,5 +282,58 @@ class TestCardMeta(BuildCase):
         self.assertNotIn("TODO", self.html("index.html"))
 
 
+class TestShareCards(BuildCase):
+
+    def test_every_referenced_share_card_is_tracked(self):
+        """An untracked og:image 404s on the host and every link preview breaks.
+
+        The file exists locally, so the build is happy and nothing warns.
+        """
+        proc = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard", "projects"],
+            cwd=str(ROOT), capture_output=True, text=True)
+        untracked = set(proc.stdout.split())
+        import re
+        referenced = set()
+        for page in (ROOT / "projects").glob("*.html"):
+            for match in re.finditer(r'(projects/[^"\']*share\.jpg)',
+                                     page.read_text(encoding="utf-8")):
+                referenced.add(match.group(1))
+        self.assertTrue(referenced, "no share cards referenced -- test is vacuous")
+        self.assertEqual(referenced & untracked, set())
+
+    def test_instadeep_has_its_own_share_card(self):
+        page = self.html("projects/instadeep.html")
+        self.assertIn("projects/10-instadeep/assets/share.jpg", page)
+
+    def test_instadeep_share_card_is_not_the_absorbed_deeppcb_card(self):
+        """The merged entry inherited DeepPCB's card when DeepPCB was absorbed.
+
+        That card carries the DeepPCB wordmark and "The smart, fast, easy way
+        to design PCBs", so every preview of the InstaDeep page advertises a
+        different product. Asserting the path alone cannot catch this -- the
+        path is right and the pixels are wrong -- so pin the known-bad bytes.
+        """
+        import hashlib
+        card = ROOT / "projects" / "10-instadeep" / "assets" / "share.jpg"
+        self.assertTrue(card.is_file(), "InstaDeep share card is missing")
+        digest = hashlib.sha256(card.read_bytes()).hexdigest()
+        self.assertNotEqual(
+            digest,
+            "cfa7a4c9449454cf080ee51112e230e2ee9b1f5f99780a9c4422a23b19d97255",
+            "InstaDeep's og:image is still the absorbed DeepPCB card")
+
+    def test_every_share_card_is_exactly_1200x630(self):
+        """Platforms crop to ~1.91:1; a card that is not 1200x630 is not a card."""
+        sys.path.insert(0, str(ROOT))
+        from build import png_size
+        cards = sorted((ROOT / "projects").glob("*/assets/share.jpg"))
+        self.assertTrue(cards, "no share cards on disk -- test is vacuous")
+        for card in cards:
+            self.assertEqual(png_size(card), (1200, 630),
+                             "%s is %s, not 1200x630"
+                             % (card.name, png_size(card)))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
