@@ -1,0 +1,47 @@
+{
+  "slug": "instadeep",
+  "order": 3,
+  "category": "case-study",
+  "title": "InstaDeep",
+  "meta": "2024–now · AI · Senior PD",
+  "tagline": "Three product surfaces and the design system they all run on.",
+  "summary": "Senior product designer at InstaDeep, an AI research company acquired by BioNTech. I work across DeepPCB, their cloud-native PCB routing software, InstaNovo, their protein-sequencing model, and the design system every InstaDeep product surface and demo is built from.",
+  "description": "Design highlights from InstaDeep — DeepPCB, InstaNovo, and the design system behind every product surface.",
+  "role": "Senior Product Designer",
+  "client": "InstaDeep",
+  "year": "January 2024 — present",
+  "duration": "Ongoing",
+  "team": "Design of one, across several product teams",
+  "status": "Ongoing",
+  "tags": ["Product design", "Design systems", "AI products", "Web app"],
+  "platforms": ["Web"],
+  "tools": ["Figma", "Framer"],
+  "links": [],
+  "metrics": [],
+  "cover": "assets/cover.jpg",
+  "sections": [
+    {
+      "id": "deeppcb",
+      "heading": "DeepPCB",
+      "body": "DeepPCB is InstaDeep's cloud-native PCB routing software — a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product's public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.\n\nThese are the marketing and onboarding surfaces rather than the routing canvas itself.",
+      "images": [
+        { "src": "assets/p01-home.jpg", "alt": "DeepPCB home page", "caption": "Home — the claim, stated once, above a routed board." },
+        { "src": "assets/p02-enterprise.jpg", "alt": "DeepPCB enterprise page", "caption": "Enterprise — the same router, argued to a buyer instead of an engineer." },
+        { "src": "assets/p03-pricing.jpg", "alt": "DeepPCB pricing page", "caption": "Pricing." },
+        { "src": "assets/p04-our-mission.jpg", "alt": "DeepPCB mission page", "caption": "Our mission." }
+      ]
+    },
+    {
+      "id": "design-system",
+      "heading": "Design system",
+      "body": "Every InstaDeep product surface and research demo is built from one system. It exists because the alternative was each team inventing its own buttons, and it had to survive being used by engineers with no designer in the room.\n\nBrowse the components below.",
+      "viewer": true,
+      "autoImages": "components"
+    },
+    {
+      "id": "instanovo",
+      "heading": "InstaNovo",
+      "body": "TODO — InstaNovo screens and write-up pending."
+    }
+  ]
+}

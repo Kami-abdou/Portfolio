@@ -88,5 +88,51 @@ class TestHeroPositioning(BuildCase):
                              "%s still narrows the practice to AI" % page)
 
 
+class TestInstaDeepEntry(BuildCase):
+
+    def test_page_exists(self):
+        self.assertTrue((ROOT / "projects" / "instadeep.html").is_file())
+
+    def test_names_all_three_products(self):
+        page = self.html("projects/instadeep.html")
+        for product in ("DeepPCB", "Design system", "InstaNovo"):
+            self.assertIn(product, page, "instadeep.html omits %s" % product)
+
+    def test_instanovo_is_named_but_its_section_is_not_yet_rendered(self):
+        """InstaNovo is named in the summary, so the entry is honest about the
+        scope of the role -- but its section has a TODO body and no images, so
+        build.py:838 drops it. The block appears when the screens land, with no
+        template change. This test is what tells you the stub is wired
+        correctly rather than merely absent."""
+        page = self.html("projects/instadeep.html")
+        self.assertIn("InstaNovo", page)
+        self.assertNotIn('id="instanovo"', page)
+        self.assertNotIn("TODO", page)
+        stub = [s for s in self.content("10-instadeep")["sections"]
+                if s.get("id") == "instanovo"]
+        self.assertEqual(len(stub), 1, "the InstaNovo stub section is missing")
+        self.assertNotIn("images", stub[0])
+
+    def test_component_browser_still_auto_populates(self):
+        """assets/components/ is globbed by autoImages, not listed in JSON.
+
+        If the folder failed to move, auto_images() returns [] and the viewer
+        section silently vanishes -- the exact failure this guards.
+        """
+        page = self.html("projects/instadeep.html")
+        self.assertIn('class="viewer"', page)
+        self.assertIn("assets/components/", page)
+
+    def test_cover_is_landscape(self):
+        """The card media is aspect-ratio 3/2; a 900x2708 cover crops to a band."""
+        sys.path.insert(0, str(ROOT))
+        from build import png_size
+        project = self.content("10-instadeep")
+        size = png_size(ROOT / "projects" / "10-instadeep" / project["cover"])
+        self.assertIsNotNone(size, "cover has unreadable dimensions")
+        width, height = size
+        self.assertGreater(width, height, "cover %s is portrait" % project["cover"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
