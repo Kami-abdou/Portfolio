@@ -86,18 +86,18 @@
     }
   ],
   "sections": {
-    "caseStudies": {
-      "heading": "Case studies",
-      "description": "Projects where I can show the thinking, not just the outcome.",
+    "highlights": {
+      "heading": "Selected case studies",
+      "description": "Three projects where I can show the thinking, not just the outcome.",
       "slugs": [
         "steer",
         "konnect",
         "instadeep"
       ]
     },
-    "otherProjects": {
-      "heading": "Other projects I'm proud of",
-      "description": "Shorter pieces of work.",
+    "selectedWork": {
+      "heading": "Other work",
+      "description": "Shorter pieces — the screens, not the write-up.",
       "slugs": [
         "fixerloop",
         "fissa3",

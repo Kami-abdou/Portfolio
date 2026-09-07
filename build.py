@@ -581,9 +581,12 @@ def build_index(projects):
     </section>
 """)
 
-    for key, large in (("caseStudies", True), ("otherProjects", False)):
+    # Two tiers, three across in both. Three large cards at 2-up leaves an
+    # orphan on its own row and six small ones at 4-up leaves two, which read
+    # as "we ran out" rather than as a grid.
+    for key, large in (("highlights", True), ("selectedWork", False)):
         meta = SITE["sections"][key]
-        anchor = ' id="work"' if key == "caseStudies" else ""
+        anchor = ' id="work"' if key == "highlights" else ""
         cards = "\n".join(
             project_card(slugs[s], large=large) for s in meta["slugs"] if s in slugs
         )
@@ -593,7 +596,7 @@ def build_index(projects):
         <h2>{masked(meta['heading'])}</h2>
         <p>{e(meta['description'])}</p>
       </div>
-      <ul class="grid {'grid--lg' if large else 'grid--sm'}" style="--cols: {2 if large else 4}">
+      <ul class="grid {'grid--lg' if large else 'grid--sm'}" style="--cols: 3">
 {cards}
       </ul>
     </section>
@@ -994,9 +997,9 @@ def main():
 
     imgs = sum(len(s.get("images", [])) for p in projects for s in p.get("sections", []))
     print("tokens.css   %d custom properties" % n_vars)
-    print("index.html   %d case studies, %d other projects"
-          % (len(SITE["sections"]["caseStudies"]["slugs"]),
-             len(SITE["sections"]["otherProjects"]["slugs"])))
+    print("index.html   %d highlights, %d other projects"
+          % (len(SITE["sections"]["highlights"]["slugs"]),
+             len(SITE["sections"]["selectedWork"]["slugs"])))
     print("about.html   %d paragraphs, %d roles, %d toolkit groups"
           % (len(SITE["about"]), len(SITE.get("experience", [])),
              len(SITE.get("toolkit", []))))

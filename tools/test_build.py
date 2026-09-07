@@ -53,6 +53,35 @@ class TestHomepageTiers(BuildCase):
             self.site["sections"]["highlights"]["slugs"],
             ["steer", "konnect", "instadeep"])
 
+    def test_selected_work_band_holds_the_other_six(self):
+        self.assertEqual(
+            self.site["sections"]["selectedWork"]["slugs"],
+            ["fixerloop", "fissa3", "groupado", "pharmadrive", "undrive", "smarthub"])
+
+    def test_old_section_keys_are_gone(self):
+        for stale in ("caseStudies", "otherProjects"):
+            self.assertNotIn(stale, self.site["sections"])
+
+    def test_both_grids_are_three_across(self):
+        """3 cards at 2-up orphans one; 6 at 4-up orphans two."""
+        index = self.html("index.html")
+        self.assertEqual(index.count("--cols: 3"), 2,
+                         "expected both bands to declare --cols: 3")
+
+    def test_headline_cards_are_large_and_the_rest_are_not(self):
+        index = self.html("index.html")
+        self.assertEqual(index.count('class="card card--lg"'), 3)
+        self.assertEqual(index.count('class="card"'), 6)
+
+    def test_steer_is_the_first_card(self):
+        """Leading with a non-AI CPO role is the positioning fix."""
+        index = self.html("index.html")
+        self.assertLess(index.index("projects/steer.html"),
+                        index.index("projects/instadeep.html"))
+
+    def test_work_anchor_survives_the_rename(self):
+        self.assertIn('id="work"', self.html("index.html"))
+
 
 class TestHeroPositioning(BuildCase):
     """The hero must not claim AI is the whole practice.
