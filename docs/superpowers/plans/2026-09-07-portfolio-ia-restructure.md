@@ -412,10 +412,13 @@ If `MISMATCHED OR MISSING` is non-empty, stop — do not proceed to Task 5, whic
 
 Create `projects/10-instadeep/content.json`. `order: 3` places it third, matching the homepage. `format` is absent, so it is a Tier-1 page (Task 7 adds the flag to Tier 2 only). The InstaNovo section carries a `TODO` body and **no** `images`, which is exactly the shape `build.py:838` drops — so the page renders complete with two blocks now, and the third appears when the screens land, with no template change.
 
+**`category` is mandatory and was missing from the first draft of this JSON.** `build.py:863` subscripts `project['category']` directly, with no `.get()` fallback, so omitting it raises `KeyError` and the build dies. Both absorbed sources were `"case-study"`, which is also correct for the merged Tier-1 entry. Task 7 replaces that line with `page_format(project)`, after which the key becomes optional — but it is required now.
+
 ```json
 {
   "slug": "instadeep",
   "order": 3,
+  "category": "case-study",
   "title": "InstaDeep",
   "meta": "2024–now · AI · Senior PD",
   "tagline": "Three product surfaces and the design system they all run on.",
@@ -1345,12 +1348,16 @@ sitemap.xml  11 URLs, robots.txt written
 The one irreversible risk in this plan. `_src` is gitignored, so these are the only copies.
 
 ```bash
-find projects -path "*/_src/*" -type f | wc -l
-find projects/10-instadeep/assets/_src -type f | wc -l
-find projects/10-instadeep/assets/components -type f | wc -l
+echo "repo-wide _src:   $(find projects -path '*/_src/*' -type f | wc -l | tr -d ' ')  (expect 207)"
+echo "instadeep _src:   $(find projects/10-instadeep/assets/_src -type f | wc -l | tr -d ' ')  (expect 47)"
+echo "components:       $(find projects/10-instadeep/assets/components -type f | wc -l | tr -d ' ')  (expect 8)"
 ```
 
-Expected: the first is the repo-wide total and must be **≥ 29**; the second is exactly `29`; the third is exactly `8`. If the second or third is short, recover from the reflog immediately — `git reflog` then `git checkout <sha> -- projects/00-deeppcb projects/09-design-system` will **not** restore gitignored files, so the real recovery is the pre-Task-5 working tree if it still exists on disk.
+Expected: `207`, `47`, `8`.
+
+**Corrected during execution — the first draft of this plan said 29 and that was wrong.** The arithmetic: the repo held 207 `_src` files before Task 4. DeepPCB contributed 18 and the design system 29, so the merged tree holds **47**, and the repo peaked at 254 after the copy. Task 5 then deletes the two 18- and 29-file sources, returning the repo-wide total to **207**. That round-trip is the real invariant: the merged tree gained exactly what the sources lost. The original 29 was the design system's count mistaken for the merged total, and it would have fired as a false failure here.
+
+If any number is short, **do not run another build or another git command** — `_src` is gitignored and untracked, so `git reflog` and `git checkout` cannot restore it. The only copy is whatever is still on disk.
 
 - [ ] **Step 7: Final commit**
 

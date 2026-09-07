@@ -14,7 +14,14 @@ serve.py
 
 # Original full-resolution exports. Kept locally so optimize-images.py can
 # re-derive at any quality, but never committed or published: ~48 MB of pixels
-# no visitor downloads. Recoverable from git history (commit e31a246) if lost.
+# no visitor downloads.
+#
+# NOT RECOVERABLE. This comment used to claim "recoverable from git history
+# (commit e31a246) if lost" -- that was false and dangerously so. e31a246 is
+# "Add toolkit chips with drop-in icon support" and touches no image at all.
+# No file under projects/*/assets/_src/ has ever been committed to this repo,
+# on any branch, in any reflog entry, or in any stash. The working tree is the
+# only copy. Back these up outside git; `git checkout` will not bring them back.
 projects/*/assets/_src/
 
 # Same rule, same reason. This one was missed: the pattern above is anchored to
