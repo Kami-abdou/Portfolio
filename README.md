@@ -86,7 +86,7 @@ date. Keep it reverse-chronological.
   "years": "Jan 2024 — present",
   "place": "Tunis",                      // optional
   "note": "One sentence, optional.",
-  "projects": ["deeppcb", "design-system"] }
+  "projects": ["instadeep"] }
 ```
 
 `projects` holds case-study slugs, and each becomes a link chip on that row —
@@ -159,12 +159,12 @@ one to open it at full size in the lightbox.
 
 ## Known gaps
 
-The InstaDeep design system page shows one component board. The rest of that
-system is reachable only by opening each board in the Figma desktop app and
-copying a link to the selection — the Figma integration reads the page that is
-currently open, so the boards cannot be enumerated from here. Drop new exports
-into `projects/09-design-system/assets/components/` and they appear on their
-own; see the README in that folder.
+The design system section of the InstaDeep page shows one component board. The
+rest of that system is reachable only by opening each board in the Figma
+desktop app and copying a link to the selection — the Figma integration reads
+the page that is currently open, so the boards cannot be enumerated from here.
+Drop new exports into `projects/10-instadeep/assets/components/` and they
+appear on their own; see the README in that folder.
 
 That page deliberately excludes the implementation repository. The system may
 be shown; the code may not.
