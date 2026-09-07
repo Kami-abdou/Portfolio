@@ -185,6 +185,16 @@ a { color: inherit; }
   line-height: var(--line-height-snug);
 }
 
+/* Year, domain and role. Deliberately quieter than the tagline: it is
+   reference information a visitor scans, not copy they read. */
+.card__meta {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+}
+
 /* ── buttons ─────────────────────────────────────── */
 .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
 .btn {

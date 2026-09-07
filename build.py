@@ -504,6 +504,11 @@ def project_card(project, *, large):
     num = "%02d" % project.get("order", 0)
     # cards show the tagline, so the TODO rule has to hold here as well
     tagline = project["tagline"] if usable(project.get("tagline")) else ""
+    # Year, domain and role on the card, so a visitor gets the shape of the
+    # engagement without opening it. Not derived from `year`: those values are
+    # prose ("January 2024 — present") and two are still TODO.
+    meta_html = ('<span class="card__meta">%s</span>' % e(project["meta"])
+                 if usable(project.get("meta")) else "")
     return f"""        <li>
           <a class="{cls}" href="projects/{e(project['slug'])}.html">
             <span class="card__media">
@@ -516,6 +521,7 @@ def project_card(project, *, large):
             <span class="card__body">
               <span class="card__title">{e(project['title'])}</span>
               <span class="card__tagline">{e(tagline)}</span>
+              {meta_html}
             </span>
           </a>
         </li>"""

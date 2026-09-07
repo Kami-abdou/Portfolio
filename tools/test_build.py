@@ -259,5 +259,28 @@ class TestHighlightsFormat(BuildCase):
                              "%s lost its section numbering" % slug)
 
 
+class TestCardMeta(BuildCase):
+
+    def test_every_project_has_a_short_meta_line(self):
+        import glob
+        for path in glob.glob(str(ROOT / "projects" / "*" / "content.json")):
+            project = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+            meta = project.get("meta")
+            self.assertTrue(meta, "%s has no meta line" % project["slug"])
+            self.assertLessEqual(
+                len(meta), 44,
+                "%s meta is %d chars, too long for a card" % (project["slug"], len(meta)))
+
+    def test_meta_renders_on_every_card(self):
+        self.assertEqual(self.html("index.html").count('class="card__meta"'), 9)
+
+    def test_todo_meta_is_suppressed_not_printed(self):
+        """usable() must gate this like every other field -- BUILD.md rule."""
+        sys.path.insert(0, str(ROOT))
+        from build import usable
+        self.assertFalse(usable("TODO — year"))
+        self.assertNotIn("TODO", self.html("index.html"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
