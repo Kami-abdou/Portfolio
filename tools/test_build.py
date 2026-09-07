@@ -53,5 +53,30 @@ class TestHomepageTiers(BuildCase):
             ["steer", "konnect", "instadeep"])
 
 
+class TestHeroPositioning(BuildCase):
+    """The hero must not claim AI is the whole practice.
+
+    Asserted as a rendered-output property, not a string match on site.json:
+    what matters is what the visitor reads. heroStatement is checked for the
+    breadth signal rather than exact wording, so the owner can rewrite the
+    copy without breaking the test.
+    """
+
+    def test_hero_statement_names_more_than_one_domain(self):
+        statement = self.site["heroStatement"].lower()
+        domains = ["fintech", "automotive", "delivery", "retail"]
+        hits = [d for d in domains if d in statement]
+        self.assertTrue(
+            hits, "heroStatement names no non-AI domain: %r" % self.site["heroStatement"])
+
+    def test_hero_statement_is_rendered_on_the_homepage(self):
+        self.assertIn(self.site["heroStatement"], self.html("index.html"))
+
+    def test_no_page_claims_specialising_in_ai(self):
+        for page in ("index.html", "about.html"):
+            self.assertNotIn("specialising in AI", self.html(page),
+                             "%s still narrows the practice to AI" % page)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

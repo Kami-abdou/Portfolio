@@ -12,12 +12,12 @@
   ],
   "tagline": "Six years across AI, fintech, food delivery, automotive retail and developer tools.",
   "intro": "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. Those decisions are the difference between software that feels alive and software that feels assembled.",
-  "currently": "Senior product designer at InstaDeep, designing AI products.",
-  "contactLede": "Senior product designer at InstaDeep, specialising in AI products. Open to conversations about design work.",
+  "currently": "Senior product designer at InstaDeep.",
+  "contactLede": "Senior product designer at InstaDeep. Open to conversations about design work.",
   "about": [
     "I started in UX/UI design in 2020. Since then I have worked with eight companies across AI, fintech, food delivery, automotive retail, pharmacy and home services.",
     "From October 2021 to November 2023 I was Chief Product Officer at Steer, leading a small team of front-end and back-end engineers while being the only person in design and product. The company went on to raise in France and is now based in Versailles.",
-    "I am now a senior product designer at InstaDeep, specialising in AI products — among them DeepPCB, their cloud-native PCB routing software, and the design system the company's product surfaces run on.",
+    "I am now a senior product designer at InstaDeep, working on AI products — among them DeepPCB, their cloud-native PCB routing software, and the design system the company's product surfaces run on.",
     "Outside of work I am obsessed with video games and enjoy the gym, and I cherish time with family and friends."
   ],
   "experience": [
@@ -111,7 +111,7 @@
   },
   "url": "https://kami-abdou.github.io/Portfolio",
   "shareImage": "site/share-card.png",
-  "heroStatement": "I design AI products at InstaDeep — interfaces that make a machine's decisions legible to the people who act on them.",
-  "metaDescription": "Senior product designer at InstaDeep, specialising in AI products. Six years across fintech, delivery, automotive retail and developer tools.",
+  "heroStatement": "Six years designing products across fintech, automotive retail and AI — from first research to shipped interface.",
+  "metaDescription": "Senior product designer. Six years across fintech, automotive retail, food delivery and AI.",
   "aboutDescription": "Six years of product design across AI, fintech, food delivery and automotive retail — how I got here, what I work on now, and what I care about."
 }
