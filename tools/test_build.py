@@ -62,11 +62,24 @@ class TestHomepageTiers(BuildCase):
         for stale in ("caseStudies", "otherProjects"):
             self.assertNotIn(stale, self.site["sections"])
 
-    def test_both_grids_are_three_across(self):
-        """3 cards at 2-up orphans one; 6 at 4-up orphans two."""
+    def test_the_two_bands_declare_different_column_counts(self):
+        """The column counts are what make the headline cards bigger.
+
+        Both bands ran at --cols: 3 briefly, to avoid the short last row that
+        6 cards at 4-up leaves -- and that inverted the hierarchy. grid--lg
+        carries a 48px gap against grid--sm's 32px, so at equal column counts
+        the "large" cards rendered NARROWER (352px vs 363px) and shorter (a
+        3/2 media against 4/3 gave 235px against 272px). Only the title was
+        bigger, so Tier 2 visually outweighed Tier 1 -- the exact opposite of
+        the point of the restructure.
+
+        Measured after the fix at a 1280px viewport: 352px vs 264px wide,
+        media area 83k vs 52k px^2. Equalising these is a regression, not a
+        tidy-up.
+        """
         index = self.html("index.html")
-        self.assertEqual(index.count("--cols: 3"), 2,
-                         "expected both bands to declare --cols: 3")
+        self.assertEqual(index.count('style="--cols: 3"'), 1)
+        self.assertEqual(index.count('style="--cols: 4"'), 1)
 
     def test_headline_cards_are_large_and_the_rest_are_not(self):
         index = self.html("index.html")

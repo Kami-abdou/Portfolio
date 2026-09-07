@@ -604,9 +604,18 @@ def build_index(projects):
     </section>
 """)
 
-    # Two tiers, three across in both. Three large cards at 2-up leaves an
-    # orphan on its own row and six small ones at 4-up leaves two, which read
-    # as "we ran out" rather than as a grid.
+    # Two tiers: 3 across for the headline band, 4 for the rest.
+    #
+    # The column counts MUST differ, because they are what makes the headline
+    # cards bigger. Both bands ran at 3 briefly, to avoid the orphan that 6
+    # cards at 4-up leaves on the second row -- and that inverted the whole
+    # hierarchy. grid--lg carries a 48px gap against grid--sm's 32px, so at
+    # equal column counts the "large" cards came out NARROWER (352px vs 363px)
+    # and shorter (a 3/2 media against 4/3 is 235px tall against 272px). Only
+    # the title was bigger. Tier 2 visually outweighed Tier 1, which is the
+    # exact opposite of the point.
+    #
+    # A short last row is a much smaller cost than an inverted hierarchy.
     for key, large in (("highlights", True), ("selectedWork", False)):
         meta = SITE["sections"][key]
         anchor = ' id="work"' if key == "highlights" else ""
@@ -619,7 +628,7 @@ def build_index(projects):
         <h2>{masked(meta['heading'])}</h2>
         <p>{e(meta['description'])}</p>
       </div>
-      <ul class="grid {'grid--lg' if large else 'grid--sm'}" style="--cols: 3">
+      <ul class="grid {'grid--lg' if large else 'grid--sm'}" style="--cols: {3 if large else 4}">
 {cards}
       </ul>
     </section>
