@@ -58,12 +58,6 @@
       "autoImages": "components"
     },
     {
-      "id": "patterns",
-      "heading": "The patterns, running",
-      "lab": true,
-      "body": "The system itself is internal, so what follows is not an export of it. These are the interaction and motion patterns I specify, rebuilt here as working components in this site's own tokens.\n\nThat distinction matters, and it is also the point: motion cannot be shown in a screenshot. \"180ms, ease-out, a 4px rise\" is a claim until you can watch it happen. Each demo below runs the timing printed beside it, so the documentation and the behaviour are the same thing."
-    },
-    {
       "id": "motion",
       "heading": "Motion and interaction, not just components",
       "body": "A component library tells you what a button looks like. It rarely tells you how it enters, what it does while it waits, or how it answers a click. Those decisions get made ad hoc, screen by screen, and that is why products drift into feeling assembled rather than designed.\n\nI specified the motion and interaction centrally alongside the components, so timing and behaviour are decided once and inherited everywhere.",

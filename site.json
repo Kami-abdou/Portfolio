@@ -10,15 +10,62 @@
     "Design Systems",
     "Experience Designer"
   ],
-  "tagline": "I love working in the realm between UX and UI design.",
-  "intro": "Things that make me excited are user-centred design, interaction design, and making interfaces feel fun and human.",
-  "currently": "Senior product designer at InstaDeep, working on DeepPCB.",
-  "contactLede": "Senior product designer at InstaDeep. Open to conversations about product design work.",
+  "tagline": "Six years across AI, fintech, food delivery, automotive retail and developer tools.",
+  "intro": "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. Those decisions are the difference between software that feels alive and software that feels assembled.",
+  "currently": "Senior product designer at InstaDeep, designing AI products.",
+  "contactLede": "Senior product designer at InstaDeep, specialising in AI products. Open to conversations about design work.",
   "about": [
-    "I entered the UX/UI design field on 1 January 2020. Since then I have worked with eight startups across fintech, food delivery, online courses, automotive, pharmacy and development.",
+    "I started in UX/UI design in 2020. Since then I have worked with eight companies across AI, fintech, food delivery, automotive retail, pharmacy and home services.",
     "From October 2021 to November 2023 I was Chief Product Officer at Steer, leading a small team of front-end and back-end engineers while being the only person in design and product. The company went on to raise in France and is now based in Versailles.",
-    "I am now a senior product designer at InstaDeep, working on DeepPCB — their AI-powered, cloud-native PCB routing software.",
+    "I am now a senior product designer at InstaDeep, specialising in AI products — among them DeepPCB, their cloud-native PCB routing software, and the design system the company's product surfaces run on.",
     "Outside of work I am obsessed with video games and enjoy the gym, and I cherish time with family and friends."
+  ],
+  "experience": [
+    {
+      "company": "InstaDeep",
+      "role": "Senior Product Designer",
+      "years": "Jan 2024 — present",
+      "note": "AI products, and the design system every InstaDeep product surface and demo runs on.",
+      "projects": ["deeppcb", "design-system"]
+    },
+    {
+      "company": "Steer",
+      "role": "Chief Product Officer",
+      "years": "Oct 2021 — Nov 2023",
+      "place": "Tunis, then Versailles",
+      "note": "The only person in design and product, leading the front-end and back-end engineers. The company went on to raise in France.",
+      "projects": ["steer"]
+    },
+    {
+      "company": "Groupado",
+      "role": "UX / UI Designer",
+      "years": "Feb 2021 — Sep 2021",
+      "projects": ["groupado"]
+    },
+    {
+      "company": "T+ informatique",
+      "role": "UI Designer, freelance",
+      "years": "2021",
+      "place": "France",
+      "projects": ["pharmadrive"]
+    },
+    {
+      "company": "T-ledger",
+      "role": "Product Designer",
+      "years": "2020 — 2021",
+      "note": "Sole designer across both of the company's products.",
+      "projects": ["konnect", "fissa3"]
+    }
+  ],
+  "toolkit": [
+    {
+      "label": "Design and prototyping",
+      "items": ["Figma", "Framer", "Illustrator", "Photoshop"]
+    },
+    {
+      "label": "Testing and process",
+      "items": ["VWO", "Jira", "Miro"]
+    }
   ],
   "profileImage": "site/profile.png",
   "heroImage": "site/portrait.jpg",
@@ -64,5 +111,7 @@
   },
   "url": "https://kami-abdou.github.io/Portfolio",
   "shareImage": "site/share-card.png",
-  "heroStatement": "Senior product designer at InstaDeep, working on DeepPCB — AI-powered PCB routing software. Six years designing products across fintech, delivery, automotive and developer tools."
+  "heroStatement": "I design AI products at InstaDeep — interfaces that make a machine's decisions legible to the people who act on them.",
+  "metaDescription": "Senior product designer at InstaDeep, specialising in AI products. Six years across fintech, delivery, automotive retail and developer tools.",
+  "aboutDescription": "Six years of product design across AI, fintech, food delivery and automotive retail — how I got here, what I work on now, and what I care about."
 }

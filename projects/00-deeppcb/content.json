@@ -5,6 +5,7 @@
   "title": "DeepPCB",
   "tagline": "The marketing site for an AI-powered, cloud-native PCB routing tool",
   "summary": "A ten-page marketing site for DeepPCB, covering the home page, an enterprise page and pricing, an editorial section with blog index and article template, and the supporting help, contact, terms and error pages.",
+  "description": "A ten-page marketing site for DeepPCB, InstaDeep's AI PCB routing software — home, enterprise, pricing, editorial and support pages.",
   "role": "Senior Product Designer, full-time at InstaDeep",
   "client": "InstaDeep",
   "year": "January 2024 — present",
@@ -57,7 +58,7 @@
       "images": [
         {
           "src": "assets/p01-home.jpg",
-          "alt": "DeepPCB home page, full length",
+          "alt": "DeepPCB home page, top to footer",
           "caption": "Home."
         },
         {

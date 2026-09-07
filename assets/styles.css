@@ -19,6 +19,16 @@
    switch to — this declares the one that exists. */
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; color-scheme: dark; }
 
+/* Anchor targets must clear the sticky header. Every TOC link and the skip
+   link land on an id, and .site-head is position:sticky at 5.5rem, so
+   without this the heading you just jumped to sits behind it — measured 48px
+   from the top against a 76px header. */
+:target,
+.project__section,
+#main {
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
+}
+
 body {
   margin: 0;
   background: var(--color-bg);
@@ -37,6 +47,14 @@ a { color: inherit; }
   outline-offset: 3px;
   border-radius: var(--radius-sm);
 }
+
+/* <main> carries tabindex="-1" so the skip link genuinely moves focus —
+   Chrome and Firefox set the sequential-focus point without it, Safari and
+   several screen readers do not. It is not a control, though, and ringing
+   the entire page content reads as a rendering bug, so the ring is
+   suppressed here only. The visitor's confirmation is that the next Tab
+   lands inside the content rather than back in the header. */
+#main:focus, #main:focus-visible { outline: none; }
 
 .skip-link {
   position: absolute; left: var(--space-4); top: -4rem;
@@ -217,6 +235,113 @@ a { color: inherit; }
 }
 .about .prose p { margin: 0 0 var(--space-6); }
 .about__cta { margin-top: var(--space-8); }
+
+/* ── experience, on the about page ────────────────
+   The scannable counterpart to the about prose: the prose says what the
+   work was like, this says what the work was. It reuses the spec-sheet
+   vocabulary of the project facts tables — mono micro-labels, hairline
+   rules, no boxes — so the history reads as part of the system rather
+   than a résumé bolted onto the end of it.
+
+   The gap above comes from .about's own padding-block, which is why .cv
+   adds none at the top; doubling them pushed Experience most of a screen
+   away from the paragraph it continues. */
+.cv { padding-block: 0 var(--space-24); }
+.cv__head {
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+.cv__list + .cv__head { margin-top: var(--space-16); }
+.cv__list {
+  list-style: none; margin: 0; padding: 0;
+  border-top: 1px solid var(--color-border);
+}
+.cv__row {
+  display: grid; gap: var(--space-2);
+  padding-block: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+@media (min-width: 700px) {
+  /* Fixed years column so the dates stack into one readable spine. 13rem
+     holds the longest string — "February 2021 — September 2021" — on one
+     line at this size; below the breakpoint the row goes single-column and
+     the date sits above the company instead. */
+  .cv__row { grid-template-columns: 13rem 1fr; gap: var(--space-8); }
+  .cv__kit { grid-template-columns: 13rem 1fr; gap: var(--space-4) var(--space-8); }
+}
+.cv__years {
+  margin: 0;
+  padding-top: 0.35em;        /* optical: mono x-height to display cap-height */
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.03em;
+  line-height: var(--line-height-normal);
+  color: var(--color-text-faint);
+}
+.cv__body { min-width: 0; }
+.cv__company {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-lg);
+  letter-spacing: -0.01em;
+  line-height: var(--line-height-tight);
+}
+.cv__role { margin: var(--space-1) 0 0; }
+.cv__place {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.03em;
+  color: var(--color-text-faint);
+}
+.cv__note {
+  margin: var(--space-2) 0 0;
+  max-width: var(--prose-width);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-muted);
+}
+
+/* Links back into the case studies — the thing a plain CV page cannot do:
+   every row is a door into the reasoning. Chips rather than buttons,
+   because at eight rows a button per project would out-shout the history
+   it is there to annotate.
+
+   The trailing arrow is load-bearing, not decoration. A pill with a
+   hairline border on a raised surface is exactly what .tags looks like
+   elsewhere on the site, and .tags is inert — same appearance, opposite
+   behaviour. The arrow is what tells you this one goes somewhere. */
+.cv__work { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-4) 0 0; }
+.cv__work a::after { content: " \2192"; color: var(--color-accent); }
+.cv__work a {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-raised);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+.cv__work a:hover { color: var(--color-text); border-color: var(--color-border-strong); }
+
+.cv__kit { margin: 0; display: grid; gap: var(--space-4); }
+.cv__kit dt {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+.cv__kit dd { margin: 0; color: var(--color-text-muted); }
 
 /* ── project page ────────────────────────────────── */
 .project__head { padding-block: var(--space-16) var(--space-12); }
@@ -414,12 +539,20 @@ body::after {
 
 /* ══════════════════════════════════════════════════════════
    ENHANCEMENTS
-   Every hiding rule is scoped to html.js, which enhance.js sets
-   as its first act. Without JS nothing is hidden — the page just
-   loses the animation. Learned the hard way: never let a reveal
-   be the only thing standing between a visitor and the content.
+   Two classes, set by enhance.js as its first act:
+
+     html.js     the script is running — JS-dependent UI may be shown
+     html.anim   reveals are wanted — not set when the visitor has
+                 asked for reduced motion
+
+   Every hiding rule is scoped to one of them. Without JS nothing is
+   hidden; without .anim nothing is translated or faded out of view.
+   Learned the hard way, twice: never let a reveal be the only thing
+   standing between a visitor and the content — and never let
+   "prefers reduced motion" mean "pretend JavaScript is off", which
+   is what a single combined class quietly did.
    ══════════════════════════════════════════════════════════ */
-.js .rise {
+.anim .rise {
   opacity: 0;
   transform: translateY(26px);
   filter: blur(8px);
@@ -428,7 +561,7 @@ body::after {
     transform .85s var(--ease-out),
     filter .85s var(--ease-out);
 }
-.js .rise.is-in { opacity: 1; transform: none; filter: blur(0); }
+.anim .rise.is-in { opacity: 1; transform: none; filter: blur(0); }
 
 /* ── index numbers on cards ──────────────────────── */
 .card__media { position: relative; }
@@ -483,7 +616,9 @@ body::after {
   margin-right: var(--space-3);
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
-  opacity: 0.6;
+  /* no extra opacity: it multiplied the already-translucent faint colour
+     (0.62 x 0.6) and dropped these counters to about 2.8:1. The smaller
+     mono size is enough to rank them below the label. */
 }
 .toc__list a:hover { color: var(--color-text); }
 .toc__list a.is-current {
@@ -523,16 +658,16 @@ body::after {
   margin-bottom: -0.09em;
 }
 .mask__in { display: block; }
-.js .mask__in {
+.anim .mask__in {
   transform: translateY(105%);
   transition: transform .95s var(--ease-reveal) .05s;
 }
-.js .is-in .mask__in,
-.js .mask.is-in .mask__in,
-.js .hero .mask__in { transform: translateY(0); }
+.anim .is-in .mask__in,
+.anim .mask.is-in .mask__in,
+.anim .hero .mask__in { transform: translateY(0); }
 
 /* the hero fires on load rather than on scroll */
-.js .hero .mask__in {
+.anim .hero .mask__in {
   animation: maskUp 1s var(--ease-reveal) .15s both;
 }
 @keyframes maskUp { from { transform: translateY(105%); } to { transform: none; } }
@@ -679,6 +814,41 @@ body::after {
   opacity: 0.16;
 }
 
+/* ── the scrim under the statement ───────────────────────
+   The wall is centred in the hero while .hero__statement is pinned to the
+   foot, so the gap between them is (heroHeight - 368px - wallHeight) / 2 —
+   it closes as the window gets shorter and goes negative at about 940px of
+   viewport height. Below that the statement, which is --color-text, was
+   sitting directly on wall letters that are also --color-text: same colour,
+   nothing in between, zero contrast.
+
+   Rather than shrink the poster type or move the statement out of the
+   stack, this fades the foot of the hero to the page background. The
+   statement always lands on flat colour, the wall reads as running off the
+   bottom edge, and it holds at every viewport height instead of only tall
+   ones. Sits above the ghost copy (3) and below the text (5).
+
+   The opaque stop is a fixed length, not a percentage. A percentage drifts
+   with the hero: at a 700px window the fade landed mid-paragraph and the
+   worst case measured 4.04:1, still failing. Anchoring it to the same
+   tokens that position the statement — its own bottom offset plus 10rem of
+   room for the paragraph to wrap to five lines — keeps every line on solid
+   colour at any height. Measured at 1440x560/700/800, 1920x1080, 768x1024
+   and 375x812: the scrim is fully opaque behind the paragraph in all six,
+   worst case 16.88:1 (a full wall letter directly behind the top line). */
+.hero::after {
+  content: "";
+  position: absolute; z-index: 4;
+  inset-inline: 0; bottom: 0;
+  height: clamp(380px, 55%, 500px);
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    var(--color-bg) 0,
+    var(--color-bg) calc(var(--space-8) + var(--space-16) + 10rem),
+    transparent 100%);
+}
+
 .wall__row { overflow: hidden; }
 .wall__track {
   display: flex; width: max-content;
@@ -723,7 +893,7 @@ body::after {
 
 /* corner metadata pinned to the foot of the hero */
 .hero__meta {
-  position: absolute; z-index: 4;
+  position: absolute; z-index: 5;
   inset-inline: 0; bottom: var(--space-8);
   display: flex; justify-content: space-between; gap: var(--space-4);
   font-family: var(--font-mono);
@@ -1017,7 +1187,7 @@ body::after {
    without this the first screen states nothing a recruiter can read. Sits
    above .hero__meta in the same absolutely-positioned stack. */
 .hero__statement {
-  position: absolute; z-index: 4;
+  position: absolute; z-index: 5;
   inset-inline: 0; bottom: calc(var(--space-8) + var(--space-12));
   margin: 0;
   max-width: 46ch;
@@ -1090,188 +1260,6 @@ body::after {
 }
 /* without JS the tabs cannot do anything, so they are not offered */
 html:not(.js) .viewer__tabs { display: none; }
-
-/* ── component lab ───────────────────────────────────────
-   Live demos, not screenshots. Motion is the thing being shown, so every
-   duration and curve here is the one quoted in the spec line beside it. */
-.lab__panel { display: grid; gap: 0; }
-@media (min-width: 900px) { .lab__panel { grid-template-columns: 1.1fr 0.9fr; } }
-.lab__stage {
-  display: grid; place-items: center; gap: var(--space-4);
-  padding: var(--space-16) var(--space-8);
-  min-height: 300px;
-  background:
-    linear-gradient(var(--color-border) 1px, transparent 1px) 0 0 / 100% 32px,
-    linear-gradient(90deg, var(--color-border) 1px, transparent 1px) 0 0 / 32px 100%,
-    var(--color-bg);
-  background-blend-mode: normal;
-}
-.lab__doc { padding: var(--space-8); border-left: 1px solid var(--color-border); }
-@media (max-width: 899px) { .lab__doc { border-left: 0; border-top: 1px solid var(--color-border); } }
-.lab__doc h3 { margin: 0 0 var(--space-3); font-size: var(--font-size-lg); }
-.lab__doc p { margin: 0 0 var(--space-3); color: var(--color-text-muted); }
-.lab__spec {
-  font-family: var(--font-mono); font-size: var(--font-size-xs);
-  color: var(--color-accent) !important; letter-spacing: 0.02em;
-}
-.lab__row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; justify-content: center; }
-.lab__row--col { flex-direction: column; align-items: stretch; width: min(320px, 100%); }
-
-/* button */
-.c-btn {
-  padding: var(--space-3) var(--space-6); border-radius: var(--radius-full);
-  border: 1px solid transparent; background: var(--color-bg-inverse);
-  color: var(--color-text-inverse); font: inherit; font-size: var(--font-size-sm);
-  cursor: pointer; transition: transform 60ms var(--ease-out), opacity 160ms var(--ease-out),
-              background 160ms var(--ease-out);
-}
-.c-btn:hover { opacity: .88; }
-.c-btn:active { transform: scale(.97); }
-.c-btn[disabled] { opacity: .38; cursor: not-allowed; }
-.c-btn--ghost { background: transparent; color: var(--color-text); border-color: var(--color-border-strong); }
-.c-btn--load.is-load { pointer-events: none; }
-.c-btn--load.is-load span { opacity: 0; }
-.c-btn--load.is-load::after {
-  content: ""; position: absolute; width: 14px; height: 14px; margin-left: -7px;
-  border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%;
-  animation: lab-spin .7s linear infinite;
-}
-.c-btn--load { position: relative; display: inline-flex; align-items: center; justify-content: center; }
-@keyframes lab-spin { to { transform: rotate(360deg); } }
-
-/* field */
-.c-field { position: relative; display: block; }
-.c-field__in {
-  width: 100%; padding: var(--space-6) var(--space-4) var(--space-2);
-  background: var(--color-bg-raised); color: var(--color-text);
-  border: 1px solid var(--color-border); border-radius: var(--radius-md);
-  font: inherit; transition: border-color 180ms var(--ease-out);
-}
-.c-field__in:focus { outline: none; border-color: var(--color-accent); }
-.c-field__lb {
-  position: absolute; left: var(--space-4); top: 50%; transform: translateY(-50%);
-  color: var(--color-text-faint); font-size: var(--font-size-sm);
-  pointer-events: none; transition: all 180ms var(--ease-out);
-}
-.c-field__in:focus + .c-field__lb,
-.c-field__in:not(:placeholder-shown) + .c-field__lb {
-  top: var(--space-3); transform: none; font-size: var(--font-size-xs); color: var(--color-accent);
-}
-.c-field.is-err .c-field__in { border-color: #F87171; animation: lab-shake 240ms var(--ease-out); }
-.c-field__msg { display: block; margin-top: var(--space-2); font-size: var(--font-size-xs); color: #F87171; }
-@keyframes lab-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
-
-/* toggle */
-.c-tog {
-  width: 52px; height: 30px; padding: 3px; border-radius: var(--radius-full);
-  border: 1px solid var(--color-border-strong); background: var(--color-bg-raised);
-  cursor: pointer; transition: background 260ms var(--ease-out), border-color 260ms var(--ease-out);
-}
-.c-tog span {
-  display: block; width: 22px; height: 22px; border-radius: 50%;
-  background: var(--color-text-faint);
-  transition: transform 200ms var(--ease-spring), background 200ms var(--ease-out);
-}
-.c-tog.is-on { background: var(--color-accent-soft); border-color: var(--color-accent); }
-.c-tog.is-on span { transform: translateX(22px); background: var(--color-accent); }
-
-/* toast */
-.c-toast {
-  position: absolute; bottom: var(--space-8); left: 50%;
-  padding: var(--space-3) var(--space-6); border-radius: var(--radius-full);
-  background: var(--color-bg-inverse); color: var(--color-text-inverse);
-  font-size: var(--font-size-sm);
-  transform: translate(-50%, 12px); opacity: 0;
-  transition: transform 320ms var(--ease-out), opacity 320ms var(--ease-out);
-}
-.c-toast.is-in { transform: translate(-50%, 0); opacity: 1; transition-duration: 220ms; }
-.lab__stage { position: relative; }
-
-/* dialog */
-.c-modal { position: absolute; inset: 0; display: grid; place-items: center; z-index: 3; }
-.c-modal::before {
-  content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.55);
-  opacity: 0; transition: opacity 200ms var(--ease-out);
-}
-.c-modal.is-in::before { opacity: 1; }
-.c-modal__box {
-  position: relative; width: min(300px, 90%); padding: var(--space-6);
-  background: var(--color-bg-alt); border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-lg);
-  transform: translateY(12px); opacity: 0;
-  transition: transform 260ms var(--ease-out), opacity 260ms var(--ease-out);
-}
-.c-modal.is-in .c-modal__box { transform: none; opacity: 1; }
-.c-modal__t { margin: 0 0 var(--space-2); font-size: var(--font-size-lg); }
-.c-modal__b { margin: 0 0 var(--space-4); color: var(--color-text-muted); font-size: var(--font-size-sm); }
-
-/* tooltip */
-.c-tip { position: relative; border-bottom: 1px dashed var(--color-border-strong); cursor: help; }
-.c-tip__b {
-  position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0;
-  width: max-content; max-width: 220px;
-  padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
-  background: var(--color-bg-inverse); color: var(--color-text-inverse);
-  font-size: var(--font-size-xs); text-align: center;
-  opacity: 0; pointer-events: none; transition: opacity 90ms var(--ease-out);
-}
-.c-tip:hover .c-tip__b, .c-tip:focus .c-tip__b { opacity: 1; transition: opacity 120ms var(--ease-out) 400ms; }
-
-/* accordion */
-.c-acc { width: min(360px, 100%); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
-.c-acc__h {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
-  width: 100%; padding: var(--space-4); background: transparent; border: 0;
-  color: var(--color-text); font: inherit; font-size: var(--font-size-sm);
-  text-align: left; cursor: pointer;
-}
-.c-acc__i {
-  width: 9px; height: 9px; flex: none;
-  border-right: 2px solid var(--color-text-muted); border-bottom: 2px solid var(--color-text-muted);
-  transform: rotate(45deg); transition: transform 240ms var(--ease-out);
-}
-.c-acc.is-open .c-acc__i { transform: rotate(225deg); }
-.c-acc__p { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 240ms var(--ease-out); }
-.c-acc.is-open .c-acc__p { grid-template-rows: 1fr; }
-.c-acc__p > div { overflow: hidden; }
-.c-acc__p > div > * { padding: 0 var(--space-4) var(--space-4); margin: 0;
-  color: var(--color-text-muted); font-size: var(--font-size-sm); }
-
-/* tabs */
-.c-tabs { width: min(360px, 100%); }
-.c-tabs__list { position: relative; display: flex; gap: var(--space-4); border-bottom: 1px solid var(--color-border); }
-.c-tabs__t {
-  padding: var(--space-3) 0; background: none; border: 0; cursor: pointer;
-  color: var(--color-text-muted); font: inherit; font-size: var(--font-size-sm);
-  transition: color 160ms var(--ease-out);
-}
-.c-tabs__t.is-on { color: var(--color-text); }
-.c-tabs__ind {
-  position: absolute; bottom: -1px; height: 2px; background: var(--color-accent);
-  transition: transform 260ms var(--ease-out), width 260ms var(--ease-out);
-}
-.c-tabs__p { display: none; padding-top: var(--space-4); color: var(--color-text-muted); font-size: var(--font-size-sm); }
-.c-tabs__p.is-on { display: block; animation: lab-fade 160ms var(--ease-out); }
-@keyframes lab-fade { from { opacity: 0 } to { opacity: 1 } }
-
-/* progress */
-.c-prog { height: 6px; border-radius: var(--radius-full); background: var(--color-bg-raised); overflow: hidden; }
-.c-prog i { display: block; height: 100%; background: var(--color-accent);
-  border-radius: inherit; transition: width 400ms var(--ease-out); }
-.c-prog--ind i { width: 40%; animation: lab-ind 1.4s var(--ease-out) infinite; }
-@keyframes lab-ind { 0%{transform:translateX(-100%)} 100%{transform:translateX(250%)} }
-
-/* skeleton */
-.c-skel__l { display: block; height: 12px; border-radius: var(--radius-full);
-  background: linear-gradient(90deg, var(--color-bg-raised) 25%,
-    var(--color-bg-raised-hover) 37%, var(--color-bg-raised) 63%);
-  background-size: 400% 100%; animation: lab-sweep 1.6s linear infinite; }
-@keyframes lab-sweep { from { background-position: 100% 50% } to { background-position: 0 50% } }
-
-@media (prefers-reduced-motion: reduce) {
-  .lab * { animation-duration: .01ms !important; animation-iteration-count: 1 !important;
-           transition-duration: .01ms !important; }
-}
 
 /* viewer images open full size — documentation boards are unreadable otherwise */
 .viewer__zoom {

@@ -15,7 +15,7 @@ That's the whole workflow. Edit the JSON, run the command, commit the result.
 ## How it fits together
 
 ```
-site.json                 bio, contact links, homepage grouping and order
+site.json                 bio, experience, contact links, homepage grouping
 tokens.json               colours, type scale, spacing — the design system
 projects/NN-slug/
   content.json            one case study
@@ -73,6 +73,49 @@ alignment and read as one moving block instead of three bands.
 Adding a fourth role does not add a fourth row; change `roles[:3]` in the
 hero builder if you want more.
 
+## Editing the experience list
+
+`site.json` -> `experience` drives the timeline on the about page. **Array
+order is display order** — nothing is sorted, so `years` can stay a
+human-readable string like `"Oct 2021 — Nov 2023"` instead of a parseable
+date. Keep it reverse-chronological.
+
+```json
+{ "company": "InstaDeep",
+  "role": "Senior Product Designer",
+  "years": "Jan 2024 — present",
+  "place": "Tunis",                      // optional
+  "note": "One sentence, optional.",
+  "projects": ["deeppcb", "design-system"] }
+```
+
+`projects` holds case-study slugs, and each becomes a link chip on that row —
+this is the part a plain CV page can't do, so prefer listing them. A slug that
+doesn't exist **fails the build** rather than rendering a dead link.
+
+Employment is authored separately from the projects rather than derived from
+them, because the two aren't the same shape: one role can contain several
+projects, and freelance work overlaps full-time work instead of following it.
+
+A `years` value starting with `TODO` renders as an empty cell, same as the
+facts tables. Two rows are currently in that state.
+
+## The three homepage copy slots
+
+They're easy to confuse, and pointing any two at one string is what caused
+the hero to read like a résumé line:
+
+| field | job |
+|---|---|
+| `heroStatement` | the visible claim — what I do now |
+| `tagline` | the range — where I've been |
+| `intro` | the angle — what I care about |
+| `metaDescription` | the search snippet; never shown on the page |
+
+`metaDescription` also feeds the JSON-LD `description`. It used to be
+`tagline`, which meant every rewrite of the visible copy silently rewrote the
+structured data.
+
 ## Conventions worth keeping
 
 **`tokens.json` is the only place styling values live.** `styles.css` contains
@@ -83,6 +126,31 @@ accent everywhere is a one-line edit.
 `TODO` is left out of the facts table, so an unfilled fact renders as an absent
 row rather than as the word "TODO". A handful remain — duration and team size on
 the older freelance pieces — and the site reads correctly without them.
+
+**Link previews are generated, not the cover.** A project's `cover` used to
+double as its `og:image`, and most covers here are full-page screenshots — up
+to 900x4009. Every platform crops a preview to about 1.91:1, so those arrived
+on LinkedIn as an unrecognisable band from the middle of a page.
+
+```bash
+python3 tools/make-share-cards.py            # writes assets/share.jpg where needed
+python3 tools/make-share-cards.py --dry-run  # just report what would change
+```
+
+`build.py` prefers `assets/share.jpg` when it exists. Covers already near the
+target ratio are left alone. The card is cut from the **top** of the
+highest-resolution source, which is right for a page screenshot — wordmark,
+nav, hero. For a presentation board the top is the board's own title instead,
+which tells a stranger nothing, so those set `shareOffset` in their
+`content.json` (Fissa3 does, at 250).
+
+Re-run it after replacing a cover.
+
+**The footer's "last updated" is derived, not typed.** It's the newest mtime
+across `site.json`, `tokens.json` and the `content.json` files — so rebuilding
+without editing anything doesn't bump the date and produce a diff claiming a
+change nobody made. The copyright year comes from the same stamp; it used to be
+hardcoded and would have started lying on 1 January.
 
 **Image dimensions are read from the PNG headers** at build time and written as
 `width`/`height` attributes, so the page doesn't reflow as images load. Very
@@ -108,10 +176,10 @@ skipped rather than shown empty.
 
 Semantic landmarks, one `<h1>` per page, visible focus rings, a skip link, and
 a lightbox that closes on Escape and keeps focus inside while open. The
-component browser and the interaction lab are real tablists: arrow keys move
-between tabs, and only the selected tab is in the tab order.
+component browser is a real tablist: arrow keys move between tabs, and only
+the selected tab is in the tab order.
 
-Reduced motion is respected — three `prefers-reduced-motion` blocks collapse
+Reduced motion is respected — two `prefers-reduced-motion` blocks collapse
 the transitions rather than merely shortening them.
 
 The palette is dark-only and declared as such, via `color-scheme: dark` and a

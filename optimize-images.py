@@ -36,6 +36,8 @@ ROOT = Path(__file__).resolve().parent
 THUMB_W = 900     # ~404 CSS px in the grid, 2x for retina, plus headroom
 FULL_W = 1400     # lightbox caps at 1200 px; a little over for sharpness
 QUALITY = 80
+PORTRAIT_W = 640  # the about-page portrait sits in a 320 px column; 2x for retina
+AVIF_QUALITY = 62 # 34 KB at 640 px; 55 saves 8 KB but softens the glasses
 MIN_BYTES = 120 * 1024   # leave small files alone; recompressing them can grow them
 
 IMG_RE = re.compile(r"\.(png|jpe?g)$", re.I)
@@ -195,7 +197,49 @@ def optimise_site_images():
             after += out.stat().st_size
             if live.exists() and live.resolve() != out.resolve():
                 live.unlink()
+        # The portrait is also shipped as AVIF, which build.py offers through a
+        # <picture> ahead of the PNG: 741 KB -> 34 KB for the same image, alpha
+        # included. It has to be regenerated here rather than by hand, because
+        # re-rendering the PNG without re-rendering the AVIF would leave modern
+        # browsers showing the OLD portrait while the fallback carried the new
+        # one — wrong content, and silent, since the page still looks fine.
+        if stash.stem == "profile":
+            avif = site / "profile.avif"
+            before_avif = avif.stat().st_size if avif.exists() else 0
+            if render_avif(stash, avif, PORTRAIT_W):
+                after += avif.stat().st_size - before_avif
     return before, after
+
+
+GENERATED = {"share.jpg", "share.png"}
+
+
+def is_generated(path):
+    """True for assets produced by another tool, which must not be re-processed.
+
+    share.jpg is a 1200x630 link-preview card written by
+    tools/make-share-cards.py. It lives in assets/ because that is where
+    build.py looks for it, but it is metadata, not a figure: its size is fixed
+    by what link scrapers require.
+
+    Without this guard, a run adopted all six cards as new sources, stashed
+    them in _src/, resampled three of them to THUMB_W (900x472 — under the
+    1200x630 minimum every platform asks for) and emitted share.full.jpg
+    files nobody references. The cards still looked fine on disk, which is
+    what made it worth a named guard rather than a comment.
+    """
+    return path.name in GENERATED
+
+
+def render_avif(src, dest, width):
+    """AVIF at `width`. Used for the portrait, which has alpha and no lightbox."""
+    w, _ = dims(src)
+    cmd = ["sips", "-s", "format", "avif", "-s", "formatOptions", str(AVIF_QUALITY)]
+    if w > width:
+        cmd += ["--resampleWidth", str(width)]
+    cmd += [str(src), "--out", str(dest)]
+    subprocess.run(cmd, capture_output=True)
+    return dest.exists() and dest.stat().st_size > 0
 
 
 def main():
@@ -209,9 +253,11 @@ def main():
         src_dir.mkdir(exist_ok=True)
 
         # originals already stashed on a previous run, plus anything new
-        sources = sorted(p for p in src_dir.iterdir() if p.is_file() and IMG_RE.search(p.name))
+        sources = sorted(p for p in src_dir.iterdir()
+                         if p.is_file() and IMG_RE.search(p.name) and not is_generated(p))
         fresh = [p for p in assets.iterdir()
-                 if p.is_file() and IMG_RE.search(p.name) and not p.name.endswith(".full.jpg")]
+                 if p.is_file() and IMG_RE.search(p.name)
+                 and not p.name.endswith(".full.jpg") and not is_generated(p)]
         for p in fresh:
             target = src_dir / p.name
             if not target.exists():

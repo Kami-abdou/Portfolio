@@ -10,6 +10,7 @@ file:// in Chrome, so everything is baked in at build time.
 Outputs index.html, about.html, projects/<slug>.html and assets/tokens.css.
 """
 
+import datetime
 import html
 import json
 import os
@@ -39,6 +40,25 @@ def is_todo(value):
 
 def usable(value):
     return bool(value) and not is_todo(value)
+
+
+def content_updated():
+    """When the content last changed, as (iso_date, "Month YYYY").
+
+    Stamped from the newest mtime across the JSON sources rather than from
+    the clock, so rebuilding without editing anything does not bump the date
+    and produce a diff that claims a change nobody made.
+
+    Caveat: a fresh `git clone` sets every mtime to checkout time, so a build
+    run straight after cloning would read "today". The generated HTML is
+    committed, so the date visitors see is the one stamped on the machine
+    where the edit actually happened.
+    """
+    sources = [ROOT / "site.json", ROOT / "tokens.json"]
+    sources += sorted((ROOT / "projects").glob("*/content.json"))
+    newest = max(p.stat().st_mtime for p in sources if p.is_file())
+    stamp = datetime.date.fromtimestamp(newest)
+    return stamp.isoformat(), stamp.strftime("%B %Y")
 
 
 def png_size(path):
@@ -242,7 +262,13 @@ def json_ld():
         "name": SITE["name"],
         "jobTitle": SITE["title"],
         "email": "mailto:%s" % SITE["email"],
-        "description": SITE["tagline"],
+        # metaDescription, not tagline. tagline is a visible display line on
+        # the homepage and is written to be read; this field is written to be
+        # indexed. Pointing both at one string meant every rewrite of the
+        # visible copy silently rewrote the structured data, and the version
+        # search engines were being handed had drifted a full positioning
+        # behind the page it described.
+        "description": SITE.get("metaDescription") or SITE["tagline"],
         "image": abs_url(SITE.get("profileImage", "")),
     }
     if SITE.get("url"):
@@ -255,15 +281,25 @@ def json_ld():
             % json.dumps(data, ensure_ascii=False, separators=(",", ":")))
 
 
-def head(title, description, *, depth=0, image=None, page_url=""):
+def head(title, description, *, depth=0, image=None, page_url="",
+         og_type="website", image_alt=None):
     up = "../" * depth
     img = image or SITE.get("shareImage") or SITE.get("profileImage")
     og_image = ""
     if img:
+        # Declaring the intrinsic size lets a scraper lay out the card before
+        # it has finished fetching the image, which is the difference between
+        # a preview that appears immediately and one that pops in late.
+        size = png_size(ROOT / img)
+        dims = ('\n  <meta property="og:image:width" content="%d">'
+                '\n  <meta property="og:image:height" content="%d">' % size
+                if size else "")
         og_image = (
             '\n  <meta property="og:image" content="%s">'
-            '\n  <meta property="og:image:alt" content="%s">'
-            % (e(abs_url(img, depth)), e("%s — %s" % (SITE["name"], SITE["title"])))
+            '\n  <meta property="og:image:alt" content="%s">%s'
+            % (e(abs_url(img, depth)),
+               e(image_alt or "%s — %s" % (SITE["name"], SITE["title"])),
+               dims)
         )
     canonical = ""
     if SITE.get("url") and page_url:
@@ -278,7 +314,7 @@ def head(title, description, *, depth=0, image=None, page_url=""):
   <title>{e(title)}</title>
   <meta name="description" content="{e(description)}">
   <meta name="author" content="{e(SITE['name'])}">{canonical}
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="{e(og_type)}">
   <meta property="og:site_name" content="{e(SITE['name'])}">
   <meta property="og:title" content="{e(title)}">
   <meta property="og:description" content="{e(description)}">{og_url}{og_image}
@@ -305,7 +341,7 @@ def head(title, description, *, depth=0, image=None, page_url=""):
       </nav>
     </div>
   </header>
-  <main id="main">"""
+  <main id="main" tabindex="-1">"""
 
 
 def foot(depth=0):
@@ -313,10 +349,15 @@ def foot(depth=0):
     links = "\n        ".join(
         '<a href="%s">%s</a>' % (e(l["url"]), e(l["label"])) for l in SITE.get("links", [])
     )
+    # The year was hardcoded and would have started lying on 1 January.
+    # Both values are derived: the notice from the stamp's year, the stamp
+    # from when the JSON last changed. Saying when the site was last touched
+    # is the cheapest possible signal that it is still maintained.
+    iso, pretty = content_updated()
     return f"""  </main>
   <footer class="site-foot">
     <div class="shell site-foot__inner">
-      <p class="site-foot__note">© 2026 {e(SITE['name'])}</p>
+      <p class="site-foot__note">© {iso[:4]} {e(SITE['name'])} · Last updated <time datetime="{iso}">{e(pretty)}</time></p>
       <nav class="site-foot__links" aria-label="Elsewhere">
         {links}
         <a href="{up}{e(SITE['cv'])}">CV</a>
@@ -355,110 +396,6 @@ def figure(img, project_dir, depth):
             <img src="{e(src)}" alt="{e(img.get('alt',''))}"{dims} loading="lazy" decoding="async">
           </button>{cap_html}
         </figure>"""
-
-
-# Ten interaction patterns, rebuilt as working demos. These are NOT exports of
-# InstaDeep's library — that is internal. They are recreations of the patterns
-# and motion specs, built in this site's own tokens, and the page says so
-# plainly. The point is that motion cannot be shown in a screenshot: a spec of
-# "180ms, ease-out, 4px rise" is a claim until you can watch it happen.
-COMPONENTS = [
-    {"id": "button", "name": "Button",
-     "doc": "Four states. The press is the important one — a 60ms scale to 0.97 makes a click feel received rather than merely registered.",
-     "spec": "hover 160ms · press 60ms · cubic-bezier(.22,1,.36,1)",
-     "html": '<div class="lab__row">'
-             '<button class="c-btn">Primary</button>'
-             '<button class="c-btn c-btn--ghost">Secondary</button>'
-             '<button class="c-btn" disabled>Disabled</button>'
-             '<button class="c-btn c-btn--load" data-lab-load><span>Save</span></button>'
-             '</div>'},
-    {"id": "input", "name": "Input field",
-     "doc": "The label moves rather than disappears, so the field never loses its name. Error state animates in with the message so the change is noticed without being alarming.",
-     "spec": "label 180ms · error shake 240ms",
-     "html": '<div class="lab__row lab__row--col">'
-             '<label class="c-field"><input class="c-field__in" placeholder=" "><span class="c-field__lb">Email</span></label>'
-             '<label class="c-field is-err"><input class="c-field__in" placeholder=" " value="not-an-email"><span class="c-field__lb">Email</span>'
-             '<span class="c-field__msg">Enter a valid address</span></label>'
-             '</div>'},
-    {"id": "toggle", "name": "Toggle",
-     "doc": "The knob leads and the track colour follows slightly behind, which reads as the switch causing the state rather than both changing at once.",
-     "spec": "knob 200ms spring · track 260ms",
-     "html": '<div class="lab__row">'
-             '<button class="c-tog" role="switch" aria-checked="false" data-lab-toggle><span></span></button>'
-             '<button class="c-tog is-on" role="switch" aria-checked="true" data-lab-toggle><span></span></button>'
-             '</div>'},
-    {"id": "toast", "name": "Toast",
-     "doc": "Enters from below with a short rise, holds, then leaves by fading and dropping. Entrance is faster than exit — arrivals should be noticed, departures should not.",
-     "spec": "in 220ms · hold 2.6s · out 320ms",
-     "html": '<div class="lab__row"><button class="c-btn c-btn--ghost" data-lab-toast>Trigger toast</button>'
-             '<div class="c-toast" data-lab-toast-el hidden>Saved</div></div>'},
-    {"id": "modal", "name": "Dialog",
-     "doc": "Scrim and panel move together but at different rates. The panel rises 12px while fading, which keeps it feeling anchored to the page rather than pasted over it.",
-     "spec": "scrim 200ms · panel 260ms rise 12px",
-     "html": '<div class="lab__row"><button class="c-btn c-btn--ghost" data-lab-modal>Open dialog</button>'
-             '<div class="c-modal" data-lab-modal-el hidden><div class="c-modal__box">'
-             '<p class="c-modal__t">Delete this board?</p><p class="c-modal__b">This cannot be undone.</p>'
-             '<div class="lab__row"><button class="c-btn c-btn--ghost" data-lab-modal-close>Cancel</button>'
-             '<button class="c-btn" data-lab-modal-close>Delete</button></div></div></div></div>'},
-    {"id": "tooltip", "name": "Tooltip",
-     "doc": "Delayed on the way in, instant on the way out. A tooltip that appears the moment the cursor crosses it is noise; one that lingers after you leave is in the way.",
-     "spec": "in 120ms after 400ms delay · out 90ms",
-     "html": '<div class="lab__row"><span class="c-tip" tabindex="0">Hover me<span class="c-tip__b" role="tooltip">Routes the board with no human in the loop</span></span></div>'},
-    {"id": "accordion", "name": "Accordion",
-     "doc": "Height animates from the measured content rather than a guess, so it never overshoots. The chevron rotates on the same curve so the two read as one motion.",
-     "spec": "240ms · cubic-bezier(.22,1,.36,1)",
-     "html": '<div class="c-acc" data-lab-acc>'
-             '<button class="c-acc__h" aria-expanded="false">What does the system cover?<span class="c-acc__i" aria-hidden="true"></span></button>'
-             '<div class="c-acc__p"><div>Components, tokens, and the motion and interaction specs that go with them.</div></div>'
-             '</div>'},
-    {"id": "tabs", "name": "Tabs",
-     "doc": "The underline travels between tabs instead of cutting. That movement is what tells you the two panels are siblings rather than separate pages.",
-     "spec": "indicator 260ms · content fade 160ms",
-     "html": '<div class="c-tabs" data-lab-tabs>'
-             '<div class="c-tabs__list" role="tablist">'
-             '<button class="c-tabs__t is-on" role="tab">Overview</button>'
-             '<button class="c-tabs__t" role="tab">Specs</button>'
-             '<button class="c-tabs__t" role="tab">Usage</button>'
-             '<span class="c-tabs__ind" aria-hidden="true"></span></div>'
-             '<div class="c-tabs__p is-on">What it is and when to reach for it.</div>'
-             '<div class="c-tabs__p">Timing, easing, and the states it must support.</div>'
-             '<div class="c-tabs__p">Where it belongs, and where it does not.</div>'
-             '</div>'},
-    {"id": "progress", "name": "Progress",
-     "doc": "Determinate where a length is known, indeterminate where it is not. Using the wrong one is a small lie about how long the wait will be.",
-     "spec": "fill 400ms · indeterminate 1.4s loop",
-     "html": '<div class="lab__row lab__row--col">'
-             '<div class="c-prog"><i style="width:62%"></i></div>'
-             '<div class="c-prog c-prog--ind"><i></i></div></div>'},
-    {"id": "skeleton", "name": "Skeleton",
-     "doc": "A sweep rather than a pulse. It moves in reading order, which suggests content arriving instead of something merely blinking.",
-     "spec": "sweep 1.6s linear loop",
-     "html": '<div class="lab__row lab__row--col c-skel">'
-             '<span class="c-skel__l" style="width:70%"></span>'
-             '<span class="c-skel__l" style="width:92%"></span>'
-             '<span class="c-skel__l" style="width:48%"></span></div>'},
-]
-
-
-def component_lab():
-    """Live component demos with their motion documented beside them."""
-    tabs, panels = [], []
-    for i, c in enumerate(COMPONENTS):
-        on = " is-on" if i == 0 else ""
-        tabs.append('<button class="viewer__tab%s" id="lt-%s" role="tab" type="button" '
-                    'aria-controls="lp-%s" aria-selected="%s" data-i="%d">%s</button>'
-                    % (on, c["id"], c["id"], "true" if i == 0 else "false", i, e(c["name"])))
-        panels.append(
-            '<div class="viewer__panel lab__panel%s" id="lp-%s" role="tabpanel" aria-labelledby="lt-%s">'
-            '<div class="lab__stage">%s</div>'
-            '<div class="lab__doc"><h3>%s</h3><p>%s</p><p class="lab__spec">%s</p></div>'
-            '</div>' % (on, c["id"], c["id"], c["html"], e(c["name"]), e(c["doc"]), e(c["spec"])))
-    return ('<div class="viewer lab" data-viewer>'
-            '<div class="viewer__frame"><div class="viewer__bar" aria-hidden="true">'
-            '<span></span><span></span><span></span></div>'
-            '<div class="viewer__stage">%s</div></div>'
-            '<div class="viewer__tabs" role="tablist" aria-label="Components">%s</div>'
-            '</div>' % ("".join(panels), "".join(tabs)))
 
 
 def auto_images(project_dir, folder):
@@ -554,7 +491,10 @@ def project_card(project, *, large):
           <a class="{cls}" href="projects/{e(project['slug'])}.html">
             <span class="card__media">
               <span class="card__num" aria-hidden="true">{num}</span>
-              <img src="{e(cover)}" alt="{e(project['title'])} cover" {dims} loading="lazy" decoding="async">
+              <!-- alt="" on purpose: this img is inside the card's <a>, whose text
+                   already carries the title and tagline. Describing it here made
+                   every card announce its title twice. -->
+              <img src="{e(cover)}" alt="" {dims} loading="lazy" decoding="async">
             </span>
             <span class="card__body">
               <span class="card__title">{e(project['title'])}</span>
@@ -570,9 +510,11 @@ def build_index(projects):
     slugs = by_slug(projects)
     out = [head(
         "%s — %s" % (SITE["name"], SITE["title"]),
-        # the statement is concrete (employer, product, span, sectors); the
-        # tagline is a sentiment, which makes a weaker search snippet
-        SITE.get("heroStatement") or (SITE["tagline"] + " " + SITE["intro"]),
+        # heroStatement is the visible claim on the page and is written to be
+        # short. metaDescription is the search snippet. One string cannot be
+        # both: 150 keyword-bearing chars reads as a resume line on screen.
+        SITE.get("metaDescription") or SITE.get("heroStatement")
+            or (SITE["tagline"] + " " + SITE["intro"]),
         page_url="index.html",
     )]
 
@@ -673,21 +615,124 @@ def build_index(projects):
     (ROOT / "index.html").write_text("\n".join(out), encoding="utf-8")
 
 
-def build_about():
+def cv_block(index):
+    """Reverse-chronological employment history, linked into the case studies.
+
+    Why this exists: every fact in it was already in the JSON — `client`,
+    `year` and `role` on each project — but no page assembled it, so a
+    visitor could not see eight companies in six years without opening nine
+    case studies. A recruiter skims for thirty seconds and leaves; this is
+    the thirty-second version.
+
+    `experience` is authored as its own list rather than derived from the
+    projects, because employment and projects are not the same shape: two
+    projects can sit inside one role (InstaDeep, T-ledger), and freelance
+    work overlaps full-time work rather than following it. Array order is
+    display order — no date parsing, so "October 2021 — November 2023" can
+    stay human-readable.
+
+    The `projects` slugs are the join back to the depth, which is the part a
+    plain CV page cannot do: each row is a door into the reasoning.
+    """
+    roles = SITE.get("experience") or []
+    if not roles:
+        return ""
+
+    rows = []
+    for job in roles:
+        # Company, then role, then place. Place used to sit between the first
+        # two, which put "France" in the gap between "T+ informatique" and
+        # "UI Designer" and broke the one pairing every reader is scanning for.
+        place = ('<p class="cv__place">%s</p>' % e(job["place"])
+                 if usable(job.get("place")) else "")
+
+        # A TODO year renders as no year at all, matching how the facts tables
+        # treat unfilled fields — an absent cell rather than the word TODO.
+        years = ('<p class="cv__years"><time>%s</time></p>' % e(job["years"])
+                 if usable(job.get("years")) else '<p class="cv__years"></p>')
+
+        note = ('<p class="cv__note">%s</p>' % e(job["note"])
+                if usable(job.get("note")) else "")
+
+        links = []
+        for slug in job.get("projects", []):
+            p = index.get(slug)
+            if p is None:
+                raise SystemExit(
+                    'site.json experience: "%s" lists unknown project "%s"'
+                    % (job["company"], slug))
+            links.append('<a href="projects/%s.html">%s</a>'
+                         % (e(p["slug"]), e(p["title"])))
+        work = ('<p class="cv__work">%s</p>' % "\n            ".join(links)
+                if links else "")
+
+        body = ['<h3 class="cv__company">%s</h3>' % e(job["company"]),
+                '<p class="cv__role">%s</p>' % e(job["role"])]
+        body += [b for b in (place, note, work) if b]
+        rows.append('        <li class="cv__row">\n          %s\n'
+                    '          <div class="cv__body">\n            %s\n'
+                    '          </div>\n        </li>'
+                    % (years, "\n            ".join(body)))
+
+    kit = ""
+    if SITE.get("toolkit"):
+        groups = "\n          ".join(
+            "<dt>%s</dt>\n          <dd>%s</dd>"
+            % (e(g["label"]), e(" · ".join(g["items"])))
+            for g in SITE["toolkit"])
+        kit = f"""
+      <h2 class="cv__head" id="toolkit">Toolkit</h2>
+      <dl class="cv__kit">
+          {groups}
+      </dl>"""
+
+    return f"""
+    <section class="shell cv" aria-labelledby="experience">
+      <h2 class="cv__head" id="experience">Experience</h2>
+      <ol class="cv__list">
+{chr(10).join(rows)}
+      </ol>{kit}
+    </section>
+"""
+
+
+def build_about(index):
     body = "\n      ".join("<p>%s</p>" % e(p) for p in SITE["about"])
     links = "\n        ".join(
         '<a class="btn" href="%s">%s</a>' % (e(l["url"]), e(l["label"])) for l in SITE["links"]
     )
     size = png_size(ROOT / SITE["profileImage"])
     dims = ' width="%d" height="%d"' % size if size else ""
-    out = [head("About — %s" % SITE["name"], SITE["intro"],
-                image=SITE["profileImage"], page_url="about.html")]
+
+    # The portrait PNG is 741 KB — on its own more than the rest of this page
+    # put together. An AVIF at 640px (twice the 320px column, so it still
+    # holds up on a 2x screen) is 34 KB for the same picture, alpha included.
+    # The PNG stays as the fallback source; a browser that understands AVIF
+    # never downloads it, and one that doesn't is unchanged.
+    avif = ROOT / "site" / "profile.avif"
+    avif_src = ('<source srcset="site/profile.avif%s" type="image/avif">\n          '
+                % asset_v("site/profile.avif")) if avif.is_file() else ""
+    # intro is a voice line, not a search snippet — it ran 223 chars and Google
+    # cuts at ~155. aboutDescription is written for the slot.
+    out = [head("About — %s" % SITE["name"],
+                SITE.get("aboutDescription") or SITE["intro"],
+                # The designed 1200x630 card, not the portrait. profileImage is
+                # square, and a scraper crops a preview to about 1.91:1 — from
+                # an 800x800 portrait that is a horizontal band across the
+                # face, which can arrive cropped at the eyes.
+                image=SITE.get("shareImage") or SITE["profileImage"],
+                page_url="about.html",
+                og_type="profile",
+                image_alt="%s — %s, %s" % (SITE["name"], SITE["title"],
+                                           SITE.get("location", "")))]
     out.append(f"""
     <article class="shell about">
       <h1>{masked("About")}</h1>
       <div class="about__grid">
         <figure class="about__portrait">
-          <img src="{e(SITE['profileImage'])}" alt="Portrait of {e(SITE['name'])}"{dims} decoding="async">
+          <picture>
+          {avif_src}<img src="{e(SITE['profileImage'])}" alt="Portrait of {e(SITE['name'])}"{dims} decoding="async">
+          </picture>
         </figure>
         <div class="prose">
           {body}
@@ -700,19 +745,34 @@ def build_about():
         </div>
       </div>
     </article>
-""")
+{cv_block(index)}""")
     out.append(foot())
     (ROOT / "about.html").write_text("\n".join(out), encoding="utf-8")
 
 
 def build_project(project, prev_p, next_p):
     d = project["_dir"]
+    # A cover doubles as the link preview, and most covers here are full-page
+    # screenshots — 900x4009 in the worst case. Every platform crops a preview
+    # to about 1.91:1, so those arrived as an unrecognisable band lifted out of
+    # the middle of a page. tools/make-share-cards.py renders a proper
+    # 1200x630 card where one is needed; use it when it exists.
+    share = ROOT / "projects" / d / "assets" / "share.jpg"
+    og_img = ("projects/%s/assets/share.jpg" % d if share.is_file()
+              else "projects/%s/%s" % (d, project["cover"]))
     out = [head(
         "%s — %s" % (project["title"], SITE["name"]),
-        project["summary"],
+        # summary is body copy — 3-4 sentences, up to 346 chars. Google cuts at
+        # ~155, so a dedicated description is written for the slot.
+        project.get("description") or project["summary"],
         depth=1,
-        image="projects/%s/%s" % (d, project["cover"]),
+        image=og_img,
         page_url="projects/%s.html" % project["slug"],
+        # A case study is a written piece, not a site. og:type was hardcoded
+        # "website" on all twelve pages.
+        og_type="article",
+        image_alt="%s — %s" % (project["title"], project["tagline"])
+            if usable(project.get("tagline")) else project["title"],
     )]
 
     def facts_block(label, rows):
@@ -809,7 +869,9 @@ def build_project(project, prev_p, next_p):
       </header>
 
       <figure class="cover-band">
-        <img src="{e(d)}/{e(project['cover'])}" alt="{e(project['title'])} cover"{cover_dims} loading="eager" decoding="async">
+        <!-- decorative: the <h1> immediately above names the project, so an
+             alt of "<title> cover" only repeats it. -->
+        <img src="{e(d)}/{e(project['cover'])}" alt=""{cover_dims} loading="eager" decoding="async">
       </figure>
 
       {metrics_html}
@@ -824,14 +886,6 @@ def build_project(project, prev_p, next_p):
 
     for idx, section in enumerate(live_sections, start=1):
         section_imgs = section.get("images", [])
-        if section.get("lab"):
-            out.append(f"""
-      <section class="project__section" id="{e(section.get('id',''))}">
-        <h2><span class="project__num" aria-hidden="true">{'%02d' % idx}</span>{e(section['heading'])}</h2>
-        {('<div class="prose">%s</div>' % paragraphs(section.get("body"))) if usable(section.get("body")) else ""}
-        {component_lab()}
-      </section>
-"""); continue
         if section.get("autoImages"):
             section_imgs = section_imgs + auto_images(d, section["autoImages"])
         # a section marked "viewer" renders as a browsable frame instead of a grid
@@ -895,9 +949,30 @@ def write_sitemap(projects):
     base = (SITE.get("url") or "").rstrip("/")
     if not base:
         return 0
+    # <lastmod> per page, from the JSON that page is generated out of, so a
+    # crawler can tell which single case study changed instead of re-fetching
+    # twelve pages. Project pages get their own content.json date; the home
+    # and about pages are driven by site.json, which is also the floor for
+    # everything else, so they use the site-wide stamp.
+    site_iso = content_updated()[0]
+
+    by_page = {}
+    for p in projects:
+        src = ROOT / "projects" / p["_dir"] / "content.json"
+        if src.is_file():
+            own = datetime.date.fromtimestamp(src.stat().st_mtime).isoformat()
+            # max, not the project's own date: site.json drives the shared
+            # head, nav and footer, so editing it really does change every
+            # page. Claiming otherwise would be a lie a crawler acts on.
+            by_page["projects/%s.html" % p["slug"]] = max(own, site_iso)
+
+    def stamp(page):
+        return by_page.get(page, site_iso)
+
     pages = ["index.html", "about.html"] + ["projects/%s.html" % p["slug"] for p in projects]
     urls = "\n".join(
-        "  <url><loc>%s/%s</loc></url>" % (base, e(page)) for page in pages)
+        "  <url><loc>%s/%s</loc><lastmod>%s</lastmod></url>"
+        % (base, e(page), stamp(page)) for page in pages)
     (ROOT / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n%s\n</urlset>\n' % urls,
@@ -911,7 +986,7 @@ def main():
     projects = load_projects()
     n_vars = write_tokens_css()
     build_index(projects)
-    build_about()
+    build_about(by_slug(projects))
     for i, p in enumerate(projects):
         build_project(p, projects[i - 1] if i else None,
                       projects[i + 1] if i + 1 < len(projects) else None)
@@ -922,7 +997,9 @@ def main():
     print("index.html   %d case studies, %d other projects"
           % (len(SITE["sections"]["caseStudies"]["slugs"]),
              len(SITE["sections"]["otherProjects"]["slugs"])))
-    print("about.html   %d paragraphs" % len(SITE["about"]))
+    print("about.html   %d paragraphs, %d roles, %d toolkit groups"
+          % (len(SITE["about"]), len(SITE.get("experience", [])),
+             len(SITE.get("toolkit", []))))
     print("projects/    %d pages, %d figures" % (len(projects), imgs))
     if n_urls:
         print("sitemap.xml  %d URLs, robots.txt written" % n_urls)
