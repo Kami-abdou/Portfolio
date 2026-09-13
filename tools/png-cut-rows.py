@@ -56,7 +56,8 @@ BYTES_PER_PIXEL = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}
 
 
 def read_png(path):
-    raw = open(path, "rb").read()
+    with open(path, "rb") as fh:
+        raw = fh.read()
     if raw[:8] != b"\x89PNG\r\n\x1a\n":
         sys.exit("%s is not a PNG" % path)
     w, h, depth, ctype, comp, filt, interlace = struct.unpack(">IIBBBBB", raw[16:29])
@@ -138,7 +139,8 @@ def write_png(path, w, h, ctype, head, tail, stream):
     out.append(chunk(b"IDAT", zlib.compress(stream, 9)))
     out.extend(tail)
     out.append(chunk(b"IEND", b""))
-    open(path, "wb").write(b"".join(out))
+    with open(path, "wb") as fh:
+        fh.write(b"".join(out))
 
 
 def report(path):

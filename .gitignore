@@ -13,20 +13,33 @@
 serve.py
 
 # Original full-resolution exports. Kept locally so optimize-images.py can
-# re-derive at any quality, but never committed or published: ~48 MB of pixels
-# no visitor downloads.
+# re-derive at any quality, but never committed or published: 207 files, about
+# 61 MB of pixels no visitor ever downloads.
 #
-# NOT RECOVERABLE. This comment used to claim "recoverable from git history
-# (commit e31a246) if lost" -- that was false and dangerously so. e31a246 is
-# "Add toolkit chips with drop-in icon support" and touches no image at all.
-# No file under projects/*/assets/_src/ has ever been committed to this repo,
-# on any branch, in any reflog entry, or in any stash. The working tree is the
-# only copy. Back these up outside git; `git checkout` will not bring them back.
+# NOT RECOVERABLE FROM GIT. Nothing under projects/*/assets/_src/ has ever been
+# committed to this repo -- not on any branch, not in any reflog entry, not in
+# any stash. The working tree is the only copy that exists. Back these up
+# out-of-band before removing or renaming any directory that holds them, because
+# no git command will bring them back afterwards.
+#
+# An earlier version of this comment claimed they were "recoverable from git
+# history (commit e31a246) if lost". That was false: e31a246 is "Add toolkit
+# chips with drop-in icon support" and contains no image at all. Do not
+# reintroduce a recoverability claim here without verifying it first.
 projects/*/assets/_src/
 
-# Same rule, same reason. This one was missed: the pattern above is anchored to
-# projects/, so site/_src/ stayed tracked and shipped 1.6 MB of originals whose
-# derivatives sit right beside them.
+# Same rule, same reason, and a separate line because the pattern above is
+# anchored to projects/. Two originals here, 1.6 MB of portrait.jpg and
+# profile.png, with their derivatives sitting right beside them in site/. They
+# are no longer tracked or shipped: f50a177 ("Untrack site/_src; add .nojekyll")
+# removed them from the index, and this line keeps them out.
+#
+# Unlike the projects/ originals, these two ARE recoverable. They were committed
+# in 342b658, so the blobs stay reachable from HEAD's history, and both are
+# still byte-identical to the working-tree copies -- `git show
+# 342b658:site/_src/portrait.jpg > site/_src/portrait.jpg` would restore one.
+# That is a historical accident rather than a backup strategy, so treat the
+# working tree as the copy that matters here too.
 site/_src/
 
 # Working notes — candid, and not for public reading.

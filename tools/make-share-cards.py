@@ -22,9 +22,16 @@ and the hero visual, which is exactly what should appear in a preview.
 
 Sources are preferred in descending resolution -- `_src/<stem>.png`, then
 `<stem>.full.jpg`, then the cover itself -- so every card is a downscale.
-Nothing is ever upscaled.
+The ordering is what buys that, not a check: every project resolves to a
+source at least 1200px wide today, and only one with nothing but its own
+900px cover could fall far enough through the list to be upscaled.
 
 Covers already close to the target ratio are left alone; they preview fine.
+A project can override that with `"shareCard": true` in its content.json, for
+the case where the ratio looks safe but the image still is not a preview.
+InstaDeep is the one: 900x540 passes the ratio test comfortably, but the
+cover is a branded board whose bottom strip carries an internal "contact me
+on Slack" line, so the top band has to be lifted out deliberately.
 
 Why the crop is not done with sips
 ---------------------------------
@@ -41,8 +48,13 @@ scanlines and rewrite the height. Exact, and it cannot silently land
 somewhere else. sips is used only for the downscale and JPEG encode, which
 are whole-image operations with no offset semantics to get wrong.
 
-Sources must therefore be PNG. All current ones are (`_src/*.png`); the
-script fails loudly rather than falling back to a centre crop.
+The cutter must therefore be handed a PNG. Most sources already are
+(`_src/*.png`), but some projects only ever had JPEG exports, so a JPEG
+source is transcoded to PNG in a temporary directory first -- see as_png().
+The invariant is unchanged and now has exactly one enforcement point: nothing
+reaches crop_band that is not a PNG. What is emphatically NOT done is
+softening the crop to suit JPEG, because that would mean sips and a centre
+crop again.
 
 Usage
 -----
@@ -107,19 +119,47 @@ def sips(*args):
 
 
 def best_source(assets, cover_name):
-    """Highest-resolution PNG version of this cover, so the card is a downscale.
+    """Highest-resolution version of this cover, so the card is a downscale.
 
-    PNG only -- the crop is done on raw scanlines, not by sips. See the module
-    docstring for why that matters.
+    Strict priority, first match wins. The PNG rules come first because
+    `_src/<stem>.png` is the untouched original and nothing beats it. The JPEG
+    rules exist for projects that never had a PNG original -- InstaDeep is the
+    only one today -- and `<stem>.full.jpg` outranks the cover itself so the
+    result stays a downscale rather than an upscale of the small cover.
+
+    Returns the path in whatever format it found it. Callers put it through
+    as_png() before the cutter sees it; this function stays free of side
+    effects so --dry-run can report the real source without doing any work.
     """
     stem = pathlib.Path(cover_name).stem
-    p = assets / "_src" / ("%s.png" % stem)
-    if p.is_file() and img_size(p):
-        return p
-    p = assets / cover_name
-    if p.is_file() and p.suffix.lower() == ".png" and img_size(p):
-        return p
+    for p in (assets / "_src" / ("%s.png" % stem),
+              assets / ("%s.png" % stem),
+              assets / ("%s.full.jpg" % stem),
+              assets / ("%s.jpg" % stem)):
+        if p.is_file() and img_size(p):
+            return p
     return None
+
+
+def as_png(src, tmpdir):
+    """`src` as a PNG, transcoding into `tmpdir` first if it is a JPEG.
+
+    crop_band reads raw PNG scanlines, so the source has to be PNG by the time
+    it reaches make_card. Converting here rather than in the cutter keeps that
+    invariant at a single point and keeps png-cut-rows free of format
+    handling.
+
+    The output always lands in a caller-owned temporary directory, never
+    beside the source: `_src/` is the only copy of the originals and is never
+    written to.
+    """
+    if src.suffix.lower() == ".png":
+        return src
+    out = tmpdir / ("%s.png" % src.stem)
+    sips("-s", "format", "png", str(src), "--out", str(out))
+    if not img_size(out):
+        sys.exit("could not transcode to PNG: %s" % src)
+    return out
 
 
 def make_card(src, dest, offset=0):
@@ -134,16 +174,52 @@ def make_card(src, dest, offset=0):
     content.json.
     """
     w, h = img_size(src)
-    band = min(round(w / OG_RATIO), h)
-    if offset + band > h:
-        offset = max(0, h - band)
     with tempfile.TemporaryDirectory() as tmp:
-        cut = pathlib.Path(tmp) / "cut.png"
+        tmp = pathlib.Path(tmp)
+
+        # A source WIDER than 1.91:1 cannot be fixed by cutting rows -- taking
+        # rows off a too-wide image only makes it wider. The old code clamped
+        # `band` to h and let the final `sips -z` force the size anyway, which
+        # does not preserve aspect ratio: it squeezes. That was unreachable
+        # while every card came from a tall screenshot, and it stopped being
+        # unreachable when InstaDeep's cover became a 1300x650 brand plate
+        # (ratio 2.000). Forcing that to 1200x630 compressed it horizontally
+        # by 4.75% -- on a centred logo with a registered trademark, which is
+        # exactly the kind of thing a designer's portfolio must not ship.
+        #
+        # So trim the WIDTH first, centred, and only then run the row logic.
+        # Centred rather than from the left because an over-wide source is a
+        # deliberately composed plate, not a screenshot -- its subject is in
+        # the middle, and both edges are margin. sips is safe for this one:
+        # a centred crop to an exact size has no offset to get wrong, which
+        # is the failure mode that motivated the hand-written row cutter.
+        if w / h > OG_RATIO:
+            trimmed = round(h * OG_RATIO)
+            narrowed = tmp / "narrowed.png"
+            sips("-c", str(h), str(trimmed), str(src), "--out", str(narrowed))
+            got = img_size(narrowed)
+            if got != (trimmed, h):
+                sys.exit("width trim did not apply: wanted %dx%d, got %s -- %s"
+                         % (trimmed, h, got, src))
+            src, w = narrowed, trimmed
+
+        band = min(round(w / OG_RATIO), h)
+        if offset + band > h:
+            offset = max(0, h - band)
+        cut = tmp / "cut.png"
         cutter.crop_band(str(src), str(cut), offset, band)
         got = img_size(cut)
         if got != (w, band):
             sys.exit("crop did not apply: wanted %dx%d, got %s -- %s"
                      % (w, band, got, src))
+
+        # Guard the property the whole function exists to produce. Anything
+        # further than a rounding step from 1.91:1 here would be silently
+        # stretched by the resize below.
+        if abs((w / band) - OG_RATIO) > 0.01:
+            sys.exit("band is %.3f:1, not %.3f:1 -- resizing would distort %s"
+                     % (w / band, OG_RATIO, src))
+
         sips("-z", str(OG_H), str(OG_W),
              "-s", "format", "jpeg", "-s", "formatOptions", QUALITY,
              str(cut), "--out", str(dest))
@@ -175,7 +251,12 @@ def main():
 
         cw, ch = img_size(cover)
         ratio = cw / ch
-        if ratio >= MIN_SAFE_RATIO:
+        # An opt-in, not a switch: `shareCard: true` forces a card for a cover
+        # the ratio test would wave through. Lowering MIN_SAFE_RATIO instead
+        # would drag in konnect (1.41), pharmadrive (1.78) and fixerloop
+        # (2.21), which genuinely preview fine and would just churn binaries.
+        opted_in = bool(project.get("shareCard"))
+        if ratio >= MIN_SAFE_RATIO and not opted_in:
             print("%-16s %-12s ratio %.2f  ok, no card needed"
                   % (project["slug"], "%dx%d" % (cw, ch), ratio))
             continue
@@ -186,14 +267,16 @@ def main():
             continue
         sw, sh = img_size(src)
         dest = assets / "share.jpg"
+        why = " (opt-in)" if opted_in else ""
         if dry:
-            print("%-16s %-12s ratio %.2f  -> card from %s (%dx%d)"
+            print("%-16s %-12s ratio %.2f  -> card from %s (%dx%d)%s"
                   % (project["slug"], "%dx%d" % (cw, ch), ratio,
-                     src.relative_to(assets), sw, sh))
+                     src.relative_to(assets), sw, sh, why))
             continue
 
         offset = int(project.get("shareOffset", 0))
-        band = make_card(src, dest, offset)
+        with tempfile.TemporaryDirectory() as tmp:
+            band = make_card(as_png(src, pathlib.Path(tmp)), dest, offset)
         print("%-16s card from %s (%dx%d), rows %d..%d -> %dx%d, %d KB"
               % (project["slug"], src.relative_to(assets), sw, sh,
                  offset, offset + band - 1, OG_W, OG_H,
