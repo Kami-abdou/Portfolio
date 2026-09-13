@@ -1,7 +1,7 @@
 {
   "slug": "instadeep",
   "order": 3,
-  "category": "case-study",
+  "format": "highlights",
   "title": "InstaDeep",
   "meta": "2024–now · AI · Senior product designer",
   "tagline": "Three product surfaces and the design system they all run on.",
@@ -13,22 +13,58 @@
   "duration": "Ongoing",
   "team": "Design of one, across several product teams",
   "status": "Ongoing",
-  "tags": ["Product design", "Design systems", "AI products", "Web app"],
-  "platforms": ["Web"],
-  "tools": ["Figma", "Framer"],
-  "links": [],
+  "tags": [
+    "Product design",
+    "Design systems",
+    "AI products",
+    "Web app"
+  ],
+  "platforms": [
+    "Web"
+  ],
+  "tools": [
+    "Figma",
+    "Framer"
+  ],
+  "links": [
+    {
+      "label": "DeepPCB",
+      "url": "https://deeppcb.ai"
+    },
+    {
+      "label": "InstaDeep",
+      "url": "https://www.instadeep.com"
+    }
+  ],
   "metrics": [],
-  "cover": "assets/cover.jpg",
+  "cover": "assets/cover-brand.jpg",
+  "shareCard": true,
   "sections": [
     {
       "id": "deeppcb",
       "heading": "DeepPCB",
       "body": "DeepPCB is InstaDeep's cloud-native PCB routing software — a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product's public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.\n\nThese are the marketing and onboarding surfaces rather than the routing canvas itself.",
       "images": [
-        { "src": "assets/p01-home.jpg", "alt": "DeepPCB home page", "caption": "Home — the claim, stated once, above a routed board." },
-        { "src": "assets/p02-enterprise.jpg", "alt": "DeepPCB enterprise page", "caption": "Enterprise — the same router, argued to a buyer instead of an engineer." },
-        { "src": "assets/p03-pricing.jpg", "alt": "DeepPCB pricing page", "caption": "Pricing." },
-        { "src": "assets/p04-our-mission.jpg", "alt": "DeepPCB mission page", "caption": "Our mission." }
+        {
+          "src": "assets/p01-home.jpg",
+          "alt": "DeepPCB home page",
+          "caption": "Home — the claim, stated once, above a routed board."
+        },
+        {
+          "src": "assets/p02-enterprise.jpg",
+          "alt": "DeepPCB enterprise page",
+          "caption": "Enterprise — the same router, argued to a buyer instead of an engineer."
+        },
+        {
+          "src": "assets/p03-pricing.jpg",
+          "alt": "DeepPCB pricing page",
+          "caption": "Pricing."
+        },
+        {
+          "src": "assets/p04-our-mission.jpg",
+          "alt": "DeepPCB mission page",
+          "caption": "Our mission."
+        }
       ]
     },
     {

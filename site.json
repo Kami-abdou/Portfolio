@@ -5,19 +5,20 @@
   "since": "2020",
   "roles": [
     "Senior Product Designer",
-    "Product Designer",
     "Interaction Design",
     "Design Systems",
-    "Experience Designer"
+    "AI Products",
+    "Prototyping in Code"
   ],
-  "tagline": "Six years across AI, fintech, food delivery, automotive retail and developer tools.",
-  "intro": "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. Those decisions are the difference between software that feels alive and software that feels assembled.",
-  "currently": "Senior product designer at InstaDeep.",
-  "contactLede": "Senior product designer at InstaDeep. Open to conversations about design work.",
+  "tagline": "Product direction, interface craft, and an AI-assisted build practice.",
+  "intro": "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. I build to find out: a prototype in code answers questions a static frame cannot.",
+  "currently": "Senior product designer at InstaDeep, across three AI products and the design system underneath.",
+  "contactLede": "Senior product designer at InstaDeep. Open to conversations about product work and collaborations.",
   "about": [
-    "I started in UX/UI design in 2020. Since then I have worked with eight companies across AI, fintech, food delivery, automotive retail, pharmacy and home services.",
+    "I started in UX/UI design in 2020. Since then I have worked across AI, fintech, food delivery, automotive retail, pharmacy and home services.",
     "From October 2021 to November 2023 I was Chief Product Officer at Steer, leading a small team of front-end and back-end engineers while being the only person in design and product. The company went on to raise in France and is now based in Versailles.",
     "I am now a senior product designer at InstaDeep, working on AI products — among them DeepPCB, their cloud-native PCB routing software, and the design system the company's product surfaces run on.",
+    "How I work changed over the last two years. I prototype in code rather than describing behaviour in a spec, and I run an AI-assisted build process end to end — this site is one of its outputs: a static site with its own generator, image pipeline and test suite, and no framework. Being able to build the thing I designed shortens the distance between an idea and knowing whether it works.",
     "Outside of work I am obsessed with video games and enjoy the gym, and I cherish time with family and friends."
   ],
   "experience": [
@@ -26,7 +27,9 @@
       "role": "Senior Product Designer",
       "years": "Jan 2024 — present",
       "note": "AI products, and the design system every InstaDeep product surface and demo runs on.",
-      "projects": ["instadeep"]
+      "projects": [
+        "instadeep"
+      ]
     },
     {
       "company": "Steer",
@@ -34,37 +37,65 @@
       "years": "Oct 2021 — Nov 2023",
       "place": "Tunis, then Versailles",
       "note": "The only person in design and product, leading the front-end and back-end engineers. The company went on to raise in France.",
-      "projects": ["steer"]
+      "projects": [
+        "steer"
+      ]
     },
     {
       "company": "Groupado",
       "role": "UX / UI Designer",
       "years": "Feb 2021 — Sep 2021",
-      "projects": ["groupado"]
+      "projects": [
+        "groupado"
+      ]
     },
     {
       "company": "T+ informatique",
       "role": "UI Designer, freelance",
       "years": "2021",
       "place": "France",
-      "projects": ["pharmadrive"]
+      "projects": [
+        "pharmadrive"
+      ]
     },
     {
       "company": "T-ledger",
       "role": "Product Designer",
       "years": "2020 — 2021",
       "note": "Sole designer across both of the company's products.",
-      "projects": ["konnect", "fissa3"]
+      "projects": [
+        "konnect",
+        "fissa3"
+      ]
     }
   ],
   "toolkit": [
     {
       "label": "Design and prototyping",
-      "items": ["Figma", "Framer", "Illustrator", "Photoshop"]
+      "items": [
+        "Figma",
+        "Framer",
+        "Illustrator",
+        "Photoshop"
+      ]
     },
     {
-      "label": "Testing and process",
-      "items": ["VWO", "Jira", "Miro"]
+      "label": "Build and AI workflow",
+      "items": [
+        "Claude Code",
+        "MCP",
+        "Git",
+        "HTML, CSS & JS"
+      ]
+    },
+    {
+      "label": "Research and process",
+      "items": [
+        "VWO",
+        "Miro",
+        "Notion",
+        "Jira"
+      ]
     }
   ],
   "profileImage": "site/profile.png",
@@ -88,29 +119,29 @@
   "sections": {
     "highlights": {
       "heading": "Selected case studies",
-      "description": "Three projects where I can show the thinking, not just the outcome.",
+      "description": "Two projects where I can show the thinking, not just the outcome.",
       "slugs": [
         "steer",
-        "konnect",
-        "instadeep"
+        "konnect"
       ]
     },
     "selectedWork": {
-      "heading": "Other work",
-      "description": "Shorter pieces — the screens, not the write-up.",
+      "heading": "Selected work",
+      "description": "Interface work and galleries — the screens, not the write-up.",
       "slugs": [
+        "instadeep",
         "fixerloop",
         "fissa3",
         "groupado",
         "pharmadrive",
-        "undrive",
-        "smarthub"
+        "smarthub",
+        "portfolio"
       ]
     }
   },
   "url": "https://kami-abdou.github.io/Portfolio",
   "shareImage": "site/share-card.png",
-  "heroStatement": "Six years designing products across fintech, automotive retail and AI — from first research to shipped interface.",
-  "metaDescription": "Senior product designer. Six years across fintech, automotive retail, food delivery and AI.",
-  "aboutDescription": "Six years of product design across AI, fintech, food delivery and automotive retail — how I got here, what I work on now, and what I care about."
+  "heroStatement": "Six years designing products across fintech, automotive retail and AI — and building them. From first research to shipped interface.",
+  "metaDescription": "Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.",
+  "aboutDescription": "Six years of product design across AI, fintech and automotive retail — how I got here, how I work now, and what I care about."
 }

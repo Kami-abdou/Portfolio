@@ -1195,10 +1195,28 @@ body::after {
 /* ── hero statement ──────────────────────────────────────
    The wall is decorative and aria-hidden, and the h1 is visually hidden, so
    without this the first screen states nothing a recruiter can read. Sits
-   above .hero__meta in the same absolutely-positioned stack. */
+   above .hero__meta in the same absolutely-positioned stack.
+
+   Two elements, not one, and that split is load-bearing. This used to be a
+   single <p class="hero__statement shell"> that set `margin: 0` and
+   `max-width: 46ch` -- both of which override .shell, which supplies
+   `margin-inline: auto` and `max-width: var(--max-width)`. Killing those on
+   an absolutely-positioned box with `inset-inline: 0` pinned it to the
+   viewport edge, so its text started at the gutter (24px) while every other
+   element on the site starts at the content-column edge (144px at 1440px
+   wide). The statement sat 120px to the left of the entire rest of the page.
+
+   So: the wrapper carries .shell and is left alone, exactly like the
+   .hero__meta sibling directly below it, which never had the bug. The 46ch
+   measure -- which does need to be much narrower than the 1200px column,
+   for line length -- moves to the inner element, where it constrains text
+   without moving the box. Do not put `margin` or `max-width` back on
+   .hero__statement; that is the bug. */
 .hero__statement {
   position: absolute; z-index: 5;
   inset-inline: 0; bottom: calc(var(--space-8) + var(--space-12));
+}
+.hero__statement__text {
   margin: 0;
   max-width: 46ch;
   font-size: var(--font-size-lg);
@@ -1210,6 +1228,8 @@ body::after {
 @media (max-width: 899px) {
   .hero__statement {
     bottom: calc(var(--space-8) + var(--space-16));
+  }
+  .hero__statement__text {
     font-size: var(--font-size-base);
     max-width: none;
   }

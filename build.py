@@ -590,7 +590,9 @@ def build_index(projects):
 
       {wall(wall_rows, ghost=True)}
 
-      <p class="hero__statement shell">{e(SITE.get('heroStatement', ''))}</p>
+      <div class="hero__statement shell">
+        <p class="hero__statement__text">{e(SITE.get('heroStatement', ''))}</p>
+      </div>
 
       <div class="hero__meta shell">
         <span>{e(SITE.get('location', ''))}</span>
@@ -619,16 +621,25 @@ def build_index(projects):
     for key, large in (("highlights", True), ("selectedWork", False)):
         meta = SITE["sections"][key]
         anchor = ' id="work"' if key == "highlights" else ""
-        cards = "\n".join(
-            project_card(slugs[s], large=large) for s in meta["slugs"] if s in slugs
-        )
+        live = [s for s in meta["slugs"] if s in slugs]
+        cards = "\n".join(project_card(slugs[s], large=large) for s in live)
+        # The headline band caps at 3 but never declares more columns than it
+        # has cards. Hardcoding 3 was fine at three case studies; when
+        # InstaDeep moved out and left two, it produced a 352px hole in the
+        # most important row on the site. min() closes it, and restores the
+        # third column by itself if a third case study is ever added back.
+        #
+        # The counts must still DIFFER -- that difference is the whole
+        # hierarchy (see the comment above) -- so the small band stays at 4
+        # and the large band can never reach it.
+        cols = min(3, len(live)) if large else 4
         out.append(f"""
     <section class="band shell"{anchor}>
       <div class="band__head">
         <h2>{masked(meta['heading'])}</h2>
         <p>{e(meta['description'])}</p>
       </div>
-      <ul class="grid {'grid--lg' if large else 'grid--sm'}" style="--cols: {3 if large else 4}">
+      <ul class="grid {'grid--lg' if large else 'grid--sm'}" style="--cols: {cols}">
 {cards}
       </ul>
     </section>
@@ -882,7 +893,14 @@ def build_project(project, prev_p, next_p):
     # parsed JSON itself, and blanking a body in place would also blank it for
     # write_sitemap and the figure count.
     if page_format(project) == "highlights":
-        live_sections = [dict(sec, body="") for sec in live_sections
+        # `viewer` is dropped alongside the prose. The component browser is a
+        # case-study device -- it shows one board at a time behind a tablist,
+        # which is the right call when surrounding prose is walking the reader
+        # through them one by one. On a gallery page there is no prose to do
+        # that walking, so a tabbed frame just hides six of seven boards
+        # behind controls nobody has been given a reason to click. Same
+        # images, laid out flat.
+        live_sections = [dict(sec, body="", viewer=False) for sec in live_sections
                          if sec.get("images") or sec.get("autoImages")]
 
     # Asymmetric header: narrative on the left, facts pinned on the right.

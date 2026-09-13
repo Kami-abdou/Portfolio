@@ -1,0 +1,86 @@
+{
+  "slug": "portfolio",
+  "order": 9,
+  "format": "highlights",
+  "meta": "2026 · Personal · Design and build",
+  "title": "This portfolio",
+  "tagline": "Designed, built and tested by me — no framework",
+  "summary": "The site you are reading. I designed it in Figma and built it as a static site with its own generator: one JSON file per project, a Python script that writes every page, and a test suite that runs against the generated HTML. Built end to end with an AI-assisted workflow, which is how I work now — the fastest way I know to find out whether an interaction actually holds up is to build it.",
+  "description": "A static portfolio site designed and built end to end — JSON content, a Python generator, an image pipeline and a test suite, with no framework and no runtime dependencies.",
+  "role": "Designer and builder",
+  "client": "Self-initiated",
+  "year": "2026",
+  "duration": "Ongoing",
+  "team": "One — me, with an AI-assisted workflow",
+  "status": "Live — you are looking at it",
+  "tags": [
+    "Product Design",
+    "Front-end",
+    "Design Systems",
+    "AI Workflow"
+  ],
+  "platforms": [
+    "Web"
+  ],
+  "tools": [
+    "Figma",
+    "Claude Code",
+    "Python",
+    "Git"
+  ],
+  "links": [],
+  "metrics": [
+    {
+      "label": "Tests against the generated HTML",
+      "value": "41"
+    },
+    {
+      "label": "Runtime dependencies",
+      "value": "0"
+    },
+    {
+      "label": "JavaScript shipped",
+      "value": "7.3 KB"
+    }
+  ],
+  "cover": "assets/cover.jpg",
+  "shareCard": true,
+  "sections": [
+    {
+      "id": "the-site",
+      "heading": "The site",
+      "body": "Dark-only and declared as such, so the browser paints scrollbars and form controls to match rather than guessing. Every colour, type step and spacing value comes from a single tokens file; the stylesheet contains no literals, so changing the accent is a one-line edit.\n\nIt is built progressive-enhancement first. The marquee, the lightbox and the scroll reveals are all additions — with JavaScript switched off the site still renders completely, which is also how these screenshots were taken.",
+      "images": [
+        {
+          "src": "assets/n1-mobile.jpg",
+          "alt": "The portfolio homepage rendered on a phone-width viewport",
+          "caption": "Same content column at every breakpoint. The two work tiers collapse from three-up to one."
+        }
+      ]
+    },
+    {
+      "id": "the-system",
+      "heading": "The system",
+      "body": "The JSON is read at build time, not in the browser. fetch() is blocked on file://, so a site that loaded its own content at runtime would break the moment someone double-clicked index.html — baking it in keeps the site working from the filesystem and from a server.",
+      "images": [
+        {
+          "src": "assets/n2-system.jpg",
+          "alt": "A project's content.json next to the HTML that build.py generates from it",
+          "caption": "One JSON file per project, and 1,069 lines of Python that write every page. No page is ever hand-edited."
+        }
+      ]
+    },
+    {
+      "id": "the-guardrail",
+      "heading": "The guardrail",
+      "body": "The tests assert against the real generated HTML rather than the source JSON, because what matters is what a visitor receives. They have already caught a share card advertising the wrong product, a homepage whose tier hierarchy had silently inverted, and a hero paragraph sitting 120px out of line with every other element on the site.",
+      "images": [
+        {
+          "src": "assets/n3-tests.jpg",
+          "alt": "Terminal output showing the build summary and 41 passing tests",
+          "caption": "Rebuild, then prove it. The build is idempotent — running it twice changes nothing."
+        }
+      ]
+    }
+  ]
+}
