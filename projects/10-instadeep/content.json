@@ -1,7 +1,6 @@
 {
   "slug": "instadeep",
   "order": 3,
-  "format": "highlights",
   "title": "InstaDeep",
   "meta": "2024–now · AI · Senior product designer",
   "tagline": "Three product surfaces and the design system they all run on.",
@@ -71,7 +70,7 @@
       "id": "design-system",
       "heading": "Design system",
       "body": "Every InstaDeep product surface and research demo is built from one system. It exists because the alternative was each team inventing its own buttons, and it had to survive being used by engineers with no designer in the room.\n\nBrowse the components below.",
-      "viewer": true,
+      "viewer": false,
       "autoImages": "components"
     },
     {

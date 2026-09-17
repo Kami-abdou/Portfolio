@@ -1,6 +1,6 @@
 {
   "slug": "smarthub",
-  "order": 8,
+  "order": 7,
   "format": "highlights",
   "meta": "Design and brand studio · Founder",
   "title": "Smarthub",
@@ -31,26 +31,8 @@
       "value": "8"
     }
   ],
-  "cover": "assets/01-homepage.jpg",
+  "cover": "assets/02-web-design-development.jpg",
   "sections": [
-    {
-      "id": "context",
-      "heading": "About Smarthub",
-      "body": "Smarthub is a 360° agency offering creativity and experience across design in general — websites, video games — and digital marketing, with the user experience treated as the thing that makes the business land in the right places. This is my own agency, so the site had to do two jobs at once: sell the work, and be a piece of the work.",
-      "images": []
-    },
-    {
-      "id": "positioning",
-      "heading": "The positioning",
-      "body": "The argument the site makes is that strategic design methodology is what empowers a client, whether that client is an early-stage startup working on an MVP or an established company chasing growth. The team designs across every digital touchpoint, from SaaS user experiences through to brand and web design — which is a wide claim, so the site has to substantiate it service by service rather than asserting it once on the homepage.",
-      "images": [
-        {
-          "src": "assets/01-homepage.jpg",
-          "alt": "Smarthub homepage",
-          "caption": "Homepage."
-        }
-      ]
-    },
     {
       "id": "services",
       "heading": "A page per service",
@@ -99,12 +81,6 @@
           "caption": "Careers."
         }
       ]
-    },
-    {
-      "id": "outcome",
-      "heading": "The outcome",
-      "images": [],
-      "body": "Smarthub is my own agency, so this is the one project where I was the client as well as the designer.\n\nThat is the reason it is worth showing. Every other case study here involves persuading somebody else to accept a decision. This one shows what I do when the brief, the positioning and the brand are all mine — eight pages, a service structure, and a careers page written for people I would want to hire.\n\nSmarthub has not launched yet. It is still being built."
     }
   ],
   "year": "TODO"

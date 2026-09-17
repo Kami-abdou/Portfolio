@@ -52,10 +52,7 @@
       "company": "T+ informatique",
       "role": "UI Designer, freelance",
       "years": "2021",
-      "place": "France",
-      "projects": [
-        "pharmadrive"
-      ]
+      "place": "France"
     },
     {
       "company": "T-ledger",
@@ -118,21 +115,20 @@
   "sections": {
     "highlights": {
       "heading": "Selected case studies",
-      "description": "Two projects where I can show the thinking, not just the outcome.",
+      "description": "Four projects where I can show the thinking, not just the outcome.",
       "slugs": [
         "steer",
-        "konnect"
+        "konnect",
+        "instadeep",
+        "fixerloop"
       ]
     },
     "selectedWork": {
       "heading": "Selected work",
       "description": "Interface work and galleries — the screens, not the write-up.",
       "slugs": [
-        "instadeep",
-        "fixerloop",
         "fissa3",
         "groupado",
-        "pharmadrive",
         "smarthub",
         "portfolio"
       ]

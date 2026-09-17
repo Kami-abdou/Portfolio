@@ -48,15 +48,23 @@ class BuildCase(unittest.TestCase):
 
 class TestHomepageTiers(BuildCase):
 
-    def test_highlights_band_holds_exactly_two_slugs(self):
-        """Was three. InstaDeep left for the gallery band at the owner's
-        request -- it is designs only now, so calling it a case study was a
-        claim the page no longer made."""
+    def test_highlights_band_holds_four_case_studies(self):
+        """Three, then two, now four.
+
+        A three-lens review (CEO / recruiter / design director) independently
+        led with the same finding: 2,439 words of written prose sat in the
+        content files and reached no visitor, because seven of nine projects
+        carried format:highlights. Fixerloop -- the best commercially framed
+        piece in the set -- and InstaDeep -- the current role, and the
+        thinnest page on the site at 165 words -- were promoted back.
+
+        Order matters here: `order` renders as the visible card number, so
+        the array must ascend or the band reads 01, 02, 04, 03."""
         self.assertEqual(
             self.site["sections"]["highlights"]["slugs"],
-            ["steer", "konnect"])
+            ["steer", "konnect", "instadeep", "fixerloop"])
 
-    def test_selected_work_band_leads_with_instadeep(self):
+    def test_gallery_band_holds_the_remaining_four(self):
         """Was six, then five, now six again.
 
         UnDrive was removed at the owner's request -- its three images came
@@ -70,8 +78,23 @@ class TestHomepageTiers(BuildCase):
         it by viewing source."""
         self.assertEqual(
             self.site["sections"]["selectedWork"]["slugs"],
-            ["instadeep", "fixerloop", "fissa3", "groupado", "pharmadrive",
-             "smarthub", "portfolio"])
+            ["fissa3", "groupado", "smarthub", "portfolio"])
+
+    def test_pharmadrive_is_gone_everywhere(self):
+        """Removed on the design director's recommendation: lorem ipsum, a
+        logo reading "PharmasDrive", "ordonnoce" misspelled, a cart totalling
+        300 EUR for two 12 EUR items, and TND currency inside a euro product.
+        Its six _src originals were checksum-verified into
+        ../_archive/pharmadrive/ before deletion. The T+ informatique
+        employment row stays -- that job happened; only the project chip went,
+        because build.py exits on an unknown slug."""
+        for band in ("highlights", "selectedWork"):
+            self.assertNotIn("pharmadrive", self.site["sections"][band]["slugs"])
+        self.assertFalse((ROOT / "projects" / "05-pharmadrive").exists())
+        self.assertFalse((ROOT / "projects" / "pharmadrive.html").exists())
+        self.assertNotIn("pharmadrive", (ROOT / "sitemap.xml").read_text(encoding="utf-8"))
+        for page in ("index.html", "about.html"):
+            self.assertNotIn("pharmadrive", self.html(page).lower())
 
     def test_undrive_is_gone_everywhere(self):
         """One assertion per surface it could survive on: the band, the
@@ -121,8 +144,8 @@ class TestHomepageTiers(BuildCase):
 
     def test_headline_cards_are_large_and_the_rest_are_not(self):
         index = self.html("index.html")
-        self.assertEqual(index.count('class="card card--lg"'), 2)
-        self.assertEqual(index.count('class="card"'), 7)
+        self.assertEqual(index.count('class="card card--lg"'), 4)
+        self.assertEqual(index.count('class="card"'), 4)
 
     def test_steer_is_the_first_card(self):
         """Leading with a non-AI CPO role is the positioning fix."""
@@ -299,40 +322,39 @@ class TestConsolidation(BuildCase):
             for f in glob.glob(str(ROOT / "projects" / "*" / "content.json")))
         self.assertEqual(orders, list(range(1, len(orders) + 1)))
 
-    def test_nine_project_pages_and_eleven_sitemap_urls(self):
-        """UnDrive's removal took one of each; adding `portfolio` put one
-        back. The sitemap total is pages + index + about."""
-        self.assertIn("11 URLs", self.stdout)
-        self.assertIn("9 pages", self.stdout)
+    def test_eight_project_pages_and_ten_sitemap_urls(self):
+        """UnDrive then PharmaDrive were removed; `portfolio` was added.
+        The sitemap total is pages + index + about."""
+        self.assertIn("10 URLs", self.stdout)
+        self.assertIn("8 pages", self.stdout)
 
 
 class TestHighlightsFormat(BuildCase):
 
-    TIER2 = [("10-instadeep", "instadeep"), ("06-fixerloop", "fixerloop"),
-             ("03-fissa3", "fissa3"), ("04-groupado", "groupado"),
-             ("05-pharmadrive", "pharmadrive"), ("08-smarthub", "smarthub")]
+    TIER2 = [("03-fissa3", "fissa3"), ("04-groupado", "groupado"),
+             ("08-smarthub", "smarthub"), ("09-portfolio", "portfolio")]
 
-    def test_all_six_are_flagged(self):
+    def test_all_four_are_flagged(self):
         for folder, _ in self.TIER2:
             self.assertEqual(self.content(folder).get("format"), "highlights",
                              "%s is not flagged" % folder)
 
     def test_tier_one_is_not_flagged(self):
-        for folder in ("01-steer", "02-konnect"):
+        for folder in ("01-steer", "02-konnect", "06-fixerloop", "10-instadeep"):
             self.assertIsNone(self.content(folder).get("format"),
                               "%s should stay a full case study" % folder)
 
     def test_prose_is_not_deleted_only_unrendered(self):
         """The whole point of the flag: reversible by removing one field."""
-        fixerloop = self.content("06-fixerloop")
-        bodies = [s.get("body") for s in fixerloop["sections"] if s.get("body")]
-        self.assertGreater(len(bodies), 5,
-                           "Fixerloop's narrative was deleted, not just hidden")
+        fissa3 = self.content("03-fissa3")
+        bodies = [s.get("body") for s in fissa3["sections"] if s.get("body")]
+        self.assertGreater(len(bodies), 4,
+                           "Fissa3's narrative was deleted, not just hidden")
 
     def test_highlights_pages_render_images_but_not_body_prose(self):
-        page = self.html("projects/fixerloop.html")
+        page = self.html("projects/fissa3.html")
         self.assertIn('class="shots', page)
-        body = [s["body"] for s in self.content("06-fixerloop")["sections"]
+        body = [s["body"] for s in self.content("03-fissa3")["sections"]
                 if s.get("body") and not s["body"].startswith("TODO")][0]
         first_sentence = body.split(".")[0]
         self.assertNotIn(first_sentence, page,
@@ -340,37 +362,46 @@ class TestHighlightsFormat(BuildCase):
 
     def test_eyebrow_follows_tier_not_category(self):
         """Fissa3 and Groupado are category:case-study but Tier 2."""
-        for slug in ("fissa3", "groupado", "fixerloop", "instadeep"):
+        for slug in ("fissa3", "groupado", "smarthub", "portfolio"):
             self.assertIn(">Project<", self.html("projects/%s.html" % slug),
                           "%s does not read as a Tier-2 page" % slug)
-        for slug in ("steer", "konnect"):
+        for slug in ("steer", "konnect", "fixerloop", "instadeep"):
             self.assertIn(">Case study<", self.html("projects/%s.html" % slug),
                           "%s does not read as a case study" % slug)
 
     def test_highlights_pages_have_no_table_of_contents(self):
         """A TOC over image blocks with no prose is navigation to nothing."""
-        self.assertNotIn('class="toc"', self.html("projects/pharmadrive.html"))
+        self.assertNotIn('class="toc"', self.html("projects/fissa3.html"))
 
     def test_a_lone_section_is_not_numbered(self):
         """A leading "01" claims a position in a sequence that does not exist.
 
-        Trimming prose leaves PharmaDrive with a single live section, titled
-        "The outcome" -- so "01 The outcome" invited "the outcome of what?"
-        exactly where the setup used to be. Pages that do have a sequence
-        keep their numbers. UnDrive was the other single-section page; it has
-        since been removed, leaving PharmaDrive as the only case here.
+        Trimming prose used to leave UnDrive and PharmaDrive with one live
+        section each, both titled "The outcome" -- so "01 The outcome" invited
+        "the outcome of what?" exactly where the setup used to be.
+
+        Both projects have since been removed, so NO page has a lone section
+        today and this passes vacuously on the first loop. That is deliberate:
+        asserted as a property over every page rather than against a named
+        slug, so it starts failing again the moment a one-section page
+        reappears, instead of erroring on a file that no longer exists -- which
+        is how this test broke when PharmaDrive went.
         """
-        for slug in ("pharmadrive",):
-            page = self.html("projects/%s.html" % slug)
-            self.assertEqual(page.count("project__section"), 1,
-                             "%s is no longer a single-section page" % slug)
-            self.assertNotIn("project__num", page,
-                             "%s numbers its only section" % slug)
-        for slug in ("fixerloop", "steer"):
-            page = self.html("projects/%s.html" % slug)
-            self.assertEqual(page.count("project__section"),
-                             page.count("project__num"),
-                             "%s lost its section numbering" % slug)
+        import glob
+        lone = multi = 0
+        for path in sorted(glob.glob(str(ROOT / "projects" / "*.html"))):
+            name = "projects/" + pathlib.Path(path).name
+            page = self.html(name)
+            sections = page.count('class="project__section"')
+            if sections == 1:
+                lone += 1
+                self.assertNotIn("project__num", page,
+                                 "%s numbers its only section" % name)
+            elif sections > 1:
+                multi += 1
+                self.assertEqual(sections, page.count("project__num"),
+                                 "%s lost its section numbering" % name)
+        self.assertGreater(multi, 0, "no multi-section page left to check")
 
 
 class TestCardMeta(BuildCase):
@@ -386,7 +417,7 @@ class TestCardMeta(BuildCase):
                 "%s meta is %d chars, too long for a card" % (project["slug"], len(meta)))
 
     def test_meta_renders_on_every_card(self):
-        self.assertEqual(self.html("index.html").count('class="card__meta"'), 9)
+        self.assertEqual(self.html("index.html").count('class="card__meta"'), 8)
 
     def test_todo_meta_is_suppressed_not_printed(self):
         """usable() must gate this like every other field -- BUILD.md rule."""

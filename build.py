@@ -644,7 +644,17 @@ def build_index(projects):
         # The counts must still DIFFER -- that difference is the whole
         # hierarchy (see the comment above) -- so the small band stays at 4
         # and the large band can never reach it.
-        cols = min(3, len(live)) if large else 4
+        # Never declare more columns than there are cards, and never leave a
+        # single orphan on a second row. 3 case studies wanted 3 across; 4
+        # want 2x2, because 3-then-1 puts one card alone under a full row and
+        # reads as a gap rather than a grid. The counts must still DIFFER from
+        # the gallery band's 4 -- that difference IS the hierarchy (see above),
+        # so this can never reach 4.
+        if large:
+            n = len(live)
+            cols = 3 if n % 3 == 0 else (2 if n % 2 == 0 else min(3, n))
+        else:
+            cols = 4
         out.append(f"""
     <section class="band shell"{anchor}>
       <div class="band__head">
