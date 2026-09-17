@@ -75,6 +75,18 @@
       "autoImages": "components"
     },
     {
+      "id": "states",
+      "heading": "States and recovery",
+      "body": "The states are the part of a product nobody screenshots and everybody hits. This one had to work in a product where a job can fail, a board can be unroutable, and a link can go stale — so the error page carries the same grid motif as the app, says what happened in the product's own language, and offers exactly one way back.",
+      "images": [
+        {
+          "src": "assets/p10-404.jpg",
+          "alt": "DeepPCB 404 page: a monospace 404 label, PAGE NOT FOUND set large, and a single Go to Homepage action",
+          "caption": "404 — one message, one route out. “Off the grid” and “reconnect” are the router's own vocabulary, not generic error copy."
+        }
+      ]
+    },
+    {
       "id": "instanovo",
       "heading": "InstaNovo",
       "body": "TODO — InstaNovo screens and write-up pending."

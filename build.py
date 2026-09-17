@@ -549,6 +549,16 @@ def build_index(projects):
     hero_img = SITE.get("heroImage") or SITE["profileImage"]
     psize = png_size(ROOT / hero_img)
     pdims = ' width="%d" height="%d"' % psize if psize else ""
+    # The portrait is the homepage's LCP element and it was shipping as a
+    # 419 KB JPEG with no alternative source, on a site whose own project
+    # page advertises "7.3 KB of JavaScript shipped". The JPEG stays as the
+    # fallback -- a browser that understands AVIF never fetches it, one that
+    # does not is unchanged. Same pattern as the about page portrait.
+    # Sized at 800px because the frame is clamp(190px, 26vw, 340px), so 680
+    # covers a 2x display with headroom; anything larger is bytes nobody sees.
+    _hero_avif = ROOT / "site" / "portrait.avif"
+    hero_avif = ('<source srcset="site/portrait.avif%s" type="image/avif">\n        '
+                 % asset_v("site/portrait.avif")) if _hero_avif.is_file() else ""
     # ── Marquee wall hero ──────────────────────────────────────────
     # One row per role, each scrolling horizontally, portrait sitting over
     # them. The row text is repeated so the strip can loop seamlessly: the
@@ -585,7 +595,9 @@ def build_index(projects):
       {wall(wall_rows, ghost=False)}
 
       <figure class="hero__portrait">
-        <img src="{e(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
+        <picture>
+        {hero_avif}<img src="{e(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
+        </picture>
       </figure>
 
       {wall(wall_rows, ghost=True)}
@@ -648,12 +660,24 @@ def build_index(projects):
     contact_links = "\n        ".join(
         '<a class="btn" href="%s">%s</a>' % (e(l["url"]), e(l["label"])) for l in SITE["links"]
     )
+    # The CV was footer-only on the homepage, so the highest-intent element on
+    # the site -- "Let's talk" -- offered no way to get the document a
+    # recruiter actually needs. It is the last thing they look for and it was
+    # the one thing not here.
+    cv_btn = ('\n        <a class="btn" href="%s">CV (PDF)</a>' % e(SITE["cv"])
+              if SITE.get("cv") else "")
+    # And the address itself never appeared as selectable text anywhere on the
+    # site -- only ever inside href="mailto:". A recruiter who wants to paste
+    # it into their own system had to open a mail client to read it.
+    addr = SITE.get("email")
+    addr_line = ('\n      <p class="contact__addr"><a href="mailto:%s">%s</a></p>'
+                 % (e(addr), e(addr))) if addr else ""
     out.append(f"""
     <section class="band band--contact shell" id="contact">
       <h2>{masked("Let's talk")}</h2>
-      <p class="lede">{e(SITE.get("contactLede", ""))}</p>
+      <p class="lede">{e(SITE.get("contactLede", ""))}</p>{addr_line}
       <div class="btn-row">
-        {contact_links}
+        {contact_links}{cv_btn}
       </div>
     </section>
 """)

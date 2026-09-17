@@ -899,7 +899,19 @@ body::after {
   background: none;
   overflow: hidden;
 }
-.hero .hero__portrait img { filter: var(--filter-mono); }
+/* The subject is in the bottom-left of the source, not its centre.
+   portrait.jpg is 900x1598 (0.56) going into a 3/4 frame, so `cover` scales
+   to width and throws away 398 source pixels of height. At the default
+   `50% 50%` that is 199px off each end, which centres the crop on the
+   buildings and cuts Abdou off at the frame edge -- the one thing the
+   portrait exists to show. Biasing down to 72% moves the window to source
+   y 287-1487: he lands fully in frame with his head near the middle, and
+   the spire and converging walls that carry the composition survive.
+   100% would show all of him but lose the sky entirely. */
+.hero .hero__portrait img {
+  filter: var(--filter-mono);
+  object-position: 50% 72%;
+}
 
 /* corner metadata pinned to the foot of the hero */
 .hero__meta {
@@ -1310,3 +1322,17 @@ html:not(.js) .viewer__tabs { display: none; }
   max-height: none;
   object-fit: contain;
 }
+
+/* ── the contact address, as text ─────────────────────────
+   The email existed on every page only inside href="mailto:". A recruiter
+   who wants to paste it into an ATS, or who has no mail client configured,
+   could not read it at all. Mono because it is a machine string, and sized
+   to sit under the lede without competing with it. */
+.contact__addr {
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+.contact__addr a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--color-border-strong); }
+.contact__addr a:hover { color: var(--color-accent); border-bottom-color: var(--color-accent); }

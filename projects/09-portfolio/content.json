@@ -32,7 +32,7 @@
   "metrics": [
     {
       "label": "Tests against the generated HTML",
-      "value": "41"
+      "value": "42"
     },
     {
       "label": "Runtime dependencies",
@@ -66,7 +66,7 @@
         {
           "src": "assets/n2-system.jpg",
           "alt": "A project's content.json next to the HTML that build.py generates from it",
-          "caption": "One JSON file per project, and 1,069 lines of Python that write every page. No page is ever hand-edited."
+          "caption": "One JSON file per project, and 1,085 lines of Python that write every page. No page is ever hand-edited."
         }
       ]
     },
@@ -77,7 +77,7 @@
       "images": [
         {
           "src": "assets/n3-tests.jpg",
-          "alt": "Terminal output showing the build summary and 41 passing tests",
+          "alt": "Terminal output showing the build summary and 42 passing tests",
           "caption": "Rebuild, then prove it. The build is idempotent — running it twice changes nothing."
         }
       ]

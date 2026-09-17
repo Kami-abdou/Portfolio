@@ -137,11 +137,6 @@
           "src": "assets/04-login-free-trial.jpg",
           "alt": "Steer login and free trial screen",
           "caption": "Login and free trial."
-        },
-        {
-          "src": "assets/03-faq.png",
-          "alt": "Steer FAQ section",
-          "caption": "FAQ."
         }
       ]
     },
