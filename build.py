@@ -249,6 +249,19 @@ def asset_v(rel):
     Without this a browser keeps serving a stale styles.css or enhance.js
     after a deploy — which cost real debugging time here, since a cached
     script silently ran an older version of the file with no error.
+
+    It was applied to CSS and JS only, and that omission cost the same
+    debugging time again — four separate times — on IMAGES. The portraits
+    and covers keep a stable filename while their contents change, which is
+    the exact shape of the problem: the Fixerloop cover was replaced and the
+    old banner kept appearing, the hero portrait was swapped and the old
+    photograph kept appearing, and in between a deleted AVIF left a cached
+    page requesting a file that now 404s. `<picture>` does not fall back
+    when its chosen <source> fails, so that last one rendered nothing at all.
+
+    Now applied to the two site-level portraits as well. Project images are
+    not versioned because their filenames change with their content; these
+    two do not.
     """
     f = ROOT / rel
     if not f.is_file():
@@ -692,7 +705,7 @@ def build_index(projects):
 
       <figure class="hero__portrait">
         <picture>
-        {hero_avif}<img src="{e(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
+        {hero_avif}<img src="{e(hero_img)}{asset_v(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
         </picture>
       </figure>
 
@@ -908,7 +921,7 @@ def build_about(index):
       <div class="about__grid">
         <figure class="about__portrait">
           <picture>
-          {avif_src}<img src="{e(SITE['profileImage'])}" alt="Portrait of {e(SITE['name'])}"{dims} decoding="async">
+          {avif_src}<img src="{e(SITE['profileImage'])}{asset_v(SITE['profileImage'])}" alt="Portrait of {e(SITE['name'])}"{dims} decoding="async">
           </picture>
         </figure>
         <div class="prose">
