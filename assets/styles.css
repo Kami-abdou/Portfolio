@@ -907,7 +907,18 @@ body::after {
    portrait exists to show. Biasing down to 72% moves the window to source
    y 287-1487: he lands fully in frame with his head near the middle, and
    the spire and converging walls that carry the composition survive.
-   100% would show all of him but lose the sky entirely. */
+   100% would show all of him but lose the sky entirely.
+
+   The crop alone was not enough. --filter-mono ran contrast(1.75)
+   brightness(0.92), which is a good treatment for the architecture and the
+   wrong one for the person standing in it: measured on the source, his area
+   averages 47/255 against the building's 161 -- he is backlit and in deep
+   shadow -- so raising contrast pushed him further toward black and he read
+   as a silhouette. "I'm not visible in it" was still true after the crop
+   moved him into frame. Six settings were compared against the real image;
+   1.15/1.20 recovers his face while the white wall keeps its detail.
+   Brighter (1.35) starts to flatten the building, and 1.5 blows it out.
+   The values live in tokens.json, which is the only place they belong. */
 .hero .hero__portrait img {
   filter: var(--filter-mono);
   object-position: 50% 72%;
