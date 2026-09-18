@@ -473,6 +473,74 @@ class TestHeroPortrait(BuildCase):
                       "the hero portrait lost its downward crop bias")
 
 
+class TestPrimaryNav(BuildCase):
+    """Work / About / Contact must be findable, markable and hittable.
+
+    The owner asked whether the nav should be "highlighted more". Measured
+    first: 15px text at 6.47:1 against the page, which is comfortably past
+    WCAG AA, so visibility was not the problem. Three other things were.
+    """
+
+    def test_current_page_is_marked(self):
+        """aria-current appeared NOWHERE on the site before this.
+
+        A visitor on /about saw a nav identical to the homepage's. The only
+        is-current rule in the stylesheet was for the project-page TOC.
+        """
+        self.assertIn('href="index.html#work" aria-current="page"',
+                      self.html("index.html"))
+        self.assertIn('href="about.html" aria-current="page"',
+                      self.html("about.html"))
+
+    def test_project_pages_mark_nothing(self):
+        """A project page sits under Work but is not Work, and marking it
+        current would be a claim a screen reader reads out loud."""
+        for slug in ("steer", "konnect", "instadeep", "fixerloop"):
+            page = self.html("projects/%s.html" % slug)
+            nav = page.split('<nav aria-label="Primary">', 1)[1].split("</nav>", 1)[0]
+            self.assertNotIn("aria-current", nav,
+                             "%s marks a nav item as the current page" % slug)
+
+    def test_contact_navigates_rather_than_firing_a_mail_client(self):
+        """Contact was a mailto: sitting between two page links.
+
+        In a nav that is a surprise -- it opens a mail client, or on a
+        machine with none configured it appears to do nothing at all. It now
+        points at the homepage contact band, which carries the address as
+        selectable text, the CV and every link. The mailto still exists
+        inside that band, where a visitor expects one.
+        """
+        import re, glob, pathlib as pl
+        for path in glob.glob(str(ROOT / "*.html")) + glob.glob(str(ROOT / "projects" / "*.html")):
+            name = pl.Path(path).name
+            page = pl.Path(path).read_text(encoding="utf-8")
+            nav = re.search(r'<nav aria-label="Primary">(.*?)</nav>', page, re.S)
+            self.assertIsNotNone(nav, "%s lost its primary nav" % name)
+            self.assertNotIn("mailto:", nav.group(1),
+                             "%s still fires a mail client from the nav" % name)
+            self.assertIn("#contact", nav.group(1),
+                          "%s has no route to the contact band" % name)
+        self.assertIn('id="contact"', self.html("index.html"),
+                      "the nav points at #contact but the target is gone")
+
+    def test_nav_links_have_a_real_hit_area(self):
+        """They had zero padding, so the target was the text box: 24px tall,
+        the bare WCAG 2.5.8 minimum and well under the 44px platform norm.
+        Measured after the fix: 48px tall, header height unchanged at 76px
+        because the padding is offset by a negative margin."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = css.split(".site-head nav a {", 1)[1].split("}", 1)[0]
+        self.assertIn("padding", block, "nav links lost their hit area")
+
+    def test_contact_band_still_holds_the_address_and_cv(self):
+        """The nav now sends people here, so this is load-bearing."""
+        index = self.html("index.html")
+        band = index.split('id="contact"', 1)[1].split("</section>", 1)[0]
+        self.assertIn("contact__addr", band, "the visible email address is gone")
+        self.assertIn("mailto:", band)
+        self.assertIn(".pdf", band.lower(), "the CV is no longer at the point of intent")
+
+
 class TestCardMeta(BuildCase):
 
     def test_every_project_has_a_short_meta_line(self):

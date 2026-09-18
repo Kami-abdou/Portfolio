@@ -298,8 +298,42 @@ def json_ld():
             % json.dumps(data, ensure_ascii=False, separators=(",", ":")))
 
 
+def primary_nav(up, current=None):
+    """The header nav, with the visitor's location marked.
+
+    Three things were wrong with the previous version, and none of them was
+    contrast -- measured at 6.47:1 against the page, comfortably past AA:
+
+    1. Nothing marked the current page. `aria-current` appeared nowhere on
+       the site, and on about.html the About link was styled exactly like the
+       other two, so a visitor had no way to tell where they were. The only
+       is-current rule in the stylesheet was for the project-page TOC.
+    2. "Contact" was a `mailto:` sitting between two page links. In a nav
+       that is a surprise: it fires a mail client, or on a machine with none
+       configured it appears to do nothing. It now goes to the homepage
+       contact band, which holds the address as selectable text, the CV and
+       every link -- real navigation, with the mailto inside it where a
+       visitor expects to find one.
+    3. The links had zero padding, so the hit area was the text box: 24px
+       tall, the bare WCAG 2.5.8 minimum and well under the 44px platform
+       norm for touch. Padding is applied in CSS.
+
+    `current` is "work" on the homepage and "about" on the about page. Project
+    pages pass nothing: they sit under Work but they are not it, and marking
+    Work as the current page there would be a lie a screen reader announces.
+    """
+    items = [("work", "%sindex.html#work" % up, "Work"),
+             ("about", "%sabout.html" % up, "About"),
+             ("contact", "%sindex.html#contact" % up, "Contact")]
+    out = []
+    for key, href, label in items:
+        mark = ' aria-current="page"' if key == current else ""
+        out.append('<a href="%s"%s>%s</a>' % (e(href), mark, e(label)))
+    return '<nav aria-label="Primary">\n        %s\n      </nav>' % "\n        ".join(out)
+
+
 def head(title, description, *, depth=0, image=None, page_url="",
-         og_type="website", image_alt=None):
+         og_type="website", image_alt=None, nav_current=None):
     up = "../" * depth
     img = image or SITE.get("shareImage") or SITE.get("profileImage")
     og_image = ""
@@ -351,11 +385,7 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <header class="site-head">
     <div class="shell site-head__inner">
       <a class="site-head__name" href="{up}index.html" aria-label="{e(SITE['name'])} — home">{wordmark()}</a>
-      <nav aria-label="Primary">
-        <a href="{up}index.html#work">Work</a>
-        <a href="{up}about.html">About</a>
-        <a href="mailto:{e(SITE['email'])}">Contact</a>
-      </nav>
+      {primary_nav(up, nav_current)}
     </div>
   </header>
   <main id="main" tabindex="-1">"""
@@ -591,6 +621,7 @@ def build_index(projects):
         SITE.get("metaDescription") or SITE.get("heroStatement")
             or (SITE["tagline"] + " " + SITE["intro"]),
         page_url="index.html",
+        nav_current="work",
     )]
 
     # Cycling role line. Every role is in the DOM so it survives with JS off
@@ -867,6 +898,7 @@ def build_about(index):
                 # face, which can arrive cropped at the eyes.
                 image=SITE.get("shareImage") or SITE["profileImage"],
                 page_url="about.html",
+                nav_current="about",
                 og_type="profile",
                 image_alt="%s — %s, %s" % (SITE["name"], SITE["title"],
                                            SITE.get("location", "")))]

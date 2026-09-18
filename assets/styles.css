@@ -90,12 +90,28 @@ a { color: inherit; }
   letter-spacing: -0.01em;
 }
 .site-head nav { display: flex; gap: var(--space-6); }
+/* The nav was 15px text at 6.47:1 against the page -- legible, and past
+   WCAG AA -- so "make it brighter" was never the fix. Two real problems:
+
+   Nothing marked the current page. `aria-current` appeared nowhere on the
+   site, so a visitor on /about saw a nav identical to the homepage's; the
+   only is-current rule in the stylesheet was the project-page TOC. It is
+   marked with the accent, the colour this site already uses for "here".
+
+   And the hit area was the text box -- 24px tall with zero padding, the
+   bare WCAG 2.5.8 minimum and well under the 44px platform norm. The
+   padding grows the target to 48px and the negative margin cancels it in
+   layout, so the header stays 76px and nothing moves. */
 .site-head nav a {
   color: var(--color-text-muted);
   text-decoration: none;
   font-size: var(--font-size-sm);
+  padding: var(--space-3) var(--space-2);
+  margin: calc(var(--space-3) * -1) calc(var(--space-2) * -1);
+  border-radius: var(--radius-sm);
 }
 .site-head nav a:hover { color: var(--color-text); }
+.site-head nav a[aria-current="page"] { color: var(--color-accent); }
 
 .site-foot {
   margin-top: var(--space-32);
