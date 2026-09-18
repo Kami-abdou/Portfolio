@@ -40,7 +40,8 @@
       "value": "356"
     }
   ],
-  "cover": "assets/n1-outcome-1.jpg",
+  "cover": "assets/cover.jpg",
+  "shareCard": true,
   "sections": [
     {
       "id": "context",
@@ -214,11 +215,6 @@
       "heading": "The outcome",
       "body": "The app shipped and fixerloop.com is live.\n\nThis was an interface job rather than a research one, and it is worth being exact about that. The founder already had a product that worked; what he had lost was an interface he could defend. So the work was execution at volume — 82 screens redrawn across both apps, and a library of 356 icons across 17 categories underneath them so the next screen would not start from nothing.\n\nWhat I would claim from it is craft and consistency at scale, not a research insight. The result was a founder who could demo his own product again.",
       "images": [
-        {
-          "src": "assets/n1-outcome-1.jpg",
-          "alt": "Fixerloop app screens after the redesign",
-          "caption": "Redesigned screens."
-        },
         {
           "src": "assets/n3-outcome-3.png",
           "alt": "Fixerloop app screens after the redesign",
