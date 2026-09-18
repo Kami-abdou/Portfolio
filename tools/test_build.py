@@ -404,6 +404,60 @@ class TestHighlightsFormat(BuildCase):
         self.assertGreater(multi, 0, "no multi-section page left to check")
 
 
+class TestHeroPortrait(BuildCase):
+    """The hero portrait must actually be visible.
+
+    It was not, for a day. An AVIF <source> was added to cut the LCP weight,
+    encoded with `sips -s format avif`. The file passed every cheap check --
+    `ftyp avif` magic, correct dimensions read back by sips, `file` reporting
+    "ISO Media, AVIF Image", 60% smaller than the JPEG -- and Chrome decoded
+    it to pure black: max luminance 0 across the frame against 238 for the
+    JPEG. The portrait vanished and the only symptom was a dark rectangle
+    behind dark type, which is invisible on this palette.
+
+    Decoding AVIF needs a browser, so these pin the two things that are
+    checkable from stdlib: no AVIF is referenced from the hero at all, and
+    the JPEG that IS referenced is a real, non-trivial image.
+    """
+
+    def test_hero_references_no_avif(self):
+        import re
+        index = self.html("index.html")
+        hero = re.search(r'<figure class="hero__portrait">.*?</figure>',
+                         index, re.S)
+        self.assertIsNotNone(hero, "hero portrait figure is gone from the page")
+        self.assertNotIn(".avif", hero.group(0),
+                         "an AVIF source is back in the hero -- verify its "
+                         "PIXELS in a browser, not its bytes, before shipping")
+
+    def test_hero_image_exists_and_is_a_real_jpeg(self):
+        import re, struct
+        index = self.html("index.html")
+        src = re.search(r'<figure class="hero__portrait">.*?<img src="([^"?]+)',
+                        index, re.S).group(1)
+        path = ROOT / src
+        self.assertTrue(path.is_file(), "hero portrait missing: %s" % src)
+        head = path.read_bytes()[:2]
+        self.assertEqual(head, b"\xff\xd8", "%s is not a JPEG" % src)
+        # A black or empty encode compresses to almost nothing. The real file
+        # is ~265 KB; anything under 20 KB at these dimensions is a red flag.
+        self.assertGreater(path.stat().st_size, 20_000,
+                           "%s is suspiciously small -- is it blank?" % src)
+
+    def test_hero_portrait_is_cropped_to_include_the_subject(self):
+        """object-position must stay biased down.
+
+        portrait.jpg is 0.56 aspect going into a 3/4 frame, so `cover` throws
+        away height. At the default 50% the crop centres on the buildings and
+        cuts the subject off at the frame edge -- the one thing the portrait
+        exists to show.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = css.split(".hero .hero__portrait img {", 1)[1].split("}", 1)[0]
+        self.assertIn("object-position", block,
+                      "the hero portrait lost its downward crop bias")
+
+
 class TestCardMeta(BuildCase):
 
     def test_every_project_has_a_short_meta_line(self):

@@ -549,16 +549,29 @@ def build_index(projects):
     hero_img = SITE.get("heroImage") or SITE["profileImage"]
     psize = png_size(ROOT / hero_img)
     pdims = ' width="%d" height="%d"' % psize if psize else ""
-    # The portrait is the homepage's LCP element and it was shipping as a
-    # 419 KB JPEG with no alternative source, on a site whose own project
-    # page advertises "7.3 KB of JavaScript shipped". The JPEG stays as the
-    # fallback -- a browser that understands AVIF never fetches it, one that
-    # does not is unchanged. Same pattern as the about page portrait.
-    # Sized at 800px because the frame is clamp(190px, 26vw, 340px), so 680
-    # covers a 2x display with headroom; anything larger is bytes nobody sees.
-    _hero_avif = ROOT / "site" / "portrait.avif"
-    hero_avif = ('<source srcset="site/portrait.avif%s" type="image/avif">\n        '
-                 % asset_v("site/portrait.avif")) if _hero_avif.is_file() else ""
+    # No AVIF source here, deliberately. DO NOT ADD ONE WITH sips.
+    #
+    # The portrait is the homepage's LCP element, so an AVIF alternative is
+    # the obvious win and it was tried. `sips -s format avif` produces a file
+    # that passes every cheap check -- correct `ftyp avif` magic, correct
+    # dimensions reported back by sips, `file` calls it "ISO Media, AVIF
+    # Image", 60% smaller than the JPEG -- and which Chrome decodes to PURE
+    # BLACK. Measured by drawing it to a canvas: max luminance 0 across the
+    # frame, against 238 for the JPEG. The hero portrait silently vanished
+    # and the only symptom was a dark rectangle behind dark type.
+    #
+    # site/profile.avif on the about page is fine, which is what made this
+    # confusing: it was encoded by something else, not by sips.
+    #
+    # There is no avifenc, ImageMagick, cavif or vips on this machine and the
+    # project takes no new dependencies, so there is no way to produce a
+    # trustworthy AVIF here. The JPEG is instead sized to what the frame
+    # actually needs -- clamp(190px, 26vw, 340px), so 700px covers 2x -- which
+    # took it from 419 KB to 265 KB with no format risk.
+    #
+    # If you do add an AVIF later: verify the PIXELS, not the bytes. Load it
+    # in a browser and sample it. Every metadata check passed on the broken one.
+    hero_avif = ""
     # ── Marquee wall hero ──────────────────────────────────────────
     # One row per role, each scrolling horizontally, portrait sitting over
     # them. The row text is repeated so the strip can loop seamlessly: the
