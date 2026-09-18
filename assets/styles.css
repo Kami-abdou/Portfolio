@@ -1347,3 +1347,25 @@ html:not(.js) .viewer__tabs { display: none; }
 }
 .contact__addr a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--color-border-strong); }
 .contact__addr a:hover { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+
+/* ── motion clips in a shots grid ─────────────────────────
+   The first motion on the site. Sized like any other shot so the grid does
+   not have to know the difference, but it is never cropped: a still can be
+   object-fit: cover into a tile because the subject survives, whereas
+   cropping an animation throws away the part that moves. So the frame is
+   let to the clip's own ratio and the poster carries the dimensions. */
+.shot--video { grid-column: 1 / -1; }
+.shot__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-raised);
+}
+/* A visitor who has asked for calm gets no autoplay at all -- enhance.js
+   never adds it -- so the controls are the whole interface here and they
+   should not be the quiet option. */
+@media (prefers-reduced-motion: reduce) {
+  .shot__video { outline: 1px solid var(--color-border-strong); outline-offset: -1px; }
+}

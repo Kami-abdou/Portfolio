@@ -390,8 +390,60 @@ def foot(depth=0):
 
 # ─────────────────────────────────────────── fragments
 
+def video_figure(img, project_dir, depth):
+    """One <figure> holding a motion clip rather than a still.
+
+    The site had no motion on it anywhere -- no mp4, webm or gif, and no
+    <video> in the template -- while the hero claims the thing that holds
+    Abdou's attention is "how a thing responds, what it does while it waits,
+    and how it recovers". That was the largest gap between what the site
+    claimed and what it showed.
+
+    Deliberately NOT autoplaying in the markup:
+
+      - `controls` + no `autoplay` is the honest base state. It works with
+        JavaScript off, it works from file://, and it respects a visitor who
+        has asked for reduced motion WITHOUT needing a media query, because
+        nothing moves until they ask.
+      - autoplay is added by enhance.js only when `html.anim` is set, i.e.
+        only when the visitor has not asked for calm. That is the same gate
+        the scroll reveals use.
+      - `muted` regardless. avconvert has no video-only preset, so the
+        re-encode still carries its AAC track; a clip that could make noise
+        on a portfolio is worse than a slightly larger file, and browsers
+        block unmuted autoplay anyway.
+
+    `poster` is mandatory in practice: without it the element is a black box
+    until the first frame decodes, and on a near-black page that is
+    indistinguishable from a broken embed -- which is exactly how the hero
+    portrait went missing for a day.
+    """
+    base = "%s/%s" % (project_dir, img["video"]) if depth else "projects/%s/%s" % (project_dir, img["video"])
+    poster_rel = img.get("poster")
+    poster = ""
+    if poster_rel:
+        p = "%s/%s" % (project_dir, poster_rel) if depth else "projects/%s/%s" % (project_dir, poster_rel)
+        poster = ' poster="%s"' % e(p)
+        size = png_size(ROOT / "projects" / project_dir / poster_rel)
+    else:
+        size = None
+    dims = ' width="%d" height="%d"' % size if size else ""
+    caption = img.get("caption")
+    cap_html = "\n          <figcaption>%s</figcaption>" % e(caption) if caption else ""
+    # The <a> is the no-video fallback: a browser that cannot play it still
+    # gets a route to the file rather than an empty frame.
+    return f"""        <figure class="shot shot--video">
+          <video class="shot__video" controls muted loop playsinline preload="metadata"{poster}{dims}>
+            <source src="{e(base)}" type="video/mp4">
+            <a href="{e(base)}">Download the animation (MP4)</a>
+          </video>{cap_html}
+        </figure>"""
+
+
 def figure(img, project_dir, depth):
     """One <figure>. depth is how many folders deep the page sits."""
+    if img.get("video"):
+        return video_figure(img, project_dir, depth)
     src = "%s/%s" % (project_dir, img["src"]) if depth else "projects/%s/%s" % (project_dir, img["src"])
     disk = ROOT / "projects" / project_dir / img["src"]
     size = png_size(disk)
@@ -1020,9 +1072,14 @@ def build_project(project, prev_p, next_p):
 """)
             continue
         figs = "\n".join(figure(img, d, depth=1) for img in section_imgs)
-        # a grid of phone screens wants more, narrower columns
+        # A grid of phone screens wants more, narrower columns. `.get("src")`
+        # rather than `["src"]`: a motion entry carries `video`/`poster` and no
+        # `src` at all, and indexing it here is what broke the build the first
+        # time a clip was added. A clip is never a phone screen, so it counts
+        # as not-a-phone and a section containing one keeps the normal grid.
         phones = sum(1 for img in section_imgs
-                     if is_phone(png_size(ROOT / "projects" / d / img["src"])))
+                     if img.get("src")
+                     and is_phone(png_size(ROOT / "projects" / d / img["src"])))
         variant = " shots--phone" if section_imgs and phones == len(section_imgs) else ""
         body_html = ('<div class="prose">%s</div>' % paragraphs(section.get("body"))
                      if usable(section.get("body")) else "")

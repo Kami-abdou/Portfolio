@@ -26,6 +26,53 @@
   root.classList.add('js');
   if (!calm && io) root.classList.add('anim');
 
+  /* ── motion clips: play in view, pause out of view ────
+     The markup ships <video controls muted loop> with NO autoplay, so the
+     base state is a poster frame and nothing moves until the visitor asks.
+     That is also the whole reduced-motion story: this block is gated on
+     !calm, so a visitor who asked for less motion never gets autoplay and
+     keeps the controls they can drive themselves. No media query needed.
+
+     Pausing on exit matters more than starting on entry. A looping clip
+     playing on a screen nobody is looking at decodes frames for nothing,
+     and on the page arguing that interaction detail is the job, leaving it
+     running would be the wrong answer.
+
+     play() returns a promise that rejects if the browser declines (low-power
+     mode, a policy we did not anticipate). It is caught and ignored: the
+     poster plus controls is already a working state, so a refused autoplay
+     degrades to exactly the base experience.
+
+     userPaused stops us fighting the visitor. Without it, scrolling away
+     from a clip they deliberately paused and back again restarts it. */
+  if (!calm && io) {
+    var clips = document.querySelectorAll('.shot__video');
+    if (clips.length) {
+      var clipWatcher = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          var v = en.target;
+          v.dataset.inView = en.isIntersecting ? '1' : '0';
+          if (en.isIntersecting) {
+            if (v.paused && v.dataset.userPaused !== '1') {
+              var r = v.play();
+              if (r && r.catch) { r.catch(function () {}); }
+            }
+          } else if (!v.paused) {
+            v.pause();
+          }
+        });
+      }, { threshold: 0.4 });
+
+      clips.forEach(function (v) {
+        v.addEventListener('pause', function () {
+          if (!v.ended && v.dataset.inView === '1') { v.dataset.userPaused = '1'; }
+        });
+        v.addEventListener('play', function () { v.dataset.userPaused = '0'; });
+        clipWatcher.observe(v);
+      });
+    }
+  }
+
   /* ── reveal on enter ─────────────────────────────
      Sections rise and sharpen out of a slight blur once. */
   if (!calm && io) {

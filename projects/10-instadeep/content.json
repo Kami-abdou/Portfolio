@@ -81,6 +81,12 @@
           "caption": "The landing page. Benchmarks in a band under the hero, not buried — a researcher reads the number before the pitch."
         },
         {
+          "video": "assets/in4-hero-animation.mp4",
+          "poster": "assets/in4-hero-animation.jpg",
+          "alt": "Animated hero graphic: a mass spectrum on the left resolving into clusters of predicted peptide sequences on the right",
+          "caption": "The hero animation. A mass spectrum on the left resolves into predicted sequences on the right — the model's actual job, stated once, in motion. Muted, and it does not start until you ask."
+        },
+        {
           "src": "assets/in3-coming-soon.jpg",
           "alt": "InstaNovo pre-launch holding page with COMING SOON set large, the last letters fading out",
           "caption": "The pre-launch holding page. Brand only, and it still had to look like the product it was holding."
