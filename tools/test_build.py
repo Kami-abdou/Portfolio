@@ -148,7 +148,14 @@ class TestHomepageTiers(BuildCase):
         self.assertEqual(index.count('class="card"'), 4)
 
     def test_steer_is_the_first_card(self):
-        """Leading with a non-AI CPO role is the positioning fix."""
+        """Leading with the non-AI role is the positioning fix.
+
+        Steer was titled Chief Product Officer until the owner changed it to
+        Product Designer Lead. Three independent reviewers had flagged the
+        C-level title as a credibility risk -- 21 months into a career, on
+        the one project with no product screens and no product metric, and
+        followed by an unexplained step down to senior IC.
+        """
         index = self.html("index.html")
         self.assertLess(index.index("projects/steer.html"),
                         index.index("projects/instadeep.html"))
