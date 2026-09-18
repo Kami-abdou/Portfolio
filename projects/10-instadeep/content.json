@@ -33,6 +33,10 @@
     {
       "label": "InstaDeep",
       "url": "https://www.instadeep.com"
+    },
+    {
+      "label": "InstaNovo",
+      "url": "https://instanovo.ai"
     }
   ],
   "metrics": [],
@@ -67,6 +71,23 @@
       ]
     },
     {
+      "id": "instanovo",
+      "heading": "InstaNovo",
+      "body": "InstaNovo and InstaNovo+ are de novo peptide sequencing models: they read a mass spectrum and return a peptide sequence without matching it against a reference database, which is the whole point — a database search can only find what is already in the database. Built with the Department of Biotechnology and Biomedicine at the Technical University of Denmark, and published in Nature Machine Intelligence.\n\nMy work was the public face of it: the logo, and a landing page that has to hold two readers at once. A proteomics researcher wants the benchmark before they want anything else — 52% average peptide accuracy across eight biological datasets, 34% more novel peptides, 42% more peptide spectrum matches. Someone deciding whether to fund or adopt it wants to know what that unlocks. So the numbers sit in a band immediately under the hero rather than being saved for a technical page, and the two models get one section each — InstaNovo transcribing, InstaNovo+ refining by diffusion — because the relationship between them is the thing people get wrong.\n\nThe set also includes the states, in the same visual language rather than a default: the 404 is built from real sequence output, and the pre-launch holding page had to look like the product it was holding.",
+      "images": [
+        {
+          "src": "assets/in1-landing.jpg",
+          "alt": "InstaNovo landing page, full scroll: hero, benchmark band, a section each for InstaNovo and InstaNovo+, capability cards, research and contact",
+          "caption": "The landing page. Benchmarks in a band under the hero, not buried — a researcher reads the number before the pitch."
+        },
+        {
+          "src": "assets/in3-coming-soon.jpg",
+          "alt": "InstaNovo pre-launch holding page with COMING SOON set large, the last letters fading out",
+          "caption": "The pre-launch holding page. Brand only, and it still had to look like the product it was holding."
+        }
+      ]
+    },
+    {
       "id": "design-system",
       "heading": "Design system",
       "body": "Every InstaDeep product surface and research demo is built from one system. It exists because the alternative was each team inventing its own buttons, and it had to survive being used by engineers with no designer in the room.\n\nBrowse the components below.",
@@ -76,19 +97,19 @@
     {
       "id": "states",
       "heading": "States and recovery",
-      "body": "The states are the part of a product nobody screenshots and everybody hits. This one had to work in a product where a job can fail, a board can be unroutable, and a link can go stale — so the error page carries the same grid motif as the app, says what happened in the product's own language, and offers exactly one way back.",
+      "body": "The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows — a routing job that will not converge, a spectrum with no confident call, a link that has gone stale — so the error pages carry each product's own grid or sequence motif, say what happened in that product's vocabulary, and offer exactly one way back. Two products, one discipline.",
       "images": [
         {
           "src": "assets/p10-404.jpg",
           "alt": "DeepPCB 404 page: a monospace 404 label, PAGE NOT FOUND set large, and a single Go to Homepage action",
-          "caption": "404 — one message, one route out. “Off the grid” and “reconnect” are the router's own vocabulary, not generic error copy."
+          "caption": "DeepPCB — one message, one route out. “Off the grid” and “reconnect” are the router's own vocabulary, not generic error copy."
+        },
+        {
+          "src": "assets/in2-404.jpg",
+          "alt": "InstaNovo 404 page: the headline 404 | Page not found beside a peptide-sequence field forming a shape",
+          "caption": "InstaNovo — the field on the right is real sequence output, so even the error page is made of what the product does."
         }
       ]
-    },
-    {
-      "id": "instanovo",
-      "heading": "InstaNovo",
-      "body": "TODO — InstaNovo screens and write-up pending."
     }
   ]
 }

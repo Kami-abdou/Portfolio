@@ -244,20 +244,35 @@ class TestInstaDeepEntry(BuildCase):
         for product in ("DeepPCB", "Design system", "InstaNovo"):
             self.assertIn(product, page, "instadeep.html omits %s" % product)
 
-    def test_instanovo_is_named_but_its_section_is_not_yet_rendered(self):
-        """InstaNovo is named in the summary, so the entry is honest about the
-        scope of the role -- but its section has a TODO body and no images, so
-        build.py:838 drops it. The block appears when the screens land, with no
-        template change. This test is what tells you the stub is wired
-        correctly rather than merely absent."""
+    def test_instanovo_is_rendered_now_that_the_screens_exist(self):
+        """This test used to assert the opposite.
+
+        InstaNovo was named in the summary and all three meta descriptions --
+        so the entry was honest about the scope of the role -- while its
+        section was a `TODO` body with no images, which build.py correctly
+        dropped. The page therefore promised three product surfaces and
+        showed two, and the old test pinned that stub as WIRED rather than
+        broken: "the block appears when the screens land, with no template
+        change."
+
+        The screens landed. Nothing in the template changed, which is what
+        the old test was really protecting. It is inverted here rather than
+        deleted, so the history of the claim stays visible.
+        """
         page = self.html("projects/instadeep.html")
+        content = self.content("10-instadeep")
+        section = next(s for s in content["sections"] if s["id"] == "instanovo")
+
+        self.assertFalse(section["body"].startswith("TODO"),
+                         "the InstaNovo stub is back")
+        self.assertGreater(len(section["body"].split()), 80,
+                           "InstaNovo has a section but barely any write-up")
         self.assertIn("InstaNovo", page)
-        self.assertNotIn('id="instanovo"', page)
+        self.assertIn('id="instanovo"', page)
+        self.assertIn("in1-landing", page)
+        # the page's own tagline promises three surfaces; hold it to that
+        self.assertIn("DeepPCB", page)
         self.assertNotIn("TODO", page)
-        stub = [s for s in self.content("10-instadeep")["sections"]
-                if s.get("id") == "instanovo"]
-        self.assertEqual(len(stub), 1, "the InstaNovo stub section is missing")
-        self.assertNotIn("images", stub[0])
 
     def test_component_boards_still_auto_populate(self):
         """assets/components/ is globbed by autoImages, not listed in JSON.
