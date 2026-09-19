@@ -821,7 +821,14 @@ body::after {
   position: relative;
   min-height: calc(100dvh - var(--header-height));
   display: flex; flex-direction: column; justify-content: center;
-  gap: clamp(4px, 1vw, 14px);
+  /* Hoisted so the wall's height can be derived from them rather than
+     guessed. --wall-line is the poster type size, --wall-gap the space
+     between rows, and .wall__word's line-height is 0.86 -- which makes one
+     rendered row exactly `--wall-line * 0.86` tall. */
+  --wall-line: clamp(3.5rem, 13vw, 11rem);
+  --wall-gap: clamp(4px, 1vw, 14px);
+  --wall-rows: 2.5;
+  gap: var(--wall-gap);
   overflow: hidden;
   padding-block: var(--space-16);
   border-bottom: 1px solid var(--color-border);
@@ -829,8 +836,16 @@ body::after {
 
 .wall {
   display: flex; flex-direction: column;
-  gap: clamp(4px, 1vw, 14px);
+  gap: var(--wall-gap);
   width: 100%;
+  /* Two full rows and half of a third. Three whole rows read as a finished
+     block that happens to be dark at the bottom; a row cut mid-letterform
+     reads as a wall continuing past the edge, which is the point of the
+     device. Derived, not a magic pixel value, so it holds at every step of
+     the font-size clamp. */
+  max-height: calc(var(--wall-line) * 0.86 * var(--wall-rows)
+                   + var(--wall-gap) * 2);
+  overflow: hidden;
 }
 /* the front copy is a ghost laid over the portrait */
 .wall--ghost {
@@ -886,7 +901,7 @@ body::after {
 .wall__word {
   font-family: var(--font-poster);
   font-weight: 400;
-  font-size: clamp(3.5rem, 13vw, 11rem);
+  font-size: var(--wall-line);
   line-height: 0.86;
   letter-spacing: -0.005em;
   text-transform: uppercase;

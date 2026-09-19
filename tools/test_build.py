@@ -548,6 +548,59 @@ class TestPrimaryNav(BuildCase):
         self.assertIn(".pdf", band.lower(), "the CV is no longer at the point of intent")
 
 
+class TestMarqueeWall(BuildCase):
+    """The hero wall shows two and a half rows, by derivation not by pixel.
+
+    It rendered three whole rows, which read as a finished block that
+    happens to be dark at the bottom rather than as a wall continuing past
+    the edge. Cutting the third mid-letterform is the device.
+
+    The height must stay DERIVED. .wall__word's size is
+    clamp(3.5rem, 13vw, 11rem), so a hardcoded max-height would be correct
+    at exactly one viewport and wrong at every other: 406px is right at
+    1440px wide and far too tall at 390px, where a row is 48px not 151px.
+    """
+
+    def _css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def test_the_wall_is_clipped_to_two_and_a_half_rows(self):
+        css = self._css()
+        self.assertIn("--wall-rows: 2.5", css,
+                      "the wall is no longer showing 2.5 rows")
+        block = css.split("\n.wall {", 1)[1].split("}", 1)[0]
+        self.assertIn("max-height", block, "the wall lost its clip")
+        self.assertIn("overflow: hidden", block,
+                      "max-height without overflow:hidden clips nothing")
+
+    def test_the_height_is_derived_from_the_type_size(self):
+        """A literal px max-height would be right at one viewport only."""
+        css = self._css()
+        block = css.split("\n.wall {", 1)[1].split("}", 1)[0]
+        mh = [l for l in block.splitlines() if "max-height" in l]
+        joined = " ".join(mh) + " " + block.split("max-height")[1].split(";")[0]
+        self.assertIn("--wall-line", joined,
+                      "the wall height stopped tracking the type size")
+        self.assertIn("--wall-rows", joined)
+
+    def test_the_word_size_feeds_the_same_token(self):
+        """If .wall__word stops using --wall-line the derivation is a lie."""
+        css = self._css()
+        block = css.split(".wall__word {", 1)[1].split("}", 1)[0]
+        self.assertIn("font-size: var(--wall-line)", block)
+
+    def test_both_wall_copies_share_one_rule(self):
+        """The ghost overlay is the same markup laid over the portrait; a
+        different height would desync it from the copy behind."""
+        index = self.html("index.html")
+        self.assertIn('class="wall"', index)
+        self.assertIn('class="wall wall--ghost"', index)
+        css = self._css()
+        ghost = css.split(".wall--ghost {", 1)[1].split("}", 1)[0]
+        self.assertNotIn("max-height", ghost,
+                         "the ghost overrides the shared height and will drift")
+
+
 class TestToolIcons(BuildCase):
     """Tool chips: a real mark when one exists, a monogram when it does not.
 
