@@ -41,8 +41,14 @@ by the lookup but cannot be measured, so convert it first:
 Take them from the vendor's brand or press page. Do **not** screenshot a
 transparent PNG out of a preview pane — three files supplied that way had
 the editor's transparency checkerboard baked into opaque pixels, which
-renders as a grey checked square. Jira, MCP and Git all arrived like this;
-the Jira one was replaced, MCP and Git are still on monograms.
+renders as a grey checked square. Jira, MCP and Git all arrived like this.
+
+Jira was re-supplied clean. MCP and Git were recovered with a border
+flood-fill: light pixels *reachable from the edge* become transparent, so
+the checkerboard goes and the mark stays. It has to be a border fill, not a
+colour key — Git's mark has white INSIDE it (the branch glyph on the red
+diamond) and a colour key punches a hole through the logo. The script is in
+the commit for `git.png`/`mcp.png` if it is ever needed again.
 
 Check before committing:
 

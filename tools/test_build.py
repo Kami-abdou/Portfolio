@@ -587,10 +587,19 @@ class TestToolIcons(BuildCase):
                                  "%s on %s" % (name, page))
 
     def test_tools_without_a_file_fall_back_to_a_monogram(self):
+        """Python is the last tool with no mark on disk.
+
+        Git was in this list until its supplied file was usable. The file
+        was always RGBA -- it just had the transparency checkerboard painted
+        into opaque pixels, so it looked like a grey checked square. A
+        border flood-fill cleared the background and left the mark, including
+        the white branch glyph INSIDE the red diamond, which a plain colour
+        key would have punched straight through.
+        """
         chips = dict(self._chips("projects/portfolio.html"))
-        for name in ("Python", "Git"):
-            self.assertIsNone(chips.get(name),
-                              "%s has no icon file but rendered an <img>" % name)
+        self.assertIsNone(chips.get("Python"),
+                          "Python has no icon file but rendered an <img>")
+        self.assertEqual(chips.get("Git"), "git.png")
 
     def test_the_about_page_toolkit_uses_chips_too(self):
         """It was the one place the toolkit rendered as "A · B · C" text.
