@@ -562,7 +562,7 @@ class TestToolIcons(BuildCase):
         out = []
         for m in re.findall(r'<li class="tool">(.*?)</li>', html_, re.S):
             name = re.search(r'tool__name">([^<]+)', m).group(1)
-            icon = re.search(r'class="tool__icon" src="([^"?]+)', m)
+            icon = re.search(r'class="tool__icon[^"]*" src="([^"?]+)', m)
             out.append((name, icon.group(1).split("/")[-1] if icon else None))
         return out
 
@@ -619,21 +619,44 @@ class TestToolIcons(BuildCase):
         checked = 0
         for path in pages:
             page = pl.Path(path).read_text(encoding="utf-8")
-            for rel in re.findall(r'class="tool__icon" src="([^"?]+)', page):
+            for rel in re.findall(r'class="tool__icon[^"]*" src="([^"?]+)', page):
                 resolved = (pl.Path(path).parent / rel).resolve()
                 self.assertTrue(resolved.is_file(),
                                 "%s references missing %s" % (pl.Path(path).name, rel))
                 checked += 1
         self.assertGreater(checked, 0, "no tool icons referenced anywhere")
 
-    def test_icons_sit_on_a_light_plate(self):
-        """Framer measures 1.06:1 against this page -- literally invisible.
-        The mark is never recoloured (vendor terms), so the surface behind
-        it carries the contrast instead."""
+    def test_the_plate_is_decided_by_measurement_not_by_hand(self):
+        """Dark marks get a plate, light marks must not.
+
+        The plate was briefly applied to every icon. That fixed Framer
+        (1.06:1 against the page) and broke the opposite case: MCP measures
+        14.91:1 on the page and 1.20:1 on a white plate. Both directions are
+        invisible, and neither announces itself.
+
+        build.py decides per icon by averaging the luminance of the opaque
+        pixels, so swapping a file re-decides automatically. These assert the
+        outcome on the rendered page rather than the mechanism.
+        """
+        import re
+        about = self.html("about.html")
+        chips = {}
+        for m in re.findall(r'<li class="tool">(.*?)</li>', about, re.S):
+            name = re.search(r'tool__name">([^<]+)', m).group(1)
+            if "tool__icon" in m:
+                chips[name] = "tool__icon--plate" in m
+        # dark marks: would vanish on #0A0A0B without it
+        for name in ("Figma", "Framer", "VWO"):
+            self.assertTrue(chips.get(name), "%s lost its plate" % name)
+        # light marks: the plate would erase them instead
+        for name in ("Creative Cloud", "Miro", "Notion", "Jira", "Claude Code"):
+            self.assertFalse(chips.get(name, True),
+                             "%s got a plate it does not need" % name)
+
+    def test_the_plate_class_still_carries_a_background(self):
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split(".tool__icon {", 1)[1].split("}", 1)[0]
-        self.assertIn("background", block,
-                      "the icon plate is gone; dark marks will vanish")
+        block = css.split(".tool__icon--plate {", 1)[1].split("}", 1)[0]
+        self.assertIn("background", block)
 
 
 class TestCardMeta(BuildCase):

@@ -16,6 +16,7 @@ import json
 import os
 import re
 import struct
+import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).parent.resolve()
@@ -114,6 +115,104 @@ def png_size(path):
     return None
 
 
+def _png_pixels(path, step=4):
+    """Sparse RGBA sample of a PNG. Yields (r, g, b, a) every `step` pixels.
+
+    Only used by icon_needs_plate(). Interlaced PNGs are not handled; the
+    icon pipeline writes progressive files via sips, and an unreadable file
+    simply yields nothing, which reads as "no plate".
+    """
+    try:
+        b = path.read_bytes()
+        if b[:8] != b"\x89PNG\r\n\x1a\n":
+            return
+        w, h, depth, ctype, _, _, interlace = struct.unpack(">IIBBBBB", b[16:29])
+        if depth != 8 or interlace or ctype not in (0, 2, 4, 6):
+            return
+        idat = b""
+        i = 8
+        while i < len(b) - 8:
+            ln = struct.unpack(">I", b[i:i + 4])[0]
+            if b[i + 4:i + 8] == b"IDAT":
+                idat += b[i + 8:i + 8 + ln]
+            i += 12 + ln
+        raw = zlib.decompress(idat)
+        bpp = {0: 1, 2: 3, 4: 2, 6: 4}[ctype]
+        stride = w * bpp
+        prev = bytearray(stride)
+        pos = 0
+        for y in range(h):
+            f = raw[pos]; pos += 1
+            line = bytearray(raw[pos:pos + stride]); pos += stride
+            for x in range(stride):          # unfilter: every byte, unavoidably
+                a = line[x - bpp] if x >= bpp else 0
+                bb = prev[x]
+                c = prev[x - bpp] if x >= bpp else 0
+                if f == 1:   line[x] = (line[x] + a) & 255
+                elif f == 2: line[x] = (line[x] + bb) & 255
+                elif f == 3: line[x] = (line[x] + ((a + bb) >> 1)) & 255
+                elif f == 4:
+                    pa, pb, pc = abs(bb - c), abs(a - c), abs(a + bb - 2 * c)
+                    pr = a if (pa <= pb and pa <= pc) else (bb if pb <= pc else c)
+                    line[x] = (line[x] + pr) & 255
+            if y % step == 0:
+                for x in range(0, w, step):
+                    o = x * bpp
+                    if ctype in (2, 6):
+                        yield line[o], line[o + 1], line[o + 2], (line[o + 3] if ctype == 6 else 255)
+                    else:
+                        g = line[o]
+                        yield g, g, g, (line[o + 1] if ctype == 4 else 255)
+            prev = line
+    except (OSError, struct.error, zlib.error, KeyError):
+        return
+
+
+def _relative_luminance(r, g, b):
+    def ch(c):
+        c /= 255
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
+
+
+PAGE_LUMINANCE = _relative_luminance(0x0A, 0x0A, 0x0B)
+
+
+def icon_needs_plate(path, threshold=3.0):
+    """True when a mark would disappear against this page's background.
+
+    Decided by measurement, not by hand, because the failure is silent. The
+    Framer mark sat on the site at 1.06:1 -- pure black on #0A0A0B, an empty
+    chip -- and nobody spotted it until the contrast was actually computed.
+    A person swapping an icon will not re-measure; the build will.
+
+    The plate is a light tile behind the mark. It exists because recolouring
+    is not available to us: vendor brand terms generally forbid altering the
+    mark, so the only thing we may change is what sits behind it.
+
+    Applying it unconditionally is just as wrong in the other direction.
+    Measured over the current set: Figma 2.06:1 and VWO 2.38:1 against the
+    page need it, while MCP (14.91:1), Git (12.35:1), Creative Cloud
+    (10.15:1), Miro (9.02:1) and Notion (8.86:1) are light marks that would
+    lose most of their contrast ON a white plate -- MCP drops to 1.20:1.
+
+    Averaging luminance over the opaque pixels is deliberately crude. It
+    answers "is this mark broadly dark or broadly light", which is the only
+    question the plate turns on.
+    """
+    total = 0.0
+    count = 0
+    for r, g, b, a in _png_pixels(path):
+        if a > 128:
+            total += _relative_luminance(r, g, b)
+            count += 1
+    if not count:
+        return False
+    ink = total / count
+    contrast = (max(ink, PAGE_LUMINANCE) + 0.05) / (min(ink, PAGE_LUMINANCE) + 0.05)
+    return contrast < threshold
+
+
 def tool_chips(tools, depth=0):
     """Render tools as chips, using a real icon when one has been supplied.
 
@@ -143,9 +242,12 @@ def tool_chips(tools, depth=0):
                 icon_rel = "assets/tools/%s.%s" % (slug, ext)
                 break
         if icon_rel:
-            mark = ('<img class="tool__icon" src="%s%s%s" alt="" '
+            cls = "tool__icon"
+            if icon_needs_plate(ROOT / icon_rel):
+                cls += " tool__icon--plate"
+            mark = ('<img class="%s" src="%s%s%s" alt="" '
                     'width="18" height="18" loading="lazy" decoding="async">'
-                    % (up, icon_rel, asset_v(icon_rel)))
+                    % (cls, up, icon_rel, asset_v(icon_rel)))
         else:
             mark = '<span class="tool__mono" aria-hidden="true">%s</span>' % e(name[0])
         out.append('<li class="tool">%s<span class="tool__name">%s</span></li>'

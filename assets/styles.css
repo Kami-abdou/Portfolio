@@ -1228,10 +1228,19 @@ body::after {
    rather than growing the chip. */
 .tool__icon {
   width: 18px; height: 18px; flex: none;
+  object-fit: contain;
+}
+/* Only for marks that would otherwise vanish. build.py measures each icon's
+   luminance and adds this class when its contrast against the page falls
+   below 3:1 -- Figma's black app tile and the VWO wordmark today. Applying
+   it to everything was wrong in the other direction: MCP, Git, Creative
+   Cloud, Miro and Notion are light marks that LOSE contrast on white,
+   MCP going from 14.91:1 on the page to 1.20:1 on a plate. The mark itself
+   is never recoloured; vendor terms forbid altering it. */
+.tool__icon--plate {
   padding: 2px;
   border-radius: var(--radius-sm);
   background: var(--color-bg-inverse);
-  object-fit: contain;
 }
 /* the fallback deliberately reads as this site's type, not as a brand mark */
 .tool__mono {
