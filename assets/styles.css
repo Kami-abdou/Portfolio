@@ -821,14 +821,12 @@ body::after {
   position: relative;
   min-height: calc(100dvh - var(--header-height));
   display: flex; flex-direction: column; justify-content: center;
-  /* Hoisted so the wall's height can be derived from them rather than
-     guessed. --wall-line is the poster type size, --wall-gap the space
-     between rows, and .wall__word's line-height is 0.86 -- which makes one
-     rendered row exactly `--wall-line * 0.86` tall. */
-  --wall-line: clamp(3.5rem, 13vw, 11rem);
-  --wall-gap: clamp(4px, 1vw, 14px);
-  --wall-rows: 2.5;
-  gap: var(--wall-gap);
+  gap: clamp(4px, 1vw, 14px);
+  /* The two halves of the scrim below, hoisted so its height is derived
+     from them rather than guessed. --scrim-solid is the opaque band that
+     the statement sits on; --scrim-fade is the ramp above it. */
+  --scrim-solid: calc(var(--space-8) + var(--space-16) + 10rem);
+  --scrim-fade: 6rem;
   overflow: hidden;
   padding-block: var(--space-16);
   border-bottom: 1px solid var(--color-border);
@@ -836,16 +834,8 @@ body::after {
 
 .wall {
   display: flex; flex-direction: column;
-  gap: var(--wall-gap);
+  gap: clamp(4px, 1vw, 14px);
   width: 100%;
-  /* Two full rows and half of a third. Three whole rows read as a finished
-     block that happens to be dark at the bottom; a row cut mid-letterform
-     reads as a wall continuing past the edge, which is the point of the
-     device. Derived, not a magic pixel value, so it holds at every step of
-     the font-size clamp. */
-  max-height: calc(var(--wall-line) * 0.86 * var(--wall-rows)
-                   + var(--wall-gap) * 2);
-  overflow: hidden;
 }
 /* the front copy is a ghost laid over the portrait */
 .wall--ghost {
@@ -869,24 +859,45 @@ body::after {
    bottom edge, and it holds at every viewport height instead of only tall
    ones. Sits above the ghost copy (3) and below the text (5).
 
-   The opaque stop is a fixed length, not a percentage. A percentage drifts
+   --scrim-solid is a fixed length, not a percentage. A percentage drifts
    with the hero: at a 700px window the fade landed mid-paragraph and the
    worst case measured 4.04:1, still failing. Anchoring it to the same
    tokens that position the statement — its own bottom offset plus 10rem of
-   room for the paragraph to wrap to five lines — keeps every line on solid
-   colour at any height. Measured at 1440x560/700/800, 1920x1080, 768x1024
-   and 375x812: the scrim is fully opaque behind the paragraph in all six,
-   worst case 16.88:1 (a full wall letter directly behind the top line). */
+   room for the paragraph to wrap — keeps every line on solid colour at any
+   height. The paragraph's top sits 159px above the hero's foot on desktop
+   and 185px at 320px wide, where it wraps to four lines, so 256px of solid
+   leaves at least 71px spare.
+
+   The total height is --scrim-solid + --scrim-fade, not clamp(380px, 55%,
+   500px). The clamp sized the WHOLE scrim off the hero, so the ramp — the
+   only part that is actually a fade — was whatever was left over, and it
+   ballooned from 124px on a short window to 244px on a 1080p one. That is
+   backwards: the ramp wants to be constant and the solid band is what has
+   a real requirement. At 1920x1080 the old scrim reached 500px and rubbed
+   out the whole third row plus the foot of the accent row; it now reaches
+   352px at every size and the ramp is a constant 96px, inside the 124px
+   that was already shipping at the clamp's floor, so it cannot band.
+
+   Re-measured at 1440x900/700, 1920x1080, 1024x768, 390x844 and 320x568 by
+   hiding every hero child except .wall and reading the rendered pixels: the
+   solid band is flat --color-bg in all six, brightest pixel rgb(15,16,16)
+   (the body grain), worst case 16.30:1 against --color-text.
+
+   One thing this cannot fix: on a short window the wall physically overlaps
+   the paragraph. At 1440x700 the wall's foot lands 65px above the hero's,
+   inside the band that keeps the paragraph legible, so the third row is
+   hidden no matter how short the scrim gets. That is the stacking, not the
+   scrim — the fix would be a shorter wall or a smaller poster size. */
 .hero::after {
   content: "";
   position: absolute; z-index: 4;
   inset-inline: 0; bottom: 0;
-  height: clamp(380px, 55%, 500px);
+  height: calc(var(--scrim-solid) + var(--scrim-fade));
   pointer-events: none;
   background: linear-gradient(
     to top,
     var(--color-bg) 0,
-    var(--color-bg) calc(var(--space-8) + var(--space-16) + 10rem),
+    var(--color-bg) var(--scrim-solid),
     transparent 100%);
 }
 
@@ -901,7 +912,7 @@ body::after {
 .wall__word {
   font-family: var(--font-poster);
   font-weight: 400;
-  font-size: var(--wall-line);
+  font-size: clamp(3.5rem, 13vw, 11rem);
   line-height: 0.86;
   letter-spacing: -0.005em;
   text-transform: uppercase;

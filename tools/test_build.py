@@ -11,6 +11,7 @@ would test a stale copy of the very file most of these tests change.
 import html
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import unittest
@@ -239,6 +240,114 @@ class TestContentColumnAlignment(BuildCase):
         for page in ("index.html", "about.html"):
             self.assertNotIn("specialising in AI", self.html(page),
                              "%s still narrows the practice to AI" % page)
+
+
+class TestHeroScrim(BuildCase):
+    """The scrim that fades the hero's foot must stay in two named parts.
+
+    It exists because the wall and the statement are both --color-text: on a
+    short window the poster type slides in behind the paragraph and contrast
+    goes to nothing. The fix is a band of solid --color-bg under the text
+    with a ramp above it.
+
+    The bug was that the WHOLE thing was sized off the hero --
+    clamp(380px, 55%, 500px) -- so the ramp was only ever the remainder. It
+    ran 124px on a short window and 244px on a 1080p one, and at 1920x1080
+    the scrim reached 500px and rubbed out the entire third row of the wall
+    plus the foot of the accent row. The solid band is the part with a real
+    requirement; the ramp wants to be constant. So they are now two tokens
+    and the height is their sum.
+
+    Measured by hiding every hero child except .wall and reading the
+    rendered pixels at 1440x900/700, 1920x1080, 1024x768, 390x844 and
+    320x568: the solid band is flat --color-bg in all six.
+    """
+
+    REM = 16.0
+    #: Highest the statement's top line reaches above the hero's foot, over
+    #: every viewport measured. 320x568 is the worst case -- narrowest
+    #: measure, so the paragraph wraps to four lines.
+    STATEMENT_TOP_PX = 185
+
+    def scrim_lengths(self):
+        """Resolve --scrim-solid and --scrim-fade to pixels.
+
+        The tokens they are built from live in tokens.css, which build.py
+        generates, so this resolves against the built file rather than
+        hardcoding 2rem/4rem -- change a space step and the test follows.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        tokens = (ROOT / "assets" / "tokens.css").read_text(encoding="utf-8")
+
+        def px(expr):
+            for name, value in re.findall(r"(--[\w-]+):\s*([^;]+);", tokens):
+                expr = expr.replace("var(%s)" % name, value.strip())
+            expr = re.sub(r"\bcalc\b", "", expr)
+            total = 0.0
+            for number, unit in re.findall(r"([\d.]+)(rem|px)", expr):
+                total += float(number) * (self.REM if unit == "rem" else 1)
+            self.assertNotIn("var(", expr, "unresolved token in %r" % expr)
+            return total
+
+        # Six separate rules in this stylesheet open with `.hero {`, so
+        # splitting on the first one reads a block that never mentioned the
+        # scrim and the test passes for the wrong reason -- the exact way an
+        # earlier nav test went green while asserting nothing. Take every
+        # .hero block and require that exactly one declares the tokens.
+        blocks = [chunk.split("}", 1)[0] for chunk in css.split(".hero {")[1:]]
+        owners = [b for b in blocks if "--scrim-" in b]
+        self.assertEqual(len(owners), 1,
+                         "expected exactly one .hero rule to declare the "
+                         "scrim tokens, found %d" % len(owners))
+        found = dict(re.findall(r"(--scrim-\w+):\s*([^;]+);", owners[0]))
+        self.assertEqual(set(found), {"--scrim-solid", "--scrim-fade"},
+                         "the scrim's parts are no longer declared on .hero")
+        return px(found["--scrim-solid"]), px(found["--scrim-fade"])
+
+    def test_height_is_the_sum_of_the_two_parts(self):
+        """A literal or a percentage here is the regression, whatever it says."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = css.split(".hero::after {", 1)[1].split("}", 1)[0]
+        height = re.search(r"height:\s*([^;]+);", block).group(1)
+        self.assertIn("var(--scrim-solid)", height,
+                      "the scrim height stopped tracking its solid band: %r" % height)
+        self.assertIn("var(--scrim-fade)", height,
+                      "the scrim height stopped tracking its ramp: %r" % height)
+        self.assertNotIn("%", height,
+                         "the scrim is sizing itself off the hero again, which "
+                         "is what made the ramp balloon to 244px: %r" % height)
+
+    def test_gradient_stops_at_the_same_token_as_the_height(self):
+        """If the stop and the height drift apart the ramp silently changes."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = css.split(".hero::after {", 1)[1].split("}", 1)[0]
+        gradient = block.split("background:", 1)[1]
+        self.assertIn("var(--color-bg) var(--scrim-solid)", gradient,
+                      "the opaque stop no longer uses --scrim-solid, so the "
+                      "solid band and the declared height can disagree")
+
+    def test_solid_band_clears_the_statement(self):
+        """The whole point: every line of the paragraph on flat colour."""
+        solid, _ = self.scrim_lengths()
+        self.assertGreaterEqual(
+            solid, self.STATEMENT_TOP_PX,
+            "--scrim-solid is %.0fpx but the paragraph's top line reaches "
+            "%dpx above the hero's foot at 320px wide, so the top line would "
+            "sit on wall letters" % (solid, self.STATEMENT_TOP_PX))
+
+    def test_ramp_stays_long_enough_not_to_band(self):
+        """A short ramp on a 151px letterform reads as a hard edge.
+
+        124px was the shortest ramp the old clamp ever produced, and it
+        shipped without banding, so it is the evidence-backed ceiling on how
+        far this can be cut -- not a number picked for feel.
+        """
+        _, fade = self.scrim_lengths()
+        self.assertGreater(fade, 0, "the scrim lost its ramp and is now a hard edge")
+        self.assertLessEqual(
+            fade, 124,
+            "--scrim-fade is %.0fpx, longer than the 124px the old clamp's "
+            "floor produced -- the ramp is growing back into the wall" % fade)
 
 
 class TestInstaDeepEntry(BuildCase):
@@ -546,59 +655,6 @@ class TestPrimaryNav(BuildCase):
         self.assertIn("contact__addr", band, "the visible email address is gone")
         self.assertIn("mailto:", band)
         self.assertIn(".pdf", band.lower(), "the CV is no longer at the point of intent")
-
-
-class TestMarqueeWall(BuildCase):
-    """The hero wall shows two and a half rows, by derivation not by pixel.
-
-    It rendered three whole rows, which read as a finished block that
-    happens to be dark at the bottom rather than as a wall continuing past
-    the edge. Cutting the third mid-letterform is the device.
-
-    The height must stay DERIVED. .wall__word's size is
-    clamp(3.5rem, 13vw, 11rem), so a hardcoded max-height would be correct
-    at exactly one viewport and wrong at every other: 406px is right at
-    1440px wide and far too tall at 390px, where a row is 48px not 151px.
-    """
-
-    def _css(self):
-        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-
-    def test_the_wall_is_clipped_to_two_and_a_half_rows(self):
-        css = self._css()
-        self.assertIn("--wall-rows: 2.5", css,
-                      "the wall is no longer showing 2.5 rows")
-        block = css.split("\n.wall {", 1)[1].split("}", 1)[0]
-        self.assertIn("max-height", block, "the wall lost its clip")
-        self.assertIn("overflow: hidden", block,
-                      "max-height without overflow:hidden clips nothing")
-
-    def test_the_height_is_derived_from_the_type_size(self):
-        """A literal px max-height would be right at one viewport only."""
-        css = self._css()
-        block = css.split("\n.wall {", 1)[1].split("}", 1)[0]
-        mh = [l for l in block.splitlines() if "max-height" in l]
-        joined = " ".join(mh) + " " + block.split("max-height")[1].split(";")[0]
-        self.assertIn("--wall-line", joined,
-                      "the wall height stopped tracking the type size")
-        self.assertIn("--wall-rows", joined)
-
-    def test_the_word_size_feeds_the_same_token(self):
-        """If .wall__word stops using --wall-line the derivation is a lie."""
-        css = self._css()
-        block = css.split(".wall__word {", 1)[1].split("}", 1)[0]
-        self.assertIn("font-size: var(--wall-line)", block)
-
-    def test_both_wall_copies_share_one_rule(self):
-        """The ghost overlay is the same markup laid over the portrait; a
-        different height would desync it from the copy behind."""
-        index = self.html("index.html")
-        self.assertIn('class="wall"', index)
-        self.assertIn('class="wall wall--ghost"', index)
-        css = self._css()
-        ghost = css.split(".wall--ghost {", 1)[1].split("}", 1)[0]
-        self.assertNotIn("max-height", ghost,
-                         "the ghost overrides the shared height and will drift")
 
 
 class TestToolIcons(BuildCase):
