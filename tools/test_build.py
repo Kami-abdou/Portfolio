@@ -548,6 +548,69 @@ class TestPrimaryNav(BuildCase):
         self.assertIn(".pdf", band.lower(), "the CV is no longer at the point of intent")
 
 
+class TestToolIcons(BuildCase):
+    """Tool chips: a real mark when one exists, a monogram when it does not.
+
+    The lookup accepted only .svg, so every raster mark a vendor shipped
+    fell back silently to a monogram with nothing to explain why. It now
+    tries svg, then png, then webp.
+    """
+
+    def _chips(self, page):
+        import re
+        html_ = self.html(page)
+        out = []
+        for m in re.findall(r'<li class="tool">(.*?)</li>', html_, re.S):
+            name = re.search(r'tool__name">([^<]+)', m).group(1)
+            icon = re.search(r'class="tool__icon" src="([^"?]+)', m)
+            out.append((name, icon.group(1).split("/")[-1] if icon else None))
+        return out
+
+    def test_supplied_marks_render_as_images(self):
+        """Every supplied mark, on the page that actually uses it.
+
+        An earlier version of this asserted only against portfolio.html,
+        which lists Figma and Claude Code. Framer appears on instadeep.html
+        only -- so deleting framer.png left the whole suite green. Assert
+        each mark where it is used, or the test is decoration.
+        """
+        expected = {
+            "projects/portfolio.html": {"Figma": "figma.png",
+                                        "Claude Code": "claude-code.png"},
+            "projects/instadeep.html": {"Figma": "figma.png",
+                                        "Framer": "framer.png"},
+        }
+        for page, want in expected.items():
+            chips = dict(self._chips(page))
+            for name, filename in want.items():
+                self.assertEqual(chips.get(name), filename,
+                                 "%s on %s" % (name, page))
+
+    def test_tools_without_a_file_fall_back_to_a_monogram(self):
+        chips = dict(self._chips("projects/portfolio.html"))
+        for name in ("Python", "Git"):
+            self.assertIsNone(chips.get(name),
+                              "%s has no icon file but rendered an <img>" % name)
+
+    def test_every_referenced_icon_exists_on_disk(self):
+        """A missing file would render a broken image inside a chip."""
+        import glob, pathlib as pl, re
+        for path in glob.glob(str(ROOT / "projects" / "*.html")):
+            page = pl.Path(path).read_text(encoding="utf-8")
+            for rel in re.findall(r'class="tool__icon" src="\.\./([^"?]+)', page):
+                self.assertTrue((ROOT / rel).is_file(),
+                                "%s references missing %s" % (pl.Path(path).name, rel))
+
+    def test_icons_sit_on_a_light_plate(self):
+        """Framer measures 1.06:1 against this page -- literally invisible.
+        The mark is never recoloured (vendor terms), so the surface behind
+        it carries the contrast instead."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = css.split(".tool__icon {", 1)[1].split("}", 1)[0]
+        self.assertIn("background", block,
+                      "the icon plate is gone; dark marks will vanish")
+
+
 class TestCardMeta(BuildCase):
 
     def test_every_project_has_a_short_meta_line(self):

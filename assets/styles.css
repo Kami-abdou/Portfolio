@@ -1218,7 +1218,21 @@ body::after {
   transition: border-color .25s var(--ease-out), background .25s var(--ease-out);
 }
 .tool:hover { border-color: var(--color-border-strong); background: var(--color-bg-raised-hover); }
-.tool__icon { width: 18px; height: 18px; flex: none; }
+/* A light plate, because most brand marks are drawn for light backgrounds.
+   Measured against this page's #0A0A0B: Framer 1.06:1 (invisible), Figma's
+   app tile 2.05:1, VWO 2.44:1. Recolouring them would fix the contrast and
+   break the vendors' usage terms, which generally forbid altering the mark
+   — so the mark is left exactly as shipped and the surface behind it
+   changes instead. Same move as a press page putting logos on white.
+   box-sizing is border-box globally, so the padding eats into the 18px
+   rather than growing the chip. */
+.tool__icon {
+  width: 18px; height: 18px; flex: none;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-inverse);
+  object-fit: contain;
+}
 /* the fallback deliberately reads as this site's type, not as a brand mark */
 .tool__mono {
   display: grid; place-items: center;

@@ -117,19 +117,35 @@ def png_size(path):
 def tool_chips(tools, depth=0):
     """Render tools as chips, using a real icon when one has been supplied.
 
-    Brand marks are trademarked and are not bundled with the site, so an
-    icon appears only if assets/tools/<slug>.svg exists. Otherwise the chip
+    Brand marks are trademarked and are not bundled by default, so an icon
+    appears only if assets/tools/<slug>.<ext> exists. Otherwise the chip
     falls back to a monogram set in the site's own type — a hand-redrawn
     logo looks worse than no logo.
+
+    SVG is preferred and tried first, but raster is accepted: vendors ship
+    press kits as PNG at least as often, and refusing them meant every
+    supplied mark silently fell back to a monogram with no explanation.
+
+    A note on why .tool__icon has a light plate in the CSS. Measured against
+    this page's #0A0A0B background, the marks as vendors ship them are:
+    Framer 1.06:1, Figma's app tile 2.05:1, VWO 2.44:1 — Framer is literally
+    invisible. The fix is NOT to recolour them; most brand terms forbid
+    altering the mark. The plate leaves each mark untouched and changes what
+    sits behind it.
     """
     up = "../" * depth
     out = []
     for name in tools:
         slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-        icon_file = ROOT / "assets" / "tools" / ("%s.svg" % slug)
-        if icon_file.is_file():
-            mark = ('<img class="tool__icon" src="%sassets/tools/%s.svg" alt="" '
-                    'width="18" height="18" loading="lazy">' % (up, slug))
+        icon_rel = None
+        for ext in ("svg", "png", "webp"):
+            if (ROOT / "assets" / "tools" / ("%s.%s" % (slug, ext))).is_file():
+                icon_rel = "assets/tools/%s.%s" % (slug, ext)
+                break
+        if icon_rel:
+            mark = ('<img class="tool__icon" src="%s%s%s" alt="" '
+                    'width="18" height="18" loading="lazy" decoding="async">'
+                    % (up, icon_rel, asset_v(icon_rel)))
         else:
             mark = '<span class="tool__mono" aria-hidden="true">%s</span>' % e(name[0])
         out.append('<li class="tool">%s<span class="tool__name">%s</span></li>'
