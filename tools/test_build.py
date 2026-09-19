@@ -592,14 +592,39 @@ class TestToolIcons(BuildCase):
             self.assertIsNone(chips.get(name),
                               "%s has no icon file but rendered an <img>" % name)
 
+    def test_the_about_page_toolkit_uses_chips_too(self):
+        """It was the one place the toolkit rendered as "A · B · C" text.
+
+        tool_chips() had always been wired to project pages only, so the
+        page where someone actually goes looking for the stack was the page
+        showing it as a plain string. Depth matters here: about.html is at
+        the root, so its icon paths carry no ../ prefix.
+        """
+        about = self.html("about.html")
+        self.assertIn('<ul class="tools">', about,
+                      "the about toolkit went back to plain text")
+        self.assertIn('src="assets/tools/figma.png', about)
+        self.assertNotIn('src="../assets/tools/', about,
+                         "about.html is at the root; ../ would 404")
+
     def test_every_referenced_icon_exists_on_disk(self):
-        """A missing file would render a broken image inside a chip."""
+        """A missing file would render a broken image inside a chip.
+
+        Scans EVERY page, at both depths. An earlier version matched only
+        `../`-prefixed paths under projects/, so once the about page grew
+        chips its root-relative icons were unchecked.
+        """
         import glob, pathlib as pl, re
-        for path in glob.glob(str(ROOT / "projects" / "*.html")):
+        pages = glob.glob(str(ROOT / "*.html")) + glob.glob(str(ROOT / "projects" / "*.html"))
+        checked = 0
+        for path in pages:
             page = pl.Path(path).read_text(encoding="utf-8")
-            for rel in re.findall(r'class="tool__icon" src="\.\./([^"?]+)', page):
-                self.assertTrue((ROOT / rel).is_file(),
+            for rel in re.findall(r'class="tool__icon" src="([^"?]+)', page):
+                resolved = (pl.Path(path).parent / rel).resolve()
+                self.assertTrue(resolved.is_file(),
                                 "%s references missing %s" % (pl.Path(path).name, rel))
+                checked += 1
+        self.assertGreater(checked, 0, "no tool icons referenced anywhere")
 
     def test_icons_sit_on_a_light_plate(self):
         """Framer measures 1.06:1 against this page -- literally invisible.

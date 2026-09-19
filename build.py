@@ -881,9 +881,14 @@ def cv_block(index):
 
     kit = ""
     if SITE.get("toolkit"):
+        # Chips, not a "A · B · C" string. The project pages have rendered
+        # tool_chips() all along, so the about page was the one place the
+        # toolkit appeared as plain text -- and it is the page where someone
+        # actually goes looking for the stack. depth=0: about.html sits at
+        # the root, so the icon paths need no ../ prefix.
         groups = "\n          ".join(
             "<dt>%s</dt>\n          <dd>%s</dd>"
-            % (e(g["label"]), e(" · ".join(g["items"])))
+            % (e(g["label"]), tool_chips(g["items"]))
             for g in SITE["toolkit"])
         kit = f"""
       <h2 class="cv__head" id="toolkit">Toolkit</h2>
