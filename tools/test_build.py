@@ -229,17 +229,141 @@ class TestContentColumnAlignment(BuildCase):
                              "overrides .shell and breaks alignment" % prop)
 
     def test_shell_still_defines_the_column(self):
-        """If .shell stops centring, every page moves, not just the hero."""
+        """If .shell stops centring, every page moves, not just the hero.
+
+        The inline padding is matched on --gutter rather than on the whole
+        declaration: it now adds the device safe-area insets alongside the
+        gutter, so pinning the literal string would fail the moment a real
+        fix touched it -- which is exactly what happened when it did. What
+        has to hold is that the gutter is still what sets the column's
+        edges, not the precise expression it sits in.
+        """
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
         block = css.split(".shell {", 1)[1].split("}", 1)[0]
         self.assertIn("max-width: var(--max-width)", block)
         self.assertIn("margin-inline: auto", block)
-        self.assertIn("padding-inline: var(--gutter)", block)
+        inline = re.search(r"padding-inline:([^;]+);", block)
+        self.assertIsNotNone(inline, ".shell no longer sets padding-inline")
+        self.assertIn("var(--gutter)", inline.group(1),
+                      "the content column's edge is no longer the gutter: %r"
+                      % inline.group(1).strip())
 
     def test_no_page_claims_specialising_in_ai(self):
         for page in ("index.html", "about.html"):
             self.assertNotIn("specialising in AI", self.html(page),
                              "%s still narrows the practice to AI" % page)
+
+
+class TestSafeAreas(BuildCase):
+    """The page must own the whole phone screen, insets and all.
+
+    Reported on a Dynamic Island iPhone: scrolling left page content
+    visible in the strip above the sticky header. Measured off the
+    screenshot -- 692px wide at a 2.168 ratio is a 393pt iPhone Pro, and
+    the header's top edge sat 59.6 CSS px down, exactly that device's
+    safe-area inset. The site had no safe-area handling and no
+    viewport-fit, so Safari was deciding for it.
+
+    These two halves only work together, which is why they are one class.
+    viewport-fit=cover alone puts content under the notch and the home
+    indicator -- it makes things worse on its own. The CSS insets alone do
+    nothing, because iOS reports 0 for env() until viewport-fit is cover.
+
+    Verified at 393x852 by overriding the four properties on :root to a
+    real iPhone's values (59/21/34) and re-reading the computed styles: the
+    header stayed pinned at top 0 while growing 76 -> 135, its nav moved
+    24 -> 83 and so cleared the status bar, the column gained the notch
+    inset, the hero lost the strip from its min-height and scroll-margin
+    gained it. With no insets every one of those numbers is what it was
+    before the change, so desktop and Android are untouched. Probed
+    elementFromPoint across the whole 0-59 strip at three x positions with
+    the page scrolled: header at every point.
+    """
+
+    ROOT_CSS = None
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def rule(self, selector):
+        css = self.css()
+        self.assertIn(selector, css, "%s is gone" % selector)
+        return css.split(selector, 1)[1].split("}", 1)[0]
+
+    def test_every_page_opts_into_the_full_screen(self):
+        """Without viewport-fit=cover iOS reports every inset as zero."""
+        for page in ("index.html", "about.html", "projects/steer.html"):
+            meta = re.search(r'<meta name="viewport" content="([^"]+)"',
+                             self.html(page))
+            self.assertIsNotNone(meta, "%s has no viewport meta" % page)
+            self.assertIn("viewport-fit=cover", meta.group(1),
+                          "%s does not cover the screen, so every env() "
+                          "inset below resolves to 0 on iOS" % page)
+
+    def test_the_four_insets_are_declared_with_zero_fallbacks(self):
+        """A browser that reports nothing must get 0px, not an invalid calc."""
+        block = self.rule(":root {")
+        for side in ("top", "right", "bottom", "left"):
+            decl = "--inset-%s: env(safe-area-inset-%s, 0px);" % (side, side)
+            self.assertIn(decl, block,
+                          "missing or fallback-less inset: expected %r" % decl)
+
+    def test_the_header_pads_rather_than_offsets(self):
+        """Padding keeps the blurred background covering the strip.
+
+        margin-top would move the whole header down and leave the strip
+        transparent -- which is the reported bug, just caused deliberately.
+        """
+        block = self.rule(".site-head {")
+        self.assertIn("padding-top: var(--inset-top)", block,
+                      "the header no longer clears the status bar")
+        self.assertIn("top: 0", block,
+                      "the header must stick to the real top of the screen")
+        self.assertNotIn("margin-top", block,
+                         "margin moves the header down and leaves the strip "
+                         "uncovered, which is the bug this fixes")
+
+    def test_the_column_clears_a_landscape_notch(self):
+        """viewport-fit=cover creates this problem; .shell has to answer it."""
+        inline = re.search(r"padding-inline:([^;]+);", self.rule(".shell {"))
+        self.assertIsNotNone(inline)
+        for side in ("left", "right"):
+            self.assertIn("var(--inset-%s)" % side, inline.group(1),
+                          "the content column does not clear the %s inset, "
+                          "so the notch overlaps it in landscape" % side)
+
+    def test_the_footer_clears_the_home_indicator(self):
+        self.assertIn("var(--inset-bottom)", self.rule(".site-foot__inner {"),
+                      "the footer sits under the home indicator")
+
+    def test_anchors_still_land_below_the_taller_header(self):
+        """The header grows by the inset, so the jump offset must too."""
+        css = self.css()
+        block = css.split("scroll-margin-top:", 1)[1].split(";", 1)[0]
+        self.assertIn("var(--header-height)", block)
+        self.assertIn("var(--inset-top)", block,
+                      "jump targets do not account for the inset, so on a "
+                      "notched phone every anchor lands under the header")
+
+    def test_the_hero_stops_overflowing_by_the_inset(self):
+        """100dvh now includes the strip the header occupies."""
+        for block in re.findall(r"min-height: calc\(100dvh[^;]*;", self.css()):
+            self.assertIn("var(--inset-top)", block,
+                          "hero height ignores the inset and overflows by "
+                          "it on a notched phone: %r" % block)
+
+    def test_no_env_is_used_without_a_fallback(self):
+        """A bare env() in a calc invalidates the whole declaration.
+
+        Comments are stripped first. The first version of this scanned the
+        raw file and flagged the prose in the block above, which discusses
+        env() by name -- a failure that said nothing about the CSS.
+        """
+        code = re.sub(r"/\*.*?\*/", "", self.css(), flags=re.S)
+        bare = [m for m in re.findall(r"env\([^)]*\)", code) if "," not in m]
+        self.assertEqual(bare, [],
+                         "env() without a fallback voids its declaration in "
+                         "browsers that do not report insets: %s" % bare)
 
 
 class TestTocHistory(BuildCase):

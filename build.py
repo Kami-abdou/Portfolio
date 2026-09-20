@@ -492,7 +492,7 @@ def head(title, description, *, depth=0, image=None, page_url="",
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{e(title)}</title>
   <meta name="description" content="{e(description)}">
   <meta name="author" content="{e(SITE['name'])}">{canonical}
