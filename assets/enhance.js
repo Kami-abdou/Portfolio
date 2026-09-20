@@ -151,6 +151,51 @@
       requestAnimationFrame(mark);
     }, { passive: true });
     mark();
+
+    /* ── jumping in the index must not fill the Back button ──
+       Every <a href="#id"> click pushes a history entry. Read a case study
+       by clicking through eight index items and Back has to be pressed
+       eight times to get off the page: it retraces the sections instead of
+       returning to the work you came from, which is what Back means to
+       anyone reading.
+
+       replaceState swaps the current entry instead of adding one. The URL
+       still names the section, so it stays copyable and a reload still
+       lands in the right place, but Back now means "leave this page". The
+       trade is deliberate -- Back no longer retraces jumps within the page,
+       and that is the behaviour that was reported as the bug.
+
+       preventDefault also cancels the focus move the browser does for free,
+       which would strand a keyboard visitor at the top of the index with
+       Tab resuming from the link they just used rather than from the
+       section they asked for. Hence the tabindex/focus pair. preventScroll
+       stops that focus call fighting the smooth scroll already in flight.
+
+       scrollIntoView takes no arguments on purpose: the offset comes from
+       scroll-margin-top and the easing from scroll-behavior, both already
+       in the stylesheet, including the reduced-motion override that turns
+       smooth off. Passing options here would fork that decision into two
+       places and let them drift.
+
+       Bail-outs, in order: a handler that already ran, anything but a plain
+       left click, and a browser with no replaceState -- in each case the
+       native jump is left to happen, which is correct, just with the extra
+       history entry. Modified clicks matter: cmd/ctrl/shift-click opens the
+       section in a new tab, and that is a navigation, not a jump. */
+    targets.forEach(function (t) {
+      t.link.addEventListener('click', function (e) {
+        if (e.defaultPrevented || e.button !== 0) return;
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        if (!history.replaceState) return;
+
+        e.preventDefault();
+        history.replaceState(null, '', t.link.hash);
+        t.el.scrollIntoView();
+        if (!t.el.hasAttribute('tabindex')) t.el.setAttribute('tabindex', '-1');
+        t.el.focus({ preventScroll: true });
+        mark();
+      });
+    });
   }
 })();
 

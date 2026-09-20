@@ -242,6 +242,116 @@ class TestContentColumnAlignment(BuildCase):
                              "%s still narrows the practice to AI" % page)
 
 
+class TestTocHistory(BuildCase):
+    """Jumping around the index must not hijack the Back button.
+
+    Reported behaviour: open a case study, click through "On this page",
+    then press Back -- and it retraces the sections one at a time instead
+    of returning to the work. Measured in a browser before the fix: eight
+    index links, eight history entries, nine Back presses to leave the
+    page. After: zero and one.
+
+    The cause is that a fragment link pushes a history entry, which is the
+    right default for a document but wrong for a table of contents, where
+    every entry is the same page at a different scroll offset.
+
+    Behaviour needs a browser, so these pin the mechanism that produces it.
+    Verified by measurement at 1440x900: eight clicks grew history.length
+    by 0, the hash still tracked the section, and one Back returned to
+    index.html.
+    """
+
+    def enhance(self):
+        return (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+
+    def toc_block(self):
+        """Just the click handler, so a match elsewhere cannot stand in."""
+        js = self.enhance()
+        self.assertIn("targets.forEach", js, "the toc click handler is gone")
+        return js.split("targets.forEach", 1)[1]
+
+    def test_the_jump_replaces_rather_than_pushes(self):
+        block = self.toc_block()
+        self.assertIn("history.replaceState", block,
+                      "the toc jump no longer replaces the history entry, so "
+                      "Back walks the sections again")
+        self.assertNotIn("pushState", block,
+                         "the toc jump pushes a history entry")
+        self.assertNotIn("location.hash =", block,
+                         "assigning location.hash pushes an entry, which is "
+                         "the whole bug")
+
+    def test_keyboard_focus_follows_the_jump(self):
+        """preventDefault cancels the browser's own focus move.
+
+        Without replacing it, Tab after clicking an index item resumes from
+        the link rather than the section, so a keyboard visitor is silently
+        left at the top of the page they just navigated away from.
+        """
+        block = self.toc_block()
+        self.assertIn("tabindex", block,
+                      "the jump target is never made focusable")
+        self.assertIn(".focus(", block, "focus is never moved to the section")
+        self.assertIn("preventScroll", block,
+                      "focus() without preventScroll fights the smooth "
+                      "scroll and jumps the page")
+
+    def test_modified_clicks_are_left_alone(self):
+        """cmd/ctrl/shift-click opens a new tab. That is a navigation.
+
+        Asserted as a whole early return, not as four names appearing
+        somewhere in the block. The first version of this test only checked
+        that the strings were present, and `if (false && e.metaKey || ...)`
+        sailed straight through it -- the names were all still there while
+        the guard did nothing. Matching the return makes the sabotage fail.
+        """
+        guard = re.search(
+            r"if\s*\(\s*e\.metaKey\s*\|\|\s*e\.ctrlKey\s*\|\|"
+            r"\s*e\.shiftKey\s*\|\|\s*e\.altKey\s*\)\s*return;",
+            self.toc_block())
+        self.assertIsNotNone(
+            guard,
+            "no early return on modified clicks -- cmd/ctrl/shift-click is "
+            "swallowed instead of opening the section in a new tab")
+
+    def test_a_plain_left_click_is_the_only_one_handled(self):
+        """A middle click or a handler that already ran must pass through."""
+        block = self.toc_block()
+        self.assertIn("e.button !== 0", block,
+                      "non-left clicks are being intercepted")
+        self.assertIn("e.defaultPrevented", block,
+                      "a click another handler already dealt with is being "
+                      "handled a second time")
+        self.assertIn("if (!history.replaceState) return;", block,
+                      "a browser without replaceState should fall through to "
+                      "the native jump, not get a broken preventDefault")
+
+    def test_offset_and_easing_stay_in_the_stylesheet(self):
+        """scrollIntoView takes no arguments on purpose.
+
+        The header offset lives in scroll-margin-top and the easing in
+        scroll-behavior, including the reduced-motion override. Passing
+        options here would fork both decisions into a second place.
+        """
+        self.assertIn("t.el.scrollIntoView();", self.toc_block(),
+                      "scrollIntoView is being passed options, which forks "
+                      "the offset and easing away from the stylesheet")
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        self.assertIn("scroll-margin-top", css,
+                      "nothing offsets the jump for the sticky header")
+        self.assertIn("scroll-behavior: smooth", css)
+
+    def test_the_index_still_ships_plain_anchors(self):
+        """The whole thing degrades to a native jump without JS."""
+        markup = self.html("projects/steer.html")
+        toc = markup.split('class="toc__list"', 1)[1].split("</ol>", 1)[0]
+        self.assertIn('<a href="#', toc,
+                      "the index no longer ships real anchors, so it stops "
+                      "working when the script does not load")
+        self.assertNotIn("javascript:", toc)
+        self.assertNotIn('href="#"', toc)
+
+
 class TestCustomDomain(BuildCase):
     """The CNAME file and site.json's url must name the same host.
 
