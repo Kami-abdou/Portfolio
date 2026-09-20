@@ -5,9 +5,15 @@ Reads site.json, tokens.json and projects/*/content.json, then writes plain
 HTML to disk. There is no runtime data fetching: fetch() is blocked on
 file:// in Chrome, so everything is baked in at build time.
 
+Internal links are extensionless -- /work, /about, /contact -- which a host
+resolves and a filesystem does not. So each page still RENDERS completely
+from file://, but navigating between them now needs a server. That is the
+price of the clean URLs and it was paid deliberately.
+
     python3 build.py
 
-Outputs index.html, about.html, projects/<slug>.html and assets/tokens.css.
+Outputs index.html and work.html (identical; /work is the canonical of the
+pair), about.html, contact.html, projects/<slug>.html and assets/tokens.css.
 """
 
 import datetime
@@ -464,9 +470,9 @@ def primary_nav(up, current=None):
     The #work id stays on the band. Nothing in the nav uses it now, but it
     is still a valid thing to link to from outside the site.
     """
-    items = [("work", "%sindex.html" % up, "Work"),
-             ("about", "%sabout.html" % up, "About"),
-             ("contact", "%sindex.html#contact" % up, "Contact")]
+    items = [("work", "%swork" % up, "Work"),
+             ("about", "%sabout" % up, "About"),
+             ("contact", "%scontact" % up, "Contact")]
     out = []
     for key, href, label in items:
         mark = ' aria-current="page"' if key == current else ""
@@ -526,7 +532,7 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-head">
     <div class="shell site-head__inner">
-      <a class="site-head__name" href="{up}index.html" aria-label="{e(SITE['name'])} — home">{wordmark()}</a>
+      <a class="site-head__name" href="{up}work" aria-label="{e(SITE['name'])} — home">{wordmark()}</a>
       {primary_nav(up, nav_current)}
     </div>
   </header>
@@ -762,7 +768,7 @@ def build_index(projects):
         # both: 150 keyword-bearing chars reads as a resume line on screen.
         SITE.get("metaDescription") or SITE.get("heroStatement")
             or (SITE["tagline"] + " " + SITE["intro"]),
-        page_url="index.html",
+        page_url="work",
         nav_current="work",
     )]
 
@@ -905,14 +911,38 @@ def build_index(projects):
     </section>
 """)
 
-    contact_links = "\n        ".join(
-        '<a class="btn" href="%s">%s</a>' % (e(l["url"]), e(l["label"])) for l in SITE["links"]
+    out.append(contact_band())
+    out.append(foot())
+
+    # The homepage is served at two URLs on purpose. /work is what the nav
+    # points at and what the canonical names, because "work" says what the
+    # page is; / has to keep working because it is what people type and what
+    # gets shared. Writing the same bytes to both avoids a redirect hop on
+    # the most-shared URL in the site, and the shared canonical tells a
+    # crawler which of the two is the real one, so there is no split.
+    page = "\n".join(out)
+    (ROOT / "index.html").write_text(page, encoding="utf-8")
+    (ROOT / "work.html").write_text(page, encoding="utf-8")
+
+
+def contact_band(*, depth=0):
+    """The "Let's talk" block, shared by the homepage and /contact.
+
+    It was inline in build_index until /contact became a real page. Copying
+    it would have meant the email, the CV link and the link list each had two
+    places to fall out of date, on the one block where being wrong costs an
+    actual opportunity.
+    """
+    up = "../" * depth
+    links = "\n        ".join(
+        '<a class="btn" href="%s">%s</a>' % (e(l["url"]), e(l["label"]))
+        for l in SITE["links"]
     )
     # The CV was footer-only on the homepage, so the highest-intent element on
     # the site -- "Let's talk" -- offered no way to get the document a
     # recruiter actually needs. It is the last thing they look for and it was
     # the one thing not here.
-    cv_btn = ('\n        <a class="btn" href="%s">CV (PDF)</a>' % e(SITE["cv"])
+    cv_btn = ('\n        <a class="btn" href="%s%s">CV (PDF)</a>' % (up, e(SITE["cv"]))
               if SITE.get("cv") else "")
     # And the address itself never appeared as selectable text anywhere on the
     # site -- only ever inside href="mailto:". A recruiter who wants to paste
@@ -920,17 +950,34 @@ def build_index(projects):
     addr = SITE.get("email")
     addr_line = ('\n      <p class="contact__addr"><a href="mailto:%s">%s</a></p>'
                  % (e(addr), e(addr))) if addr else ""
-    out.append(f"""
+    return f"""
     <section class="band band--contact shell" id="contact">
       <h2>{masked("Let's talk")}</h2>
       <p class="lede">{e(SITE.get("contactLede", ""))}</p>{addr_line}
       <div class="btn-row">
-        {contact_links}{cv_btn}
+        {links}{cv_btn}
       </div>
     </section>
-""")
+"""
+
+
+def build_contact():
+    """/contact, carrying the same band the homepage ends on.
+
+    Contact used to be index.html#contact in the nav -- a fragment jump that
+    dropped a visitor at the foot of a long page. It is now a page, which is
+    what the other two nav items are, and the homepage keeps its band so
+    anyone who scrolls to the end still finds a way to get in touch.
+    """
+    out = [head(
+        "Contact — %s" % SITE["name"],
+        SITE.get("contactLede") or SITE.get("metaDescription", ""),
+        page_url="contact",
+        nav_current="contact",
+    )]
+    out.append(contact_band())
     out.append(foot())
-    (ROOT / "index.html").write_text("\n".join(out), encoding="utf-8")
+    (ROOT / "contact.html").write_text("\n".join(out), encoding="utf-8")
 
 
 def cv_block(index):
@@ -1044,7 +1091,7 @@ def build_about(index):
                 # an 800x800 portrait that is a horizontal band across the
                 # face, which can arrive cropped at the eyes.
                 image=SITE.get("shareImage") or SITE["profileImage"],
-                page_url="about.html",
+                page_url="about",
                 nav_current="about",
                 og_type="profile",
                 image_alt="%s — %s, %s" % (SITE["name"], SITE["title"],
@@ -1326,7 +1373,12 @@ def write_sitemap(projects):
     def stamp(page):
         return by_page.get(page, site_iso)
 
-    pages = ["index.html", "about.html"] + ["projects/%s.html" % p["slug"] for p in projects]
+    # The clean URLs, matching each page's own canonical. index.html is
+    # deliberately absent: it is the same bytes as /work, which is the
+    # canonical of the pair, and listing both would ask a crawler to decide
+    # something the canonical already decided.
+    pages = ["work", "about", "contact"] + [
+        "projects/%s.html" % p["slug"] for p in projects]
     urls = "\n".join(
         "  <url><loc>%s/%s</loc><lastmod>%s</lastmod></url>"
         % (base, e(page), stamp(page)) for page in pages)
@@ -1344,6 +1396,7 @@ def main():
     n_vars = write_tokens_css()
     build_index(projects)
     build_about(by_slug(projects))
+    build_contact()
     for i, p in enumerate(projects):
         build_project(p, projects[i - 1] if i else None,
                       projects[i + 1] if i + 1 < len(projects) else None)
@@ -1357,6 +1410,8 @@ def main():
     print("about.html   %d paragraphs, %d roles, %d toolkit groups"
           % (len(SITE["about"]), len(SITE.get("experience", [])),
              len(SITE.get("toolkit", []))))
+    print("contact.html %d links, CV %s"
+          % (len(SITE.get("links", [])), "yes" if SITE.get("cv") else "no"))
     print("projects/    %d pages, %d figures" % (len(projects), imgs))
     if n_urls:
         print("sitemap.xml  %d URLs, robots.txt written" % n_urls)

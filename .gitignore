@@ -9,8 +9,13 @@
 *.log
 /tmp/
 
-# Local server
-serve.py
+# Local server. Anchored to the root on purpose: the pattern used to be a
+# bare `serve.py`, which git matches at any depth, and that silently swallowed
+# tools/serve.py -- the preview server the site now needs. Internal links are
+# extensionless, so `python3 -m http.server` 404s on every page in the nav
+# while GitHub Pages serves them fine; tools/serve.py adds that one rule and
+# IS tracked.
+/serve.py
 
 # Original full-resolution exports. Kept locally so optimize-images.py can
 # re-derive at any quality, but never committed or published: 207 files, about

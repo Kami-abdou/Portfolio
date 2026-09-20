@@ -66,7 +66,7 @@
     {
       "id": "the-system",
       "heading": "The system",
-      "body": "The JSON is read at build time, not in the browser. fetch() is blocked on file://, so a site that loaded its own content at runtime would break the moment someone double-clicked index.html — baking it in keeps the site working from the filesystem and from a server.",
+      "body": "The JSON is read at build time, not in the browser. fetch() is blocked on file://, so a site that loaded its own content at runtime would render an empty shell the moment someone double-clicked index.html. Baking it in means every page is complete HTML sitting on disk. Navigation is the one part that needs a host: the URLs are extensionless, so a server resolves /work and a filesystem does not — a deliberate trade for addresses worth reading.",
       "images": [
         {
           "src": "assets/n2-system.jpg",

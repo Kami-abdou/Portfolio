@@ -311,6 +311,129 @@ class TestContentColumnAlignment(BuildCase):
                              "%s still narrows the practice to AI" % page)
 
 
+class TestCleanUrls(BuildCase):
+    """/work, /about and /contact, not index.html#contact.
+
+    GitHub Pages serves any foo.html at /foo, which was already true and
+    unused: /about returned the about page while every link on the site
+    still said about.html, so nobody ever saw the clean form. Verified
+    against the live host before building any of this -- /about and
+    /projects/steer already returned 200, /work and /contact returned 404.
+
+    The homepage is written twice, to index.html and work.html, with one
+    canonical naming /work. A redirect at / would have been the tidier
+    model on paper and the wrong one here: / is what people type and what
+    gets shared, and on a static host the redirect would be a meta-refresh,
+    so the most-shared URL on the site would flash a blank page. Two files
+    of identical bytes and one canonical costs nothing at runtime.
+
+    What this gave up: extensionless links do not resolve on file://, so
+    the site can no longer be navigated by double-clicking index.html.
+    Each page still renders completely from disk -- nothing fetches at
+    runtime -- and the Portfolio case study was rewritten to say exactly
+    that rather than keep claiming the whole site works from a filesystem.
+    """
+
+    PAGES = ("index.html", "work.html", "about.html", "contact.html")
+
+    def test_the_homepage_is_byte_identical_at_both_urls(self):
+        """If they drift, / and /work start showing different sites."""
+        self.assertEqual(
+            (ROOT / "index.html").read_bytes(),
+            (ROOT / "work.html").read_bytes(),
+            "index.html and work.html have diverged -- they are meant to be "
+            "one page served at two addresses")
+
+    def test_both_copies_name_work_as_the_canonical(self):
+        """Two URLs, one canonical, or a crawler splits the page's ranking."""
+        for page in ("index.html", "work.html"):
+            self.assertIn(
+                'rel="canonical" href="%s/work"' % self.site["url"].rstrip("/"),
+                self.html(page),
+                "%s does not canonicalise to /work" % page)
+
+    def test_no_internal_link_carries_a_page_extension(self):
+        """The whole point: what shows in the address bar as you browse.
+
+        Project pages are excluded on purpose -- they were not part of the
+        request and still ship as projects/<slug>.html, which GitHub Pages
+        also serves extensionless whenever someone wants to move them.
+        """
+        for page in self.PAGES:
+            markup = self.html(page)
+            head = markup.split("</header>", 1)[0]
+            for bad in ('href="index.html"', 'href="about.html"',
+                        'href="contact.html"', 'href="work.html"',
+                        'href="index.html#contact"'):
+                self.assertNotIn(bad, head,
+                                 "%s header still links to %s" % (page, bad))
+
+    def test_nested_pages_reach_the_clean_urls(self):
+        """A project page is one level down, so every href needs ../."""
+        for slug in ("steer", "instadeep"):
+            head = self.html("projects/%s.html" % slug).split("</header>", 1)[0]
+            for target in ("work", "about", "contact"):
+                self.assertIn('href="../%s"' % target, head,
+                              "projects/%s.html cannot reach /%s" % (slug, target))
+
+    def test_contact_is_a_page_and_the_band_is_still_on_the_homepage(self):
+        """Both, deliberately: the nav gets a page, the scroller gets a band."""
+        contact = self.html("contact.html")
+        self.assertIn('id="contact"', contact)
+        self.assertIn("mailto:%s" % self.site["email"], contact)
+        self.assertIn('id="contact"', self.html("index.html"),
+                      "the homepage lost its contact band")
+
+    def test_the_contact_band_has_one_source(self):
+        """It carries the email, the CV and every link.
+
+        Copied, it would have two places to fall out of date on the one
+        block where being wrong costs an actual opportunity. So the band is
+        asserted identical on both pages.
+        """
+        def band(page):
+            return self.html(page).split('class="band band--contact', 1)[1] \
+                                  .split("</section>", 1)[0]
+        self.assertEqual(band("index.html"), band("contact.html"),
+                         "the contact band differs between the homepage and "
+                         "/contact, so one of them is stale")
+
+    def test_the_preview_server_matches_the_host(self):
+        """Local preview has to resolve URLs the way GitHub Pages does.
+
+        `python3 -m http.server` looks for a file called exactly "work",
+        finds nothing and 404s, so previewing with the stock server breaks
+        every link in the nav while the deployed site is fine. That split
+        is worse than either state on its own: it means testing something
+        that is not what ships.
+
+        It also has to be committed. The .gitignore carried a bare
+        `serve.py`, which git matches at any depth, and it swallowed this
+        file on the first attempt.
+        """
+        server = ROOT / "tools" / "serve.py"
+        self.assertTrue(server.is_file(),
+                        "tools/serve.py is missing -- local preview 404s on "
+                        "every extensionless URL")
+        src = server.read_text(encoding="utf-8")
+        self.assertIn('".html"', src,
+                      "the preview server no longer resolves extensionless "
+                      "paths to .html")
+        ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+        self.assertNotIn("\nserve.py", ignore,
+                         "an unanchored serve.py pattern is back in "
+                         ".gitignore and will untrack tools/serve.py")
+
+    def test_the_sitemap_lists_clean_urls_only(self):
+        sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
+        base = self.site["url"].rstrip("/")
+        for target in ("work", "about", "contact"):
+            self.assertIn("<loc>%s/%s</loc>" % (base, target), sitemap)
+        self.assertNotIn("<loc>%s/index.html</loc>" % base, sitemap,
+                         "the sitemap lists both / and /work, which asks a "
+                         "crawler to decide what the canonical decided")
+
+
 class TestSafeAreas(BuildCase):
     """The page must own the whole phone screen, insets and all.
 
@@ -824,8 +947,13 @@ class TestConsolidation(BuildCase):
 
     def test_eight_project_pages_and_ten_sitemap_urls(self):
         """UnDrive then PharmaDrive were removed; `portfolio` was added.
-        The sitemap total is pages + index + about."""
-        self.assertIn("10 URLs", self.stdout)
+
+        The sitemap total is the eight project pages plus /work, /about and
+        /contact. index.html is deliberately not listed: it is the same
+        bytes as /work, which is the canonical of the pair, so listing both
+        would ask a crawler to decide what the canonical already decided.
+        """
+        self.assertIn("11 URLs", self.stdout)
         self.assertIn("8 pages", self.stdout)
 
 
@@ -972,10 +1100,12 @@ class TestPrimaryNav(BuildCase):
         A visitor on /about saw a nav identical to the homepage's. The only
         is-current rule in the stylesheet was for the project-page TOC.
         """
-        self.assertIn('href="index.html" aria-current="page"',
+        self.assertIn('href="work" aria-current="page"',
                       self.html("index.html"))
-        self.assertIn('href="about.html" aria-current="page"',
+        self.assertIn('href="about" aria-current="page"',
                       self.html("about.html"))
+        self.assertIn('href="contact" aria-current="page"',
+                      self.html("contact.html"))
 
     def test_work_goes_to_the_top_of_the_homepage(self):
         """Work used to jump to #work, landing past the hero.
@@ -1017,23 +1147,37 @@ class TestPrimaryNav(BuildCase):
         """Contact was a mailto: sitting between two page links.
 
         In a nav that is a surprise -- it opens a mail client, or on a
-        machine with none configured it appears to do nothing at all. It now
-        points at the homepage contact band, which carries the address as
-        selectable text, the CV and every link. The mailto still exists
-        inside that band, where a visitor expects one.
+        machine with none configured it appears to do nothing at all. It
+        then became index.html#contact, and is now its own page at
+        /contact, which is what the other two nav items are. The homepage
+        keeps its band, so anyone who reads to the end still finds a way
+        to get in touch. The mailto lives inside both, where a visitor
+        expects one.
+
+        Depth is taken from the path, not the filename: an earlier version
+        of this checked `"/" in name` against a bare basename, which is
+        never true, so every project page was silently tested against the
+        root-relative href and the assertion failed for the wrong reason.
         """
         import re, glob, pathlib as pl
-        for path in glob.glob(str(ROOT / "*.html")) + glob.glob(str(ROOT / "projects" / "*.html")):
-            name = pl.Path(path).name
+        roots = glob.glob(str(ROOT / "*.html"))
+        nested = glob.glob(str(ROOT / "projects" / "*.html"))
+        for path in roots + nested:
+            rel = pl.Path(path).relative_to(ROOT)
+            up = "../" * (len(rel.parts) - 1)
             page = pl.Path(path).read_text(encoding="utf-8")
             nav = re.search(r'<nav aria-label="Primary">(.*?)</nav>', page, re.S)
-            self.assertIsNotNone(nav, "%s lost its primary nav" % name)
+            self.assertIsNotNone(nav, "%s lost its primary nav" % rel)
             self.assertNotIn("mailto:", nav.group(1),
-                             "%s still fires a mail client from the nav" % name)
-            self.assertIn("#contact", nav.group(1),
-                          "%s has no route to the contact band" % name)
+                             "%s still fires a mail client from the nav" % rel)
+            self.assertIn('href="%scontact"' % up, nav.group(1),
+                          "%s has no route to the contact page" % rel)
+        self.assertTrue((ROOT / "contact.html").is_file(),
+                        "the nav points at /contact but the page is gone")
         self.assertIn('id="contact"', self.html("index.html"),
-                      "the nav points at #contact but the target is gone")
+                      "the homepage lost its contact band")
+        self.assertIn("mailto:", self.html("contact.html"),
+                      "the contact page has no address on it")
 
     def test_nav_links_have_a_real_hit_area(self):
         """They had zero padding, so the target was the text box: 24px tall,
