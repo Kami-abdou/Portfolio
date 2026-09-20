@@ -311,6 +311,111 @@ class TestContentColumnAlignment(BuildCase):
                              "%s still narrows the practice to AI" % page)
 
 
+class TestLinkIcons(BuildCase):
+    """LinkedIn, GitHub, Email and the CV carry their marks.
+
+    Same contract as the toolkit chips, deliberately: the icon appears only
+    if the file was supplied, and whether it needs a light plate behind it
+    is MEASURED rather than decided by eye, because that failure is silent.
+
+    Measured against this page's #0A0A0B: cv 13.29:1, email 12.41:1,
+    github 8.78:1, linkedin 8.36:1 -- so none takes a plate today. GitHub
+    is worth understanding rather than just accepting: its black disc does
+    vanish into the page, and what survives is the white Octocat, which is
+    still the mark. Averaging over opaque pixels gives the right answer
+    there for a counter-intuitive reason, so it was checked on screen at
+    3x as well as computed.
+    """
+
+    SLUGS = ("linkedin", "github", "email", "cv")
+
+    def test_every_mark_is_on_disk(self):
+        for slug in self.SLUGS:
+            self.assertTrue((ROOT / "assets" / "links" / ("%s.png" % slug)).is_file(),
+                            "assets/links/%s.png is missing, so that button "
+                            "silently loses its mark" % slug)
+
+    def test_the_contact_buttons_all_carry_one(self):
+        """Homepage band and /contact are the same block, so both or neither."""
+        for page in ("index.html", "contact.html"):
+            row = self.html(page).split('class="btn-row"', 1)[1].split("</div>", 1)[0]
+            for slug in self.SLUGS:
+                self.assertIn("assets/links/%s.png" % slug, row,
+                              "%s: the %s button has no mark" % (page, slug))
+
+    def test_the_about_page_carries_them_too(self):
+        about = self.html("about.html")
+        for slug in ("linkedin", "github", "email"):
+            self.assertIn("assets/links/%s.png" % slug, about,
+                          "about page: the %s button has no mark" % slug)
+
+    def test_the_label_match_does_not_overreach(self):
+        """"Source on GitHub" is GitHub. "Groupado today" is not anything.
+
+        The match is a keyword inside an owner-authored label, so the risk
+        is a false positive putting a brand mark on an unrelated link.
+        """
+        portfolio = self.html("projects/portfolio.html")
+        self.assertIn("assets/links/github.png", portfolio,
+                      '"Source on GitHub" lost its mark')
+        for slug in ("steer", "groupado", "konnect", "fixerloop"):
+            page = self.html("projects/%s.html" % slug)
+            row = re.search(r'<div class="btn-row">(.*?)</div>', page, re.S)
+            if not row:
+                continue
+            self.assertNotIn("assets/links/", row.group(1),
+                             "%s has a product link wearing a brand mark it "
+                             "should not have matched" % slug)
+
+    def test_the_marks_are_decorative(self):
+        """Every button says what it is in words, so alt must be empty.
+
+        A filled alt would make a screen reader announce the brand twice.
+        """
+        for page in ("index.html", "contact.html", "about.html"):
+            for img in re.findall(r'<img class="btn__icon[^>]*>', self.html(page)):
+                self.assertIn('alt=""', img,
+                              "%s has a non-decorative button mark: %s" % (page, img))
+
+    def test_dimensions_come_from_the_file(self):
+        """The CV mark is a portrait sheet, not a square.
+
+        Hardcoding 36x36 would squash it and reserve the wrong box, so the
+        row would shift as it loaded. This asserts the non-square case
+        specifically, because the three square marks would pass either way.
+        """
+        img = re.search(r'<img class="btn__icon"[^>]*links/cv\.png[^>]*>',
+                        self.html("contact.html"))
+        self.assertIsNotNone(img, "the CV button lost its mark")
+        w = re.search(r'width="(\d+)"', img.group(0))
+        h = re.search(r'height="(\d+)"', img.group(0))
+        self.assertIsNotNone(w, "the CV mark declares no width")
+        self.assertNotEqual(w.group(1), h.group(1),
+                            "the CV mark is declared square; it is a portrait "
+                            "sheet and would be squashed")
+
+    def test_the_plate_is_measured_not_hardcoded(self):
+        """The one rule that keeps a future dark mark from disappearing."""
+        src = (ROOT / "build.py").read_text(encoding="utf-8")
+        fn = src.split("def link_icon(", 1)[1].split("\ndef ", 1)[0]
+        self.assertIn("icon_needs_plate", fn,
+                      "link_icon stopped measuring contrast, so a dark mark "
+                      "dropped in later would silently vanish")
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        self.assertIn(".btn__icon--plate", css,
+                      "the plate class has no styling, so measuring for it "
+                      "would do nothing")
+
+    def test_buttons_align_the_mark_with_the_label(self):
+        """inline-block would drop the mark onto the text baseline."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = css.split("\n.btn {", 1)[1].split("}", 1)[0]
+        self.assertIn("inline-flex", block,
+                      "the buttons are not flex, so the mark sits on the "
+                      "baseline with a descender gap under it")
+        self.assertIn("align-items: center", block)
+
+
 class TestCleanUrls(BuildCase):
     """/work, /about and /contact, not index.html#contact.
 

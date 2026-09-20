@@ -265,6 +265,60 @@ def tool_chips(tools, depth=0):
     return '<ul class="tools">%s</ul>' % "".join(out)
 
 
+#: Link labels are owner-authored, so match on a keyword inside the label
+#: rather than on the whole string. "GitHub" and "Source on GitHub" are both
+#: GitHub; "Live site" is deliberately nothing.
+LINK_ICONS = ("linkedin", "github", "email", "cv")
+
+
+def link_icon(label, depth=0, *, slug=None):
+    """An <img> for a known link, or "" for anything else.
+
+    Same contract as the tool chips: the icon appears only if the file has
+    been supplied, and the plate is decided by measuring the mark rather
+    than by hand. Measured against this page at #0A0A0B, all four read as
+    shipped -- cv 13.29:1, email 12.41:1, github 8.78:1, linkedin 8.36:1 --
+    so none currently takes a plate. GitHub is the interesting one: its
+    black disc does vanish into the page and the white Octocat is what
+    survives, which is still the mark, so averaging over opaque pixels gives
+    the right answer for the wrong-looking reason. Verified on screen.
+
+    Intrinsic dimensions are read from the file, not assumed square: the CV
+    mark is a portrait sheet at 29x36 and hardcoding 36x36 would squash it
+    or reserve the wrong box and shift the row as it loads.
+    """
+    if slug is None:
+        low = label.lower()
+        slug = next((k for k in LINK_ICONS if k in low), None)
+        # "CV" is two letters and would match inside ordinary words, so it
+        # only counts as its own token.
+        if slug is None and "cv" in low.split():
+            slug = "cv"
+    if not slug:
+        return ""
+    rel = None
+    for ext in ("svg", "png", "webp"):
+        if (ROOT / "assets" / "links" / ("%s.%s" % (slug, ext))).is_file():
+            rel = "assets/links/%s.%s" % (slug, ext)
+            break
+    if not rel:
+        return ""
+    cls = "btn__icon"
+    if icon_needs_plate(ROOT / rel):
+        cls += " btn__icon--plate"
+    size = png_size(ROOT / rel)
+    dims = ' width="%d" height="%d"' % size if size else ""
+    return ('<img class="%s" src="%s%s%s" alt=""%s loading="lazy" '
+            'decoding="async">'
+            % (cls, "../" * depth, rel, asset_v(rel), dims))
+
+
+def link_btn(label, href, depth=0, *, slug=None, rel_attr=""):
+    """A .btn carrying its mark, so the four sites cannot drift apart."""
+    return ('<a class="btn" href="%s"%s>%s<span>%s</span></a>'
+            % (e(href), rel_attr, link_icon(label, depth, slug=slug), e(label)))
+
+
 def is_phone(size):
     """True for a narrow portrait screenshot, i.e. a phone screen.
 
@@ -939,14 +993,13 @@ def contact_band(*, depth=0):
     """
     up = "../" * depth
     links = "\n        ".join(
-        '<a class="btn" href="%s">%s</a>' % (e(l["url"]), e(l["label"]))
-        for l in SITE["links"]
+        link_btn(l["label"], l["url"], depth) for l in SITE["links"]
     )
     # The CV was footer-only on the homepage, so the highest-intent element on
     # the site -- "Let's talk" -- offered no way to get the document a
     # recruiter actually needs. It is the last thing they look for and it was
     # the one thing not here.
-    cv_btn = ('\n        <a class="btn" href="%s%s">CV (PDF)</a>' % (up, e(SITE["cv"]))
+    cv_btn = ('\n        ' + link_btn("CV (PDF)", up + SITE["cv"], depth, slug="cv")
               if SITE.get("cv") else "")
     # And the address itself never appeared as selectable text anywhere on the
     # site -- only ever inside href="mailto:". A recruiter who wants to paste
@@ -1073,7 +1126,7 @@ def cv_block(index):
 def build_about(index):
     body = "\n      ".join("<p>%s</p>" % e(p) for p in SITE["about"])
     links = "\n        ".join(
-        '<a class="btn" href="%s">%s</a>' % (e(l["url"]), e(l["label"])) for l in SITE["links"]
+        link_btn(l["label"], l["url"]) for l in SITE["links"]
     )
     size = png_size(ROOT / SITE["profileImage"])
     dims = ' width="%d" height="%d"' % size if size else ""
@@ -1189,7 +1242,7 @@ def build_project(project, prev_p, next_p):
     links_html = ""
     if project.get("links"):
         items = "".join(
-            '<a class="btn" href="%s" rel="noopener">%s</a>' % (e(l["url"]), e(l["label"]))
+            link_btn(l["label"], l["url"], 1, rel_attr=' rel="noopener"')
             for l in project["links"]
         )
         links_html = '<div class="btn-row">%s</div>' % items

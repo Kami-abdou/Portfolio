@@ -250,14 +250,35 @@ a { color: inherit; }
 
 /* ── buttons ─────────────────────────────────────── */
 .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+/* inline-flex, not inline-block: the buttons carry a mark beside the label
+   now, and inline-block would sit the image on the text baseline with a
+   descender gap under it rather than centred against the word. */
 .btn {
-  display: inline-block;
+  display: inline-flex; align-items: center; gap: var(--space-2);
   padding: var(--space-3) var(--space-6);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
   font-size: var(--font-size-sm);
   text-decoration: none;
   transition: border-color .2s, background .2s, color .2s;
+}
+/* The mark is decorative -- every button already says what it is in words,
+   so the <img> carries alt="" and the label does the announcing. Height is
+   fixed and width is not: the CV mark is a portrait sheet, and forcing it
+   square would squash it. `flex: none` keeps a long label from compressing
+   it. */
+.btn__icon {
+  height: 18px; width: auto; max-width: 18px; flex: none;
+  object-fit: contain;
+}
+/* Same rule as the toolkit chips, and the same reason: build.py measures
+   each mark's luminance against the page and adds this only when the mark
+   would otherwise disappear. None of the four currently qualifies -- this
+   is here so that dropping in a dark mark later still works. */
+.btn__icon--plate {
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-inverse);
 }
 .btn:hover { border-color: var(--color-text); }
 .btn--solid {
