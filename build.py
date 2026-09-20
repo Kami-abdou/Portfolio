@@ -14,6 +14,10 @@ price of the clean URLs and it was paid deliberately.
 
 Outputs index.html and work.html (identical; /work is the canonical of the
 pair), about.html, contact.html, projects/<slug>.html and assets/tokens.css.
+
+The FILES keep their .html suffix -- that is what GitHub Pages needs on disk
+in order to serve /work, /about, /contact and /projects/<slug>. No internal
+link, canonical or sitemap entry carries the suffix.
 """
 
 import datetime
@@ -740,7 +744,7 @@ def project_card(project, *, large):
     meta_html = ('<span class="card__meta">%s</span>' % e(project["meta"])
                  if usable(project.get("meta")) else "")
     return f"""        <li>
-          <a class="{cls}" href="projects/{e(project['slug'])}.html">
+          <a class="{cls}" href="projects/{e(project['slug'])}">
             <span class="card__media">
               <span class="card__num" aria-hidden="true">{num}</span>
               <!-- alt="" on purpose: this img is inside the card's <a>, whose text
@@ -1026,7 +1030,7 @@ def cv_block(index):
                 raise SystemExit(
                     'site.json experience: "%s" lists unknown project "%s"'
                     % (job["company"], slug))
-            links.append('<a href="projects/%s.html">%s</a>'
+            links.append('<a href="projects/%s">%s</a>'
                          % (e(p["slug"]), e(p["title"])))
         work = ('<p class="cv__work">%s</p>' % "\n            ".join(links)
                 if links else "")
@@ -1138,7 +1142,7 @@ def build_project(project, prev_p, next_p):
         project.get("description") or project["summary"],
         depth=1,
         image=og_img,
-        page_url="projects/%s.html" % project["slug"],
+        page_url="projects/%s" % project["slug"],
         # A case study is a written piece, not a site. og:type was hardcoded
         # "website" on all twelve pages.
         og_type="article",
@@ -1319,11 +1323,11 @@ def build_project(project, prev_p, next_p):
 
     nav = []
     if prev_p:
-        nav.append('<a class="pager__link pager__link--prev" href="%s.html">'
+        nav.append('<a class="pager__link pager__link--prev" href="%s">'
                    '<span>Previous</span><strong>%s</strong></a>'
                    % (e(prev_p["slug"]), e(prev_p["title"])))
     if next_p:
-        nav.append('<a class="pager__link pager__link--next" href="%s.html">'
+        nav.append('<a class="pager__link pager__link--next" href="%s">'
                    '<span>Next project</span><strong>%s</strong></a>'
                    % (e(next_p["slug"]), e(next_p["title"])))
     out.append("""
@@ -1368,7 +1372,7 @@ def write_sitemap(projects):
             # max, not the project's own date: site.json drives the shared
             # head, nav and footer, so editing it really does change every
             # page. Claiming otherwise would be a lie a crawler acts on.
-            by_page["projects/%s.html" % p["slug"]] = max(own, site_iso)
+            by_page["projects/%s" % p["slug"]] = max(own, site_iso)
 
     def stamp(page):
         return by_page.get(page, site_iso)
@@ -1378,7 +1382,7 @@ def write_sitemap(projects):
     # canonical of the pair, and listing both would ask a crawler to decide
     # something the canonical already decided.
     pages = ["work", "about", "contact"] + [
-        "projects/%s.html" % p["slug"] for p in projects]
+        "projects/%s" % p["slug"] for p in projects]
     urls = "\n".join(
         "  <url><loc>%s/%s</loc><lastmod>%s</lastmod></url>"
         % (base, e(page), stamp(page)) for page in pages)

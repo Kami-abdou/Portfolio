@@ -215,8 +215,8 @@ class TestHomepageTiers(BuildCase):
         this.
         """
         index = self.html("index.html")
-        self.assertLess(index.index("projects/instadeep.html"),
-                        index.index("projects/steer.html"))
+        self.assertLess(index.index('href="projects/instadeep"'),
+                        index.index('href="projects/steer"'))
 
     def test_work_anchor_survives_the_rename(self):
         self.assertIn('id="work"', self.html("index.html"))
@@ -352,21 +352,38 @@ class TestCleanUrls(BuildCase):
                 self.html(page),
                 "%s does not canonicalise to /work" % page)
 
-    def test_no_internal_link_carries_a_page_extension(self):
+    def test_no_internal_link_anywhere_carries_a_page_extension(self):
         """The whole point: what shows in the address bar as you browse.
 
-        Project pages are excluded on purpose -- they were not part of the
-        request and still ship as projects/<slug>.html, which GitHub Pages
-        also serves extensionless whenever someone wants to move them.
+        Every page, not just the nav, and not just the four root pages --
+        the homepage cards, the about page's employment history and the
+        prev/next pager all link to case studies too. Asset hrefs are
+        excluded: .css, .svg, .png, .pdf and .mp4 are files, and their
+        extensions are real.
+
+        The files on disk keep .html. That is what GitHub Pages needs in
+        order to serve the extensionless form, so the rule is about links,
+        never about filenames.
         """
-        for page in self.PAGES:
-            markup = self.html(page)
-            head = markup.split("</header>", 1)[0]
-            for bad in ('href="index.html"', 'href="about.html"',
-                        'href="contact.html"', 'href="work.html"',
-                        'href="index.html#contact"'):
-                self.assertNotIn(bad, head,
-                                 "%s header still links to %s" % (page, bad))
+        import glob, pathlib as pl
+        pages = glob.glob(str(ROOT / "*.html")) + glob.glob(str(ROOT / "projects" / "*.html"))
+        self.assertTrue(pages, "no built pages found")
+        asset_ext = (".css", ".svg", ".png", ".jpg", ".webp", ".pdf",
+                     ".mp4", ".ico", ".xml", ".json", ".txt")
+        offenders = []
+        for path in pages:
+            rel = pl.Path(path).relative_to(ROOT)
+            for href in re.findall(r'href="([^"]+)"', pl.Path(path).read_text(encoding="utf-8")):
+                if href.startswith(("http", "mailto:", "#")):
+                    continue
+                bare = href.split("?", 1)[0].split("#", 1)[0]
+                if bare.endswith(asset_ext):
+                    continue
+                if bare.endswith(".html"):
+                    offenders.append("%s -> %s" % (rel, href))
+        self.assertEqual(offenders, [],
+                         "these internal links still carry .html: %s"
+                         % ", ".join(offenders))
 
     def test_nested_pages_reach_the_clean_urls(self):
         """A project page is one level down, so every href needs ../."""
@@ -934,7 +951,7 @@ class TestConsolidation(BuildCase):
                 self.assertNotIn(stale, body, "%s still links %s" % (page, stale))
 
     def test_about_page_links_the_merged_entry(self):
-        self.assertIn('href="projects/instadeep.html"', self.html("about.html"))
+        self.assertIn('href="projects/instadeep"', self.html("about.html"))
 
     def test_orders_are_contiguous_from_one(self):
         """order is visible: project_card renders it as the card number, and it
