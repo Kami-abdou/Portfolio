@@ -311,6 +311,112 @@ class TestContentColumnAlignment(BuildCase):
                              "%s still narrows the practice to AI" % page)
 
 
+class TestFavicon(BuildCase):
+    """The AY mark, regenerated from the site's own Anton webfont.
+
+    The owner supplied it as one 32x32 PNG -- a white disc with a black AY.
+    Fine for a tab, useless for anything bigger: upscaled to 180 for the
+    iOS home screen it is visibly mush. The mark is Anton, which ships in
+    this repo and is the same face as the wordmark, so tools/make-favicon.py
+    re-sets it at 512 and scales DOWN instead.
+
+    The size was measured, not guessed: rendering at a candidate size,
+    downscaling to 32 and diffing ink pixels against the supplied file gave
+    a clear minimum at 344px -- 21 differing pixels of 1024, against 43-53
+    either side. What remains is antialiasing, not a shape difference.
+    """
+
+    @staticmethod
+    def png_header(path):
+        """(width, height, colour_type) straight out of IHDR."""
+        raw = path.read_bytes()
+        assert raw[:8] == b"\x89PNG\r\n\x1a\n", path
+        w = int.from_bytes(raw[16:20], "big")
+        h = int.from_bytes(raw[20:24], "big")
+        return w, h, raw[25]
+
+    def test_no_svg_icon_survives(self):
+        """An SVG icon outranks a PNG in Chrome and Firefox.
+
+        This is the whole reason the old favicon.svg had to go rather than
+        just sit there: leaving it declared would have kept showing the
+        previous mark in most browsers while every file on disk said the
+        icon had been replaced. Silent, and only visible in a tab strip.
+        """
+        for page in ("index.html", "about.html", "contact.html",
+                     "projects/steer.html"):
+            markup = self.html(page)
+            self.assertNotIn("favicon.svg", markup,
+                             "%s still declares an SVG icon, which wins over "
+                             "the PNG and shows the old mark" % page)
+        self.assertFalse((ROOT / "assets" / "favicon.svg").exists(),
+                         "assets/favicon.svg is back on disk")
+
+    def test_the_three_sizes_exist_and_are_the_sizes_they_claim(self):
+        for name, size in (("favicon-32.png", 32), ("favicon-192.png", 192),
+                           ("apple-touch-icon.png", 180)):
+            path = ROOT / "assets" / name
+            self.assertTrue(path.is_file(), "assets/%s is missing" % name)
+            w, h, _ = self.png_header(path)
+            self.assertEqual((w, h), (size, size),
+                             "assets/%s is %dx%d, not %dx%d" % (name, w, h, size, size))
+
+    def test_the_touch_icon_is_opaque(self):
+        """iOS composites a touch icon onto BLACK before masking it.
+
+        A transparent corner therefore arrives as a black corner, and the
+        white disc would sit in a dark box on the home screen. So the touch
+        icon alone is a full-bleed square with no alpha, and iOS applies its
+        own rounding. Colour type 6 is RGBA, 2 is RGB.
+        """
+        _, _, colour_type = self.png_header(ROOT / "assets" / "apple-touch-icon.png")
+        self.assertNotIn(colour_type, (4, 6),
+                         "apple-touch-icon.png carries an alpha channel; iOS "
+                         "will render its transparent corners black")
+
+    def test_the_browser_icons_keep_their_transparency(self):
+        """The disc is a disc -- square corners would show as white boxes."""
+        for name in ("favicon-32.png", "favicon-192.png"):
+            _, _, colour_type = self.png_header(ROOT / "assets" / name)
+            self.assertIn(colour_type, (4, 6),
+                          "assets/%s lost its alpha channel, so the disc now "
+                          "sits in a white square" % name)
+
+    def test_every_page_declares_them_at_the_right_depth(self):
+        for page, up in (("index.html", ""), ("about.html", ""),
+                         ("contact.html", ""), ("projects/steer.html", "../")):
+            markup = self.html(page)
+            for name in ("favicon-32.png", "favicon-192.png",
+                         "apple-touch-icon.png"):
+                self.assertIn('href="%sassets/%s' % (up, name), markup,
+                              "%s does not reference %s correctly" % (page, name))
+
+    def test_the_icons_are_cache_busted(self):
+        """Browsers cache a favicon far past any sane TTL.
+
+        Without a content hash in the URL, a visitor who has been to the
+        site before keeps the old mark more or less indefinitely. This
+        project has already lost time to exactly that, four separate times,
+        on other assets.
+        """
+        markup = self.html("index.html")
+        for name in ("favicon-32.png", "favicon-192.png", "apple-touch-icon.png"):
+            self.assertRegex(markup, r'assets/%s\?v=[0-9a-f]+' % re.escape(name),
+                             "%s is declared without a version, so a returning "
+                             "visitor keeps the old icon" % name)
+
+    def test_the_generator_is_committed(self):
+        """The mark is derived, so the derivation has to be re-runnable."""
+        gen = ROOT / "tools" / "make-favicon.py"
+        self.assertTrue(gen.is_file(), "tools/make-favicon.py is missing")
+        src = gen.read_text(encoding="utf-8")
+        self.assertIn("anton-400.woff2", src,
+                      "the generator no longer uses the site's own typeface")
+        self.assertIn("FONT_SIZE = 344", src,
+                      "the measured font size changed without the comparison "
+                      "against the supplied file being redone")
+
+
 class TestLinkIcons(BuildCase):
     """LinkedIn, GitHub, Email and the CV carry their marks.
 

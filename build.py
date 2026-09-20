@@ -580,8 +580,9 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <meta name="twitter:description" content="{e(description)}">
   <meta name="theme-color" content="{e(TOKENS['color']['bg'])}">
   <meta name="color-scheme" content="dark">
-  <link rel="icon" href="{up}assets/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="{up}assets/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="{up}assets/favicon-32.png{asset_v('assets/favicon-32.png')}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{up}assets/favicon-192.png{asset_v('assets/favicon-192.png')}">
+  <link rel="apple-touch-icon" href="{up}assets/apple-touch-icon.png{asset_v('assets/apple-touch-icon.png')}">
   <link rel="stylesheet" href="{up}assets/fonts.css{asset_v("assets/fonts.css")}">
   <link rel="stylesheet" href="{up}assets/tokens.css{asset_v("assets/tokens.css")}">
   <link rel="stylesheet" href="{up}assets/styles.css{asset_v("assets/styles.css")}">
