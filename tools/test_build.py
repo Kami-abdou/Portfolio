@@ -242,6 +242,84 @@ class TestContentColumnAlignment(BuildCase):
                              "%s still narrows the practice to AI" % page)
 
 
+class TestCustomDomain(BuildCase):
+    """The CNAME file and site.json's url must name the same host.
+
+    GitHub Pages reads the custom domain from a CNAME file in the published
+    branch's root -- nowhere else. Delete the file and Pages silently falls
+    back to kami-abdou.github.io and the domain stops resolving, with no
+    error anywhere. It is a one-line file that nothing in build.py writes,
+    which makes it exactly the kind of thing a branch merge drops.
+
+    It nearly was dropped: GitHub committed CNAME to main on its own, so for
+    a while the file existed on main and on no other branch, while the
+    publish step was `git push origin Portfolio0.1:main`. That push would
+    have deleted it.
+
+    site.json's url is the other half. It drives every canonical tag, the
+    og:url on every page, all ten sitemap entries and the robots.txt sitemap
+    line. If the two disagree, the site serves one domain while telling
+    crawlers the real one is somewhere else.
+    """
+
+    def cname(self):
+        path = ROOT / "CNAME"
+        self.assertTrue(
+            path.is_file(),
+            "CNAME is missing from the repo root -- GitHub Pages will drop "
+            "the custom domain and serve kami-abdou.github.io instead")
+        return path.read_text(encoding="utf-8").strip()
+
+    def test_cname_is_a_bare_host(self):
+        """Pages wants the host alone. A scheme or path silently breaks it."""
+        host = self.cname()
+        self.assertNotIn("://", host, "CNAME carries a scheme: %r" % host)
+        self.assertNotIn("/", host, "CNAME carries a path: %r" % host)
+        self.assertEqual(host, host.strip().lower(),
+                         "CNAME has stray case or whitespace: %r" % host)
+        self.assertEqual(len(host.splitlines()), 1,
+                         "CNAME holds more than one line: %r" % host)
+
+    def test_cname_matches_the_url_in_site_json(self):
+        url = self.site.get("url", "")
+        host = url.split("://", 1)[-1].split("/", 1)[0]
+        self.assertEqual(
+            self.cname(), host,
+            "CNAME says %r but site.json's url says %r -- the site would "
+            "serve one domain and declare another as canonical"
+            % (self.cname(), host))
+
+    def test_canonical_urls_use_the_custom_domain(self):
+        """Checked on the rendered pages, which is what a crawler reads."""
+        for page in ("index.html", "about.html", "projects/steer.html"):
+            markup = self.html(page)
+            self.assertIn('rel="canonical" href="https://%s/' % self.cname(),
+                          markup, "%s does not canonicalise to the custom "
+                          "domain" % page)
+
+    def test_no_shipped_file_still_points_at_the_pages_subdomain(self):
+        """The old host appearing anywhere shippable means a stale build.
+
+        docs/ is excluded: it holds dated planning notes that record what the
+        URL was at the time, and rewriting history there would be a lie.
+        """
+        stale = []
+        for path in ROOT.rglob("*"):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(ROOT)
+            if rel.parts[0] in (".git", "_archive", "docs", "site"):
+                continue
+            if path.suffix not in (".html", ".xml", ".txt", ".json"):
+                continue
+            if "kami-abdou.github.io" in path.read_text(
+                    encoding="utf-8", errors="ignore"):
+                stale.append(str(rel))
+        self.assertEqual(stale, [],
+                         "these still point at the old Pages subdomain: %s"
+                         % ", ".join(stale))
+
+
 class TestHeroScrim(BuildCase):
     """The scrim that fades the hero's foot must stay in two named parts.
 
