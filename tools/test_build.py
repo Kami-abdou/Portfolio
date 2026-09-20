@@ -915,10 +915,37 @@ class TestPrimaryNav(BuildCase):
         A visitor on /about saw a nav identical to the homepage's. The only
         is-current rule in the stylesheet was for the project-page TOC.
         """
-        self.assertIn('href="index.html#work" aria-current="page"',
+        self.assertIn('href="index.html" aria-current="page"',
                       self.html("index.html"))
         self.assertIn('href="about.html" aria-current="page"',
                       self.html("about.html"))
+
+    def test_work_goes_to_the_top_of_the_homepage(self):
+        """Work used to jump to #work, landing past the hero.
+
+        The nav's first item dropped a visitor into the middle of a page
+        they had never seen the top of. It now shares the wordmark's href
+        exactly, on every page, which is the behaviour that was asked for
+        -- so this asserts the two are equal rather than hardcoding a
+        string, and a change to one that misses the other fails.
+        """
+        for name, depth in (("index.html", 0), ("about.html", 0),
+                            ("projects/steer.html", 1),
+                            ("projects/konnect.html", 1)):
+            page = self.html(name)
+            logo = re.search(r'<a class="site-head__name" href="([^"]+)"', page)
+            self.assertIsNotNone(logo, "%s lost its wordmark" % name)
+            nav = page.split('<nav aria-label="Primary">', 1)[1].split("</nav>", 1)[0]
+            work = re.search(r'<a href="([^"]+)"[^>]*>Work</a>', nav)
+            self.assertIsNotNone(work, "%s lost its Work link" % name)
+            self.assertEqual(
+                work.group(1), logo.group(1),
+                "%s: Work points at %r but the wordmark goes to %r -- they "
+                "are meant to be the same destination"
+                % (name, work.group(1), logo.group(1)))
+            self.assertNotIn("#", work.group(1),
+                             "%s: Work carries a fragment again, so it skips "
+                             "the hero" % name)
 
     def test_project_pages_mark_nothing(self):
         """A project page sits under Work but is not Work, and marking it

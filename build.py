@@ -452,8 +452,19 @@ def primary_nav(up, current=None):
     `current` is "work" on the homepage and "about" on the about page. Project
     pages pass nothing: they sit under Work but they are not it, and marking
     Work as the current page there would be a lie a screen reader announces.
+
+    Work points at the homepage itself, not at #work. It used to jump
+    straight to the case-study band, which skipped the hero -- the one
+    screen that says who this is -- and meant the nav's first item dropped
+    you into the middle of a page you had never seen the top of. The
+    wordmark already did the sensible thing, so Work now shares its href
+    exactly. Measured: clicked from 3000px down the homepage, that href
+    lands at scrollY 0.
+
+    The #work id stays on the band. Nothing in the nav uses it now, but it
+    is still a valid thing to link to from outside the site.
     """
-    items = [("work", "%sindex.html#work" % up, "Work"),
+    items = [("work", "%sindex.html" % up, "Work"),
              ("about", "%sabout.html" % up, "About"),
              ("contact", "%sindex.html#contact" % up, "Contact")]
     out = []
