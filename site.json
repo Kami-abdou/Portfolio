@@ -114,10 +114,10 @@
       "heading": "Selected case studies",
       "description": "Four projects where I can show the thinking, not just the outcome.",
       "slugs": [
-        "steer",
-        "konnect",
         "instadeep",
-        "fixerloop"
+        "steer",
+        "fixerloop",
+        "konnect"
       ]
     },
     "selectedWork": {

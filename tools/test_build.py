@@ -59,11 +59,62 @@ class TestHomepageTiers(BuildCase):
         piece in the set -- and InstaDeep -- the current role, and the
         thinnest page on the site at 165 words -- were promoted back.
 
-        Order matters here: `order` renders as the visible card number, so
-        the array must ascend or the band reads 01, 02, 04, 03."""
+        The running order is the owner's call. InstaDeep leads because it is
+        the current role; Steer follows as the largest scope. The array and
+        each project's `order` have to be changed together -- see
+        test_each_band_reads_in_order below, which is the guard this
+        docstring used to only warn about."""
         self.assertEqual(
             self.site["sections"]["highlights"]["slugs"],
-            ["steer", "konnect", "instadeep", "fixerloop"])
+            ["instadeep", "steer", "fixerloop", "konnect"])
+
+    def test_each_band_reads_in_order(self):
+        """`order` must ascend down each band, or the numbering jumps.
+
+        It is rendered as the visible %02d card number and it drives the
+        prev/next pager, while the band's slug array decides what sits
+        where on the homepage. They are two separate files saying the same
+        thing, so they can disagree: reorder the array alone and the band
+        counts 03, 01, 04, 02 down the page while Next walks a different
+        route entirely.
+
+        Nothing checked this before -- the class docstring warned about it
+        in prose and no assertion backed it up, which is how a warning
+        survives a reorder.
+        """
+        orders = {}
+        for folder in sorted((ROOT / "projects").iterdir()):
+            f = folder / "content.json"
+            if f.is_file():
+                d = json.loads(f.read_text(encoding="utf-8"))
+                orders[d["slug"]] = d["order"]
+
+        for band, spec in self.site["sections"].items():
+            got = [orders[s] for s in spec["slugs"]]
+            self.assertEqual(
+                got, sorted(got),
+                "%s is displayed as %s but their order values are %s -- the "
+                "card numbers and the pager would disagree with the page"
+                % (band, spec["slugs"], got))
+
+    def test_the_two_bands_do_not_interleave(self):
+        """Every case study outranks every gallery piece.
+
+        The bands render one after the other, so if their order values
+        interleave the page counts 01, 03, 02, 04 across the boundary even
+        though each band is internally sorted.
+        """
+        orders = {}
+        for folder in sorted((ROOT / "projects").iterdir()):
+            f = folder / "content.json"
+            if f.is_file():
+                d = json.loads(f.read_text(encoding="utf-8"))
+                orders[d["slug"]] = d["order"]
+        top = [orders[s] for s in self.site["sections"]["highlights"]["slugs"]]
+        rest = [orders[s] for s in self.site["sections"]["selectedWork"]["slugs"]]
+        self.assertLess(
+            max(top), min(rest),
+            "the bands interleave: case studies are %s, gallery is %s" % (top, rest))
 
     def test_gallery_band_holds_the_remaining_four(self):
         """Was six, then five, now six again.
@@ -148,18 +199,24 @@ class TestHomepageTiers(BuildCase):
         self.assertEqual(index.count('class="card card--lg"'), 4)
         self.assertEqual(index.count('class="card"'), 4)
 
-    def test_steer_is_the_first_card(self):
-        """Leading with the non-AI role is the positioning fix.
+    def test_instadeep_is_the_first_card(self):
+        """The owner's call, replacing an earlier review recommendation.
 
-        Steer was titled Chief Product Officer until the owner changed it to
-        Product Designer Lead. Three independent reviewers had flagged the
-        C-level title as a credibility risk -- 21 months into a career, on
-        the one project with no product screens and no product metric, and
-        followed by an unexplained step down to senior IC.
+        This test used to assert the opposite -- Steer first, on the
+        reasoning that leading with the non-AI role showed breadth rather
+        than letting the site read as AI-only. That was a reviewer's
+        recommendation, not a fact, and the owner has since put InstaDeep
+        first: it is the current role, at an AI company acquired by
+        BioNTech, and the about bio now leads on the same footing.
+
+        The breadth concern it was protecting has its own test --
+        test_hero_statement_names_more_than_one_domain -- which checks the
+        copy rather than the running order, so nothing is lost by changing
+        this.
         """
         index = self.html("index.html")
-        self.assertLess(index.index("projects/steer.html"),
-                        index.index("projects/instadeep.html"))
+        self.assertLess(index.index("projects/instadeep.html"),
+                        index.index("projects/steer.html"))
 
     def test_work_anchor_survives_the_rename(self):
         self.assertIn('id="work"', self.html("index.html"))
