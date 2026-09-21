@@ -311,6 +311,98 @@ class TestContentColumnAlignment(BuildCase):
                              "%s still narrows the practice to AI" % page)
 
 
+class TestFontFamilies(BuildCase):
+    """Three downloaded families. Not four.
+
+    Every extra family is a separate network request on first paint and a
+    fourth voice in a type system that only needs three, and families creep
+    in one plausible-looking @font-face at a time. The count is currently
+    three; this makes that a rule rather than a coincidence.
+
+    Measured with document.fonts across every page type rather than read
+    off the CSS, because @font-face is lazy: eight weight files are declared
+    and only five are ever fetched. Weights are a separate question from
+    families and are deliberately not capped here -- a family earns its
+    download once, and extra weights of a family already being fetched are
+    much cheaper than a new family.
+
+    --font-mono is excluded on purpose. It is a system stack -- 'SF Mono',
+    ui-monospace, Menlo, monospace -- so it costs no request and ships no
+    file. If it is ever pointed at a webfont, the first test below starts
+    counting it.
+    """
+
+    MAX_FAMILIES = 3
+
+    #: Generic CSS families plus the system faces this project names. A token
+    #: resolving to one of these downloads nothing.
+    SYSTEM = {
+        "sf mono", "ui-monospace", "menlo", "monospace", "sans-serif",
+        "serif", "system-ui", "-apple-system", "blinkmacsystemfont",
+        "segoe ui", "helvetica", "arial", "arial narrow",
+        "haettenschweiler", "cursive", "fantasy",
+    }
+
+    def faces(self):
+        """{family: [weights]} from every @font-face block."""
+        css = (ROOT / "assets" / "fonts.css").read_text(encoding="utf-8")
+        out = {}
+        for body in re.findall(r"@font-face\s*\{([^}]*)\}", css, re.S):
+            fam = re.search(r"font-family:\s*['\"]([^'\"]+)['\"]", body)
+            self.assertIsNotNone(fam, "an @font-face block names no family")
+            weight = re.search(r"font-weight:\s*(\d+)", body)
+            out.setdefault(fam.group(1), []).append(
+                weight.group(1) if weight else "normal")
+        return out
+
+    def test_at_most_three_downloaded_families(self):
+        fams = self.faces()
+        self.assertLessEqual(
+            len(fams), self.MAX_FAMILIES,
+            "%d webfont families are declared, over the %d the type system "
+            "is meant to use: %s" % (len(fams), self.MAX_FAMILIES,
+                                     ", ".join(sorted(fams))))
+
+    def test_no_token_smuggles_in_a_fourth_family(self):
+        """A --font-* token can name a family nothing declares.
+
+        That is the sneaky version of the same problem: the family is not in
+        fonts.css, so the count above still reads three, but the browser
+        goes looking for it and falls back to whatever is installed --
+        meaning the site renders differently per machine with no warning.
+        """
+        declared = {f.lower() for f in self.faces()}
+        tokens = (ROOT / "assets" / "tokens.css").read_text(encoding="utf-8")
+        for name, value in re.findall(r"(--font-[a-z]+):\s*([^;]+);", tokens):
+            first = value.split(",")[0].strip().strip("'\"").lower()
+            self.assertTrue(
+                first in declared or first in self.SYSTEM,
+                "%s leads with %r, which is neither declared in fonts.css "
+                "nor a system face -- it would silently fall back" % (name, first))
+
+    def test_every_declared_family_is_actually_referenced(self):
+        """A family nobody uses is a dead @font-face taking up the budget."""
+        tokens = (ROOT / "assets" / "tokens.css").read_text(encoding="utf-8").lower()
+        styles = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8").lower()
+        for fam in self.faces():
+            self.assertTrue(
+                fam.lower() in tokens or fam.lower() in styles,
+                "%r is downloaded but referenced nowhere, so it spends one of "
+                "the %d family slots on nothing" % (fam, self.MAX_FAMILIES))
+
+    def test_every_declared_face_has_its_file(self):
+        """A missing file falls back silently -- no error, just wrong type."""
+        css = (ROOT / "assets" / "fonts.css").read_text(encoding="utf-8")
+        for src in re.findall(r"url\(['\"]?([^'\")]+)['\"]?\)", css):
+            rel = src.lstrip("./").split("?", 1)[0]
+            if rel.startswith("assets/"):
+                path = ROOT / rel
+            else:
+                path = ROOT / "assets" / rel
+            self.assertTrue(path.is_file(),
+                            "fonts.css points at %s, which is not on disk" % src)
+
+
 class TestFavicon(BuildCase):
     """The AY mark, regenerated from the site's own Anton webfont.
 
