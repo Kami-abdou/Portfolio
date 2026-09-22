@@ -614,7 +614,7 @@ def foot(depth=0):
       <p class="site-foot__note">© {iso[:4]} {e(SITE['name'])} · Last updated <time datetime="{iso}">{e(pretty)}</time></p>
       <nav class="site-foot__links" aria-label="Elsewhere">
         {links}
-        <a href="{up}{e(SITE['cv'])}">CV</a>
+        <a href="{up}{e(SITE['cv'])}{asset_v(SITE['cv'])}">CV</a>
       </nav>
     </div>
   </footer>
@@ -1000,7 +1000,13 @@ def contact_band(*, depth=0):
     # the site -- "Let's talk" -- offered no way to get the document a
     # recruiter actually needs. It is the last thing they look for and it was
     # the one thing not here.
-    cv_btn = ('\n        ' + link_btn("CV (PDF)", up + SITE["cv"], depth, slug="cv")
+    # Versioned like every other asset. The CV is the one file on the site
+    # that gets REPLACED under the same name rather than added, so without a
+    # content hash a returning visitor -- or a recruiter who opened the page
+    # last week -- keeps downloading the previous document. This project has
+    # lost time to exactly that failure four times on other assets.
+    cv_btn = ('\n        ' + link_btn("CV (PDF)", up + SITE["cv"] + asset_v(SITE["cv"]),
+                                      depth, slug="cv")
               if SITE.get("cv") else "")
     # And the address itself never appeared as selectable text anywhere on the
     # site -- only ever inside href="mailto:". A recruiter who wants to paste
@@ -1166,7 +1172,7 @@ def build_about(index):
         <div class="prose">
           {body}
           <p class="about__cta">
-            <a class="btn btn--solid" href="{e(SITE['cv'])}">Download CV (PDF)</a>
+            <a class="btn btn--solid" href="{e(SITE['cv'])}{asset_v(SITE['cv'])}">Download CV (PDF)</a>
           </p>
           <div class="btn-row">
         {links}

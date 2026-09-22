@@ -311,6 +311,90 @@ class TestContentColumnAlignment(BuildCase):
                              "%s still narrows the practice to AI" % page)
 
 
+class TestCV(BuildCase):
+    """The CV has to be a real text document, not a picture of one.
+
+    The previous CV was a Figma export using Type3 fonts. Type3 glyphs are
+    drawn procedures rather than characters, and its encoding was wrong on
+    top of that: decoded with the file's own ToUnicode tables the body text
+    came out as pure noise. Recruiters copy-paste from CVs and most
+    applications pass through an ATS, so a CV nothing can read is a CV that
+    silently fails before a human sees it. It was also 742KB.
+
+    The replacement is a single A4 page with subset TrueType fonts and one
+    ToUnicode table per font; its body text decodes cleanly. 76KB.
+
+    These tests pin the two properties worth keeping, not the wording: the
+    document must stay machine-readable, and the link must stay versioned.
+    """
+
+    def cv_path(self):
+        rel = self.site.get("cv")
+        self.assertTrue(rel, "site.json no longer declares a cv")
+        path = ROOT / rel
+        self.assertTrue(path.is_file(), "%s is missing" % rel)
+        return path
+
+    def test_it_is_actually_a_pdf(self):
+        self.assertEqual(self.cv_path().read_bytes()[:5], b"%PDF-",
+                         "the CV is not a PDF")
+
+    def test_it_does_not_use_type3_fonts(self):
+        """Type3 is what made the old one unreadable.
+
+        A Figma or Sketch export can reintroduce it without any visible
+        change, which is exactly why this is a test and not a note.
+        """
+        raw = self.cv_path().read_bytes()
+        self.assertNotIn(b"/Type3", raw,
+                         "the CV uses Type3 fonts again -- its text will not "
+                         "survive copy-paste or an ATS parser")
+
+    def test_its_text_can_be_mapped_back_to_characters(self):
+        """Embedded fonts are useless without a ToUnicode table."""
+        import zlib
+        raw = self.cv_path().read_bytes()
+        mappings = 0
+        for m in re.finditer(rb"stream\r?\n", raw):
+            start = m.end()
+            end = raw.find(b"endstream", start)
+            if end < 0:
+                continue
+            try:
+                data = zlib.decompress(raw[start:end])
+            except Exception:
+                continue
+            if b"beginbfchar" in data or b"beginbfrange" in data:
+                mappings += len(re.findall(rb"<[0-9A-Fa-f]+>\s*<[0-9A-Fa-f]+>", data))
+        self.assertGreater(mappings, 50,
+                           "the CV carries %d glyph-to-unicode mappings, too "
+                           "few for a page of text to be extractable" % mappings)
+
+    def test_it_is_a_reasonable_download(self):
+        """The old one was 742KB, heavier than every page on the site."""
+        size = self.cv_path().stat().st_size
+        self.assertLess(size, 400_000,
+                        "the CV is %d bytes; a CV should not be the heaviest "
+                        "thing a visitor downloads" % size)
+
+    def test_every_cv_link_is_versioned(self):
+        """The CV is replaced under the same name, so caches serve the old one.
+
+        Unlike other assets it is not renamed when it changes, which makes
+        the content hash the only thing forcing a returning visitor -- or a
+        recruiter who opened the page last week -- to get the new document.
+        """
+        rel = re.escape(self.site["cv"])
+        for page in ("index.html", "about.html", "contact.html"):
+            markup = self.html(page)
+            self.assertIn(self.site["cv"], markup,
+                          "%s does not link the CV at all" % page)
+            for href in re.findall(r'href="([^"]*%s[^"]*)"' % rel, markup):
+                self.assertRegex(href, r"\?v=[0-9a-f]+",
+                                 "%s links the CV without a version: %s"
+                                 % (page, href))
+
+
 class TestFontFamilies(BuildCase):
     """Three downloaded families. Not four.
 
