@@ -449,8 +449,64 @@ class TestSmoothCursor(BuildCase):
                       "nothing ever cancels the animation frame")
         self.assertIn("visibilitychange", block,
                       "the loop keeps running on a hidden tab")
-        self.assertIn("running = false", block,
+        self.assertIn("frame = 0", block,
                       "the loop never settles when the trail has caught up")
+
+    def test_the_loop_cannot_deadlock_on_a_dropped_frame(self):
+        """requestAnimationFrame is a request, not a promise of a frame.
+
+        The first version guarded the loop with a "have I started" flag:
+        kick raised it and requested a frame, and only lowered it when that
+        frame ran. A browser may drop a request if the document is not being
+        rendered at that moment -- and when it did, every later pointer move
+        saw the flag raised and declined to ask again. The trail was dead
+        for the life of the page.
+
+        It failed on project pages and not the homepage, which is the shape
+        of a race rather than a logic error: the heavier the page, the more
+        reliably that first request was dropped. Instrumenting the real file
+        was what found it -- the frame id was logged as scheduled and the
+        draw function never logged at all.
+
+        The fix is to cancel and re-request on every move, so a dropped
+        frame is replaced by the next one instead of latching the loop
+        shut. This asserts that shape, not the absence of a variable name.
+        """
+        block = self.block()
+        kick = block.split("var kickTrail = function ()", 1)[1].split("};", 1)[0]
+        self.assertIn("cancelAnimationFrame", kick,
+                      "kick no longer cancels before re-requesting, so a "
+                      "dropped frame can leave the loop permanently stuck")
+        self.assertIn("requestAnimationFrame(drawTrail)", kick)
+        self.assertNotIn("if (!running)", block,
+                         "the deadlocking flag guard is back in kickTrail")
+
+    def test_the_trail_does_not_reuse_a_name_from_the_shared_scope(self):
+        """enhance.js is one IIFE, and `var` is function-scoped.
+
+        A second `var draw` anywhere in that file silently replaces the
+        first. This block once declared one, the reading-progress block
+        below declares its own, and because that block runs later its
+        assignment won -- so the trail requested a frame, the frame fired,
+        and it called the PROGRESS BAR's draw. Nothing errored; the canvas
+        simply never painted.
+
+        It broke only on project pages, which made it look page-specific:
+        the progress block is guarded by `if (bar)` and only case studies
+        have a progress bar, so on the homepage the collision never
+        executed. Two pages behaving differently from one file is the tell.
+        """
+        js = self.enhance()
+        iife = js.split("(function () {", 1)[1].split("\n})();", 1)[0]
+        iife = re.sub(r"/\*.*?\*/", "", iife, flags=re.S)
+        names = re.findall(r"\bvar\s+([A-Za-z_$][\w$]*)", iife)
+        dupes = sorted({n for n in names if names.count(n) > 1})
+        # i and v are loop counters and locals inside nested functions, which
+        # have their own scope. Anything else sharing a name is a collision
+        # waiting to bite exactly the way draw did.
+        self.assertEqual([d for d in dupes if d not in ("i", "v")], [],
+                         "these names are declared more than once in the "
+                         "shared IIFE scope: %s" % dupes)
 
     def test_the_configuration_matches_the_live_demo(self):
         """Not the prop defaults -- the demo's Customize panel.

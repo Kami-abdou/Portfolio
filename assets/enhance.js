@@ -151,6 +151,20 @@
      on a phone there is no pointer to trail and the canvas would burn
      battery drawing nothing. */
   var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  /* NOTE ON NAMES. Everything in this file shares one function scope, and
+     `var` is function-scoped, so a second `var draw` anywhere in this IIFE
+     silently replaces the first. That is not hypothetical: this block once
+     declared `var draw`, the reading-progress block below declares its own
+     `var draw`, and because that block runs later its assignment won. The
+     trail then requested a frame, the frame fired, and it called the
+     PROGRESS BAR's draw -- so the canvas never painted and nothing errored.
+
+     It broke only on project pages, which is what made it look like a
+     page-specific quirk: the progress block is guarded by `if (bar)`, and
+     only case studies have a progress bar. The homepage kept the cursor's
+     draw purely because the collision never executed there.
+
+     Hence drawTrail/kickTrail. See the duplicate-declaration test. */
   if (!calm && fine.matches) {
     /* Read from the generated tokens rather than hardcoded here, so the
        whole configuration lives in tokens.json beside every other value
@@ -190,8 +204,8 @@
     window.addEventListener('resize', resize);
 
     var pts = [];
-    for (var i = 0; i < POINTS; i++) pts.push({ x: -100, y: -100, vx: 0, vy: 0 });
-    var mx = -100, my = -100, seen = false, running = false, frame = 0;
+    for (var n = 0; n < POINTS; n++) pts.push({ x: -100, y: -100, vx: 0, vy: 0 });
+    var mx = -100, my = -100, seen = false, frame = 0;
 
     /* Resolved per frame rather than captured once, so the trail cannot be
        left behind if --color-text ever changes underneath it. */
@@ -206,7 +220,7 @@
        fraction of the work. */
     if (BLUR) canvas.style.filter = 'blur(' + BLUR + 'px)';
 
-    var draw = function () {
+    var drawTrail = function () {
       frame = 0;
       var lead = pts[0];
       lead.vx = (lead.vx + (mx - lead.x) * SPRING) * DAMPING;
@@ -268,11 +282,28 @@
         ctx.globalCompositeOperation = 'source-over';
       }
 
-      if (moving) { frame = requestAnimationFrame(draw); running = true; }
-      else { running = false; }
+      if (moving) { frame = requestAnimationFrame(drawTrail); }
+      else { frame = 0; }
     };
 
-    var kick = function () { if (!running) { running = true; frame = requestAnimationFrame(draw); } };
+    /* Cancel and re-request rather than guarding with a "has it started"
+       flag. The flag version deadlocked: kickTrail raised the flag and requested
+       a frame, that frame was never delivered -- requestAnimationFrame is a
+       REQUEST, and a browser is free to drop it if the document is not being
+       rendered at that moment -- and every later pointer move then saw the
+       flag raised and declined to ask again. One dropped frame killed the
+       trail for the life of the page.
+
+       It failed on project pages and not the homepage, which is the shape
+       of a race: the heavier the page, the more reliably that first request
+       is dropped. A flag recording "I asked" is not the same fact as "a
+       frame is coming", and only the second is worth branching on.
+       Re-requesting is idempotent here -- at most one frame is ever pending
+       -- so the cheap fix is also the correct one. */
+    var kickTrail = function () {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(drawTrail);
+    };
 
     window.addEventListener('pointermove', function (e) {
       if (e.pointerType && e.pointerType !== 'mouse') return;
@@ -281,7 +312,7 @@
         seen = true;
         for (var i = 0; i < pts.length; i++) { pts[i].x = mx; pts[i].y = my; }
       }
-      kick();
+      kickTrail();
     }, { passive: true });
 
     /* A trail left frozen mid-screen when the pointer leaves the window
@@ -291,7 +322,7 @@
       ctx.clearRect(0, 0, w, h);
     });
     document.addEventListener('visibilitychange', function () {
-      if (document.hidden && frame) { cancelAnimationFrame(frame); frame = 0; running = false; }
+      if (document.hidden && frame) { cancelAnimationFrame(frame); frame = 0; }
     });
   }
 
