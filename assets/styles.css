@@ -148,6 +148,28 @@ a { color: inherit; }
 .site-head nav a:hover { color: var(--color-text); }
 .site-head nav a[aria-current="page"] { color: var(--color-accent); }
 
+/* ── smooth cursor trail ─────────────────────────────────
+   A canvas trail that follows the pointer with spring physics. It ADDS to
+   the native cursor rather than replacing it, which is the upstream
+   component's behaviour and also the only version worth shipping here: a
+   site that hides the system cursor and then fails to draw its own is
+   unusable, and this one is decorative.
+
+   Fixed, full-viewport, and pointer-events:none so it never intercepts a
+   click. z-index sits above the page but below nothing that matters,
+   because it cannot be interacted with at all.
+
+   It is created by enhance.js and only when the pointer is fine and the
+   visitor has not asked for less motion, so there is no markup to hide and
+   nothing ships to a phone. */
+.cursor-trail {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+
 .site-foot {
   margin-top: var(--space-32);
   border-top: 1px solid var(--color-border);

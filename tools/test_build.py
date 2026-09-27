@@ -395,6 +395,132 @@ class TestCV(BuildCase):
                                  % (page, href))
 
 
+class TestSmoothCursor(BuildCase):
+    """The cursor trail, and the three ways it could hurt someone.
+
+    The request was reactbits' SmoothCursor, installed with shadcn. That is
+    a React + Tailwind component and this project has no package.json, no
+    node_modules and no framework -- it advertises "0 runtime dependencies"
+    on its own project page -- so the behaviour was ported to vanilla JS
+    instead of the component being installed.
+
+    Upstream documents no accessibility or touch handling at all, so the
+    gates below are additions rather than ports, and they are the part most
+    worth protecting: a trailing line that chases the pointer is exactly the
+    motion that triggers vestibular symptoms, and on a phone there is no
+    pointer to trail.
+    """
+
+    def enhance(self):
+        return (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+
+    def block(self):
+        js = self.enhance()
+        self.assertIn("cursor-trail", js, "the cursor trail is gone")
+        return js.split("smooth cursor trail", 1)[1].split("reading progress", 1)[0]
+
+    def test_it_is_off_for_reduced_motion(self):
+        """The single most important line in the feature."""
+        self.assertIn("if (!calm && fine.matches)", self.block(),
+                      "the trail is no longer gated on reduced motion; a line "
+                      "that chases the pointer is a vestibular trigger")
+
+    def test_it_is_off_without_a_fine_pointer(self):
+        """No pointer to trail, and a canvas redrawing for nothing."""
+        block = self.block()
+        self.assertIn("(hover: hover) and (pointer: fine)", block,
+                      "the trail runs on touch devices, where there is no "
+                      "pointer and it only costs battery")
+
+    def test_it_cannot_intercept_a_click(self):
+        """A full-viewport canvas over the page is a trap if it is hittable."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        rule = css.split(".cursor-trail {", 1)[1].split("}", 1)[0]
+        self.assertIn("pointer-events: none", rule,
+                      "the trail canvas covers the viewport and would swallow "
+                      "every click on the site")
+        self.assertIn("aria-hidden", self.block(),
+                      "the canvas is not hidden from assistive tech")
+
+    def test_it_stops_when_nothing_is_moving(self):
+        """Otherwise it holds a frame every 16ms forever on an idle tab."""
+        block = self.block()
+        self.assertIn("cancelAnimationFrame", block,
+                      "nothing ever cancels the animation frame")
+        self.assertIn("visibilitychange", block,
+                      "the loop keeps running on a hidden tab")
+        self.assertIn("running = false", block,
+                      "the loop never settles when the trail has caught up")
+
+    def test_the_configuration_matches_the_live_demo(self):
+        """Not the prop defaults -- the demo's Customize panel.
+
+        The two disagree, and the demo is what was actually seen and asked
+        for. The documented defaults produce a hard hairline: lineWidth 0.3,
+        blur 0, opacity 1, velocityScale off. The demo runs lineWidth 1.00,
+        blur 9, opacity 0.10 and velocityScale ON, which is a soft glow --
+        a different effect, not a tuned version of the same one.
+
+        The physics props are the pair the two agree on, so those being
+        unchanged is a signal the port is still faithful.
+        """
+        cursor = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))["cursor"]
+        demo = {"points": "60", "smooth": "2", "lineWidth": "1",
+                "opacity": "0.1", "blur": "9", "velocityScale": "1"}
+        for key, want in demo.items():
+            self.assertEqual(cursor.get(key), want,
+                             "cursor.%s is %r, but the demo runs %r"
+                             % (key, cursor.get(key), want))
+        # unchanged between defaults and demo -- the physics
+        self.assertEqual(cursor["spring"], "0.4")
+        self.assertEqual(cursor["damping"], "0.5")
+
+    def test_every_documented_prop_is_implemented(self):
+        """All 11, minus className which has no meaning outside React.
+
+        velocityScale and mixBlendMode were missed on the first pass because
+        the prose docs page did not list them; they only appeared in the
+        props table. Both are in the demo's configuration, so missing them
+        meant the port could not reproduce what was asked for.
+        """
+        js = self.enhance()
+        block = js.split("smooth cursor trail", 1)[1].split("reading progress", 1)[0]
+        for prop, marker in (
+                ("pointsCount", "POINTS"), ("lineWidth", "LINE_WIDTH"),
+                ("springStrength", "SPRING"), ("dampening", "DAMPING"),
+                ("color", "ink()"), ("blur", "BLUR"),
+                ("mixBlendMode", "BLEND"), ("velocityScale", "VELOCITY_SCALE"),
+                ("trailOpacity", "TRAIL_OPACITY"), ("smoothFactor", "SMOOTH")):
+            self.assertIn(marker, block,
+                          "prop %s is not implemented (looked for %s)"
+                          % (prop, marker))
+        self.assertIn("globalCompositeOperation", block,
+                      "mixBlendMode is read but never applied to the context")
+
+    def test_velocity_scaling_is_clamped(self):
+        """A fast flick across a wide monitor would otherwise draw a slab."""
+        js = self.enhance()
+        block = js.split("VELOCITY_SCALE) {", 1)[1].split("}", 1)[0]
+        self.assertIn("Math.min", block,
+                      "velocity scaling is unbounded, so a quick movement "
+                      "turns a 1px trail into a filled shape")
+
+    def test_the_trail_reads_the_ink_token(self):
+        """Not a hardcoded colour.
+
+        Upstream's default is #000000, invisible on this page. Black is
+        upstream's "default ink", so the translation is this page's default
+        ink -- var(--color-text) -- resolved per frame rather than captured
+        once, so it cannot be left behind if that token changes underneath.
+        """
+        block = self.block()
+        self.assertIn("getPropertyValue('--color-text')", block,
+                      "the trail colour is hardcoded rather than reading "
+                      "the page's ink token")
+        self.assertIn("ctx.strokeStyle = ink()", block,
+                      "the colour is resolved once rather than per frame")
+
+
 class TestFontFamilies(BuildCase):
     """Three downloaded families. Not four.
 
