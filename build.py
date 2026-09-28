@@ -867,8 +867,17 @@ def build_index(projects):
     # them. The row text is repeated so the strip can loop seamlessly: the
     # track holds two identical halves and slides exactly -50%.
     #
-    # Durations are staggered per row (58/68/78s) so the rows never drift into
+    # Durations are staggered per row (70/82/94s) so the rows never drift into
     # sync and read as one moving block.
+    #
+    # The STEP matters as much as the base, and not in a way that is visible
+    # from the numbers. Three rows line up again after the lowest common
+    # multiple of their durations, so the values want to share as few factors
+    # as possible. 70/82/94 re-syncs after 37.5 hours. The tidier-looking
+    # 70/80/90 shares a factor of 10 and re-syncs after 1.4 hours; 72/84/96
+    # shares 12 and does it every 34 MINUTES, which a visitor could actually
+    # sit through. Changing these by feel is how the stagger gets quietly
+    # thrown away -- see the test that checks the interval.
     #
     # The wall is rendered twice — once behind the portrait at full strength,
     # once in front at low opacity. That is what makes the type appear to
@@ -885,7 +894,7 @@ def build_index(projects):
             out.append(
                 '<div class="wall__row wall__row--%s" style="--dur: %ds">'
                 '<div class="wall__track">%s%s</div></div>'
-                % ("rev" if idx % 2 else "fwd", 58 + idx * 10, reps, reps))
+                % ("rev" if idx % 2 else "fwd", 70 + idx * 12, reps, reps))
         cls = "wall wall--ghost" if ghost else "wall"
         return '<div class="%s" aria-hidden="true">%s</div>' % (cls, "".join(out))
 

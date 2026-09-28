@@ -395,6 +395,65 @@ class TestCV(BuildCase):
                                  % (page, href))
 
 
+class TestMarqueeStagger(BuildCase):
+    """The three hero rows must not line up again in a viewable timespan.
+
+    Each row scrolls at its own duration so the wall reads as three
+    independent bands rather than one moving block. They realign after the
+    lowest common multiple of the three durations, which means the numbers
+    want to share as few factors as possible -- and that is invisible from
+    looking at them.
+
+    70/82/94 realigns after 37.5 hours. The tidier 70/80/90 shares a factor
+    of 10 and realigns after 1.4 hours. 72/84/96 shares 12 and does it every
+    34 minutes, which someone could actually sit through. All three look
+    equally reasonable in a diff, so the property is asserted rather than
+    trusted to whoever next adjusts the speed.
+    """
+
+    #: Comfortably longer than any session, short enough to leave room to
+    #: tune the speed. The current values clear it by 6x.
+    MIN_RESYNC_HOURS = 6
+
+    def durations(self):
+        found = [int(d) for d in re.findall(r'--dur:\s*(\d+)s',
+                                            self.html("index.html"))]
+        # the wall ships twice, once behind the portrait and once as a ghost
+        # overlay, so each duration appears exactly twice
+        self.assertTrue(found, "the hero rows carry no --dur at all")
+        uniq = sorted(set(found))
+        self.assertEqual(len(found), len(uniq) * 2,
+                         "expected each duration twice (wall + ghost), got %s"
+                         % found)
+        return uniq
+
+    def test_the_rows_run_at_different_speeds(self):
+        d = self.durations()
+        self.assertGreaterEqual(len(d), 2,
+                                "every row runs at the same speed, so the "
+                                "wall reads as one block: %s" % d)
+
+    def test_they_do_not_realign_within_a_session(self):
+        from math import lcm
+        d = self.durations()
+        hours = lcm(*d) / 3600
+        self.assertGreaterEqual(
+            hours, self.MIN_RESYNC_HOURS,
+            "rows %s realign every %.2f h, under the %d h floor -- they "
+            "share too many factors and will visibly sync"
+            % (d, hours, self.MIN_RESYNC_HOURS))
+
+    def test_the_speed_stays_in_a_readable_range(self):
+        """Fast enough to be motion, slow enough to read the words."""
+        d = self.durations()
+        self.assertGreaterEqual(min(d), 40,
+                                "the fastest row is %ds, quick enough that "
+                                "the poster type is a blur" % min(d))
+        self.assertLessEqual(max(d), 180,
+                             "the slowest row is %ds, slow enough to look "
+                             "static" % max(d))
+
+
 class TestSmoothCursor(BuildCase):
     """The cursor trail, and the three ways it could hurt someone.
 
