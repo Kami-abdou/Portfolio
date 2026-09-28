@@ -63,8 +63,8 @@
   --cursor-spring: 0.4;
   --cursor-damping: 0.5;
   --cursor-smooth: 2;
-  --cursor-line-width: 1;
-  --cursor-opacity: 0.1;
+  --cursor-line-width: 0.6;
+  --cursor-opacity: 0.06;
   --cursor-blur: 9;
   --cursor-velocity-scale: 1;
   --cursor-blend: source-over;

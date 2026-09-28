@@ -19,6 +19,14 @@
   var closeBtn = box.querySelector('.lb__close');
   var opener = null;
 
+  /* Marks <html> while this overlay is up. The cursor trail reads it and
+     stops drawing: the canvas sits at z-index 60, this box at 100, and this
+     box's backdrop is 92% opaque, so the trail cannot be seen while an image
+     is open and painting it is pure waste. A class on the root rather than a
+     call into enhance.js, so neither file has to know the other exists -- and
+     so CSS can read the same fact and stop compositing the canvas too. */
+  var OVERLAY = 'has-overlay';
+
   function open(btn) {
     var pic = btn.querySelector('img');
     opener = btn;
@@ -26,6 +34,7 @@
     img.alt = pic ? pic.alt : '';
     box.hidden = false;
     document.body.style.overflow = 'hidden';
+    document.documentElement.classList.add(OVERLAY);
     closeBtn.focus();
   }
 
@@ -33,6 +42,7 @@
     box.hidden = true;
     img.removeAttribute('src');
     document.body.style.overflow = '';
+    document.documentElement.classList.remove(OVERLAY);
     if (opener) { opener.focus(); opener = null; }
   }
 

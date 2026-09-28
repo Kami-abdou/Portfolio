@@ -567,28 +567,64 @@ class TestSmoothCursor(BuildCase):
                          "these names are declared more than once in the "
                          "shared IIFE scope: %s" % dupes)
 
-    def test_the_configuration_matches_the_live_demo(self):
-        """Not the prop defaults -- the demo's Customize panel.
+    #: The demo's Customize panel, which is what was asked for and is not the
+    #: same as the documented prop defaults. The defaults produce a hard
+    #: hairline (lineWidth 0.3, blur 0, opacity 1, velocityScale off); the
+    #: demo produces a soft glow, which is a different effect rather than a
+    #: tuned version of the same one.
+    DEMO = {"points": "60", "smooth": "2", "lineWidth": "1",
+            "opacity": "0.1", "blur": "9", "velocityScale": "1"}
 
-        The two disagree, and the demo is what was actually seen and asked
-        for. The documented defaults produce a hard hairline: lineWidth 0.3,
-        blur 0, opacity 1, velocityScale off. The demo runs lineWidth 1.00,
-        blur 9, opacity 0.10 and velocityScale ON, which is a soft glow --
-        a different effect, not a tuned version of the same one.
+    def cursor_tokens(self):
+        return json.loads(
+            (ROOT / "tokens.json").read_text(encoding="utf-8"))["cursor"]
 
-        The physics props are the pair the two agree on, so those being
-        unchanged is a signal the port is still faithful.
+    def test_the_shape_of_the_effect_still_matches_the_live_demo(self):
+        """Everything the owner did not deliberately change.
+
+        These four are what make it the ported effect rather than something
+        that merely trails the pointer: sixty points, curved joins, a 9px
+        blur and velocity scaling ON. Drift here means the port stopped
+        being faithful; the two values in the next test moved on purpose.
         """
-        cursor = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))["cursor"]
-        demo = {"points": "60", "smooth": "2", "lineWidth": "1",
-                "opacity": "0.1", "blur": "9", "velocityScale": "1"}
-        for key, want in demo.items():
-            self.assertEqual(cursor.get(key), want,
+        cursor = self.cursor_tokens()
+        for key in ("points", "smooth", "blur", "velocityScale"):
+            self.assertEqual(cursor.get(key), self.DEMO[key],
                              "cursor.%s is %r, but the demo runs %r"
-                             % (key, cursor.get(key), want))
-        # unchanged between defaults and demo -- the physics
+                             % (key, cursor.get(key), self.DEMO[key]))
+        # unchanged between the defaults and the demo -- the physics
         self.assertEqual(cursor["spring"], "0.4")
         self.assertEqual(cursor["damping"], "0.5")
+
+    def test_the_two_tuned_values_are_softer_than_the_demo_but_still_visible(self):
+        """lineWidth and opacity were lowered on request: less opaque, thinner.
+
+        Both directions are pinned, because both have a failure mode and
+        they are opposite ones.
+
+        Upward, the demo's own values were measurably too strong: the head
+        of the trail peaked at alpha 244 of 255 -- all but solid -- because
+        the points bunch up once they catch the pointer and thirty-odd
+        translucent strokes accumulate. Nominal 0.10 was never what landed
+        on screen. At the shipped values the same measurement gives 194.
+
+        Downward, there is a floor, and it is not zero. Upstream's prop
+        default of 0.3 for lineWidth measured INVISIBLE on this site: 2,906
+        lit pixels out of 3,840,000, a sub-pixel hairline. An effect nobody
+        can see is not a subtle effect, it is a bug that costs frames. So
+        0.6 is deliberately between the two, and this test says so.
+        """
+        cursor = self.cursor_tokens()
+        for key, floor in (("lineWidth", 0.4), ("opacity", 0.03)):
+            got, demo = float(cursor[key]), float(self.DEMO[key])
+            self.assertLess(got, demo,
+                            "cursor.%s is %r, which is no softer than the "
+                            "demo's %r -- the owner asked for less"
+                            % (key, cursor[key], self.DEMO[key]))
+            self.assertGreaterEqual(
+                got, floor,
+                "cursor.%s is %r, at or below the level where the trail "
+                "measured invisible; see the docstring" % (key, cursor[key]))
 
     def test_every_documented_prop_is_implemented(self):
         """All 11, minus className which has no meaning outside React.
@@ -634,6 +670,161 @@ class TestSmoothCursor(BuildCase):
                       "the page's ink token")
         self.assertIn("ctx.strokeStyle = ink()", block,
                       "the colour is resolved once rather than per frame")
+
+
+class TestCursorCost(BuildCase):
+    """What the trail costs per frame, and the three places it was wasted.
+
+    The owner reported the site slowing down when an image is opened on a
+    case study. That did NOT reproduce here: Chromium on this machine holds
+    a flat 120fps with the lightbox open, while scrolling it, and across
+    eight open/close cycles, with and without the trail. So nothing below is
+    justified by a benchmark that showed jank -- it is justified by work
+    that provably produces no picture, plus measurements of how much work
+    that was. Recorded so the next person does not "optimise" it back.
+
+      * Under the lightbox the trail is invisible, not merely faint. The
+        backdrop is 92% opaque #F4F4F2 and the ink is #EDEDEB, so it arrives
+        at roughly 0.8% strength. Measured with an image open: 0 lit pixels
+        across 35 frames of pointer movement, against 72,880 with it closed.
+        It was filling ~11% of the backing store over sixty strokes and
+        running a gaussian across all of it, under a translucent overlay
+        holding a screenshot up to 1400x7258.
+
+      * ink() called getComputedStyle once per frame, from inside the draw
+        loop. Measured 0.745ms per call while style was dirty against
+        0.003ms once clean -- and on a case study style is dirty on every
+        scroll frame, because the reading-progress block writes a transform.
+
+      * The canvas was allocated at devicePixelRatio and then blurred by
+        9px. 2560x1600 became 1280x800: a quarter of the pixels to fill and
+        blur, for an image whose every sharp edge the filter destroys.
+    """
+
+    def enhance(self):
+        return (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+
+    def lightbox(self):
+        return (ROOT / "assets" / "lightbox.js").read_text(encoding="utf-8")
+
+    def styles(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def draw_loop(self):
+        """The body of drawTrail: everything that runs on every frame."""
+        js = self.enhance()
+        start = js.index("var drawTrail = function ()")
+        return js[start:js.index("var kickTrail", start)]
+
+    def overlay_class(self):
+        """The one class name the three files have to agree on."""
+        m = re.search(r"var OVERLAY = '([A-Za-z0-9_-]+)'", self.lightbox())
+        self.assertIsNotNone(
+            m, "lightbox.js no longer names the overlay class it sets")
+        return m.group(1)
+
+    def test_an_open_overlay_stops_the_trail_before_any_work(self):
+        """Guarded in both places, and in the draw loop before the springs.
+
+        Two guards rather than one because they save different things. The
+        one in drawTrail catches a frame already in flight when the image
+        opened. The one in pointermove means an open overlay costs no frames
+        at all, rather than one cheap frame per pointer move -- and pointer
+        moves are exactly what you do while looking at an image.
+        """
+        name = self.overlay_class()
+        loop = self.draw_loop()
+        self.assertIn("classList.contains('%s')" % name, loop,
+                      "drawTrail no longer checks for an open overlay; the "
+                      "trail is back to painting where it cannot be seen")
+        # Before the integration, not after it -- otherwise the bail saves
+        # the stroking but still pays for sixty spring steps.
+        self.assertLess(loop.index("classList.contains"), loop.index("lead.vx"),
+                        "the overlay check sits after the spring integration, "
+                        "so an open overlay still costs a full physics step")
+
+        js = self.enhance()
+        head = js[js.index("window.addEventListener('pointermove'"):]
+        head = head[:head.index("mx = e.clientX")]
+        self.assertIn("classList.contains('%s')" % name, head,
+                      "pointermove no longer bails on an open overlay, so "
+                      "every mouse move over an open image asks for a frame")
+
+    def test_the_overlay_is_not_composited_either(self):
+        """The JS saves the paint; the CSS saves the composite."""
+        rule = ".%s .cursor-trail" % self.overlay_class()
+        css = self.styles()
+        self.assertIn(rule, css,
+                      "nothing stops the compositor blending a full-viewport "
+                      "blurred canvas under the overlay")
+        body = css.split(rule, 1)[1].split("}", 1)[0]
+        self.assertIn("display: none", body,
+                      "%s does not actually take the canvas out" % rule)
+
+    def test_the_overlay_class_is_spelled_the_same_in_all_three_files(self):
+        """One magic string across three files is three chances to typo it.
+
+        A mismatch fails in the most confusing way available: the class gets
+        set, nothing reads it, and the trail keeps painting under the
+        overlay exactly as before -- no error, no console warning, no visual
+        clue, and a performance report nobody can reproduce. That is the
+        same silent shape as the `var draw` collision this feature already
+        shipped once, which is why it gets a test and not a comment.
+        """
+        name = self.overlay_class()
+        lb = self.lightbox()
+        self.assertIn("classList.add(OVERLAY)", lb,
+                      "the lightbox never marks the document")
+        self.assertIn("classList.remove(OVERLAY)", lb,
+                      "the lightbox never clears the mark, so the trail "
+                      "stays dead for the rest of the page's life")
+        self.assertIn("classList.contains('%s')" % name, self.enhance(),
+                      "enhance.js reads a different class than lightbox.js "
+                      "sets; the guard is dead code")
+        self.assertIn(".%s .cursor-trail" % name, self.styles(),
+                      "the CSS rule targets a different class than "
+                      "lightbox.js sets; the rule is dead")
+
+    def test_the_ink_is_not_resolved_inside_the_draw_loop(self):
+        """getComputedStyle per frame was the one measured cost, at 0.745ms."""
+        self.assertNotIn(
+            "getComputedStyle", self.draw_loop(),
+            "getComputedStyle is back inside drawTrail. It is a read that "
+            "can force a style recalculation, and it measured 0.745ms per "
+            "call on a case study, where the progress bar dirties style "
+            "every scroll frame. Cache it outside the loop.")
+
+    def test_the_cached_ink_still_cannot_go_stale(self):
+        """The cache replaced a per-frame read whose purpose was freshness.
+
+        Dropping the invalidation would make the cache cheap and wrong: the
+        trail would keep painting in the old ink after a theme change. Both
+        hooks are needed -- the media query for the OS setting, the
+        attribute observer for an in-page override.
+        """
+        js = self.enhance()
+        self.assertIn("readInk", js, "the ink cache is gone entirely")
+        self.assertIn("prefers-color-scheme", js.split("var inkValue", 1)[1],
+                      "nothing invalidates the ink cache when the OS colour "
+                      "scheme changes")
+        self.assertIn("attributeFilter: ['data-theme']", js,
+                      "nothing invalidates the ink cache when a [data-theme] "
+                      "override is set on <html>")
+
+    def test_the_backing_store_cap_is_tied_to_the_blur(self):
+        """A 2x canvas is pointless only BECAUSE the output is blurred.
+
+        Hardcoding the cap would silently halve the resolution of the one
+        configuration that would show it -- blur 0, which upstream ships as
+        its prop default and which renders a sharp hairline.
+        """
+        js = self.enhance()
+        self.assertIn("var MAX_DPR = BLUR ?", js,
+                      "the device-ratio cap is no longer derived from the "
+                      "blur, so turning the blur off would render a sharp "
+                      "hairline at half resolution")
+        self.assertIn("Math.min(window.devicePixelRatio || 1, MAX_DPR)", js,
+                      "resize() no longer applies the cap")
 
 
 class TestFontFamilies(BuildCase):

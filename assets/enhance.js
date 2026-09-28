@@ -109,8 +109,9 @@
      component could not be installed. The behaviour is what was wanted, so
      the behaviour is what was ported.
 
-     Upstream defaults, kept because the request was the component with no
-     props:
+     Upstream's two configurations, kept for reference. The values actually
+     shipped live in tokens.json, and two of them are now lower than either
+     column -- see the deviations below:
 
        pointsCount     40     trail segments
        springStrength  0.4    higher follows faster
@@ -128,15 +129,20 @@
      a hard hairline; the demo settings produce a soft glow, which is a
      different effect entirely. Every value here is the demo's.
 
-     TWO deliberate deviations, both recorded because "use the component's
+     THREE deliberate deviations, all recorded because "use the component's
      own configuration" was the request.
 
-     lineWidth ships at 1.5, not upstream's 0.3. Measured: at 0.3 a
-     full-screen trail lit 2,906 of 3,840,000 canvas pixels and was invisible
-     on screen against both the hero and a plain band -- a sub-pixel hairline
-     before the device ratio halves it again. Shipping an effect nobody can
-     see is not the same as shipping the default. Set --cursor-line-width
-     back to 0.3 in tokens.json to have it verbatim.
+     lineWidth ships at 0.6 and trailOpacity at 0.06, against the demo's
+     1.00 and 0.10. Both were lowered at the owner's request -- less opaque,
+     less thick -- and the request was well aimed, because nominal 0.10 was
+     never what landed on screen: measured at the demo's values, the head of
+     the trail peaked at alpha 244 of 255, all but solid. The points bunch up
+     once they catch the pointer, so thirty-odd translucent strokes overlap
+     and accumulate. Note that upstream's own prop default for lineWidth,
+     0.3, measured invisible here -- it lit 2,906 of 3,840,000 canvas pixels,
+     a sub-pixel hairline -- so 0.6 is deliberately between the two rather
+     than a return to the default. Tune --cursor-line-width and
+     --cursor-opacity in tokens.json; nothing here needs editing.
 
      Colour: upstream's default is #000000, which
      on this page (#0A0A0B) is invisible. Black is upstream's "default ink",
@@ -192,9 +198,18 @@
     var ctx = canvas.getContext('2d');
     document.body.appendChild(canvas);
 
+    /* The trail is blurred by BLUR css pixels before anyone sees it, so a
+       2x backing store buys nothing: every edge the extra pixels would
+       preserve is destroyed by the filter on its way to the screen. Capping
+       at 1 quarters the area that has to be filled and then blurred -- on a
+       1280x800 retina viewport, 2560x1600 becomes 1280x800. The cap is tied
+       to the blur rather than hardcoded, because an unblurred hairline is
+       the one configuration that would genuinely show the difference. */
+    var MAX_DPR = BLUR ? 1 : 2;
+
     var dpr = 1, w = 0, h = 0;
     var resize = function () {
-      dpr = window.devicePixelRatio || 1;
+      dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
       w = window.innerWidth; h = window.innerHeight;
       canvas.width = w * dpr; canvas.height = h * dpr;
       canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
@@ -207,12 +222,30 @@
     for (var n = 0; n < POINTS; n++) pts.push({ x: -100, y: -100, vx: 0, vy: 0 });
     var mx = -100, my = -100, seen = false, frame = 0;
 
-    /* Resolved per frame rather than captured once, so the trail cannot be
-       left behind if --color-text ever changes underneath it. */
-    var ink = function () {
-      return getComputedStyle(root).getPropertyValue('--color-text').trim()
-             || '#000';
+    /* Cached, NOT resolved per frame. getComputedStyle is a read that can
+       force a style recalculation, and this one sat inside the draw loop.
+       Measured on a case study: 0.745ms per call while style was dirty,
+       against 0.003ms once it was clean -- and on a case study style IS
+       dirty on every frame you scroll, because the reading-progress block
+       below writes a transform. So this was most of a millisecond per frame
+       spent re-reading a token that changes approximately never.
+
+       The original intent was that the trail must never render stale ink if
+       --color-text moves underneath it. That intent is kept, by
+       invalidating on the only two things that can move it: the OS colour
+       scheme, and a [data-theme] override on <html>. */
+    var inkValue = '';
+    var readInk = function () {
+      inkValue = getComputedStyle(root).getPropertyValue('--color-text').trim()
+                 || '#000';
     };
+    readInk();
+    var ink = function () { return inkValue; };
+
+    var dark = window.matchMedia('(prefers-color-scheme: dark)');
+    if (dark.addEventListener) dark.addEventListener('change', readInk);
+    new MutationObserver(readInk).observe(root,
+      { attributes: true, attributeFilter: ['data-theme'] });
 
     /* Blur lives on the ELEMENT, not the context. ctx.filter would re-run
        a 9px gaussian for each of the 60 strokes below; the canvas is
@@ -222,6 +255,18 @@
 
     var drawTrail = function () {
       frame = 0;
+      /* Nothing worth drawing under a full-screen overlay. The lightbox
+         backdrop is 92% opaque #F4F4F2 and the ink is #EDEDEB, so the trail
+         reaches the eye at roughly 0.8% strength -- it is not faint behind
+         the lightbox, it is invisible. Drawing it anyway still fills ~11% of
+         the backing store across sixty strokes and runs a gaussian over all
+         of it, every frame, to produce no picture at all -- and does it
+         under a translucent overlay holding a screenshot up to 1400x7258,
+         which is the combination the owner felt as the page going slow. */
+      if (root.classList.contains('has-overlay')) {
+        if (seen) { seen = false; ctx.clearRect(0, 0, w, h); }
+        return;
+      }
       var lead = pts[0];
       lead.vx = (lead.vx + (mx - lead.x) * SPRING) * DAMPING;
       lead.vy = (lead.vy + (my - lead.y) * SPRING) * DAMPING;
@@ -307,6 +352,15 @@
 
     window.addEventListener('pointermove', function (e) {
       if (e.pointerType && e.pointerType !== 'mouse') return;
+      /* Checked here as well as in drawTrail, so an open overlay costs no
+         frames at all rather than one cheap frame per pointer move. Dropping
+         `seen` also re-seeds the trail at the pointer when the overlay
+         closes, instead of letting it snap across the page from wherever it
+         was frozen. */
+      if (root.classList.contains('has-overlay')) {
+        if (seen) { seen = false; ctx.clearRect(0, 0, w, h); }
+        return;
+      }
       mx = e.clientX; my = e.clientY;
       if (!seen) {
         seen = true;

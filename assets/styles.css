@@ -168,6 +168,12 @@ a { color: inherit; }
   z-index: 60;
   pointer-events: none;
 }
+/* A full-screen overlay sits above this canvas and is all but opaque, so the
+   trail cannot be seen while one is open. enhance.js stops drawing it; this
+   stops the compositor blending a full-viewport blurred layer under the
+   overlay as well. Belt and braces on purpose: the JS guard saves the paint,
+   this saves the composite, and both read the one class. */
+.has-overlay .cursor-trail { display: none; }
 
 
 .site-foot {
