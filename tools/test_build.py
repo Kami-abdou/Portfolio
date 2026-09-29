@@ -322,7 +322,15 @@ class TestCV(BuildCase):
     silently fails before a human sees it. It was also 742KB.
 
     The replacement is a single A4 page with subset TrueType fonts and one
-    ToUnicode table per font; its body text decodes cleanly. 76KB.
+    ToUnicode table per font; its body text decodes cleanly. 55KB.
+
+    One known wart in the current document, left as a note rather than a
+    test because it is cosmetic to a human and marginal to a parser: the
+    list bullets are drawn in non-embedded Helvetica, which carries no
+    ToUnicode table, so each bullet extracts as U+007F rather than a real
+    bullet character. Every other glyph -- including the accents in
+    "Ingenierie" and "Multimedia" and the middot separators -- maps
+    correctly.
 
     These tests pin the two properties worth keeping, not the wording: the
     document must stay machine-readable, and the link must stay versioned.
