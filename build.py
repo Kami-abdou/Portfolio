@@ -832,8 +832,14 @@ def project_card(project, *, large):
     # down to cover, title and year on purpose, and giving them prose back
     # would undo that. Every project carries the field even so, so moving a
     # project between the two bands does not lose its description.
-    note_html = ('<span class="card__note">%s</span>' % e(project["cardNote"])
-                 if large and usable(project.get("cardNote")) else "")
+    # The SAME text the case study itself shows under its title -- its
+    # `summary`, which is what a visitor reads on the project page. The card
+    # briefly carried a separate hand-written `cardNote` instead, which meant
+    # two descriptions of one project that could drift apart; that field is
+    # gone. `description` is deliberately not used: it is the invisible
+    # <meta name="description"> string, not what the page displays.
+    note_html = ('<span class="card__note">%s</span>' % e(project["summary"])
+                 if large and usable(project.get("summary")) else "")
     # Year, domain and role on a case-study card, so a visitor gets the
     # shape of the engagement without opening it. Not derived from `year`:
     # those values are prose ("January 2024 — present") and two are TODO.

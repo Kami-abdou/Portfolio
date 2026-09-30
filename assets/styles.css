@@ -253,7 +253,23 @@ a { color: inherit; }
      0.32, groupado 0.22 -- and against the other four at 1.41 to 2.00 no
      single frame can make them look like one set. That needs four images,
      not CSS. */
-  aspect-ratio: 16 / 9;
+  /* 12/5. The ratio is chosen so the cover comes out about as tall as the
+     words beside it, which is what "minimize the card so it looks the same
+     size as the content" needs: a case-study row is 679px wide, so 12/5
+     makes the cover 283px, against 204-275px of title, tagline, summary and
+     meta. It was 382px at 16/9 with only 155px of text, and that 227px
+     difference was the gap.
+
+     aspect-ratio: auto was tried first and is the wrong tool: with no fixed
+     ratio the cover sizes to the IMAGE's intrinsic proportions, not to the
+     content, so Steer's 900x2229 cover rendered 1680px tall and the four
+     rows spread 1339px apart. A fixed ratio is what makes them uniform; the
+     only question was which one.
+
+     One ratio for both bands, so a case-study row and a secondary tile read
+     as the same system. The tiles come out 264x110, which is a thin strip --
+     if that reads as too thin this is the single number to change. */
+  aspect-ratio: 12 / 5;
   transition: border-color .35s var(--ease-out), background .35s var(--ease-out);
 }
 .card__media img {
@@ -820,7 +836,14 @@ body::after {
    hierarchy a visitor reads before reading a single word; four tiles
    followed by four tiles is not, however the type is sized. */
 @media (min-width: 900px) {
-  .grid--lg { grid-template-columns: 1fr; gap: var(--space-20); }
+  /* space-16, not space-20. The scale is 1,2,3,4,6,8,12,16,24,32 -- there
+     IS no --space-20, and an undefined var() makes the whole declaration
+     invalid at computed-value time, which resets gap to its initial value
+     rather than falling back to the .grid rule above. So this read gap: 0
+     and the rows sat flush against each other, one project's meta line
+     touching the next one's title. Caught from a screenshot, not from the
+     stylesheet. See the test that now checks every var() resolves. */
+  .grid--lg { grid-template-columns: 1fr; gap: var(--space-16); }
   .card--lg {
     display: grid;
     grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
@@ -831,6 +854,15 @@ body::after {
        line up against, which is what made this band look unfinished. */
     align-items: stretch;
   }
+  /* The cover takes its width from the column and its height from the
+     ratio -- it must NOT stretch. align-items: stretch applies to both
+     columns, and a stretched cover has a definite height, so aspect-ratio
+     then computes its WIDTH from that height: Fixerloop's text is the
+     tallest of the four, its row grew to 299px, and its cover came out
+     717px wide against everyone else's 679, overflowing its column. Pinning
+     it to start keeps all four covers identical and lets the row grow under
+     the body alone if a summary ever needs more height. */
+  .card--lg .card__media { align-self: start; }
   .card--lg .card__body {
     display: flex;
     flex-direction: column;

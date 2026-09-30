@@ -2275,37 +2275,62 @@ class TestCardMeta(BuildCase):
             self.html("index.html").count('class="card__meta"'), expect,
             "expected %d meta lines from the content files" % expect)
 
-    def test_case_study_rows_carry_a_description(self):
-        """The copy that fills the row's text column.
+    def test_the_card_shows_the_same_description_as_the_case_study(self):
+        """One description per project, shown in both places.
 
-        The side-by-side row left a 425px column holding 127px of text,
-        centred in a 453px height -- 72% of it empty, which is what made the
-        band look unfinished. Each case study now carries a description as
-        well. Every project has the field, including the secondary four, so
-        that moving a project between bands does not lose its copy; only the
-        rows render it.
+        The card briefly carried its own hand-written `cardNote`, which meant
+        two descriptions of one project that could drift apart without
+        anything failing. The card now prints the project's `summary` -- the
+        same paragraph the case study shows under its own title -- so this
+        asserts the two strings are EQUAL rather than that each merely
+        exists. `description` is deliberately not the one used: that is the
+        invisible <meta name="description"> string, not what the page shows.
         """
-        rows = [c for c in self.cards() if c[0] == "large"]
-        self.assertTrue(rows, "no case-study rows at all")
-        page = self.html("index.html")
-        for _, slug, _, _ in rows:
-            project = json.loads(
-                next((ROOT / "projects").glob("*-%s/content.json" % slug))
-                .read_text(encoding="utf-8"))
-            note = project.get("cardNote")
-            self.assertTrue(note, "%s has no cardNote to fill its row" % slug)
-            self.assertIn(html.escape(note, quote=False).replace("&#x27;", "'"),
-                          page.replace("&#x27;", "'"),
-                          "%s's description never reached the page" % slug)
+        home = self.html("index.html")
+        for tier, slug, _, _ in self.cards():
+            if tier != "large":
+                continue
+            card = re.search(
+                r'<a class="card card--lg" href="projects/%s">(.*?)</a>' % slug,
+                home, re.S)
+            self.assertIsNotNone(card, "%s's row vanished" % slug)
+            note = re.search(r'card__note">([^<]*)', card.group(1))
+            self.assertIsNotNone(note, "%s's row carries no description" % slug)
 
-    def test_every_project_has_a_description_even_the_secondary_ones(self):
-        """So promoting a project between bands does not lose its copy."""
+            page = self.html("projects/%s.html" % slug)
+            shown = re.search(r'class="prose project__summary">([^<]*)', page)
+            self.assertIsNotNone(shown, "%s's page shows no summary" % slug)
+            self.assertEqual(
+                note.group(1), shown.group(1),
+                "%s's card and its case study show DIFFERENT descriptions, "
+                "so one of them has drifted:\n  card %r\n  page %r"
+                % (slug, note.group(1)[:70], shown.group(1)[:70]))
+
+    def test_no_project_carries_a_separate_card_description(self):
+        """cardNote is gone; a second description would drift from the first."""
         for path in sorted((ROOT / "projects").glob("*/content.json")):
             project = json.loads(path.read_text(encoding="utf-8"))
-            self.assertTrue(
-                project.get("cardNote"),
-                "%s has no cardNote; if it is ever promoted into the case "
-                "study band its row will be empty" % project["slug"])
+            self.assertNotIn(
+                "cardNote", project,
+                "%s has a cardNote again. The card and the case study are "
+                "meant to show one description, not two that can disagree."
+                % project["slug"])
+
+    def test_the_cover_does_not_stretch_past_its_column(self):
+        """Why the cover is pinned to start rather than stretched.
+
+        align-items: stretch applies to both columns of a row, and a
+        stretched cover has a definite height, so aspect-ratio then computes
+        its WIDTH from that height. Fixerloop has the tallest summary of the
+        four: its row grew and its cover came out 717px wide against
+        everyone else's 679, overflowing its column. Measured at 679x283 for
+        all four once pinned.
+        """
+        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
+        rule = css.split(".card--lg .card__media {", 1)[1].split("}", 1)[0]
+        self.assertIn("align-self: start", rule,
+                      "the cover stretches again, so a row with taller text "
+                      "will widen its cover past the grid column")
 
     def test_secondary_cards_do_not_render_the_description(self):
         """"Simplifier les projets secondaires" -- prose there undoes it."""
@@ -2397,6 +2422,62 @@ class TestCardMeta(BuildCase):
         from build import usable
         self.assertFalse(usable("TODO — year"))
         self.assertNotIn("TODO", self.html("index.html"))
+
+
+class TestCustomProperties(BuildCase):
+    """Every var() in the stylesheet has to resolve to something.
+
+    This exists because of a bug that shipped into a branch and was caught
+    from a SCREENSHOT rather than from the code: `.grid--lg` was written
+    with `gap: var(--space-20)`, and there is no --space-20. The scale is
+    1,2,3,4,6,8,12,16,24,32.
+
+    The failure mode is the nasty part. An undefined var() does not fall
+    back to the previous declaration -- it makes the property "invalid at
+    computed-value time", which resets it to its initial value. So `gap`
+    became 0 rather than inheriting the 48px from the .grid rule above, the
+    four case-study rows sat flush against each other, and one project's
+    meta line touched the next project's title. Nothing warned; the
+    stylesheet is valid CSS and the build was happy.
+
+    A var() carrying a fallback is exempt: `var(--cols, 2)` and
+    `var(--dur, 30s)` are set per element from the HTML and are meant to be
+    absent from the stylesheet.
+    """
+
+    def test_every_custom_property_resolves(self):
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        tokens = (ROOT / "assets" / "tokens.css").read_text(encoding="utf-8")
+        generated = set(re.findall(r"(--[a-z0-9-]+)\s*:", tokens))
+        local = set(re.findall(r"(--[a-z0-9-]+)\s*:", css))
+        # var(--x) with no comma -- anything with a fallback is fine
+        used = set(re.findall(r"var\(\s*(--[a-z0-9-]+)\s*\)", css))
+        missing = sorted(used - generated - local)
+        detail = []
+        for name in missing:
+            for i, line in enumerate(css.splitlines(), 1):
+                if "var(%s)" % name in line:
+                    detail.append("  %s  line %d: %s" % (name, i, line.strip()[:64]))
+        self.assertEqual(
+            missing, [],
+            "these custom properties are referenced but never defined, and "
+            "each one silently voids its whole declaration:\n%s"
+            % "\n".join(detail))
+
+    def test_the_spacing_scale_has_no_gaps_that_invite_the_mistake(self):
+        """--space-20 was reached for because 16 and 24 sit either side of it.
+
+        Not a demand that the scale be dense -- it is deliberately sparse.
+        This just records which steps exist, so that the next person writing
+        a spacing value checks the list instead of interpolating.
+        """
+        scale = json.loads(
+            (ROOT / "tokens.json").read_text(encoding="utf-8"))["space"]
+        self.assertEqual(
+            sorted(scale, key=lambda k: float(k)),
+            ["1", "2", "3", "4", "6", "8", "12", "16", "24", "32"],
+            "the spacing scale changed; every var(--space-N) in the "
+            "stylesheet needs rechecking against the new set")
 
 
 class TestFigureWidth(BuildCase):
