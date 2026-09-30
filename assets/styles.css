@@ -189,7 +189,22 @@ a { color: inherit; }
 }
 .site-foot__note { margin: 0; color: var(--color-text-muted); font-size: var(--font-size-sm); }
 .site-foot__links { display: flex; flex-wrap: wrap; gap: var(--space-6); }
-.site-foot__links a { color: var(--color-text-muted); text-decoration: none; font-size: var(--font-size-sm); }
+/* min-width so the short ones are not fiddly. "CV" is two characters and
+   came out 17x24, the smallest target on the site. It already CONFORMS to
+   WCAG 2.5.8: the criterion exempts an undersized target whose 24px
+   diameter circle does not reach another target, and tested against every
+   other target's box on the page, this one's does not -- the nearest
+   footer link is more than 48px away centre to centre. So this is not a
+   conformance fix, it is just a kinder target for anyone with an unsteady
+   pointer, at the cost of 3.5px of padding either side. */
+.site-foot__links a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  display: inline-block;
+  min-width: 24px;
+  text-align: center;
+}
 .site-foot__links a:hover { color: var(--color-text); }
 
 /* ── hero ────────────────────────────────────────── */

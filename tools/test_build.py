@@ -2509,6 +2509,44 @@ class TestCardMeta(BuildCase):
         self.assertNotIn("TODO", self.html("index.html"))
 
 
+class TestTargetSize(BuildCase):
+    """The smallest thing on the site you have to hit with a pointer.
+
+    "CV" in the footer is two characters and measured 17x24, the smallest
+    target on any page. It already CONFORMED: WCAG 2.5.8 exempts an
+    undersized target whose 24px-diameter circle does not reach another
+    target, and tested with that actual circle against every other target's
+    box, this one's did not -- its nearest neighbour is over 48px away
+    centre to centre. So the min-width is not a conformance fix; it is a
+    kinder target for an unsteady pointer, bought for 3.5px of padding.
+
+    The one target still under 24 is the email address in the contact
+    block, 19px tall. That one is exempt for a different and better reason:
+    2.5.8's inline clause covers a target "in a sentence or otherwise
+    constrained by the line-height of non-target text", and 19px IS its
+    line-height. Padding it out would mean padding a word inside a
+    paragraph, which moves the text around for no gain.
+    """
+
+    def test_the_footer_links_are_at_least_24px(self):
+        css = re.sub(r"/\*.*?\*/", "",
+                     (ROOT / "assets" / "styles.css").read_text(encoding="utf-8"),
+                     flags=re.S)
+        rule = css.split(".site-foot__links a {", 1)[1].split("}", 1)[0]
+        m = re.search(r"min-width:\s*(\d+)px", rule)
+        self.assertIsNotNone(
+            m, "the footer links declare no minimum width, so a two-letter "
+               "one like CV collapses to about 17px")
+        self.assertGreaterEqual(
+            int(m.group(1)), 24,
+            "the footer link minimum is %spx, under the 24px that WCAG 2.5.8 "
+            "asks of a target" % m.group(1))
+        self.assertIn(
+            "inline-block", rule,
+            "min-width does nothing on an inline element; the link needs a "
+            "block-level display for it to apply")
+
+
 class TestCustomProperties(BuildCase):
     """Every var() in the stylesheet has to resolve to something.
 
