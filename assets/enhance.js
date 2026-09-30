@@ -145,7 +145,7 @@
      --cursor-opacity in tokens.json; nothing here needs editing.
 
      Colour: upstream's default is #000000, which
-     on this page (#0A0A0B) is invisible. Black is upstream's "default ink",
+     on this page (#02050C) is invisible. Black is upstream's "default ink",
      so the faithful translation is this page's default ink -- var(--color-
      text) -- resolved per frame rather than captured once, so it cannot be
      left behind if that token ever changes underneath it.

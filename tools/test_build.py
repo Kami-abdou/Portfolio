@@ -1040,8 +1040,8 @@ class TestLinkIcons(BuildCase):
     if the file was supplied, and whether it needs a light plate behind it
     is MEASURED rather than decided by eye, because that failure is silent.
 
-    Measured against this page's #0A0A0B: cv 13.29:1, email 12.41:1,
-    github 8.78:1, linkedin 8.36:1 -- so none takes a plate today. GitHub
+    Measured against this page's #02050C: cv 13.70:1, email 12.79:1,
+    github 9.05:1, linkedin 8.61:1 -- so none takes a plate today. GitHub
     is worth understanding rather than just accepting: its black disc does
     vanish into the page, and what survives is the white Octocat, which is
     still the mark. Averaging over opaque pixels gives the right answer
@@ -2165,8 +2165,11 @@ class TestToolIcons(BuildCase):
             name = re.search(r'tool__name">([^<]+)', m).group(1)
             if "tool__icon" in m:
                 chips[name] = "tool__icon--plate" in m
-        # dark marks: would vanish on #0A0A0B without it
-        for name in ("Figma", "Framer", "VWO"):
+        # dark marks: would vanish on #02050C without it. MCP belongs here
+        # too and the build does plate it -- see icon_needs_plate, whose
+        # docstring used to cite MCP as the canonical LIGHT mark until the
+        # file was swapped for a near-black one.
+        for name in ("Figma", "Framer", "VWO", "MCP"):
             self.assertTrue(chips.get(name), "%s lost its plate" % name)
         # light marks: the plate would erase them instead
         for name in ("Creative Cloud", "Miro", "Notion", "Jira", "Claude Code"):

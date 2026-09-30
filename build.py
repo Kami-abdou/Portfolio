@@ -185,14 +185,26 @@ def _relative_luminance(r, g, b):
     return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
 
 
-PAGE_LUMINANCE = _relative_luminance(0x0A, 0x0A, 0x0B)
+def _hex_luminance(value):
+    """Relative luminance of a #rrggbb token."""
+    h = value.lstrip("#")
+    return _relative_luminance(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+
+#: Read from the token, not restated here. This was once written out as
+#: literal bytes, which meant the page background and the value the plate
+#: heuristic measures against could drift apart in silence -- and catching a
+#: contrast failure nobody can see is the heuristic's entire purpose. The
+#: background has since changed from #0A0A0B to #02050C, which is exactly
+#: the edit that would have desynchronised them.
+PAGE_LUMINANCE = _hex_luminance(TOKENS["color"]["bg"])
 
 
 def icon_needs_plate(path, threshold=3.0):
     """True when a mark would disappear against this page's background.
 
     Decided by measurement, not by hand, because the failure is silent. The
-    Framer mark sat on the site at 1.06:1 -- pure black on #0A0A0B, an empty
+    Framer mark sat on the site at 1.03:1 -- pure black on #02050C, an empty
     chip -- and nobody spotted it until the contrast was actually computed.
     A person swapping an icon will not re-measure; the build will.
 
@@ -201,10 +213,20 @@ def icon_needs_plate(path, threshold=3.0):
     mark, so the only thing we may change is what sits behind it.
 
     Applying it unconditionally is just as wrong in the other direction.
-    Measured over the current set: Figma 2.06:1 and VWO 2.38:1 against the
-    page need it, while MCP (14.91:1), Git (12.35:1), Creative Cloud
-    (10.15:1), Miro (9.02:1) and Notion (8.86:1) are light marks that would
-    lose most of their contrast ON a white plate -- MCP drops to 1.20:1.
+    Measured over the current set against #02050C, four marks need it --
+    MCP 1.00:1, Framer 1.03:1, Figma 2.10:1, VWO 2.48:1 -- while Creative
+    Cloud (10.33:1), Notion (10.02:1), Miro (9.36:1) and Claude Code
+    (6.60:1) are light marks that LOSE most of their contrast ON a white
+    plate: Creative Cloud drops to 1.79:1.
+
+    Those figures were re-measured rather than carried across. The previous
+    version of this paragraph named MCP as the star example of a light mark,
+    at 14.91:1 on the page and 1.20:1 on a plate. mcp.png on disk is now
+    100% near-black over all 87 of its opaque pixels and takes a plate, and
+    Git was quoted at 12.35:1 where it measures 5.11:1 -- both files were
+    swapped at some point and the prose was not. The heuristic had been
+    right the whole time; only the commentary rotted, which is the case for
+    measuring at build time instead of writing numbers down.
 
     Averaging luminance over the opaque pixels is deliberately crude. It
     answers "is this mark broadly dark or broadly light", which is the only
@@ -236,11 +258,11 @@ def tool_chips(tools, depth=0):
     supplied mark silently fell back to a monogram with no explanation.
 
     A note on why .tool__icon has a light plate in the CSS. Measured against
-    this page's #0A0A0B background, the marks as vendors ship them are:
-    Framer 1.06:1, Figma's app tile 2.05:1, VWO 2.44:1 — Framer is literally
-    invisible. The fix is NOT to recolour them; most brand terms forbid
-    altering the mark. The plate leaves each mark untouched and changes what
-    sits behind it.
+    this page's #02050C background, the marks as vendors ship them are:
+    MCP 1.00:1, Framer 1.03:1, Figma's app tile 2.10:1, VWO 2.48:1 — the
+    first two are literally invisible. The fix is NOT to recolour them; most
+    brand terms forbid altering the mark. The plate leaves each mark
+    untouched and changes what sits behind it.
     """
     up = "../" * depth
     out = []
@@ -276,8 +298,8 @@ def link_icon(label, depth=0, *, slug=None):
 
     Same contract as the tool chips: the icon appears only if the file has
     been supplied, and the plate is decided by measuring the mark rather
-    than by hand. Measured against this page at #0A0A0B, all four read as
-    shipped -- cv 13.29:1, email 12.41:1, github 8.78:1, linkedin 8.36:1 --
+    than by hand. Measured against this page at #02050C, all four read as
+    shipped -- cv 13.70:1, email 12.79:1, github 9.05:1, linkedin 8.61:1 --
     so none currently takes a plate. GitHub is the interesting one: its
     black disc does vanish into the page and the white Octocat is what
     survives, which is still the mark, so averaging over opaque pixels gives

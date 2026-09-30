@@ -1331,8 +1331,8 @@ body::after {
 }
 .tool:hover { border-color: var(--color-border-strong); background: var(--color-bg-raised-hover); }
 /* A light plate, because most brand marks are drawn for light backgrounds.
-   Measured against this page's #0A0A0B: Framer 1.06:1 (invisible), Figma's
-   app tile 2.05:1, VWO 2.44:1. Recolouring them would fix the contrast and
+   Measured against this page's #02050C: MCP 1.00:1 and Framer 1.03:1 (both
+   invisible), Figma's app tile 2.10:1, VWO 2.48:1. Recolouring them would fix the contrast and
    break the vendors' usage terms, which generally forbid altering the mark
    — so the mark is left exactly as shipped and the surface behind it
    changes instead. Same move as a press page putting logos on white.
@@ -1344,11 +1344,12 @@ body::after {
 }
 /* Only for marks that would otherwise vanish. build.py measures each icon's
    luminance and adds this class when its contrast against the page falls
-   below 3:1 -- Figma's black app tile and the VWO wordmark today. Applying
-   it to everything was wrong in the other direction: MCP, Git, Creative
-   Cloud, Miro and Notion are light marks that LOSE contrast on white,
-   MCP going from 14.91:1 on the page to 1.20:1 on a plate. The mark itself
-   is never recoloured; vendor terms forbid altering it. */
+   below 3:1 -- MCP, Framer, Figma's black app tile and the VWO wordmark
+   today. Applying it to everything was wrong in the other direction:
+   Creative Cloud, Notion, Miro and Claude Code are light marks that LOSE
+   contrast on white, Creative Cloud going from 10.33:1 on the page to
+   1.79:1 on a plate. The mark itself is never recoloured; vendor terms
+   forbid altering it. */
 .tool__icon--plate {
   padding: 2px;
   border-radius: var(--radius-sm);

@@ -10,20 +10,33 @@ set in the site's own type.
 
 ## The plate is automatic — do not set it by hand
 
-This page is `#0A0A0B`, and brand marks come in both polarities. Measured
-against the page background:
+This page is `#02050C`, and brand marks come in both polarities. Measured
+against the page background, every mark currently shipped, worst first —
+the four above the rule get a plate, the six below it must not:
 
 | mark           | on the page | on a white plate |
 |----------------|-------------|------------------|
-| MCP            | 14.91:1     | 1.20:1           |
-| Git            | 12.35:1     | 1.46:1           |
-| Creative Cloud | 10.15:1     | 1.77:1           |
-| Notion         |  8.86:1     | 2.03:1           |
-| Figma          |  2.06:1     | 8.74:1           |
-| VWO            |  2.38:1     | 7.56:1           |
+| MCP            |  1.00:1     | 18.48:1          |
+| Framer         |  1.03:1     | 19.07:1          |
+| Figma          |  2.10:1     |  8.80:1          |
+| VWO            |  2.48:1     |  7.48:1          |
+| ·············· | ··········· | ················ |
+| Git            |  5.11:1     |  3.62:1          |
+| Jira           |  5.17:1     |  3.58:1          |
+| Claude Code    |  6.60:1     |  2.81:1          |
+| Miro           |  9.36:1     |  1.98:1          |
+| Notion         | 10.02:1     |  1.85:1          |
+| Creative Cloud | 10.33:1     |  1.79:1          |
 
-Both directions fail silently. Framer shipped on the live site at 1.06:1 —
+Both directions fail silently. Framer shipped on the live site at 1.03:1 —
 an empty chip — and nobody noticed until it was measured.
+
+This table has itself gone stale once, which is worth knowing before you
+trust it. It used to list MCP at 14.91:1 and Git at 12.35:1 as the examples
+of light marks; both files were later swapped for darker exports and the
+numbers were never redone, so the table said "never plate MCP" while the
+build was correctly plating it. Re-measure rather than edit by hand — the
+figures above come from `icon_needs_plate()` over the files on disk.
 
 So `icon_needs_plate()` in build.py averages the luminance of each icon's
 opaque pixels and adds `.tool__icon--plate` only when contrast against the
