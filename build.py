@@ -815,11 +815,33 @@ def project_card(project, *, large):
     num = "%02d" % project.get("order", 0)
     # cards show the tagline, so the TODO rule has to hold here as well
     tagline = project["tagline"] if usable(project.get("tagline")) else ""
-    # Year, domain and role on the card, so a visitor gets the shape of the
-    # engagement without opening it. Not derived from `year`: those values are
-    # prose ("January 2024 — present") and two are still TODO.
-    meta_html = ('<span class="card__meta">%s</span>' % e(project["meta"])
-                 if usable(project.get("meta")) else "")
+    # Manager feedback: "Simplifier les projets secondaires". A secondary
+    # card used to carry exactly what a case study carries -- number, cover,
+    # title, tagline and a three-part meta -- so the two bands read as
+    # equals and the visitor had no way to tell which four mattered. The
+    # secondary ones now carry the cover, the title and the year, and
+    # nothing else; the rest is on the project's own page, where there is
+    # room for it. This is half of "renforcer la hiérarchie typographique":
+    # the levels differ by how much they say, not only by type size.
+    tagline_html = ('<span class="card__tagline">%s</span>' % e(tagline)
+                    if large and tagline else "")
+    # Year, domain and role on a case-study card, so a visitor gets the
+    # shape of the engagement without opening it. Not derived from `year`:
+    # those values are prose ("January 2024 — present") and two are TODO.
+    meta = project["meta"] if usable(project.get("meta")) else ""
+    # A secondary card keeps the year and drops the rest. Deliberately the
+    # year-bearing SEGMENT rather than the first one: "first segment" looked
+    # right on seven projects and quietly printed "Design and brand studio"
+    # on the eighth, because Smarthub's meta is "Design and brand studio ·
+    # Founder" -- it has no year, its `year` field is still TODO. A project
+    # with no year now renders no meta at all, which is the same rule the
+    # rest of the build follows for a fact that does not exist yet, and it
+    # keeps the tier honest: every secondary card shows a date or nothing.
+    if meta and not large:
+        segments = [s.strip() for s in meta.split("·")]
+        dated = [s for s in segments if re.search(r"\b(19|20)\d{2}", s)]
+        meta = dated[0] if dated else ""
+    meta_html = ('<span class="card__meta">%s</span>' % e(meta)) if meta else ""
     return f"""        <li>
           <a class="{cls}" href="projects/{e(project['slug'])}">
             <span class="card__media">
@@ -831,7 +853,7 @@ def project_card(project, *, large):
             </span>
             <span class="card__body">
               <span class="card__title">{e(project['title'])}</span>
-              <span class="card__tagline">{e(tagline)}</span>
+              {tagline_html}
               {meta_html}
             </span>
           </a>

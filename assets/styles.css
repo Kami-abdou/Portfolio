@@ -789,7 +789,49 @@ body::after {
 .project__head h1 { font-size: var(--font-size-4xl); letter-spacing: -0.035em; }
 .about h1 { font-size: var(--font-size-3xl); }
 .band__head h2 { font-size: var(--font-size-3xl); }
+
+/* ── Selected case studies: image beside the words ─────────────────────
+   Manager feedback, three notes that turn out to be one change:
+   "Repenser les cartes en image + texte côte à côte dans selected case
+   studies", "Donner plus d'espace aux images", and the half of
+   "Renforcer la hiérarchie typographique" that type size cannot reach.
+
+   A 2x2 grid of stacked cards gave every cover about 550px and made four
+   case studies read as four tiles in a wall of eight. One full-width row
+   each gives the cover 1.6 of 2.6 columns -- roughly 709px on the 1200px
+   measure, a third more pixels -- and, more usefully, distinguishes the
+   two bands by SHAPE. Four wide rows followed by four small tiles is a
+   hierarchy a visitor reads before reading a single word; four tiles
+   followed by four tiles is not, however the type is sized. */
 @media (min-width: 900px) {
+  .grid--lg { grid-template-columns: 1fr; gap: var(--space-20); }
+  .card--lg {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: var(--space-12);
+    align-items: center;
+  }
+  .card--lg .card__body { padding-top: 0; }
+}
+
+/* Three tiers that cannot be mistaken for one another, built from faces
+   the site already uses rather than from new sizes. The title takes the
+   display face so it reads as a heading; the tagline is prose a full step
+   up from where it was; the meta is mono and faint, so it reads as data.
+   Before this the tagline (sm) and the meta (xs) sat 1.15x apart in the
+   same muted colour, which is why the bottom of the page looked flat. */
+.card--lg .card__title {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-regular);
+  letter-spacing: -0.02em;
+}
+.card--lg .card__tagline {
+  font-size: var(--font-size-base);
+  margin-top: var(--space-3);
+}
+.card__meta {
+  font-family: var(--font-mono);
+  color: var(--color-text-faint);
 }
 
 /* ── hero: name left, portrait right ───────────── */

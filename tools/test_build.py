@@ -2185,6 +2185,31 @@ class TestToolIcons(BuildCase):
 
 
 class TestCardMeta(BuildCase):
+    """The two card tiers, and what each is allowed to say.
+
+    Manager feedback split the homepage in two: "Repenser les cartes en
+    image + texte côte à côte dans selected case studies" and "Simplifier
+    les projets secondaires". A case-study card carries cover, title,
+    tagline and the full three-part meta; a secondary card carries cover,
+    title and the year, and nothing else. Both directions are asserted,
+    because the failure mode is the two tiers quietly converging again --
+    which is what the feedback was about to begin with.
+    """
+
+    def cards(self):
+        """(tier, slug, tagline or None, meta or None) for each card, in order."""
+        out = []
+        for m in re.finditer(
+                r'<a class="(card[^"]*)" href="projects/([^"]+)">(.*?)</a>',
+                self.html("index.html"), re.S):
+            cls, slug, body = m.group(1), m.group(2), m.group(3)
+            tag = re.search(r'card__tagline">([^<]*)', body)
+            meta = re.search(r'card__meta">([^<]*)', body)
+            out.append(("large" if "card--lg" in cls else "small", slug,
+                        tag.group(1) if tag else None,
+                        meta.group(1) if meta else None))
+        self.assertTrue(out, "the homepage renders no project cards at all")
+        return out
 
     def test_every_project_has_a_short_meta_line(self):
         import glob
@@ -2196,8 +2221,79 @@ class TestCardMeta(BuildCase):
                 len(meta), 44,
                 "%s meta is %d chars, too long for a card" % (project["slug"], len(meta)))
 
-    def test_meta_renders_on_every_card(self):
-        self.assertEqual(self.html("index.html").count('class="card__meta"'), 8)
+    def test_case_study_cards_carry_the_whole_line(self):
+        for tier, slug, tag, meta in self.cards():
+            if tier != "large":
+                continue
+            self.assertTrue(tag, "%s is a case study with no tagline" % slug)
+            self.assertTrue(meta, "%s is a case study with no meta" % slug)
+            self.assertIn(
+                "\u00b7", meta,
+                "%s's meta lost its segments (%r) -- a case-study card is "
+                "meant to carry year, domain and role" % (slug, meta))
+
+    def test_secondary_cards_are_simplified(self):
+        smalls = [c for c in self.cards() if c[0] == "small"]
+        self.assertTrue(smalls, "the secondary band renders no cards")
+        for _, slug, tag, meta in smalls:
+            self.assertIsNone(
+                tag, "%s is a secondary project still printing a tagline, so "
+                     "the two bands read as equals again" % slug)
+            if meta is not None:
+                self.assertNotIn(
+                    "\u00b7", meta,
+                    "%s's secondary meta is back to the full line (%r)"
+                    % (slug, meta))
+                self.assertRegex(
+                    meta, r"^(19|20)\d{2}",
+                    "%s's secondary meta is %r, which is not a year. Taking "
+                    "'the first segment' does this: it is right for seven "
+                    "projects and prints a phrase for Smarthub, whose meta "
+                    "is 'Design and brand studio · Founder'." % (slug, meta))
+
+    def test_meta_renders_wherever_there_is_one_to_render(self):
+        """Derived from the content, not a hardcoded count.
+
+        This was `assertEqual(count, 8)` and it broke the moment a secondary
+        card legitimately had nothing to show -- Smarthub has no year, its
+        `year` field is still TODO, and a card with no date now prints no
+        meta rather than substituting a phrase. Deriving the number means
+        fixing that TODO, or adding a project, moves this on its own.
+        """
+        bands = self.site["sections"]
+        large = set(bands["highlights"]["slugs"])
+        small = set(bands["selectedWork"]["slugs"])
+        expect = 0
+        for path in sorted((ROOT / "projects").glob("*/content.json")):
+            project = json.loads(path.read_text(encoding="utf-8"))
+            slug, meta = project["slug"], project.get("meta") or ""
+            if slug in large:
+                expect += 1 if meta else 0
+            elif slug in small:
+                expect += 1 if re.search(r"\b(19|20)\d{2}", meta) else 0
+        self.assertEqual(
+            self.html("index.html").count('class="card__meta"'), expect,
+            "expected %d meta lines from the content files" % expect)
+
+    def test_case_studies_are_rows_not_tiles(self):
+        """The side-by-side layout, pinned.
+
+        A 2x2 grid of stacked cards is what the feedback asked to move away
+        from, and it is one CSS rule away from coming back -- the kind of
+        thing a later tidy-up removes as redundant without knowing it was
+        the point.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = css.split(".grid--lg { grid-template-columns: 1fr;", 1)
+        self.assertEqual(len(block), 2,
+                         "the case-study band is no longer a single column, "
+                         "so the cards are back to being tiles")
+        rule = css.split(".card--lg {", 1)[1].split("}", 1)[0]
+        self.assertIn("display: grid", rule,
+                      "the case-study card is not a grid, so its cover and "
+                      "its words cannot sit side by side")
+        self.assertIn("grid-template-columns", rule,
+                      "the case-study card declares no columns")
 
     def test_todo_meta_is_suppressed_not_printed(self):
         """usable() must gate this like every other field -- BUILD.md rule."""
