@@ -2337,6 +2337,58 @@ class TestFigureWidth(BuildCase):
         self.assertNotIn("1fr;", rule.replace("repeat", ""),
                          ".shots--phone looks like it went single-column")
 
+    def figure_rules(self):
+        """Every declaration block that styles a shot image.
+
+        Comments are stripped FIRST. The prose around these rules quotes the
+        old `object-fit: cover` and `max-height: 38vh` at length, explaining
+        why they went -- scanning the raw file would match the explanation
+        and fail on a correct stylesheet. That exact mistake has been made
+        in this suite before, in the bare-env() test.
+        """
+        css = re.sub(r"/\*.*?\*/", "", self.css(), flags=re.S)
+        # A LIST, not a dict keyed by selector. Two separate rules both use
+        # the selector ".shot__btn img" -- a one-line base rule and a block
+        # further down -- so a dict silently kept the last and dropped the
+        # first. The first version of this helper did exactly that, and two
+        # sabotages (cover and a cap put back on the BASE rule) passed a
+        # green suite because the rule under test had been overwritten in
+        # the collection step. Found by sabotaging it, not by reading it.
+        out = []
+        for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+            sel, body = m.group(1).strip(), m.group(2)
+            if "shot__btn img" in sel:
+                out.append((" ".join(sel.split()), body))
+        self.assertTrue(out, "no rule styles a shot image any more")
+        return out
+
+    def test_project_figures_are_not_cropped(self):
+        """The owner's instruction: the images were cropped, fix it everywhere.
+
+        Measured across all 71 figures before the change: 31 of the 36
+        normally-shaped ones lost pixels, median 50% and worst 82% --
+        p04-our-mission.jpg is 2104px of screenshot that showed 342 of them.
+        Two separate caps did it, 70vh in the base block and 38vh further
+        down, both with object-fit: cover, which is why removing one was not
+        enough and why this test looks at every matching rule rather than a
+        single selector.
+
+        Verified in a browser afterwards: 17 of 17 figures on InstaDeep
+        render at their exact natural ratio, worst loss 0%.
+        """
+        for sel, body in self.figure_rules():
+            self.assertNotIn(
+                "object-fit: cover", body,
+                "%s crops again -- a screenshot is the evidence in a case "
+                "study and cover-fitting throws most of it away" % sel)
+            for bad in re.findall(r"max-height:\s*([^;]+)", body):
+                self.assertEqual(
+                    bad.strip(), "none",
+                    "%s caps the image height at %s, which crops or shrinks "
+                    "it. A tall export has to be given its height; contain "
+                    "inside a cap letterboxes instead, and a 900x4666 export "
+                    "in an 828x342 frame renders 66px wide." % (sel, bad.strip()))
+
     def test_the_phone_variant_is_actually_in_use(self):
         """A :not() guarding nothing is a comment pretending to be code."""
         pages = sorted((ROOT / "projects").glob("*.html"))

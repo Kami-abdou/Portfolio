@@ -533,13 +533,13 @@ a { color: inherit; }
   transition: border-color .3s var(--ease-out);
 }
 .shot__btn:hover { border-color: var(--color-border-strong); }
-.shot__btn img { width: 100%; }
-/* 4000px-tall exports would otherwise dominate the page */
-.shot[data-tall="true"] .shot__btn img {
-  max-height: 70vh;
-  object-fit: cover;
-  object-position: top;
-}
+.shot__btn img { width: 100%; height: auto; }
+/* The tall exports used to be capped here at 70vh and again at 38vh lower
+   down, both with object-fit: cover, so a 4000px export showed its top
+   band and silently dropped the rest. Uncropped now, on instruction. They
+   DO dominate a page -- that is what the cap was buying -- so data-tall is
+   still emitted by build.py and still drives the corner hint further down;
+   it simply no longer trims the picture. */
 .shot figcaption {
   margin-top: var(--space-3);
   color: var(--color-text-muted);
@@ -1167,17 +1167,32 @@ body::after {
 }
 
 .shot__btn { border-radius: var(--radius-md); }
-.shot__btn img {
-  width: 100%;
-  max-height: 38vh;
-  object-fit: cover;
-  object-position: top;
-}
-/* a single wide tile can afford more height */
-.shots .shot:only-child .shot__btn img { max-height: 56vh; }
+/* Uncropped, on the owner's instruction: the images were cropped and they
+   are not a fan of that.
 
-/* the very tall exports are previews by definition — click to read them */
-.shot[data-tall="true"] .shot__btn img { max-height: 38vh; }
+   Measured across all 71 figures before this change: 31 of the 36
+   normally-shaped ones lost pixels to a 38vh cover crop, median 50% and
+   worst 82% -- p04-our-mission.jpg is 2104px of screenshot showing 342 of
+   them. Every figure now renders at its own ratio, in full, however tall
+   that makes it.
+
+   That has a cost, and it is not small: 17 figures are over 2200px tall and
+   a few are full-page exports, so in1-landing renders 4293px tall at an
+   828px column. The caps were what kept those from dominating a page, and
+   with them gone the pages are much longer. The trade was asked for, but
+   the real fix for the worst offenders is cropping them in Figma to the
+   part that carries the point, which is a content decision rather than a
+   CSS one.
+
+   object-fit is not merely switched to contain, because contain in a capped
+   box letterboxes instead of cropping: a 900x4666 export inside an 828x342
+   frame would render 66px wide, which is worse than the crop it replaced.
+   The only way to show a tall image whole is to give it the height. */
+.shot__btn img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 .shot[data-tall="true"] .shot__btn::after {
   content: "Full screen";
   position: absolute; right: var(--space-3); bottom: var(--space-3);
@@ -1362,9 +1377,10 @@ body::after {
   padding: var(--space-2);
 }
 .shot[data-phone="true"] .shot__btn img {
-  max-height: 48vh;
-  object-fit: contain;
-  object-position: center;
+  /* Phone screens were never cropped -- contain letterboxes rather than
+     cutting -- but the 48vh cap shrank a 375x812 screen inside its column
+     and left bars down both sides. Natural height fills the tile instead.
+     The padded bg-alt frame above is kept: it reads as a device surround. */
   border-radius: var(--radius-sm);
 }
 /* the phone tiles are small, so a corner hint would crowd them */
@@ -1530,12 +1546,13 @@ html:not(.js) .viewer__tabs { display: none; }
   cursor: zoom-in;
   margin-inline: auto;   /* a view capped below full width centres in the frame */
 }
-/* .shot__btn img crops to a uniform tile — max-height 38vh with object-fit
-   cover — which is right for a grid of screenshots and wrong for a board you
-   are meant to read. The zoom button reuses that class, so it inherited the
-   crop: a 900x1915 board was being shown 285px tall, about a quarter of it,
-   with the rest silently clipped. Both properties must be reset, not just
-   width and height. */
+/* This used to undo .shot__btn img's crop. That crop is gone -- every shot
+   renders at its own ratio now -- so the reset has nothing left to undo and
+   the declarations below are what a plain image wants anyway. Kept explicit
+   rather than deleted: this button reuses .shot__btn, so if a cap is ever
+   reintroduced there, a documentation board is the first thing it would
+   quietly slice, and that already happened once (a 900x1915 board shown
+   285px tall, about a quarter of it). */
 .viewer__zoom img {
   display: block;
   width: 100%;
