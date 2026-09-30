@@ -1475,7 +1475,16 @@ def main():
                       projects[i + 1] if i + 1 < len(projects) else None)
     n_urls = write_sitemap(projects)
 
-    imgs = sum(len(s.get("images", [])) for p in projects for s in p.get("sections", []))
+    # autoImages boards are figures on the page like any other, so they
+    # belong in this count. Leaving them out made the line under-report by
+    # however many exports were sitting in a components/ folder -- quietly,
+    # and by more the more the feature got used.
+    imgs = 0
+    for p in projects:
+        for s in p.get("sections", []):
+            imgs += len(s.get("images", []))
+            if s.get("autoImages"):
+                imgs += len(auto_images(p["_dir"], s["autoImages"]))
     print("tokens.css   %d custom properties" % n_vars)
     print("index.html   %d highlights, %d other projects"
           % (len(SITE["sections"]["highlights"]["slugs"]),

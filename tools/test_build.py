@@ -1730,8 +1730,19 @@ class TestInstaDeepEntry(BuildCase):
         """assets/components/ is globbed by autoImages, not listed in JSON.
 
         If the folder failed to move, auto_images() returns [] and the section
-        silently vanishes -- the exact failure this guards. Asserts the count
-        as well as the path, because a partial glob is the quieter bug.
+        silently vanishes -- the exact failure this guards. Asserts the path,
+        that the folder is not empty, and that EVERY board on disk reaches the
+        page, because a partial glob is the quieter bug.
+
+        This used to pin the count at a literal 7, which had to be edited by
+        hand every time an export was dropped in -- against the whole promise
+        of the folder, whose README says "no JSON to edit, no code to change".
+        A test that must be edited to add a file makes the feature not
+        automatic. The per-file loop below already catches a partial glob
+        outright, so the only thing the literal caught that the loop does not
+        is an empty folder, and the non-empty assertion covers that without
+        going stale. The set comparison keeps the other direction honest: a
+        board referenced by the page but absent from disk is still a failure.
 
         This used to assert `class="viewer"`. InstaDeep became a gallery, and
         highlights pages drop the tabbed browser: it shows one board at a time,
@@ -1742,10 +1753,17 @@ class TestInstaDeepEntry(BuildCase):
         self.assertIn("assets/components/", page)
         folder = ROOT / "projects" / "10-instadeep" / "assets" / "components"
         boards = sorted(p.name for p in folder.glob("*.png"))
-        self.assertEqual(len(boards), 7, "component board count changed")
+        self.assertTrue(boards, "no component boards on disk at all")
         for name in boards:
             self.assertIn("components/%s" % name, page,
                           "%s never made it onto the page" % name)
+        # Each board is referenced twice -- once as src, once as the lightbox
+        # target -- so compare the distinct set, not the raw list.
+        refs = sorted(set(re.findall(r"components/([\w.-]+\.png)", page)))
+        self.assertEqual(refs, boards,
+                         "the page references a different set of boards than "
+                         "the folder holds:\n  page   %s\n  folder %s"
+                         % (refs, boards))
 
     def test_gallery_pages_do_not_render_the_tabbed_browser(self):
         """A tablist with no prose hides six of seven boards behind controls
