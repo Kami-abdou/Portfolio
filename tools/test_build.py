@@ -2303,6 +2303,52 @@ class TestCardMeta(BuildCase):
         self.assertNotIn("TODO", self.html("index.html"))
 
 
+class TestFigureWidth(BuildCase):
+    """Case-study figures get the column; phone screens keep their grid.
+
+    Manager feedback: "Donner plus d'espace aux images". Measured on Steer
+    at a 1366 viewport, the prose column is 828px and the shots grid ran
+    406px + 406px -- while a section holding a single figure already went
+    the full 828px through the :only-child rule. The site had therefore
+    already decided what a screenshot is worth; pairing was halving it.
+
+    Phone screens are the exception and the reason this is a :not() rather
+    than a blanket rule. They are portrait, narrow, and tagged from their
+    intrinsic dimensions by build.py, so a 375-wide screen stretched to
+    828px is only softer. Fixerloop is the case that proves it matters: 5
+    of its 8 grids are phone grids.
+    """
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def test_landscape_figures_take_the_whole_column(self):
+        self.assertIn(
+            ".project__main .shots:not(.shots--phone) { grid-template-columns: 1fr; }",
+            self.css(),
+            "case-study figures are back to sharing the column two-up, at "
+            "half the width the site gives a single figure")
+
+    def test_phone_screens_keep_their_denser_grid(self):
+        rule = self.css().split(".shots--phone {", 1)[1].split("}", 1)[0]
+        self.assertIn("grid-template-columns", rule,
+                      ".shots--phone no longer sets its own columns, so the "
+                      "full-column rule will stretch phone screens")
+        self.assertNotIn("1fr;", rule.replace("repeat", ""),
+                         ".shots--phone looks like it went single-column")
+
+    def test_the_phone_variant_is_actually_in_use(self):
+        """A :not() guarding nothing is a comment pretending to be code."""
+        pages = sorted((ROOT / "projects").glob("*.html"))
+        tagged = {p.name: p.read_text(encoding="utf-8").count("shots--phone")
+                  for p in pages}
+        total = sum(tagged.values())
+        self.assertGreater(
+            total, 0,
+            "no page uses shots--phone, so the exclusion in the full-column "
+            "rule protects nothing and one of the two is wrong: %s" % tagged)
+
+
 class TestShareCards(BuildCase):
 
     def test_every_referenced_share_card_is_tracked(self):

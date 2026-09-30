@@ -1325,6 +1325,22 @@ body::after {
     padding-inline: 0;
     margin-inline: 0;
   }
+
+  /* "Donner plus d'espace aux images", the case-study half of it.
+     Measured on Steer at 1366: the prose column is 828px and the grid was
+     406px + 406px, so a paired screenshot got 406px -- while a section
+     holding ONE figure already went full width at 828px, through the
+     :only-child rule below. The site therefore already decided 828px is
+     the right size for a screenshot; pairing was halving it. A landscape
+     screenshot of a web page at 406px is a thumbnail of a layout, which is
+     the one thing a case study needs to be legible.
+
+     Phone screens are excluded deliberately. They are portrait and narrow,
+     they are tagged from their intrinsic dimensions by build.py rather than
+     by hand, and a 375-wide screen blown up to 828px is just soft -- their
+     denser grid is correct. Hence :not(), rather than a blanket rule that
+     would have caught them too. */
+  .project__main .shots:not(.shots--phone) { grid-template-columns: 1fr; }
 }
 
 /* below the breakpoint the sidebar drops under the prose */
