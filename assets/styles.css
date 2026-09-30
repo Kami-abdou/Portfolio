@@ -294,8 +294,41 @@ a { color: inherit; }
    wrong one: modelled over the real covers, grayscale(1) contrast(1.4)
    brightness(1.02) makes them BRIGHTER, 374x the page instead of 334x,
    because a contrast boost pushes an already-light screenshot toward
-   white. It is tuned for a photograph with real shadows. Hence a sibling
-   token with the contrast pulled slightly under 1.
+   white. It is tuned for a photograph with real shadows.
+
+   The card filter is a duotone in the page's own blue. grayscale(1) first,
+   so every cover starts from the same tonal base and tints identically --
+   sepia on a colour image keeps some of the original hue relationships,
+   and eight covers tinting eight different ways is the problem, not the
+   fix. Then sepia(1) to put a tone back, hue-rotate(182deg) to swing that
+   tone from sepia's brown to the page's blue, and saturate(0.6) to keep it
+   a wash rather than a colour cast. Sampled through canvas ctx.filter,
+   which takes the same syntax: mid-grey comes out at hue 221, saturation
+   15%, against the page's own hue 222.
+
+   The tint also earns its place on the numbers, not just the hue. Measured
+   over all eight covers with the scrim applied, it holds the brightest at
+   0.281 where plain grayscale gave 0.262 -- near enough that the scrim
+   needed no retuning -- while pulling the spread between lightest and
+   darkest from 6.6x to 5.5x, because sepia compresses the tonal range.
+   Tighter than grayscale on the one axis that was the whole complaint.
+
+   175deg, not the 182deg that puts mid-grey exactly on the page's hue.
+   Sepia's highlights drift, and these covers are mostly light, so the
+   rotation that is perfect for a mid-grey swatch is not the one that is
+   right for this set. Sampled per cover, all eight:
+
+       168deg  hue 201-208, spread  7, 18 off the page
+       172deg  hue 206-212, spread  6, 13 off
+       175deg  hue 211-214, spread  3, 10 off   <- shipped
+       178deg  hue 215-229, spread 14,  4 off
+       182deg  hue 220-243, spread 23,  5 off
+
+   182 sits closer to the page on average but scatters the covers 23 apart
+   from EACH OTHER, which is the fault being fixed -- one cover came out
+   243, a visible violet against its neighbours at 220. 175 lands all eight
+   within 3 degrees. Being 10 degrees cyan of the page is a difference
+   inside the same blue; the covers disagreeing with each other is not.
 
    The scrim is --color-bg, so a cover is tinted toward the page's own
    colour rather than toward neutral black -- that is what makes it read as
