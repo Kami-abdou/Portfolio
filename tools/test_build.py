@@ -412,15 +412,17 @@ class TestMarqueeStagger(BuildCase):
     want to share as few factors as possible -- and that is invisible from
     looking at them.
 
-    70/82/94 realigns after 37.5 hours. The tidier 70/80/90 shares a factor
-    of 10 and realigns after 1.4 hours. 72/84/96 shares 12 and does it every
-    34 minutes, which someone could actually sit through. All three look
-    equally reasonable in a diff, so the property is asserted rather than
-    trusted to whoever next adjusts the speed.
+    The shipped values are 103/127/149, all prime, so the interval is their
+    product: 541 hours, or 22 days. The previous 70/82/94 managed 37.5
+    hours, which was fine but incidental -- the tidier 70/80/90 shares a
+    factor of 10 and realigns after 1.4 hours, and 72/84/96 shares 12 and
+    does it every 34 minutes, which someone could actually sit through. All
+    of them look equally reasonable in a diff, so the property is asserted
+    rather than trusted to whoever next adjusts the speed.
     """
 
     #: Comfortably longer than any session, short enough to leave room to
-    #: tune the speed. The current values clear it by 6x.
+    #: tune the speed. Primes clear it by about 90x.
     MIN_RESYNC_HOURS = 6
 
     def durations(self):

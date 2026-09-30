@@ -889,17 +889,24 @@ def build_index(projects):
     # them. The row text is repeated so the strip can loop seamlessly: the
     # track holds two identical halves and slides exactly -50%.
     #
-    # Durations are staggered per row (70/82/94s) so the rows never drift into
-    # sync and read as one moving block.
+    # Durations are staggered per row so the rows never drift into sync and
+    # read as one moving block. They were slowed by about half again --
+    # 70/82/94s to 103/127/149s -- on manager feedback that the hero
+    # animation should be calmer. The motion is meant to be a signature
+    # detail, not the loudest thing on the page.
     #
-    # The STEP matters as much as the base, and not in a way that is visible
-    # from the numbers. Three rows line up again after the lowest common
-    # multiple of their durations, so the values want to share as few factors
-    # as possible. 70/82/94 re-syncs after 37.5 hours. The tidier-looking
-    # 70/80/90 shares a factor of 10 and re-syncs after 1.4 hours; 72/84/96
-    # shares 12 and does it every 34 MINUTES, which a visitor could actually
-    # sit through. Changing these by feel is how the stagger gets quietly
-    # thrown away -- see the test that checks the interval.
+    # The RELATIONSHIP between the numbers matters as much as their size, and
+    # not in a way that is visible from reading them. Three rows line up
+    # again after the lowest common multiple of their durations, so the
+    # values want to share as few factors as possible. These three are all
+    # prime, which makes the interval their product: 541 hours, or 22 days.
+    #
+    # That is the reason for a literal tuple rather than the base + step
+    # arithmetic this used to do. 70 + idx * 12 gave a respectable 37.5
+    # hours, but incidentally -- nudge the base to 72 and you get 72/84/96,
+    # which share a factor of 12 and re-sync every 34 MINUTES, a wait a
+    # visitor could sit through. Primes make the property structural rather
+    # than lucky. See the test that checks the interval.
     #
     # The wall is rendered twice — once behind the portrait at full strength,
     # once in front at low opacity. That is what makes the type appear to
@@ -907,6 +914,9 @@ def build_index(projects):
     # so they stay in step without any JS.
     since = SITE.get("since", "")
     span = ("%s — 2026" % since) if since else ""
+
+    #: All prime, so the lowest common multiple is the product. See above.
+    row_durations = (103, 127, 149)
 
     def wall(rows, *, ghost):
         out = []
@@ -916,7 +926,8 @@ def build_index(projects):
             out.append(
                 '<div class="wall__row wall__row--%s" style="--dur: %ds">'
                 '<div class="wall__track">%s%s</div></div>'
-                % ("rev" if idx % 2 else "fwd", 70 + idx * 12, reps, reps))
+                % ("rev" if idx % 2 else "fwd",
+                   row_durations[idx % len(row_durations)], reps, reps))
         cls = "wall wall--ghost" if ghost else "wall"
         return '<div class="%s" aria-hidden="true">%s</div>' % (cls, "".join(out))
 
