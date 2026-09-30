@@ -808,9 +808,23 @@ body::after {
     display: grid;
     grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
     gap: var(--space-12);
-    align-items: center;
+    /* stretch, not center: the body has to span the row before anything in
+       it can be anchored to the row's edges. Centred, it held 127px of text
+       in a 453px column -- 72% empty, the words floating with nothing to
+       line up against, which is what made this band look unfinished. */
+    align-items: stretch;
   }
-  .card--lg .card__body { padding-top: 0; }
+  .card--lg .card__body {
+    display: flex;
+    flex-direction: column;
+    padding-top: 0;
+  }
+  /* Both columns now share a top AND a bottom edge: the title sits level
+     with the cover's top corner and the index badge on it, and the meta is
+     pushed down to meet the cover's bottom. The space that is left falls
+     between the description and the meta, where it reads as a deliberate
+     gap rather than as a centred blob. */
+  .card--lg .card__meta { margin-top: auto; }
 }
 
 /* Three tiers that cannot be mistaken for one another, built from faces
@@ -831,6 +845,20 @@ body::after {
 .card__meta {
   font-family: var(--font-mono);
   color: var(--color-text-faint);
+}
+/* Four tiers on a case-study row, and the two middle ones need real
+   separation or they blur -- which is the fault this band was just fixed
+   for. The tagline is the hook, so it goes to full-strength ink; the
+   description is the detail, a size down and a step back in colour. Size
+   alone would not do it: base to sm is only 1.13x. */
+.card--lg .card__tagline { color: var(--color-text); }
+.card--lg .card__note {
+  display: block;
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  max-width: 44ch;
 }
 
 /* ── hero: name left, portrait right ───────────── */

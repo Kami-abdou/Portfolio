@@ -5,6 +5,7 @@
   "meta": "2026 · Personal · Design and build",
   "title": "This portfolio",
   "tagline": "Designed, built and tested by me — no framework",
+  "cardNote": "One JSON file per project, a Python generator that writes every page, and tests against the output.",
   "summary": "The site you are reading. I designed it in Figma and built it as a static site with its own generator: one JSON file per project, a Python script that writes every page, and a test suite that runs against the generated HTML. Built end to end with an AI-assisted workflow, which is how I work now — the fastest way I know to find out whether an interaction actually holds up is to build it.",
   "description": "A static portfolio site designed and built end to end — JSON content, a Python generator, an image pipeline and a test suite, with no framework and no runtime dependencies.",
   "role": "Designer and builder",

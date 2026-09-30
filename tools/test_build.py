@@ -2275,6 +2275,76 @@ class TestCardMeta(BuildCase):
             self.html("index.html").count('class="card__meta"'), expect,
             "expected %d meta lines from the content files" % expect)
 
+    def test_case_study_rows_carry_a_description(self):
+        """The copy that fills the row's text column.
+
+        The side-by-side row left a 425px column holding 127px of text,
+        centred in a 453px height -- 72% of it empty, which is what made the
+        band look unfinished. Each case study now carries a description as
+        well. Every project has the field, including the secondary four, so
+        that moving a project between bands does not lose its copy; only the
+        rows render it.
+        """
+        rows = [c for c in self.cards() if c[0] == "large"]
+        self.assertTrue(rows, "no case-study rows at all")
+        page = self.html("index.html")
+        for _, slug, _, _ in rows:
+            project = json.loads(
+                next((ROOT / "projects").glob("*-%s/content.json" % slug))
+                .read_text(encoding="utf-8"))
+            note = project.get("cardNote")
+            self.assertTrue(note, "%s has no cardNote to fill its row" % slug)
+            self.assertIn(html.escape(note, quote=False).replace("&#x27;", "'"),
+                          page.replace("&#x27;", "'"),
+                          "%s's description never reached the page" % slug)
+
+    def test_every_project_has_a_description_even_the_secondary_ones(self):
+        """So promoting a project between bands does not lose its copy."""
+        for path in sorted((ROOT / "projects").glob("*/content.json")):
+            project = json.loads(path.read_text(encoding="utf-8"))
+            self.assertTrue(
+                project.get("cardNote"),
+                "%s has no cardNote; if it is ever promoted into the case "
+                "study band its row will be empty" % project["slug"])
+
+    def test_secondary_cards_do_not_render_the_description(self):
+        """"Simplifier les projets secondaires" -- prose there undoes it."""
+        for tier, slug, _, _ in self.cards():
+            if tier == "small":
+                card = re.search(
+                    r'<a class="card" href="projects/%s">(.*?)</a>' % slug,
+                    self.html("index.html"), re.S)
+                self.assertIsNotNone(card, "%s's card vanished" % slug)
+                self.assertNotIn(
+                    "card__note", card.group(1),
+                    "%s is a secondary project printing a description, which "
+                    "undoes the simplification of that band" % slug)
+
+    def test_the_two_columns_of_a_row_share_top_and_bottom_edges(self):
+        """What stops the words floating in the middle of the column.
+
+        Centred, the body held 127px of content in a 453px row with nothing
+        to line up against. The title is now level with the cover's top
+        corner and the meta is pushed to meet its bottom, so the leftover
+        space falls in one place -- between the description and the meta --
+        where it reads as a gap rather than as a blob.
+        """
+        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
+        rule = css.split(".card--lg {", 1)[1].split("}", 1)[0]
+        self.assertIn("align-items: stretch", rule,
+                      "the row's columns no longer stretch, so nothing in "
+                      "the body can be anchored to the row's edges")
+        body = css.split(".card--lg .card__body {", 1)[1].split("}", 1)[0]
+        self.assertIn("flex-direction: column", body,
+                      "the body is not a column, so margin-top: auto on the "
+                      "meta has nothing to push against")
+        meta = css.split(".card--lg .card__meta {", 1)[1].split("}", 1)[0]
+        self.assertIn("margin-top: auto", meta,
+                      "the meta is no longer pushed to the bottom of the row")
+
+    def css_text(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
     def test_case_studies_are_rows_not_tiles(self):
         """The side-by-side layout, pinned.
 

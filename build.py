@@ -825,6 +825,15 @@ def project_card(project, *, large):
     # the levels differ by how much they say, not only by type size.
     tagline_html = ('<span class="card__tagline">%s</span>' % e(tagline)
                     if large and tagline else "")
+    # The description, on case-study rows only. The side-by-side row left a
+    # 425px column holding 127px of text, centred in a 453px height -- 72%
+    # of it empty, which is what made the band look unfinished. This is the
+    # copy that fills it. Deliberately NOT on the secondary cards: those are
+    # down to cover, title and year on purpose, and giving them prose back
+    # would undo that. Every project carries the field even so, so moving a
+    # project between the two bands does not lose its description.
+    note_html = ('<span class="card__note">%s</span>' % e(project["cardNote"])
+                 if large and usable(project.get("cardNote")) else "")
     # Year, domain and role on a case-study card, so a visitor gets the
     # shape of the engagement without opening it. Not derived from `year`:
     # those values are prose ("January 2024 — present") and two are TODO.
@@ -854,6 +863,7 @@ def project_card(project, *, large):
             <span class="card__body">
               <span class="card__title">{e(project['title'])}</span>
               {tagline_html}
+              {note_html}
               {meta_html}
             </span>
           </a>
