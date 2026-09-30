@@ -269,7 +269,13 @@ a { color: inherit; }
      One ratio for both bands, so a case-study row and a secondary tile read
      as the same system. The tiles come out 264x110, which is a thin strip --
      if that reads as too thin this is the single number to change. */
-  aspect-ratio: 12 / 5;
+  /* 5/4 -- squarer, but deliberately not square. Still ONE ratio for both
+     bands, and this is where it pays off twice: a secondary tile goes from
+     264x110, a sliver that was flagged as probably too thin, to 264x211,
+     which reads as an actual thumbnail. 12/5 was chosen to match the text
+     height and did that well; it just made both the rows and the tiles
+     into letterbox strips. */
+  aspect-ratio: 5 / 4;
   transition: border-color .35s var(--ease-out), background .35s var(--ease-out);
 }
 .card__media img {
@@ -846,7 +852,15 @@ body::after {
   .grid--lg { grid-template-columns: 1fr; gap: var(--space-16); }
   .card--lg {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    /* The cover is the narrower column now, 0.7 against 1. It was 1.6
+       against 1 -- 679px wide and 283px tall at 12/5, a letterbox band.
+       Narrower and squarer was asked for, and the two pull against
+       matching the text height: a narrower cover leaves a wider text
+       column, so the words get shorter, while a squarer ratio makes the
+       cover taller. Both widen the gap. Measured, 5/4 at 0.7fr costs
+       16-38% empty where 12/5 at 1.6fr was 3-28%, and buys a cover of
+       455x364 instead of 679x283. */
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr);
     gap: var(--space-12);
     /* stretch, not center: the body has to span the row before anything in
        it can be anchored to the row's edges. Centred, it held 127px of text
@@ -901,11 +915,19 @@ body::after {
    description is the detail, a size down and a step back in colour. Size
    alone would not do it: base to sm is only 1.13x. */
 .card--lg .card__tagline { color: var(--color-text); }
+/* A step up in size for both, because the narrower cover leaves a wider
+   column and the taller cover leaves more height to fill. Measured: this
+   takes the text from 204-252px to 224-305px, which is most of what pays
+   for the squarer cover -- without it the column would be 31-44% empty
+   instead of 16-38%. The 20/17 size step between these two is slight, so
+   they keep their colour difference doing the real work: the tagline is
+   full-strength ink as the hook, the description is muted as the detail. */
+.card--lg .card__tagline { font-size: var(--font-size-lg); }
 .card--lg .card__note {
   display: block;
   margin-top: var(--space-3);
   color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   max-width: 44ch;
 }

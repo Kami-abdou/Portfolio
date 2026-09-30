@@ -2323,8 +2323,8 @@ class TestCardMeta(BuildCase):
         stretched cover has a definite height, so aspect-ratio then computes
         its WIDTH from that height. Fixerloop has the tallest summary of the
         four: its row grew and its cover came out 717px wide against
-        everyone else's 679, overflowing its column. Measured at 679x283 for
-        all four once pinned.
+        everyone else's 679, overflowing its column. Pinned, all four
+        measure identically -- 455x364 at the current 5/4.
         """
         css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
         rule = css.split(".card--lg .card__media {", 1)[1].split("}", 1)[0]
@@ -2371,10 +2371,14 @@ class TestCardMeta(BuildCase):
         """The two card types have to read as the same system.
 
         They used to disagree: 3/2 on a case study, 4/3 on a secondary
-        card. 16/9 was chosen by measuring the eight covers actually in the
-        repo -- it gives the smallest spread in how much of itself each
-        cover shows (77 points against 85 at 3/2 and 89 at 2/1) while
-        keeping the four landscape covers at 86% visible on average.
+        card. It is 5/4 for both now -- squarer, and deliberately not
+        square. The ratio has moved twice as the brief did: 16/9 for the
+        smallest spread in how much of each cover shows, then 12/5 to match
+        the cover height to the text beside it, then 5/4 for a narrower,
+        squarer cover. What has to hold across all of them is that the two
+        bands agree, because that is what makes a row and a tile read as
+        one system. 5/4 also takes a secondary tile from 264x110, a sliver,
+        to 264x211.
 
         Worth recording what this does NOT fix, so nobody retunes the frame
         expecting it to: the spread is still 77 points. Fixerloop's cover is
