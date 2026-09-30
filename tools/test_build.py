@@ -2199,10 +2199,17 @@ class TestCardMeta(BuildCase):
     def cards(self):
         """(tier, slug, tagline or None, meta or None) for each card, in order."""
         out = []
+        # The card is a <div> and the href lives on the title's <a>: the card
+        # stopped being one giant link so that its accessible name is the
+        # title rather than a whole paragraph. See project_card in build.py.
         for m in re.finditer(
-                r'<a class="(card[^"]*)" href="projects/([^"]+)">(.*?)</a>',
+                r'<div class="(card[^"]*)">(.*?)</div>',
                 self.html("index.html"), re.S):
-            cls, slug, body = m.group(1), m.group(2), m.group(3)
+            cls, body = m.group(1), m.group(2)
+            href = re.search(r'card__title"><a href="projects/([^"]+)"', body)
+            if not href:
+                continue
+            slug = href.group(1)
             tag = re.search(r'card__tagline">([^<]*)', body)
             meta = re.search(r'card__meta">([^<]*)', body)
             out.append(("large" if "card--lg" in cls else "small", slug,
@@ -2291,10 +2298,11 @@ class TestCardMeta(BuildCase):
             if tier != "large":
                 continue
             card = re.search(
-                r'<a class="card card--lg" href="projects/%s">(.*?)</a>' % slug,
+                r'<div class="card card--lg">(?:(?!</div>).)*?'
+                r'card__title"><a href="projects/%s".*?</div>' % slug,
                 home, re.S)
             self.assertIsNotNone(card, "%s's row vanished" % slug)
-            note = re.search(r'card__note">([^<]*)', card.group(1))
+            note = re.search(r'card__note">([^<]*)', card.group(0))
             self.assertIsNotNone(note, "%s's row carries no description" % slug)
 
             page = self.html("projects/%s.html" % slug)
@@ -2337,11 +2345,12 @@ class TestCardMeta(BuildCase):
         for tier, slug, _, _ in self.cards():
             if tier == "small":
                 card = re.search(
-                    r'<a class="card" href="projects/%s">(.*?)</a>' % slug,
+                    r'<div class="card">(?:(?!</div>).)*?'
+                    r'card__title"><a href="projects/%s".*?</div>' % slug,
                     self.html("index.html"), re.S)
                 self.assertIsNotNone(card, "%s's card vanished" % slug)
                 self.assertNotIn(
-                    "card__note", card.group(1),
+                    "card__note", card.group(0),
                     "%s is a secondary project printing a description, which "
                     "undoes the simplification of that band" % slug)
 
@@ -2399,6 +2408,78 @@ class TestCardMeta(BuildCase):
 
     def css_text(self):
         return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def test_a_card_is_named_by_its_title_not_by_a_paragraph(self):
+        """The card is a container; the link sits on its title.
+
+        It was one <a> wrapped around everything, which was harmless until
+        the description moved inside it. Measured against production, a
+        card's accessible name went from 71-128 characters to 11-475: a
+        screen reader announced Fixerloop's card as a 475-character
+        paragraph, while the secondary cards -- taglines stripped by then --
+        had dropped to "07 Smarthub". One kind of control, named either by a
+        whole paragraph or by almost nothing depending which band it sat in.
+        That is an accessibility fault and a consistency fault in the same
+        markup.
+
+        The name is the title now, in both bands. The tagline, description
+        and meta are siblings of the link rather than part of it: still read
+        in page order by anyone browsing, no longer crammed into a control's
+        name. WCAG 2.4.4 is met by context, since they sit immediately
+        beside it.
+        """
+        home = self.html("index.html")
+        self.assertNotIn(
+            '<a class="card', home,
+            "a card is an <a> again, which makes its accessible name "
+            "everything inside it -- description, meta and all")
+        names = re.findall(
+            r'card__title"><a href="projects/([^"]+)">([^<]*)</a>', home)
+        self.assertEqual(
+            len(names), 8,
+            "expected 8 title links, found %d" % len(names))
+        for slug, name in names:
+            self.assertTrue(name.strip(), "%s's title link has no text" % slug)
+            self.assertLessEqual(
+                len(name), 40,
+                "%s's link is named %r, %d characters. A card link should be "
+                "named by its title; anything longer means prose has moved "
+                "back inside the anchor." % (slug, name, len(name)))
+        spread = max(len(n) for _, n in names) / max(1, min(len(n) for _, n in names))
+        self.assertLess(
+            spread, 3.0,
+            "the card link names span %.1fx between longest and shortest "
+            "(%s) -- both bands are meant to be named the same way" % (
+                spread, sorted(n for _, n in names)))
+
+    def test_the_whole_card_is_still_clickable(self):
+        """Moving the link to the title must not shrink the hit area."""
+        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
+        card = css.split(".card {", 1)[1].split("}", 1)[0]
+        self.assertIn("position: relative", card,
+                      ".card is not positioned, so the title link's overlay "
+                      "resolves against some other ancestor")
+        over = css.split(".card__title a::after {", 1)[1].split("}", 1)[0]
+        self.assertIn("position: absolute", over)
+        self.assertIn("inset: 0", over,
+                      "the overlay no longer covers the card, so only the "
+                      "title words are clickable")
+
+    def test_keyboard_focus_lands_on_the_card_not_the_words(self):
+        """The overlay is what a pointer hits, so it is what focus describes."""
+        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
+        self.assertIn(".card__title a:focus-visible::after", css,
+                      "no focus ring on the card overlay, so a keyboard user "
+                      "gets an outline around a few words of title or none")
+        ring = css.split(".card__title a:focus-visible::after {", 1)[1].split("}", 1)[0]
+        # Not assertIn("outline"): that substring also matches outline-offset,
+        # so removing the actual outline and leaving the offset behind passed
+        # a green suite when this was sabotaged. Require a real declaration.
+        self.assertRegex(
+            ring, r"outline:\s*[^;]*(solid|auto|\d+px)",
+            "the focus overlay declares no visible outline (only %r), so a "
+            "keyboard user gets no ring around the card"
+            % " ".join(ring.split()))
 
     def test_case_studies_are_rows_not_tiles(self):
         """The side-by-side layout, pinned.

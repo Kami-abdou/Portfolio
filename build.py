@@ -857,22 +857,37 @@ def project_card(project, *, large):
         dated = [s for s in segments if re.search(r"\b(19|20)\d{2}", s)]
         meta = dated[0] if dated else ""
     meta_html = ('<span class="card__meta">%s</span>' % e(meta)) if meta else ""
+    # The link wraps the TITLE, not the card. A pseudo-element on it covers
+    # the card so the whole thing stays clickable -- the block-link pattern.
+    #
+    # The card used to be one <a> around everything, which was fine until the
+    # description moved inside it. Measured against production: a card's
+    # accessible name went from 71-128 characters to 11-475, so a screen
+    # reader announced Fixerloop's card as a 475-character paragraph, and the
+    # secondary cards -- stripped of their taglines by then -- went down to
+    # "07 Smarthub". One control, named by a whole paragraph or by almost
+    # nothing depending which band it sat in.
+    #
+    # Now every card's name is its title, which is 8-15 characters and the
+    # same shape in both bands. The tagline, description and meta sit outside
+    # the link as ordinary text, still read in order by anyone browsing the
+    # page and no longer crammed into one control's name. WCAG 2.4.4 is
+    # satisfied by context: they are the link's immediate siblings.
     return f"""        <li>
-          <a class="{cls}" href="projects/{e(project['slug'])}">
+          <div class="{cls}">
             <span class="card__media">
               <span class="card__num" aria-hidden="true">{num}</span>
-              <!-- alt="" on purpose: this img is inside the card's <a>, whose text
-                   already carries the title and tagline. Describing it here made
-                   every card announce its title twice. -->
+              <!-- alt="" on purpose: the title beside it names the project, and
+                   describing the cover here made every card announce it twice. -->
               <img src="{e(cover)}" alt="" {dims} loading="lazy" decoding="async">
             </span>
             <span class="card__body">
-              <span class="card__title">{e(project['title'])}</span>
+              <span class="card__title"><a href="projects/{e(project['slug'])}">{e(project['title'])}</a></span>
               {tagline_html}
               {note_html}
               {meta_html}
             </span>
-          </a>
+          </div>
         </li>"""
 
 
