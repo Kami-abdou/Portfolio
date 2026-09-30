@@ -901,28 +901,25 @@ body::after {
   font-weight: var(--font-weight-regular);
   letter-spacing: -0.02em;
 }
-.card--lg .card__tagline {
-  font-size: var(--font-size-base);
-  margin-top: var(--space-3);
-}
 .card__meta {
   font-family: var(--font-mono);
   color: var(--color-text-faint);
 }
-/* Four tiers on a case-study row, and the two middle ones need real
-   separation or they blur -- which is the fault this band was just fixed
-   for. The tagline is the hook, so it goes to full-strength ink; the
-   description is the detail, a size down and a step back in colour. Size
-   alone would not do it: base to sm is only 1.13x. */
-.card--lg .card__tagline { color: var(--color-text); }
-/* A step up in size for both, because the narrower cover leaves a wider
-   column and the taller cover leaves more height to fill. Measured: this
-   takes the text from 204-252px to 224-305px, which is most of what pays
-   for the squarer cover -- without it the column would be 31-44% empty
-   instead of 16-38%. The 20/17 size step between these two is slight, so
-   they keep their colour difference doing the real work: the tagline is
-   full-strength ink as the hook, the description is muted as the detail. */
-.card--lg .card__tagline { font-size: var(--font-size-lg); }
+/* ONE rule for the row tagline. This selector had accumulated three
+   separate declarations as the design moved -- a size with a margin, then
+   a colour, then another size -- which is the same duplicate-selector
+   pattern that made a test collect the wrong rule earlier today. The
+   cascade sorted it out correctly; reading it did not.
+
+   Four tiers on a row, and the two middle ones need real separation or they
+   blur: the tagline is the hook at full-strength ink, the description is
+   the detail, muted and a step down. At 24/16 the size step now does its
+   own work, where 20/17 was leaving it all to the colour. */
+.card--lg .card__tagline {
+  margin-top: var(--space-3);
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+}
 .card--lg .card__note {
   display: block;
   margin-top: var(--space-3);
