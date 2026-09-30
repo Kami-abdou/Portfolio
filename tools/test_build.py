@@ -2509,6 +2509,71 @@ class TestCardMeta(BuildCase):
         self.assertNotIn("TODO", self.html("index.html"))
 
 
+class TestAssetVersions(unittest.TestCase):
+    """Every ?v= hash in the COMMITTED html must match the committed asset.
+
+    asset_v exists because a browser keeps serving a cached styles.css or
+    enhance.js after a deploy; its docstring records that costing real
+    debugging time four separate times. Nothing checked the other half --
+    that the HTML was rebuilt after the asset changed.
+
+    It had not been. Caught in pre-flight before a sixteen-commit push: two
+    commits each edited styles.css without a rebuild, so the CSS in the
+    commit hashed to efaa2fef while the HTML in the same commit asked for
+    e212c099. Each file was right on its own and the pair was wrong. Every
+    test passed, the build exited clean, and it looked correct locally,
+    because a fresh browser has nothing cached. The failure only reaches a
+    RETURNING visitor, who keeps the old stylesheet and sees none of the
+    work -- invisible locally, silent in the suite, wrong only for people
+    who have been before.
+
+    This reads from git rather than from disk, and does NOT extend
+    BuildCase, both deliberately. BuildCase runs the build in setUpClass,
+    so a test looking at the working tree sees freshly generated HTML and
+    can never fail -- the first version of this test did exactly that and
+    passed while being handed the known-bad hash. The question is whether
+    the committed pair is coherent, so the committed pair is what it reads.
+    It therefore goes green only once a rebuild is committed, which is the
+    intended meaning.
+    """
+
+    def _show(self, path):
+        import subprocess
+        r = subprocess.run(["git", "show", "HEAD:%s" % path],
+                           cwd=str(ROOT), capture_output=True)
+        return r.stdout if r.returncode == 0 else None
+
+    def test_every_versioned_asset_matches_its_committed_hash(self):
+        import hashlib, subprocess
+        listing = subprocess.run(["git", "ls-tree", "-r", "--name-only", "HEAD"],
+                                 cwd=str(ROOT), capture_output=True, text=True).stdout
+        pages = [p for p in listing.split() if re.fullmatch(r"(?:projects/)?[\w-]+\.html", p)]
+        self.assertTrue(pages, "no committed pages found")
+        checked, bad = 0, []
+        for page in pages:
+            html = (self._show(page) or b"").decode("utf-8", "replace")
+            for ref, want in re.findall(r'(?:href|src)="([^"?]+)\?v=([0-9a-f]+)"', html):
+                rel = re.sub(r"^(?:\.\./)+", "", ref)
+                blob = self._show(rel)
+                self.assertIsNotNone(
+                    blob, "%s references %s?v=%s, which is not committed"
+                          % (page, ref, want))
+                got = hashlib.sha1(blob).hexdigest()[:len(want)]
+                if got != want:
+                    bad.append("%s -> %s asks %s, file is %s" % (page, ref, want, got))
+                checked += 1
+        self.assertEqual(
+            bad, [],
+            "the committed HTML asks for asset versions that do not match "
+            "the committed assets, so a returning visitor keeps the cached "
+            "old copy. Run build.py and commit the result.\n  "
+            + "\n  ".join(bad[:6]))
+        self.assertGreater(
+            checked, 20,
+            "only %d versioned references across %d committed pages, too few "
+            "-- asset_v may have stopped being applied" % (checked, len(pages)))
+
+
 class TestTargetSize(BuildCase):
     """The smallest thing on the site you have to hit with a pointer.
 
