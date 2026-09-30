@@ -533,13 +533,12 @@ a { color: inherit; }
   transition: border-color .3s var(--ease-out);
 }
 .shot__btn:hover { border-color: var(--color-border-strong); }
-.shot__btn img { width: 100%; height: auto; }
-/* The tall exports used to be capped here at 70vh and again at 38vh lower
-   down, both with object-fit: cover, so a 4000px export showed its top
-   band and silently dropped the rest. Uncropped now, on instruction. They
-   DO dominate a page -- that is what the cap was buying -- so data-tall is
-   still emitted by build.py and still drives the corner hint further down;
-   it simply no longer trims the picture. */
+/* The frame is the container the height cap is measured against, so the cap
+   scales with the column instead of with the window. There is exactly ONE
+   rule for a shot image now, further down; this used to declare a second
+   one with the same selector, which is how two sabotages once passed a
+   green test suite. */
+.shot__btn { container-type: inline-size; }
 .shot figcaption {
   margin-top: var(--space-3);
   color: var(--color-text-muted);
@@ -1167,31 +1166,41 @@ body::after {
 }
 
 .shot__btn { border-radius: var(--radius-md); }
-/* Uncropped, on the owner's instruction: the images were cropped and they
-   are not a fan of that.
+/* ── one cap for every figure ───────────────────────────────────────────
+   Cropped again, as production has it -- uncropping made InstaDeep 26,955px
+   tall -- but through a single rule instead of production's four.
 
-   Measured across all 71 figures before this change: 31 of the 36
-   normally-shaped ones lost pixels to a 38vh cover crop, median 50% and
-   worst 82% -- p04-our-mission.jpg is 2104px of screenshot showing 342 of
-   them. Every figure now renders at its own ratio, in full, however tall
-   that makes it.
+   Production had FOUR caps, and which one a figure got was close to
+   arbitrary: 38vh by default, 56vh if it happened to be the only figure in
+   its section, 70vh and then 38vh again for anything over 2200px, 48vh for
+   phones. Two figures of identical proportions could render at different
+   heights because of how many siblings they had. That is the
+   inconsistency; one cap is the fix.
 
-   That has a cost, and it is not small: 17 figures are over 2200px tall and
-   a few are full-page exports, so in1-landing renders 4293px tall at an
-   828px column. The caps were what kept those from dominating a page, and
-   with them gone the pages are much longer. The trade was asked for, but
-   the real fix for the worst offenders is cropping them in Figma to the
-   part that carries the point, which is a content decision rather than a
-   CSS one.
+   The cap is 5/6 of the FRAME WIDTH, not a slice of the window. That
+   matters: production's cap was in vh while the column was 406px wide, so
+   widening the column to 828px would have halved the fraction visible and
+   cropped harder than before. Measured against the 53 non-phone figures,
+   5/6 of the width reproduces production's dominant geometry almost
+   exactly -- 21 show in full and the median figure shows 77% of itself,
+   where production's paired treatment showed 21 and 77%. Same amount of
+   picture, on an image twice the size.
 
-   object-fit is not merely switched to contain, because contain in a capped
-   box letterboxes instead of cropping: a 900x4666 export inside an 828x342
-   frame would render 66px wide, which is worse than the crop it replaced.
-   The only way to show a tall image whole is to give it the height. */
+   cqw rather than a fixed ratio on the frame: 14 figures are WIDER than
+   3/2, up to 3.57, and an aspect-ratio frame with object-fit cover would
+   have cropped those sideways -- trading a vertical crop nobody asked
+   about for a horizontal one on a component strip. A max-height only ever
+   trims the bottom, and a wide figure stays untouched because its natural
+   height is already under the cap. Where cqw is unsupported the
+   declaration is dropped and the figure renders uncropped, which is the
+   safe direction to fail in. */
 .shot__btn img {
   display: block;
   width: 100%;
   height: auto;
+  max-height: 83.333cqw;      /* 5/6 of the frame: see above */
+  object-fit: cover;
+  object-position: top;
 }
 .shot[data-tall="true"] .shot__btn::after {
   content: "Full screen";
@@ -1377,10 +1386,23 @@ body::after {
   padding: var(--space-2);
 }
 .shot[data-phone="true"] .shot__btn img {
-  /* Phone screens were never cropped -- contain letterboxes rather than
-     cutting -- but the 48vh cap shrank a 375x812 screen inside its column
-     and left bars down both sides. Natural height fills the tile instead.
-     The padded bg-alt frame above is kept: it reads as a device surround. */
+  /* Exempt from the HEIGHT cap. A phone screen is ~0.46 wide-to-tall, so
+     5/6 of its column would cut more than half of it off, and a phone
+     screenshot sliced at the waist is the one case everybody agrees is
+     wrong.
+
+     Capped on WIDTH instead, which is what actually keeps them consistent.
+     f04-settings.png sits in a MIXED section -- one phone beside one
+     landscape shot -- and build.py only tags a grid .shots--phone when
+     EVERY image in it is a phone, so that grid stayed single-column, the
+     phone inherited the full 828px, and it rendered 1754px tall next to
+     siblings of 383-735px. Constraining the width fixes it wherever it
+     lands, which is better than teaching the grid about mixed sections.
+     Inside a real phone grid the columns are already 195-265px, so this
+     changes nothing there. */
+  max-height: none;
+  max-width: 300px;
+  margin-inline: auto;
   border-radius: var(--radius-sm);
 }
 /* the phone tiles are small, so a corner hint would crowd them */

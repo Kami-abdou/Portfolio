@@ -2362,32 +2362,74 @@ class TestFigureWidth(BuildCase):
         self.assertTrue(out, "no rule styles a shot image any more")
         return out
 
-    def test_project_figures_are_not_cropped(self):
-        """The owner's instruction: the images were cropped, fix it everywhere.
+    def test_there_is_exactly_one_height_cap(self):
+        """Production had four, and which one a figure got was arbitrary.
 
-        Measured across all 71 figures before the change: 31 of the 36
-        normally-shaped ones lost pixels, median 50% and worst 82% --
-        p04-our-mission.jpg is 2104px of screenshot that showed 342 of them.
-        Two separate caps did it, 70vh in the base block and 38vh further
-        down, both with object-fit: cover, which is why removing one was not
-        enough and why this test looks at every matching rule rather than a
-        single selector.
-
-        Verified in a browser afterwards: 17 of 17 figures on InstaDeep
-        render at their exact natural ratio, worst loss 0%.
+        38vh by default, 56vh if the figure happened to be the only one in
+        its section, 70vh and then 38vh again for anything over 2200px, 48vh
+        for phones. Two figures of identical proportions rendered at
+        different heights depending on how many siblings they had, which is
+        the inconsistency the owner asked to fix. Cropping itself was asked
+        for -- uncropping made InstaDeep 26,955px tall -- so this pins the
+        count, not the absence.
         """
-        for sel, body in self.figure_rules():
-            self.assertNotIn(
-                "object-fit: cover", body,
-                "%s crops again -- a screenshot is the evidence in a case "
-                "study and cover-fitting throws most of it away" % sel)
-            for bad in re.findall(r"max-height:\s*([^;]+)", body):
-                self.assertEqual(
-                    bad.strip(), "none",
-                    "%s caps the image height at %s, which crops or shrinks "
-                    "it. A tall export has to be given its height; contain "
-                    "inside a cap letterboxes instead, and a 900x4666 export "
-                    "in an 828x342 frame renders 66px wide." % (sel, bad.strip()))
+        caps = [(sel, v.strip()) for sel, body in self.figure_rules()
+                for v in re.findall(r"max-height:\s*([^;]+)", body)
+                if v.strip() != "none"]
+        self.assertEqual(
+            len(caps), 1,
+            "expected exactly one height cap on a shot image, found %d: %s. "
+            "Production's four caps are what made the figures inconsistent."
+            % (len(caps), caps))
+
+    def test_the_cap_scales_with_the_column_not_the_window(self):
+        """A vh cap plus a wider column crops harder, silently.
+
+        Production capped at 38vh while the column was 406px. Widening the
+        column to 828px for "donner plus d'espace aux images" would have
+        halved the fraction of each figure visible -- a change made to give
+        images more room would have shown less of them. Measured against the
+        53 non-phone figures, 5/6 of the frame width reproduces
+        production's dominant geometry: 21 show in full and the median shows
+        77% of itself, where production's paired treatment showed 21 and
+        77%.
+        """
+        caps = [v.strip() for _, body in self.figure_rules()
+                for v in re.findall(r"max-height:\s*([^;]+)", body)
+                if v.strip() != "none"]
+        self.assertTrue(caps, "the cap is gone entirely")
+        self.assertRegex(
+            caps[0], r"cqw",
+            "the cap is %r, which is relative to the window rather than to "
+            "the figure's own column. Change the column width and the crop "
+            "changes with it, in the wrong direction." % caps[0])
+        css = re.sub(r"/\*.*?\*/", "", self.css(), flags=re.S)
+        self.assertIn(
+            "container-type: inline-size", css,
+            "nothing declares a container, so a cqw cap measures against "
+            "the viewport and the scaling argument above does not hold")
+
+    def test_phone_screens_are_exempt_from_the_cap(self):
+        """A phone screenshot cropped at the waist is the agreed-wrong case.
+
+        They are ~0.46 wide-to-tall, so 5/6 of their column would cut over
+        half of each one off. They are also all the same proportion as one
+        another, so they are consistent without any help.
+        """
+        rules = dict(self.figure_rules())
+        phone = [body for sel, body in self.figure_rules() if "data-phone" in sel]
+        self.assertTrue(phone, "phone screens no longer have their own rule")
+        self.assertIn(
+            "max-height: none", phone[0],
+            "phone screens are not exempted from the height cap, so every "
+            "one of them is now cut in half")
+        self.assertIn(
+            "max-width", phone[0],
+            "phone screens have no width cap. build.py only tags a grid "
+            ".shots--phone when EVERY image in it is a phone, so a phone in "
+            "a mixed section inherits the full single-column width: "
+            "f04-settings.png rendered 1754px tall beside siblings of "
+            "383-735px until this was added.")
 
     def test_the_phone_variant_is_actually_in_use(self):
         """A :not() guarding nothing is a comment pretending to be code."""
