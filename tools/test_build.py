@@ -2342,6 +2342,32 @@ class TestCardMeta(BuildCase):
         self.assertIn("margin-top: auto", meta,
                       "the meta is no longer pushed to the bottom of the row")
 
+    def test_both_bands_share_one_cover_ratio(self):
+        """The two card types have to read as the same system.
+
+        They used to disagree: 3/2 on a case study, 4/3 on a secondary
+        card. 16/9 was chosen by measuring the eight covers actually in the
+        repo -- it gives the smallest spread in how much of itself each
+        cover shows (77 points against 85 at 3/2 and 89 at 2/1) while
+        keeping the four landscape covers at 86% visible on average.
+
+        Worth recording what this does NOT fix, so nobody retunes the frame
+        expecting it to: the spread is still 77 points. Fixerloop's cover is
+        1.50 and shows whole, Groupado's is 900x4009 and shows 13% of
+        itself. Four of the eight covers are full-page screenshots rather
+        than covers, and no single frame reconciles 0.22 with 2.00. That
+        needs four images.
+        """
+        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
+        ratios = re.findall(r"\.card[^{}]*__media[^{}]*\{[^{}]*?aspect-ratio:\s*([^;]+)", css)
+        ratios = [r.strip() for r in ratios]
+        self.assertTrue(ratios, "no cover frame declares an aspect ratio")
+        self.assertEqual(
+            len(set(ratios)), 1,
+            "the two card bands declare different cover ratios (%s), so the "
+            "case-study and secondary cards do not read as one system"
+            % sorted(set(ratios)))
+
     def css_text(self):
         return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
 

@@ -235,10 +235,27 @@ a { color: inherit; }
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-bg-raised);
-  aspect-ratio: 4 / 3;
+  /* ONE ratio for both bands. The two used to disagree -- 3/2 on a case
+     study, 4/3 on a secondary card -- so the two card types did not read
+     as the same system, which is half of why the covers felt off.
+
+     16/9 rather than something taller, chosen by measurement over the eight
+     covers actually in the repo. It gives the smallest spread in how much
+     of itself each cover shows (77 points against 85 at 3/2 and 89 at 2/1)
+     while keeping the four landscape covers at 86% visible on average, and
+     it takes the case-study row from 453px to 382px, which also drops the
+     text column beside it from 66% empty to 59%.
+
+     What it does NOT fix, and no frame can: the spread is still 77 points.
+     Fixerloop's cover is 1.50 and shows whole; Groupado's is 900x4009 and
+     shows 13% of itself. Four of the eight "covers" are full-page
+     screenshots rather than covers -- steer 0.40, fissa3 0.30, smarthub
+     0.32, groupado 0.22 -- and against the other four at 1.41 to 2.00 no
+     single frame can make them look like one set. That needs four images,
+     not CSS. */
+  aspect-ratio: 16 / 9;
   transition: border-color .35s var(--ease-out), background .35s var(--ease-out);
 }
-.card--lg .card__media { aspect-ratio: 3 / 2; }
 .card__media img {
   width: 100%; height: 100%;
   object-fit: cover; object-position: top;
