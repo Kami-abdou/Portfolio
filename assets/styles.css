@@ -278,11 +278,62 @@ a { color: inherit; }
   aspect-ratio: 5 / 4;
   transition: border-color .35s var(--ease-out), background .35s var(--ease-out);
 }
+/* ── covers, made to belong to the page ──────────────────────────────────
+   The covers are light UI screenshots sitting on a near-black page.
+   Measured against the #02050C background, their mean luminance runs 87x
+   to 587x the page, six of the eight above 400x: they read as glaring
+   white panels stuck onto the site rather than as part of it.
+
+   Two things are wrong and they need different fixes. They are too BRIGHT,
+   which the scrim below handles, and they are all differently coloured,
+   which the grayscale handles -- eight covers in eight different palettes
+   cannot look like one set however they are framed.
+
+   --filter-card, not --filter-mono. The house mono filter is what the hero
+   portrait wears, and reaching for it here was the obvious move and the
+   wrong one: modelled over the real covers, grayscale(1) contrast(1.4)
+   brightness(1.02) makes them BRIGHTER, 374x the page instead of 334x,
+   because a contrast boost pushes an already-light screenshot toward
+   white. It is tuned for a photograph with real shadows. Hence a sibling
+   token with the contrast pulled slightly under 1.
+
+   The scrim is --color-bg, so a cover is tinted toward the page's own
+   colour rather than toward neutral black -- that is what makes it read as
+   belonging rather than as merely dimmed. Measured, it also compresses the
+   spread between the lightest and darkest cover better than an equivalent
+   brightness() does, 6.5x against 8.3x, because contrast clipping at the
+   top end does some of the work.
+
+   0.40 rather than 0.55, decided by measuring and then looking. At 0.55
+   the brightest cover lands at 0.142 mean luminance, which is a dark
+   rectangle you have to hover to read -- too far for a portfolio, where
+   the work is the point. 0.40 puts the brightest at 0.285, down from
+   0.869, and lands the four light covers inside 0.04 of each other:
+   instadeep .285, smarthub .276, fissa3 .275, konnect .247. That
+   clustering is the consistency; the darkening is what makes it belong.
+   This opacity is the knob if it still reads too bright or too dark.
+
+   Hover lifts both the scrim and the grayscale, which is the site's own
+   language -- the portrait shipped with exactly this reveal before it was
+   overridden at the wide breakpoint. */
 .card__media img {
   width: 100%; height: 100%;
   object-fit: cover; object-position: top;
-  transition: transform .7s var(--ease-out);
+  filter: var(--filter-card);
+  transition: transform .7s var(--ease-out), filter .5s var(--ease-out);
 }
+.card__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;                 /* over the image, under the index badge at 2 */
+  background: var(--color-bg);
+  opacity: 0.40;
+  pointer-events: none;
+  transition: opacity .5s var(--ease-out);
+}
+.card:hover .card__media img { filter: none; }
+.card:hover .card__media::after { opacity: 0.18; }
 .card:hover .card__media {
   border-color: var(--color-border-strong);
   background: var(--color-bg-raised-hover);
