@@ -1051,7 +1051,48 @@ class TestLinkIcons(BuildCase):
     3x as well as computed.
     """
 
-    SLUGS = ("linkedin", "github", "email", "cv")
+    @property
+
+    def SLUGS(self):
+
+        """The link slugs this site actually ships, from site.json.
+
+
+        Hardcoded, this listed github, and it failed the moment the
+
+        owner removed that link -- reporting "the github button has no
+
+        mark" for a button that is deliberately not there any more.
+
+        The property worth testing is that every link which IS shipped
+
+        carries its mark, not that one particular brand appears.
+
+        """
+
+        import json as _j
+
+        site = _j.loads((ROOT / "site.json").read_text(encoding="utf-8"))
+
+        known = ("linkedin", "github", "email", "cv")
+
+        out = []
+
+        for link in site.get("links", []):
+
+            label = link.get("label", "").lower()
+
+            for k in known:
+
+                if k in label and k not in out:
+
+                    out.append(k)
+
+        if site.get("cvFile") or site.get("cv"):
+
+            out.append("cv")
+
+        return out
 
     def test_every_mark_is_on_disk(self):
         for slug in self.SLUGS:
@@ -1069,7 +1110,9 @@ class TestLinkIcons(BuildCase):
 
     def test_the_about_page_carries_them_too(self):
         about = self.html("about.html")
-        for slug in ("linkedin", "github", "email"):
+        #: /about shows the profile links but not the CV button, which has
+        #: its own call to action above the row.
+        for slug in [s for s in self.SLUGS if s != "cv"]:
             self.assertIn("assets/links/%s.png" % slug, about,
                           "about page: the %s button has no mark" % slug)
 
