@@ -1079,9 +1079,18 @@ class TestLinkIcons(BuildCase):
         The match is a keyword inside an owner-authored label, so the risk
         is a false positive putting a brand mark on an unrelated link.
         """
-        portfolio = self.html("projects/portfolio.html")
-        self.assertIn("assets/links/github.png", portfolio,
-                      '"Source on GitHub" lost its mark')
+        # Tested against the matcher, not against a page. The true-positive
+        # half used to assert that projects/portfolio.html carried the mark,
+        # which tied it to one owner-authored link -- and it failed the
+        # moment that link was removed, for a reason that said nothing about
+        # whether the matching logic still worked.
+        sys.path.insert(0, str(ROOT))
+        from build import link_icon
+        self.assertIn("assets/links/github.png", link_icon("Source on GitHub"),
+                      "the matcher no longer recognises GitHub in a label")
+        self.assertEqual(link_icon("Groupado today"), "",
+                         "the matcher put a brand mark on a label that "
+                         "names no brand")
         for slug in ("steer", "groupado", "konnect", "fixerloop"):
             page = self.html("projects/%s.html" % slug)
             row = re.search(r'<div class="btn-row">(.*?)</div>', page, re.S)
