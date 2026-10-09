@@ -818,6 +818,40 @@ def viewer(images, project_dir, depth, label="Component browser"):
         '</div>' % ("".join(panels), e(label), "".join(tabs)))
 
 
+def section_opens(idx, section, live_sections):
+    """Which case-study sections start expanded.
+
+    Everything is collapsible; these are the ones a visitor should not
+    have to click for. The first, because a page whose every section is
+    shut reads as empty rather than as tidy and gives nothing to begin
+    reading. And the outcome, because it is the payoff -- a case study
+    that hides what came of the work behind a disclosure control has
+    buried the one part a recruiter came for.
+
+    A page with a single live section is always open: there is no length
+    problem to solve and a lone collapsed heading is just an obstacle.
+    """
+    if len(live_sections) <= 1:
+        return True
+    if idx == 1:
+        return True
+    return section.get("id") == "outcome"
+
+
+def screen_count(images):
+    """"6 screens" on a collapsed section's summary.
+
+    A closed section is a promise about its own contents, and a heading
+    alone does not say whether there is a paragraph or twenty-one
+    screenshots behind it. This is the smallest honest hint.
+    """
+    n = len(images or [])
+    if not n:
+        return ""
+    return ('<span class="section__count">%d screen%s</span>'
+            % (n, "" if n == 1 else "s"))
+
+
 def project_card(project, *, large):
     cover = "projects/%s/%s" % (project["_dir"], project["cover"])
     size = png_size(ROOT / "projects" / project["_dir"] / project["cover"])
@@ -1640,6 +1674,17 @@ def build_project(project, prev_p, next_p):
         <div class="project__main">
 """)
 
+    # The expand-all control. Hidden until JS wires it, the same contract
+    # as every other enhancement here: with script off each <summary>
+    # still opens on its own, so nothing on screen offers a control that
+    # cannot work. Only rendered when there is more than one section --
+    # "expand all" over a single section is noise.
+    if len(live_sections) > 1:
+        out.append(
+            '<div class="sections__control" hidden>'
+            '<button type="button" class="sections__toggle" aria-expanded="false">'
+            'Expand all</button></div>')
+
     # A leading "01" claims a position in a sequence. On a page with exactly
     # one live section there is no sequence, and the number reads as a
     # numbering bug rather than as structure -- most visibly on the highlights
@@ -1675,7 +1720,10 @@ def build_project(project, prev_p, next_p):
         # aria-hidden on the whole line: the number is decorative and the
         # phase repeats what the heading under it already says. Announcing
         # "zero one overview, overview" helps nobody.
-        return ('<p class="project__eyebrow" aria-hidden="true">%s</p>'
+        # A span, not a p. <summary>'s content model is phrasing content
+        # optionally intermixed with heading content, and a <p> is flow
+        # content -- it renders fine and is invalid to the parser.
+        return ('<span class="project__eyebrow" aria-hidden="true">%s</span>'
                 % '<span class="project__eyebrow-sep"></span>'.join(bits))
 
     for idx, section in enumerate(live_sections, start=1):
@@ -1684,14 +1732,37 @@ def build_project(project, prev_p, next_p):
         if section.get("autoImages"):
             section_imgs = section_imgs + auto_images(d, section["autoImages"])
         # a section marked "viewer" renders as a browsable frame instead of a grid
+        # ── collapsible section ────────────────────────────────────
+        # Fixerloop measured 26,747px, about 35 screens for one case
+        # study, and the owner's read was that there is too much in it.
+        # There is. The answer is not to delete the work; it is to stop
+        # requiring that all of it be scrolled past to reach the end.
+        #
+        # <details> rather than a scripted accordion, because it is the
+        # one disclosure widget that needs no script: <summary> is already
+        # a button to the keyboard and to assistive tech, it already
+        # carries its own expanded state, and it still opens with
+        # JavaScript off. The JS added for this does only the TOC wiring
+        # and the expand-all control -- never the opening itself.
+        #
+        # The FIGURES go inside. They were siblings following each
+        # section, so collapsing a section alone would have hidden 500
+        # words and left 21 screenshots exactly where they were.
+        open_attr = " open" if section_opens(idx, section, live_sections) else ""
+        count_html = screen_count(section_imgs)
         if section.get("viewer") and section_imgs:
             out.append(f"""
-      <section class="project__section" id="{e(section.get('id',''))}">
+      <details class="project__section" id="{e(section.get('id',''))}"{open_attr}>
+        <summary class="section__summary">
 {num_html}
-        <h2>{e(section['heading'])}</h2>
+          <h2>{e(section['heading'])}</h2>
+          {count_html}
+        </summary>
+        <div class="section__body">
         {('<div class="prose">%s</div>' % paragraphs(section.get("body"))) if usable(section.get("body")) else ""}
         {viewer(section_imgs, d, depth=1, label=section['heading'])}
-      </section>
+        </div>
+      </details>
 """)
             continue
         figs = "\n".join(figure(img, d, depth=1) for img in section_imgs)
@@ -1708,11 +1779,16 @@ def build_project(project, prev_p, next_p):
                      if usable(section.get("body")) else "")
         figs_html = ('\n      <div class="shots%s">\n%s\n      </div>' % (variant, figs)) if figs else ""
         out.append(f"""
-      <section class="project__section" id="{e(section.get('id',''))}">
+      <details class="project__section" id="{e(section.get('id',''))}"{open_attr}>
+        <summary class="section__summary">
 {num_html}
-        <h2>{e(section['heading'])}</h2>
-        {body_html}
-      </section>{figs_html}
+          <h2>{e(section['heading'])}</h2>
+          {count_html}
+        </summary>
+        <div class="section__body">
+        {body_html}{figs_html}
+        </div>
+      </details>
 """)
 
     nav = []

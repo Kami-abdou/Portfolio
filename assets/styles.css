@@ -2297,3 +2297,113 @@ html {
      has the gesture anyway. */
   .rail__btn { display: none; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   COLLAPSIBLE CASE-STUDY SECTIONS
+   ══════════════════════════════════════════════════════════
+   Fixerloop rendered at 26,747px -- about 35 screens for one project.
+   Every section is a <details> now, so the page opens as a readable
+   index of itself and the depth is one click away per section.
+
+   <details> and not a scripted accordion: <summary> is already a button
+   to the keyboard and to assistive tech, it already exposes expanded
+   state, and it still works with JavaScript off. Nothing here recreates
+   any of that in script.
+   ══════════════════════════════════════════════════════════ */
+
+.section__summary {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+  padding-block: var(--space-4);
+  cursor: pointer;
+  list-style: none;
+  /* The default disclosure triangle, removed in both dialects. The
+     marker sits at the start of the box and would push a two-line
+     summary off the content column's left edge. */
+  -webkit-tap-highlight-color: transparent;
+}
+.section__summary::-webkit-details-marker { display: none; }
+.section__summary::marker { content: ""; }
+
+.section__summary > .project__eyebrow { grid-column: 1; grid-row: 1; margin: 0; }
+.section__summary > h2 { grid-column: 1; grid-row: 2; margin: 0; }
+.section__count {
+  grid-column: 2; grid-row: 1 / span 2;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  white-space: nowrap;
+}
+
+/* The chevron, on the summary itself so there is no extra element and
+   nothing for a screen reader to announce twice -- <summary> already
+   says "expanded" or "collapsed". */
+.section__summary::after {
+  content: "";
+  grid-column: 3; grid-row: 1 / span 2;
+  width: 32px; height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background:
+    linear-gradient(currentColor, currentColor) center / 11px 1px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 1px 11px no-repeat;
+  color: var(--color-text-muted);
+  transition: transform .35s var(--ease-out), border-color .25s var(--ease-out),
+              color .25s var(--ease-out);
+}
+/* Open: the vertical stroke rotates away, so a + becomes a -. One
+   element, two states, no icon swap. */
+.project__section[open] > .section__summary::after {
+  transform: rotate(90deg);
+  background:
+    linear-gradient(currentColor, currentColor) center / 11px 1px no-repeat;
+}
+
+.section__summary:hover::after,
+.project__section[open] > .section__summary:hover::after {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+.section__summary:hover > h2 { color: var(--color-accent); }
+.section__summary > h2 { transition: color .3s var(--ease-out); }
+
+/* The focus ring belongs on the row, not on the text node inside it. */
+.section__summary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* A hairline between sections, so a page of closed ones reads as a list
+   rather than as a stack of floating headings. */
+.project__section { border-top: 1px solid var(--color-border); }
+.project__section:last-of-type { border-bottom: 1px solid var(--color-border); }
+
+.section__body { padding-bottom: var(--space-8); }
+
+/* ── expand / collapse all ── */
+.sections__control {
+  display: flex;
+  justify-content: flex-end;
+  padding-block: var(--space-4);
+}
+.sections__control[hidden] { display: none; }
+.sections__toggle {
+  min-height: 32px;
+  padding: 0 var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color .25s var(--ease-out), border-color .25s var(--ease-out);
+}
+.sections__toggle:hover { color: var(--color-text); border-color: var(--color-border-strong); }

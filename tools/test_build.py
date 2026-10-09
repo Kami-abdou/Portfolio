@@ -1717,6 +1717,111 @@ class TestCustomDomain(BuildCase):
                          % ", ".join(stale))
 
 
+class TestCollapsibleSections(BuildCase):
+    """Case-study sections are <details>, and the figures are inside them.
+
+    Fixerloop rendered at 26,747px -- about 35 screens for one project --
+    which is what prompted this. Collapsing took it to 5,060.
+
+    The failure worth guarding is not that the markup disappears; it is
+    that the FIGURES drift back out. They were siblings following each
+    section before this, so a <details> wrapping the section alone would
+    collapse 500 words and leave 21 screenshots exactly where they were.
+    The page would still look collapsible and save almost nothing, and
+    nothing else in this suite would notice.
+    """
+
+    def pages(self):
+        return ["projects/%s.html" % json.loads(p.read_text(encoding="utf-8"))["slug"]
+                for p in sorted((ROOT / "projects").glob("*/content.json"))]
+
+    def body(self, page):
+        return re.sub(r"<!--.*?-->", "", self.html(page), flags=re.S)
+
+    def test_sections_are_details_with_a_summary(self):
+        for page in self.pages():
+            src = self.body(page)
+            opens = len(re.findall(r'<details class="project__section"', src))
+            self.assertTrue(opens, "%s has no collapsible sections" % page)
+            self.assertEqual(
+                opens, src.count('<summary class="section__summary">'),
+                "%s has a details without a summary, which is a section that "
+                "cannot be opened by keyboard or by click" % page)
+            self.assertNotIn(
+                '<section class="project__section"', src,
+                "%s still renders a plain <section>, so that one does not "
+                "collapse with the rest" % page)
+
+    def test_the_figures_collapse_with_their_section(self):
+        """The whole point. Figures outside the body save nothing."""
+        for page in self.pages():
+            src = self.body(page)
+            for block in re.findall(
+                    r'<details class="project__section".*?</details>', src, re.S):
+                shots = block.count('<div class="shots')
+                if not shots:
+                    continue
+                body = block.split('<div class="section__body">', 1)
+                self.assertEqual(
+                    len(body), 2,
+                    "%s: a section has figures but no collapsible body" % page)
+                self.assertEqual(
+                    body[1].count('<div class="shots'), shots,
+                    "%s: a section's figures sit outside .section__body, so "
+                    "collapsing it hides the prose and leaves the screenshots"
+                    % page)
+
+    def test_no_page_opens_entirely_collapsed(self):
+        """A page of shut headings reads as empty, not as tidy."""
+        for page in self.pages():
+            src = self.body(page)
+            opened = re.findall(
+                r'<details class="project__section" id="[^"]*" open>', src)
+            self.assertTrue(
+                opened,
+                "%s opens with every section collapsed, so a visitor lands "
+                "on a list of headings and no content" % page)
+
+    def test_the_outcome_section_is_never_collapsed(self):
+        """The payoff is what a recruiter came for; it does not get hidden."""
+        for page in self.pages():
+            src = self.body(page)
+            match = re.search(
+                r'<details class="project__section" id="outcome"( open)?>', src)
+            if not match:
+                continue
+            self.assertTrue(
+                match.group(1),
+                "%s collapses its outcome section, which buries what came of "
+                "the work behind a disclosure control" % page)
+
+    def test_the_expand_all_control_ships_hidden(self):
+        """Same contract as every other enhancement on this site."""
+        for page in self.pages():
+            src = self.body(page)
+            if "sections__control" not in src:
+                continue
+            self.assertIn(
+                'class="sections__control" hidden', src,
+                "%s ships the expand-all control visible, so with JS off it "
+                "is a button that does nothing" % page)
+
+    def test_the_eyebrow_is_phrasing_content(self):
+        """<summary> takes phrasing content plus optional heading content.
+
+        The eyebrow was a <p>, which is flow content: it renders fine and
+        is invalid in the parser's content model, and an invalid <p>
+        inside <summary> is the kind of thing that gets silently
+        reparented.
+        """
+        for page in self.pages():
+            src = self.body(page)
+            for summary in re.findall(r"<summary[^>]*>(.*?)</summary>", src, re.S):
+                self.assertNotIn(
+                    "<p", summary,
+                    "%s has a <p> inside a <summary>" % page)
+
+
 class TestScrollSnap(BuildCase):
     """Snapping must stay `proximity`, and must stay gated.
 

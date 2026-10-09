@@ -686,3 +686,80 @@
     update();
   });
 })();
+
+
+/* Collapsible case-study sections: the two things <details> does not do
+   for itself.
+
+   Everything else about them is the browser's. A <summary> opens on
+   click and on Enter or Space, exposes its own expanded state, and works
+   with this file absent entirely. What is missing is that a link to a
+   section inside a CLOSED <details> scrolls to a collapsed heading and
+   appears to do nothing -- which breaks the table of contents, the
+   pager's deep links and any URL anyone has shared.
+*/
+(function () {
+  var sections = document.querySelectorAll('details.project__section');
+  if (!sections.length) return;
+
+  /* 1. Opening a section that something just linked to. */
+  function reveal(hash) {
+    if (!hash || hash.length < 2) return;
+    var target;
+    try {
+      target = document.querySelector(hash);
+    } catch (err) {
+      return;                      // a hash that is not a valid selector
+    }
+    if (!target) return;
+    var box = target.closest('details');
+    if (box && !box.open) box.open = true;
+  }
+
+  reveal(window.location.hash);
+  window.addEventListener('hashchange', function () {
+    reveal(window.location.hash);
+  });
+  // Before the jump, not after: opening the section first means the
+  // browser scrolls to a heading that is already in its final position.
+  document.addEventListener('click', function (ev) {
+    var link = ev.target.closest && ev.target.closest('a[href^="#"]');
+    if (!link) return;
+    reveal(link.getAttribute('href'));
+  }, true);
+
+  /* 2. Expand all / collapse all. */
+  var control = document.querySelector('.sections__control');
+  var toggle = control && control.querySelector('.sections__toggle');
+  if (!control || !toggle) return;
+
+  control.hidden = false;
+
+  function allOpen() {
+    for (var i = 0; i < sections.length; i++) {
+      if (!sections[i].open) return false;
+    }
+    return true;
+  }
+
+  function sync() {
+    var open = allOpen();
+    toggle.textContent = open ? 'Collapse all' : 'Expand all';
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  toggle.addEventListener('click', function () {
+    var open = !allOpen();
+    Array.prototype.forEach.call(sections, function (s) { s.open = open; });
+    sync();
+  });
+
+  // `toggle` fires on a <details> whenever its state changes, including
+  // from a click on one summary, so the button's label keeps up with the
+  // sections rather than only with itself.
+  Array.prototype.forEach.call(sections, function (s) {
+    s.addEventListener('toggle', sync);
+  });
+
+  sync();
+})();

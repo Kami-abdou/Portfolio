@@ -37,7 +37,7 @@
   <link rel="preload" href="../assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/fonts.css?v=1f22714f">
   <link rel="stylesheet" href="../assets/tokens.css?v=dcb93877">
-  <link rel="stylesheet" href="../assets/styles.css?v=211aa66e">
+  <link rel="stylesheet" href="../assets/styles.css?v=9622af3c">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
 </head>
 <body>
@@ -81,12 +81,16 @@
         </aside>
         <div class="project__main">
 
+<div class="sections__control" hidden><button type="button" class="sections__toggle" aria-expanded="false">Expand all</button></div>
 
-      <section class="project__section" id="services">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">01</span></p>
-        <h2>A page per service</h2>
+      <details class="project__section" id="services" open>
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">01</span></span>
+          <h2>A page per service</h2>
+          <span class="section__count">6 screens</span>
+        </summary>
+        <div class="section__body">
         
-      </section>
       <div class="shots">
         <figure class="shot" data-tall="true">
           <button class="shot__btn" type="button" data-full="08-smarthub/assets/02-web-design-development.full.jpg" aria-label="Open full image: Smarthub web design and development service page">
@@ -125,13 +129,18 @@
           <figcaption>Social media &amp; management.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="careers">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">02</span></p>
-        <h2>Careers</h2>
+      <details class="project__section" id="careers">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">02</span></span>
+          <h2>Careers</h2>
+          <span class="section__count">1 screen</span>
+        </summary>
+        <div class="section__body">
         
-      </section>
       <div class="shots">
         <figure class="shot" data-tall="true">
           <button class="shot__btn" type="button" data-full="08-smarthub/assets/08-careers.full.jpg" aria-label="Open full image: Smarthub careers page">
@@ -140,6 +149,8 @@
           <figcaption>Careers.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
         </div><!-- /.project__main -->
@@ -163,6 +174,6 @@
     </div>
   </footer>
   <script src="../assets/lightbox.js?v=e7e218f9" defer></script>
-  <script src="../assets/enhance.js?v=9e5e1d7e" defer></script>
+  <script src="../assets/enhance.js?v=5c5947f8" defer></script>
 </body>
 </html>

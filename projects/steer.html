@@ -37,7 +37,7 @@
   <link rel="preload" href="../assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/fonts.css?v=1f22714f">
   <link rel="stylesheet" href="../assets/tokens.css?v=dcb93877">
-  <link rel="stylesheet" href="../assets/styles.css?v=211aa66e">
+  <link rel="stylesheet" href="../assets/styles.css?v=9622af3c">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
 </head>
 <body>
@@ -81,26 +81,40 @@
         </aside>
         <div class="project__main">
 
+<div class="sections__control" hidden><button type="button" class="sections__toggle" aria-expanded="false">Expand all</button></div>
 
-      <section class="project__section" id="context">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">01</span><span class="project__eyebrow-sep"></span><span class="project__phase">Context</span></p>
-        <h2>Two products for one broken market</h2>
+      <details class="project__section" id="context" open>
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">01</span><span class="project__eyebrow-sep"></span><span class="project__phase">Context</span></span>
+          <h2>Two products for one broken market</h2>
+          
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>The used-car market is difficult on both sides. New cars are getting more expensive in emerging markets, which pushes buyers toward used ones — but a used car may not be reliable and there is no easy way to know before you buy. Steer set out to fix that with two products: a C2C marketplace where buyers get detailed, verified information about a car alongside a pricing algorithm and partner services like warranties and financing, and a B2B web platform for used-car professionals covering inspections, vehicle health analysis, stock management and digital marketing.</p></div>
-      </section>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="problem">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">02</span><span class="project__eyebrow-sep"></span><span class="project__phase">The problem</span></p>
-        <h2>Every viewing costs another inspection fee</h2>
+      <details class="project__section" id="problem">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">02</span><span class="project__eyebrow-sep"></span><span class="project__phase">The problem</span></span>
+          <h2>Every viewing costs another inspection fee</h2>
+          
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>Buying or selling a used car takes an enormous amount of process and time, and you cannot always trust the mechanic. There are red flags everywhere and very little transparency. Every car you go to see costs another inspection fee. Working out whether a given price is fair means asking a lot of people a lot of questions. First-time buyers are the most exposed, because sellers can give false information and there is no straightforward way to check it.</p></div>
-      </section>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="process">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">03</span><span class="project__eyebrow-sep"></span><span class="project__phase">Process</span></p>
-        <h2>Identity first, interface second</h2>
+      <details class="project__section" id="process">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">03</span><span class="project__eyebrow-sep"></span><span class="project__phase">Process</span></span>
+          <h2>Identity first, interface second</h2>
+          <span class="section__count">1 screen</span>
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>We started by building an identity for the startup and grounding it in market research, working the problem statement and the solution together before touching any interface. Once we understood the market we brainstormed, and I produced low-fidelity designs. We validated those, moved to high fidelity, then walked the developer through them and I followed every step of the build. Miro carried the thinking, Figma carried the design.</p></div>
-      </section>
       <div class="shots">
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="01-steer/assets/p1-design-process.png" aria-label="Open full image: The Steer design process, from research through to high-fidelity design">
@@ -109,13 +123,18 @@
           <figcaption>The multi-step process used to uncover problems, generate ideas and communicate them in low and high fidelity.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="research">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">04</span><span class="project__eyebrow-sep"></span><span class="project__phase">Research</span></p>
-        <h2>Written for twenty, sat down with fifteen</h2>
+      <details class="project__section" id="research">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">04</span><span class="project__eyebrow-sep"></span><span class="project__phase">Research</span></span>
+          <h2>Written for twenty, sat down with fifteen</h2>
+          <span class="section__count">3 screens</span>
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>I wrote a survey for people who had bought a used car, were considering one, or wanted a transparent diagnosis of a car they already owned. It was designed for 20 participants and I sat down with 15 of them to gather their answers from lived experience. The questions covered age, employment, budget, what they look for in a car, where they bought it, how long it took, what deceptions they ran into when viewing cars, the profile of the sellers, and what the mechanic cost them. The answers gave me a clear read on their frustrations and goals, and became the foundation for everything that followed.</p></div>
-      </section>
       <div class="shots">
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="01-steer/assets/p2-survey-answers.full.jpg" aria-label="Open full image: Aggregated survey results from 15 used-car buyers">
@@ -136,13 +155,18 @@
           <figcaption>User journey.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="competitors">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">05</span><span class="project__eyebrow-sep"></span><span class="project__phase">Landscape</span></p>
-        <h2>Where the market left buyers unprotected</h2>
+      <details class="project__section" id="competitors">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">05</span><span class="project__eyebrow-sep"></span><span class="project__phase">Landscape</span></span>
+          <h2>Where the market left buyers unprotected</h2>
+          <span class="section__count">1 screen</span>
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>Mapping the existing players showed where the market left buyers unprotected, and where verified inspection data could become the thing that differentiated Steer rather than just another listing site.</p></div>
-      </section>
       <div class="shots">
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="01-steer/assets/p3-competitor-analysis.png" aria-label="Open full image: Competitor analysis of used-car marketplaces">
@@ -151,13 +175,18 @@
           <figcaption>Competitor analysis.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="solution">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">06</span><span class="project__eyebrow-sep"></span><span class="project__phase">The solution</span></p>
-        <h2>Inspect once, and trust the number</h2>
+      <details class="project__section" id="solution">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">06</span><span class="project__eyebrow-sep"></span><span class="project__phase">The solution</span></span>
+          <h2>Inspect once, and trust the number</h2>
+          <span class="section__count">1 screen</span>
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>The platform rests on scalable digital inspection technology paired with a pricing algorithm, so an inspection is efficient, repeatable and trustworthy rather than a cost you pay again at every viewing. On top of that sits a marketplace with customer services designed to make both buying and selling feel supported instead of adversarial.</p></div>
-      </section>
       <div class="shots">
         <figure class="shot" data-tall="true">
           <button class="shot__btn" type="button" data-full="01-steer/assets/p6-user-flow.full.jpg" aria-label="Open full image: User flow through the Steer platform">
@@ -166,13 +195,18 @@
           <figcaption>User flow.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="screens">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">07</span><span class="project__eyebrow-sep"></span><span class="project__phase">Website</span></p>
-        <h2>The B2B face of the product</h2>
+      <details class="project__section" id="screens">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">07</span><span class="project__eyebrow-sep"></span><span class="project__phase">Website</span></span>
+          <h2>The B2B face of the product</h2>
+          <span class="section__count">3 screens</span>
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>We built the B2B-facing website to present the work: what Steer does, who it is for, and how a professional gets started.</p></div>
-      </section>
       <div class="shots">
         <figure class="shot" data-tall="true">
           <button class="shot__btn" type="button" data-full="01-steer/assets/01-homepage.full.jpg" aria-label="Open full image: Steer homepage">
@@ -193,15 +227,22 @@
           <figcaption>Login and free trial.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="outcome">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">08</span><span class="project__eyebrow-sep"></span><span class="project__phase">Outcome</span></p>
-        <h2>Two years as the whole design function</h2>
+      <details class="project__section" id="outcome" open>
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">08</span><span class="project__eyebrow-sep"></span><span class="project__phase">Outcome</span></span>
+          <h2>Two years as the whole design function</h2>
+          
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>Two years as the entire design function, and the product function with it. From October 2021 to November 2023 I ran the research, the brand, the interface and the roadmap decisions behind them. There was nobody else in design or product.</p>
         <p>That work was what Steer took to investors. The company secured backing from the Versailles Grand Parc incubator in Île-de-France and opened a French entity there. It now builds AI tools for used-vehicle professionals — inspection, pricing, documentation and resale.</p>
         <p>The site has been redesigned since I left. It still runs on the brand I built.</p></div>
-      </section>
+        </div>
+      </details>
 
 
         </div><!-- /.project__main -->
@@ -225,6 +266,6 @@
     </div>
   </footer>
   <script src="../assets/lightbox.js?v=e7e218f9" defer></script>
-  <script src="../assets/enhance.js?v=9e5e1d7e" defer></script>
+  <script src="../assets/enhance.js?v=5c5947f8" defer></script>
 </body>
 </html>

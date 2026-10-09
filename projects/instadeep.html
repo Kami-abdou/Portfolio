@@ -37,7 +37,7 @@
   <link rel="preload" href="../assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/fonts.css?v=1f22714f">
   <link rel="stylesheet" href="../assets/tokens.css?v=dcb93877">
-  <link rel="stylesheet" href="../assets/styles.css?v=211aa66e">
+  <link rel="stylesheet" href="../assets/styles.css?v=9622af3c">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
 </head>
 <body>
@@ -81,13 +81,17 @@
         </aside>
         <div class="project__main">
 
+<div class="sections__control" hidden><button type="button" class="sections__toggle" aria-expanded="false">Expand all</button></div>
 
-      <section class="project__section" id="deeppcb">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">01</span><span class="project__eyebrow-sep"></span><span class="project__phase">Product</span></p>
-        <h2>DeepPCB</h2>
+      <details class="project__section" id="deeppcb" open>
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">01</span><span class="project__eyebrow-sep"></span><span class="project__phase">Product</span></span>
+          <h2>DeepPCB</h2>
+          <span class="section__count">4 screens</span>
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>DeepPCB is InstaDeep&#x27;s cloud-native PCB routing software — a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product&#x27;s public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.</p>
         <p>These are the marketing and onboarding surfaces rather than the routing canvas itself.</p></div>
-      </section>
       <div class="shots">
         <figure class="shot" data-tall="true">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/p01-home.full.jpg" aria-label="Open full image: DeepPCB home page">
@@ -114,15 +118,20 @@
           <figcaption>Our mission.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="instanovo">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">02</span><span class="project__eyebrow-sep"></span><span class="project__phase">Product</span></p>
-        <h2>InstaNovo</h2>
+      <details class="project__section" id="instanovo">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">02</span><span class="project__eyebrow-sep"></span><span class="project__phase">Product</span></span>
+          <h2>InstaNovo</h2>
+          <span class="section__count">3 screens</span>
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>InstaNovo and InstaNovo+ are de novo peptide sequencing models: they read a mass spectrum and return a peptide sequence without matching it against a reference database, which is the whole point — a database search can only find what is already in the database. Built with the Department of Biotechnology and Biomedicine at the Technical University of Denmark, and published in Nature Machine Intelligence.</p>
         <p>My work was the public face of it: the logo, and a landing page that has to hold two readers at once. A proteomics researcher wants the benchmark before they want anything else — 52% average peptide accuracy across eight biological datasets, 34% more novel peptides, 42% more peptide spectrum matches. Someone deciding whether to fund or adopt it wants to know what that unlocks. So the numbers sit in a band immediately under the hero rather than being saved for a technical page, and the two models get one section each — InstaNovo transcribing, InstaNovo+ refining by diffusion — because the relationship between them is the thing people get wrong.</p>
         <p>The set also includes the states, in the same visual language rather than a default: the 404 is built from real sequence output, and the pre-launch holding page had to look like the product it was holding.</p></div>
-      </section>
       <div class="shots">
         <figure class="shot" data-tall="true">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/in1-landing.full.jpg" aria-label="Open full image: InstaNovo landing page, full scroll: hero, benchmark band, a section each for InstaNovo and InstaNovo+, capability cards, research and contact">
@@ -144,14 +153,19 @@
           <figcaption>The pre-launch holding page. Brand only, and it still had to look like the product it was holding.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="design-system">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">03</span><span class="project__eyebrow-sep"></span><span class="project__phase">System</span></p>
-        <h2>Design system</h2>
+      <details class="project__section" id="design-system">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">03</span><span class="project__eyebrow-sep"></span><span class="project__phase">System</span></span>
+          <h2>Design system</h2>
+          <span class="section__count">9 screens</span>
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>Every InstaDeep product surface and research demo is built from one system. It exists because the alternative was each team inventing its own buttons, and it had to survive being used by engineers with no designer in the room.</p>
         <p>Browse the components below.</p></div>
-      </section>
       <div class="shots">
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/01-every-variant.png" aria-label="Open full image: Every variant — InstaDeep design system">
@@ -199,13 +213,18 @@
           </button>
         </figure>
       </div>
+        </div>
+      </details>
 
 
-      <section class="project__section" id="states">
-<p class="project__eyebrow" aria-hidden="true"><span class="project__num">04</span><span class="project__eyebrow-sep"></span><span class="project__phase">States</span></p>
-        <h2>The part nobody screenshots</h2>
+      <details class="project__section" id="states">
+        <summary class="section__summary">
+<span class="project__eyebrow" aria-hidden="true"><span class="project__num">04</span><span class="project__eyebrow-sep"></span><span class="project__phase">States</span></span>
+          <h2>The part nobody screenshots</h2>
+          <span class="section__count">2 screens</span>
+        </summary>
+        <div class="section__body">
         <div class="prose"><p>The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows — a routing job that will not converge, a spectrum with no confident call, a link that has gone stale — so the error pages carry each product&#x27;s own grid or sequence motif, say what happened in that product&#x27;s vocabulary, and offer exactly one way back. Two products, one discipline.</p></div>
-      </section>
       <div class="shots">
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/p10-404.full.jpg" aria-label="Open full image: DeepPCB 404 page: a monospace 404 label, PAGE NOT FOUND set large, and a single Go to Homepage action">
@@ -220,6 +239,8 @@
           <figcaption>InstaNovo — the field on the right is real sequence output, so even the error page is made of what the product does.</figcaption>
         </figure>
       </div>
+        </div>
+      </details>
 
 
         </div><!-- /.project__main -->
@@ -242,6 +263,6 @@
     </div>
   </footer>
   <script src="../assets/lightbox.js?v=e7e218f9" defer></script>
-  <script src="../assets/enhance.js?v=9e5e1d7e" defer></script>
+  <script src="../assets/enhance.js?v=5c5947f8" defer></script>
 </body>
 </html>
