@@ -62,12 +62,28 @@
         {
           "src": "assets/p03-pricing.jpg",
           "alt": "DeepPCB pricing page",
-          "caption": "Pricing."
+          "caption": "Consumption pricing made legible: what a free day actually includes, what one credit buys, and the board size at which you stop self-serving and talk to sales."
+        }
+      ]
+    },
+    {
+      "id": "deeppcb-app",
+      "phase": "Product",
+      "heading": "From a list of jobs to a routed board",
+      "body": "DeepPCB sells routing by the hour, so the two screens that carry the product are the one that says whether an hour is still running and the one that spends it.\n\nThe board list puts each job's state on its own card — pending, idle, running — with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.",
+      "viewer": true,
+      "images": [
+        {
+          "src": "assets/app1-boards.jpg",
+          "label": "Boards",
+          "alt": "DeepPCB board list, each board a card with its job status and file type",
+          "caption": "Status lives on the card — pending, idle, running — and the credit balance sits above the nav, so “is my board done, and can I afford the next one” is answered without opening anything."
         },
         {
-          "src": "assets/p04-our-mission.jpg",
-          "alt": "DeepPCB mission page",
-          "caption": "Our mission."
+          "src": "assets/app2-editor.jpg",
+          "label": "Editor",
+          "alt": "DeepPCB board editor with layer tree, anomaly counts and the routing assistant",
+          "caption": "The board is the page. Anomalies and the assistant left, the layer and component tree right, and the run priced at 45 minutes on the button before it is started."
         }
       ]
     },

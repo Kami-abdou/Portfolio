@@ -2249,11 +2249,78 @@ class TestInstaDeepEntry(BuildCase):
                          "the folder holds:\n  page   %s\n  folder %s"
                          % (refs, boards))
 
-    def test_gallery_pages_do_not_render_the_tabbed_browser(self):
-        """A tablist with no prose hides six of seven boards behind controls
-        the visitor has no reason to click."""
-        self.assertNotIn('class="viewer"', self.html("projects/instadeep.html"))
-        self.assertNotIn('role="tab"', self.html("projects/instadeep.html"))
+    #: A tablist is a reasonable way to show a handful of related views and
+    #: a bad way to show a set. Past this, the control is hiding a gallery.
+    MAX_VIEWER_PANELS = 4
+
+    def test_a_tabbed_browser_never_hides_a_board_set(self):
+        """A tablist with no prose hides most of a set behind controls the
+        visitor has no reason to click.
+
+        This asserted that InstaDeep's page contained no viewer at all,
+        which was right while the only candidate was the component boards:
+        nine of them, one visible at a time, and no narrative walking
+        anyone through them.
+
+        The page now has a two-panel viewer over the DeepPCB app, and none
+        of that holds for it -- two panels rather than nine, prose above
+        describing both, a caption on each panel, and tabs named "Boards"
+        and "Editor" rather than "View 1". So the assertion moves to the
+        property it was always about: a viewer has to be small and
+        explained, and a set of boards never goes behind one.
+
+        Asserted against the content rather than the markup, because the
+        rule is about what a section is allowed to do, and matching nested
+        divs with a regex is how a test like this quietly stops checking.
+        """
+        project = self.content("10-instadeep")
+        for section in project.get("sections", []):
+            if not section.get("viewer"):
+                continue
+            label = section.get("id") or section.get("heading")
+
+            self.assertFalse(
+                section.get("autoImages"),
+                "section %r puts an auto-loaded folder behind a tablist. "
+                "That is a set, and a set does not go behind tabs." % label)
+
+            body = section.get("body") or ""
+            self.assertTrue(
+                body.strip() and not body.startswith("TODO"),
+                "section %r is a tablist with no prose, so nothing tells a "
+                "visitor why they would click the second tab" % label)
+
+            images = section.get("images") or []
+            self.assertLessEqual(
+                len(images), self.MAX_VIEWER_PANELS,
+                "section %r hides %d views behind a tablist; past %d this is "
+                "a gallery wearing a control"
+                % (label, len(images), self.MAX_VIEWER_PANELS))
+
+            for img in images:
+                self.assertTrue(
+                    img.get("label"),
+                    "a panel in %r has no tab label, so its tab falls back to "
+                    "the caption or to \"View N\"" % label)
+                self.assertTrue(
+                    img.get("caption"),
+                    "a panel in %r has no caption, which is the only thing "
+                    "telling a visitor what they are looking at" % label)
+
+    def test_the_component_boards_stay_out_of_a_tablist(self):
+        """The original concern, kept as its own assertion."""
+        page = self.html("projects/instadeep.html")
+        folder = ROOT / "projects" / "10-instadeep" / "assets" / "components"
+        boards = sorted(p.name for p in folder.glob("*.png"))
+        self.assertTrue(boards, "no component boards on disk at all")
+        for name in boards:
+            where = page.index("components/%s" % name)
+            # Walk back to the nearest container and check it is a plain
+            # figure rather than a viewer panel.
+            before = page[:where]
+            self.assertGreater(
+                before.rindex("<figure"), before.rfind('class="viewer__panel'),
+                "%s is inside a tablist panel" % name)
 
     def test_cover_is_landscape(self):
         """The card media is aspect-ratio 3/2; a 900x2708 cover crops to a band."""
