@@ -5,6 +5,7 @@
   "order": 6,
   "format": "highlights",
   "meta": "2026 · Personal · Design and build",
+  "tint": "sky",
   "title": "This portfolio",
   "tagline": "Designed, built and tested by me — no framework",
   "summary": "The site you are reading. I designed it in Figma and built it as a static site with its own generator: one JSON file per project, a Python script that writes every page, and a test suite that runs against the generated HTML. Built end to end with an AI-assisted workflow, which is how I work now — the fastest way I know to find out whether an interaction actually holds up is to build it.",
@@ -34,7 +35,7 @@
   "metrics": [
     {
       "label": "Tests against the generated HTML",
-      "value": "170"
+      "value": "179"
     },
     {
       "label": "Runtime dependencies",

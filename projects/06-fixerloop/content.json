@@ -2,6 +2,7 @@
   "slug": "fixerloop",
   "order": 7,
   "meta": "2023 · Home services · UI designer",
+  "tint": "sky",
   "title": "Fixerloop",
   "tagline": "An interface redesign for a services marketplace its own founder found confusing",
   "summary": "Fixerloop connects homeowners with professional service providers. The founder came to me because the app had become too complicated to use — clashing colours, unclear copy and a flow he could not defend. The engagement was an interface redesign: 82 screens redrawn across the customer and provider apps, with a component library underneath them.",

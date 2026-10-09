@@ -881,6 +881,32 @@ def screen_count(images):
             % (n, "" if n == 1 else "s"))
 
 
+TINTS = ("sand", "teal", "sky")
+
+
+def project_tint(project):
+    """The project's container tint, as a `data-tint` value.
+
+    Every screenshot in this portfolio is cooler than the paper the site is
+    printed on -- measured at the image borders, the warmest cover is pure
+    white (R-B 0) and the coolest is Fixerloop's blue at -143, against
+    paper's +12. Not one is warm. So an image dropped straight onto the
+    page always announces itself as a foreign rectangle.
+
+    The fix is a tinted field behind the image, close enough to paper to
+    merge with it and close enough to the image to meet it halfway: the eye
+    reads paper -> tint -> image instead of paper -> image. The tint is
+    chosen per project from the SAME three tokens the hero cards already
+    use, so this is one colour system rather than two.
+
+    Unknown or missing tints fall back to the neutral warm paper-alt rather
+    than raising, because a wrong tint is a cosmetic bug and a broken build
+    is not.
+    """
+    tint = project.get("tint")
+    return tint if tint in TINTS else ""
+
+
 def project_year(project):
     """The year segment of `meta`, or "" when there is none.
 
@@ -955,7 +981,7 @@ def work_entry(project, *, large):
               {note}
               <span class="entry__cta" aria-hidden="true">{cta} &rarr;</span>
             </div>
-            <figure class="entry__media">
+            <figure class="entry__media"{tint}>
               <img src="{cover}" alt="" {dims} loading="lazy" decoding="async">
             </figure>
           </div>
@@ -963,6 +989,7 @@ def work_entry(project, *, large):
         tier="lg" if large else "sm",
         year=year_html, tags=tags_html, lede=lede, note=note_html, cta=e(cta),
         slug=e(project["slug"]), title=e(project["title"]),
+        tint=(' data-tint="%s"' % project_tint(project)) if project_tint(project) else "",
         cover=e(cover), dims=dims)
 
 
@@ -1591,12 +1618,18 @@ def build_project(project, prev_p, next_p):
                     '<p class="toc__label">On this page</p>'
                     '<ol class="toc__list">%s</ol></nav>' % rows)
 
+    # One tint for the whole article: every shot inside inherits it through a
+    # custom property, so a case study reads as a single colour world rather
+    # than a column of unrelated white boxes.
+    _tint = project_tint(project)
+    tint_attr = ' data-tint="%s"' % _tint if _tint else ""
+
     # The sidebar has to stick for the length of the article, so it sits in a
     # grid whose height is the whole reading section — not inside the header,
     # where its containing block ended after a couple of hundred pixels.
     # Title, cover and insights stay full width above that grid.
     out.append(f"""
-    <article class="project">
+    <article class="project"{tint_attr}>
       <div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
 
       <header class="shell project__head">

@@ -93,6 +93,44 @@ a { color: inherit; }
   --inset-left: env(safe-area-inset-left, 0px);
 }
 
+/* ── container tints ──────────────────────────────────────────────────────
+   Measured at their borders, every screenshot in this portfolio is COOLER
+   than the paper it sits on. Warmth here is R-B: paper is +12, and the
+   covers run from 0 (Fissa3, pure white) through -16 (InstaDeep) and -24
+   (Groupado) to -143 (Fixerloop's saturated blue). Not one is warm. That is
+   why an untinted image reads as pasted on rather than placed -- it is a
+   systematic mismatch, not a bad screenshot here and there.
+
+   The screenshots cannot be recoloured; they are product UI and repainting
+   them would misrepresent the work. So the container does the reconciling.
+   Each project names a tint close to its own image's hue, the image floats
+   INSET inside that tint, and the eye crosses two short steps -- paper to
+   tint, tint to image -- instead of one long one.
+
+   The tint is NOT the matching hero-card colour, and that was the first
+   attempt. cardSky sits 17.4 from paper while the InstaDeep cover sits
+   19.3 -- the tint was as foreign as the image it was meant to reconcile,
+   and the frame still read as a cool panel dropped on warm paper.
+
+   What actually governs this is direction, not distance. A tone that is
+   FARTHER from paper but warmer reads as the same paper under more ink;
+   the identical distance travelled cool reads as a different material. So
+   every media tint keeps warmth (R-B) at or above zero and simply leans:
+
+       mediaSand  #EFE6D6  warmth +25   luma 230.9
+       mediaTeal  #E6EADD  warmth  +9   luma 231.3
+       mediaSky   #E5E8E5  warmth  +0   luma 230.8   (paper: +12, luma 240.9)
+
+   Luma is held flat across the family on purpose -- 0.5 of spread -- so
+   hue is the only thing that changes between two projects and the work
+   page does not visibly brighten and dim as you scroll it.
+
+   The hero cards keep the saturated card* tokens: those are meant to read
+   as distinct objects, which is the opposite of what a frame has to do. */
+[data-tint="sand"] { --tint: var(--color-media-sand); }
+[data-tint="teal"] { --tint: var(--color-media-teal); }
+[data-tint="sky"]  { --tint: var(--color-media-sky);  }
+
 /* The inline insets are not optional once viewport-fit=cover is set: in
    landscape the notch eats into the content column, and .shell is the one
    place that column's edges are defined. */
@@ -508,14 +546,25 @@ a { color: inherit; }
 }
 .shot { margin: 0; }
 .shot__btn {
-  display: block; width: 100%; padding: 0; cursor: zoom-in;
-  background: var(--color-bg-raised);
-  border: 1px solid var(--color-border);
+  display: block; width: 100%; cursor: zoom-in;
+  /* Was white with a 1px border and no padding -- which meant the white
+     never showed at all (the image covered it) and the eye went straight
+     from warm paper, across a hard rule, onto a cool screenshot. The tint
+     and the inset are what replace that rule: see container-tints above. */
+  background: var(--tint, var(--color-bg-alt));
+  border: 0;
+  padding: var(--space-3);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: border-color .3s var(--ease-out);
+  transition: box-shadow .35s var(--ease-out), transform .35s var(--ease-out);
 }
-.shot__btn:hover { border-color: var(--color-border-strong); }
+/* The border used to carry the hover. With it gone the figure lifts
+   instead, using the same tinted shadow as the hero cards -- a neutral
+   shadow on warm paper reads as grey haze. */
+.shot__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -24px rgba(16, 33, 31, 0.45);
+}
 /* The frame is the container the height cap is measured against, so the cap
    scales with the column instead of with the window. There is exactly ONE
    rule for a shot image now, further down; this used to declare a second
@@ -908,7 +957,6 @@ body::after {
   .shots .shot:only-child { grid-column: 1 / -1; }
 }
 
-.shot__btn { border-radius: var(--radius-md); }
 /* ── one cap for every figure ───────────────────────────────────────────
    Cropped again, as production has it -- uncropping made InstaDeep 26,955px
    tall -- but through a single rule instead of production's four.
@@ -944,10 +992,14 @@ body::after {
   max-height: 83.333cqw;      /* 5/6 of the frame: see above */
   object-fit: cover;
   object-position: top;
+  /* outer 28px - 12px padding = 16px. Concentric with the frame. */
+  border-radius: var(--radius-md);
 }
 .shot[data-tall="true"] .shot__btn::after {
   content: "Full screen";
-  position: absolute; right: var(--space-3); bottom: var(--space-3);
+  position: absolute;
+  /* One gutter clears the padding, the second insets it into the picture. */
+  right: calc(var(--space-3) * 2); bottom: calc(var(--space-3) * 2);
   padding: var(--space-1) var(--space-3);
   font-family: var(--font-mono); font-size: var(--font-size-xs);
   letter-spacing: 0.04em;
@@ -976,20 +1028,29 @@ body::after {
    ══════════════════════════════════════════════════════════ */
 
 /* ── cover band: the page opens on the work, not on prose ── */
+/* The gutter moves from padding to width so that padding is free to be the
+   INSET -- same treatment as .entry__media and .shot__btn. The arithmetic
+   is what .shell resolves to (max-width capped, one gutter each side), just
+   expressed as width rather than as padding. */
 .cover-band {
-  margin: 0 0 var(--space-16);
-  max-width: var(--max-width);
-  margin-inline: auto;
-  padding-inline: var(--gutter);
+  margin: 0 auto var(--space-16);
+  width: calc(100% - var(--gutter) * 2);
+  max-width: calc(var(--max-width) - var(--gutter) * 2);
+  background: var(--tint, var(--color-bg-alt));
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
 }
 .cover-band img {
   width: 100%;
   max-height: 62vh;
   object-fit: cover;
   object-position: top;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-raised);
+  /* Was a 1px border over a WHITE fill -- on a cover the fill never showed,
+     so the page went paper, rule, cool image with nothing between. The
+     tinted frame above replaces both. */
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
 }
 
 /* ── insight band: research numbers as findings ── */
@@ -1125,8 +1186,11 @@ body::after {
 .shots--phone { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 }
 .shot[data-phone="true"] .shot__btn {
-  background: var(--color-bg-alt);
-  padding: var(--space-2);
+  /* This variant pioneered the inset treatment the base rule now shares.
+     It no longer needs to declare either: the tint and the 12px inset come
+     from the base rule, and matching them keeps the inner radius
+     concentric, which a roomier inset here would not. */
+  background: var(--tint, var(--color-bg-alt));
 }
 .shot[data-phone="true"] .shot__btn img {
   /* Exempt from the HEIGHT cap. A phone screen is ~0.46 wide-to-tall, so
@@ -1304,13 +1368,25 @@ html:not(.js) .viewer__tabs { display: none; }
    cropping an animation throws away the part that moves. So the frame is
    let to the clip's own ratio and the poster carries the dimensions. */
 .shot--video { grid-column: 1 / -1; }
+/* A video is a media container like any other, so it takes the same tinted
+   frame as .shot__btn rather than the white-plus-border it had.
+
+   The frame is a spread-only ring, not padding. Padding on a replaced
+   element does show the background around the content, but border-radius
+   clips at the BORDER box -- so the video would sit square-cornered inside
+   a rounded frame. A ring follows the radius instead, which makes both
+   edges round and concentric by construction rather than by arithmetic.
+   It takes no layout space, so the margin gives it room and the width
+   gives that margin back. */
 .shot__video {
   display: block;
-  width: 100%;
+  width: calc(100% - var(--space-3) * 2);
+  margin: var(--space-3);
   height: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-raised);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: 0 0 0 var(--space-3) var(--tint, var(--color-bg-alt));
 }
 /* A visitor who has asked for calm gets no autoplay at all -- enhance.js
    never adds it -- so the controls are the whole interface here and they
@@ -2063,12 +2139,25 @@ html { scroll-snap-type: y proximity; }
 }
 
 /* ── the media ── */
-.entry__media { margin: 0; overflow: hidden; border-radius: var(--radius-lg); }
+.entry__media {
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  /* The fallback is the warm paper-alt, so a project that never declares a
+     tint still lands on something warmer than the image rather than on
+     white. See the container-tints block at the top of this file. */
+  background: var(--tint, var(--color-bg-alt));
+  padding: var(--space-3);
+}
 .entry__media img {
   display: block; width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
   object-position: 50% 0;
+  /* Concentric, not eyeballed: outer 28px minus 12px of padding is 16px,
+     which is exactly --radius-md. Change the padding and this has to move
+     with it or the corners go visibly out of true. */
+  border-radius: var(--radius-md);
   transition: transform .6s var(--ease-out);
 }
 .entry:hover .entry__media img { transform: scale(1.02); }
@@ -2192,10 +2281,12 @@ html { scroll-snap-type: y proximity; }
   }
 }
 
-/* The cover takes the layout's radius. A square-cornered full-bleed
-   image is the one hard edge left on a page of rounded surfaces. */
+/* The cover takes the layout's radius -- a square-cornered full-bleed image
+   is the one hard edge left on a page of rounded surfaces. The frame now
+   carries --radius-lg, so the image inside takes the concentric inner one
+   (28px frame minus 12px of inset = 16px). */
 .cover-band img {
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
 }
 
 /* ══════════════════════════════════════════════════════════

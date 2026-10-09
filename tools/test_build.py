@@ -3440,3 +3440,141 @@ class TestShareCards(BuildCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class TestContainerTints(BuildCase):
+    """Every project names a container tint, and it reaches the page.
+
+    The reason this is an invariant rather than a nicety: measured at their
+    borders, all six covers are COOLER than the paper (warmth R-B: paper
+    +12, covers 0 to -143). An untinted container means an image meets the
+    page with nothing in between, which is the "feels pasted on" problem
+    this was built to fix. A project added later with no tint would
+    reintroduce it silently -- the page would still build, still pass every
+    other test, and just look wrong.
+
+    The CSS fallback keeps that from being a crash, so this test is what
+    keeps it from being invisible.
+    """
+
+    TINTS = ("sand", "teal", "sky")
+
+    def test_every_live_project_declares_a_known_tint(self):
+        for folder, data in self.live_projects():
+            with self.subTest(project=folder):
+                self.assertIn(
+                    data.get("tint"), self.TINTS,
+                    "%s has tint %r; expected one of %s"
+                    % (folder, data.get("tint"), ", ".join(self.TINTS)))
+
+    def test_retired_projects_also_carry_one(self):
+        # Un-retiring should be flipping one flag, not two.
+        for path in sorted((ROOT / "projects").glob("*/content.json")):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if data.get("published") is False:
+                with self.subTest(project=path.parent.name):
+                    self.assertIn(data.get("tint"), self.TINTS)
+
+    def test_each_tint_is_defined_in_the_stylesheet(self):
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        for tint in self.TINTS:
+            with self.subTest(tint=tint):
+                self.assertIn('[data-tint="%s"]' % tint, css)
+                self.assertRegex(
+                    css,
+                    r'\[data-tint="%s"\]\s*\{\s*--tint:\s*var\(--color-media-\w+\);?\s*\}'
+                    % tint)
+
+    def test_every_media_tint_is_paper_family(self):
+        """Warmth (R-B) at or above zero. This is the whole design rule.
+
+        The first version of this pointed the tints at the saturated hero
+        card tokens, which are COOL -- cardSky is -12. Measured against
+        paper (+12) that put the frame as far from the page as the image it
+        was framing, and the container still read as a foreign panel.
+
+        What governs it is direction, not distance: the same distance
+        travelled warm reads as paper under more ink, travelled cool it
+        reads as a different material. A future tint pointed at a cool
+        token would rebuild the exact bug this was written to kill, and
+        would look subtly wrong without failing anything else.
+        """
+        tokens = json.loads(
+            (ROOT / "tokens.json").read_text(encoding="utf-8"))["color"]
+        media = {k: v for k, v in tokens.items() if k.startswith("media")}
+        self.assertEqual(len(media), len(self.TINTS),
+                         "expected one media token per tint, got %r" % media)
+        for name, hexval in media.items():
+            with self.subTest(token=name):
+                r, g, b = (int(hexval[i:i + 2], 16) for i in (1, 3, 5))
+                self.assertGreaterEqual(
+                    r - b, 0,
+                    "%s (%s) has warmth %+d -- a cool tint reads as foreign "
+                    "material against the warm paper, which is the bug this "
+                    "whole treatment exists to fix." % (name, hexval, r - b))
+
+    def test_the_media_family_holds_one_lightness(self):
+        """Hue is the only variable; otherwise the page pulses as it scrolls.
+
+        Six covers each carrying a different tint means six frames down one
+        column. If their lightness also varied, scrolling would visibly
+        brighten and dim, and the tints would read as a mistake rather than
+        as a system.
+        """
+        tokens = json.loads(
+            (ROOT / "tokens.json").read_text(encoding="utf-8"))["color"]
+        lumas = []
+        for name, hexval in tokens.items():
+            if not name.startswith("media"):
+                continue
+            r, g, b = (int(hexval[i:i + 2], 16) for i in (1, 3, 5))
+            lumas.append((name, 0.299 * r + 0.587 * g + 0.114 * b))
+        spread = max(l for _, l in lumas) - min(l for _, l in lumas)
+        self.assertLess(
+            spread, 3.0,
+            "media tints span %.1f of luma (%s); they are meant to differ in "
+            "hue alone." % (spread, ", ".join("%s %.1f" % x for x in lumas)))
+
+    def test_the_tint_reaches_every_case_study_article(self):
+        for folder, data in self.live_projects():
+            page = (ROOT / "projects" / ("%s.html" % data["slug"])
+                    ).read_text(encoding="utf-8")
+            with self.subTest(project=folder):
+                self.assertIn(
+                    '<article class="project" data-tint="%s">' % data["tint"],
+                    page)
+
+    def test_the_tint_reaches_every_cover_on_the_work_page(self):
+        for name in ("index.html", "work.html"):
+            html = self.html(name)
+            covers = re.findall(r'<figure class="entry__media"([^>]*)>', html)
+            self.assertTrue(covers, "%s renders no covers" % name)
+            for attrs in covers:
+                with self.subTest(page=name, attrs=attrs):
+                    self.assertRegex(attrs, r'data-tint="(sand|teal|sky)"')
+
+    def test_the_image_is_inset_so_the_tint_is_actually_visible(self):
+        """A tint behind an edge-to-edge image is a tint nobody ever sees.
+
+        Both containers are asserted because they failed differently: the
+        cover had no background at all, the shot had a white one that the
+        image completely covered.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        for selector in (r"\.entry__media\s*\{", r"\.shot__btn\s*\{"):
+            block = re.search(selector + r"([^}]*)\}", css)
+            self.assertIsNotNone(block, "no rule matching %s" % selector)
+            body = block.group(1)
+            with self.subTest(selector=selector):
+                self.assertIn("var(--tint", body,
+                              "container does not paint the tint")
+                self.assertRegex(body, r"padding:\s*var\(--space-\d+\)",
+                                 "container has no inset, so no tint shows")
+
+    def test_no_container_still_paints_itself_white(self):
+        """bg-raised is #FFFFFF -- the one value that cannot merge with paper."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        for selector in (r"\.entry__media\s*\{", r"\.shot__btn\s*\{"):
+            block = re.search(selector + r"([^}]*)\}", css)
+            with self.subTest(selector=selector):
+                self.assertNotIn("--color-bg-raised", block.group(1))
