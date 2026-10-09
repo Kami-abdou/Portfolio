@@ -67,13 +67,7 @@
       "phase": "Process",
       "heading": "Identity first, interface second",
       "body": "We started by building an identity for the startup and grounding it in market research, working the problem statement and the solution together before touching any interface. Once we understood the market we brainstormed, and I produced low-fidelity designs. We validated those, moved to high fidelity, then walked the developer through them and I followed every step of the build. Miro carried the thinking, Figma carried the design.",
-      "images": [
-        {
-          "src": "assets/p1-design-process.png",
-          "alt": "The Steer design process, from research through to high-fidelity design",
-          "caption": "The multi-step process used to uncover problems, generate ideas and communicate them in low and high fidelity."
-        }
-      ]
+      "images": []
     },
     {
       "id": "research",
@@ -84,17 +78,17 @@
         {
           "src": "assets/p2-survey-answers.jpg",
           "alt": "Aggregated survey results from 15 used-car buyers",
-          "caption": "Survey results."
+          "caption": "Fifteen interviews, written up one card each: budget in dinars, how long the search took, what the mechanic cost, and what the seller hid. Every number in this case study comes from here."
         },
         {
           "src": "assets/p4-user-persona.jpg",
           "alt": "Steer user personas built from the survey",
-          "caption": "Personas derived from the research."
+          "caption": "Two buyers the interviews kept producing — the first-car saver and the manager trading up. They want the same car for opposite reasons, which is why price and condition had to be readable separately."
         },
         {
           "src": "assets/p5-user-journey.jpg",
           "alt": "User journey map for buying a used car",
-          "caption": "User journey."
+          "caption": "Buying and selling, before and after. The before-paths are the interview findings drawn out; the after-paths are what the product had to be true of to be worth switching to."
         }
       ]
     },
@@ -107,7 +101,7 @@
         {
           "src": "assets/p3-competitor-analysis.png",
           "alt": "Competitor analysis of used-car marketplaces",
-          "caption": "Competitor analysis."
+          "caption": "Facebook, Automobile.tn and Tayara.tn — what people actually used. None offered an inspection or a price estimate, which is the gap Steer was built into."
         }
       ]
     },
@@ -120,7 +114,7 @@
         {
           "src": "assets/p6-user-flow.jpg",
           "alt": "User flow through the Steer platform",
-          "caption": "User flow."
+          "caption": "The whole marketplace and the back office in one map. Drawing both before any screen is what kept the dealer's tooling and the buyer's site on the same vocabulary."
         }
       ]
     },
@@ -133,17 +127,17 @@
         {
           "src": "assets/01-homepage.jpg",
           "alt": "Steer homepage",
-          "caption": "Homepage."
+          "caption": "The B2B homepage: what Steer does, in one line, above the proof."
         },
         {
           "src": "assets/02-solution-page.jpg",
           "alt": "Steer solution page describing the inspection and pricing platform",
-          "caption": "Solution page."
+          "caption": "The solution page, written for a dealer deciding whether to list stock rather than for a buyer."
         },
         {
           "src": "assets/04-login-free-trial.jpg",
           "alt": "Steer login and free trial screen",
-          "caption": "Login and free trial."
+          "caption": "Sign-in and the free trial share a screen, so a dealer evaluating the product never has to find a second door."
         }
       ]
     },

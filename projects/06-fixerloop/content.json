@@ -73,22 +73,17 @@
         {
           "src": "assets/a01-sms-verification-1.png",
           "alt": "Fixerloop onboarding — SMS verification 1",
-          "caption": "SMS verification 1"
+          "caption": "Phone verification is the first thing a provider has to clear — the cheapest check that a listing belongs to someone reachable."
         },
         {
           "src": "assets/a10-login.png",
           "alt": "Fixerloop onboarding — Login",
-          "caption": "Login"
+          "caption": "One login for both account types. The toggle decides which before anything else is asked, which is what keeps it a single flow."
         },
         {
           "src": "assets/a18-sign-up-sp-1.png",
           "alt": "Fixerloop onboarding — Sign up SP 1",
-          "caption": "Sign up SP 1"
-        },
-        {
-          "src": "assets/a27-welcome.png",
-          "alt": "Fixerloop onboarding — Welcome",
-          "caption": "Welcome"
+          "caption": "The split point, and the only one. A provider picks a paid account and goes on to prove who they are; a customer is done here."
         }
       ]
     },
@@ -99,19 +94,14 @@
       "body": "A provider is invisible until this is complete, so it is broken into short steps with its own progress and a clear finish state rather than presented as one long form.",
       "images": [
         {
-          "src": "assets/b01-membership.png",
-          "alt": "Fixerloop company profile setup — Membership",
-          "caption": "Membership"
-        },
-        {
           "src": "assets/b07-company-profile-3.png",
           "alt": "Fixerloop company profile setup — Company profile 3",
-          "caption": "Company profile 3"
+          "caption": "Services are chosen against a progress bar rather than inside one long form, so a provider can see how much is left."
         },
         {
           "src": "assets/b13-settings-edit-company-profile.png",
           "alt": "Fixerloop company profile setup — Edit company profile",
-          "caption": "Edit company profile"
+          "caption": "What “complete” actually means, listed: information, categories, location, hours, photos. A provider is invisible until all five are filled."
         }
       ]
     },
@@ -122,24 +112,9 @@
       "body": "Search first, then browse by category, then compare providers on the three things that actually decide a hire: distance, verification and rating.",
       "images": [
         {
-          "src": "assets/c01-customer-sps-es.png",
-          "alt": "Fixerloop customer app — SPs, empty state",
-          "caption": "SPs — empty state"
-        },
-        {
-          "src": "assets/c06-customer-edit-profile.png",
-          "alt": "Fixerloop customer app — Edit profile",
-          "caption": "Edit profile"
-        },
-        {
-          "src": "assets/c10-customer-favorite-list-es.png",
-          "alt": "Fixerloop customer app — Favorite list, empty state",
-          "caption": "Favorite list — empty state"
-        },
-        {
           "src": "assets/c15-customer-sub-services.png",
           "alt": "Fixerloop customer app — Sub services",
-          "caption": "Sub services"
+          "caption": "Browsing starts at the category, not at a search box — most people looking for a tradesperson cannot name the service they need."
         }
       ]
     },
@@ -152,17 +127,7 @@
         {
           "src": "assets/d01-sp-appointment.png",
           "alt": "Fixerloop provider app — Appointment",
-          "caption": "Appointment"
-        },
-        {
-          "src": "assets/d06-sp-profile-full-2.jpg",
-          "alt": "Fixerloop provider app — Profile full 2",
-          "caption": "Profile full 2"
-        },
-        {
-          "src": "assets/d11-sp-view-photo-full.png",
-          "alt": "Fixerloop provider app — View photo full",
-          "caption": "View photo full"
+          "caption": "The provider's side of the same system: today split from upcoming, and the overdue one flagged before anything else on the screen."
         }
       ]
     },
@@ -173,19 +138,14 @@
       "body": "Every order carries an explicit state, and the states are named in words as well as colour. Requests, chat, deadlines, review and expiry are all handled as designed screens rather than left to error text.",
       "images": [
         {
-          "src": "assets/e01-orders-chat.png",
-          "alt": "Fixerloop order — Chat",
-          "caption": "Chat"
-        },
-        {
           "src": "assets/e07-orders-request-details-1.png",
           "alt": "Fixerloop order — Request details 1",
-          "caption": "Request details 1"
+          "caption": "The location is set on a map and stated in words underneath, because this is the one field that gets shared with a stranger."
         },
         {
           "src": "assets/e12-orders-time-up.png",
           "alt": "Fixerloop order — Time up",
-          "caption": "Time up"
+          "caption": "Every order state is named: in progress, time remaining, deadline due. Colour carries the same message but never carries it alone."
         }
       ]
     },
@@ -196,14 +156,9 @@
       "body": "Settings, notifications and the shared tab bar.",
       "images": [
         {
-          "src": "assets/f01-buttom-bar.png",
-          "alt": "Fixerloop system — Bottom bar",
-          "caption": "Bottom bar"
-        },
-        {
           "src": "assets/f04-settings.png",
           "alt": "Fixerloop system — Settings",
-          "caption": "Settings"
+          "caption": "Account, verification and history in one list. Mobile number verification stays visible after signup, so a lapsed provider can fix it."
         }
       ]
     },
@@ -216,7 +171,7 @@
         {
           "src": "assets/g01-app-icon.png",
           "alt": "The Fixerloop app icon",
-          "caption": "App icon."
+          "caption": "The mark the component library is built around."
         }
       ]
     },
@@ -229,7 +184,7 @@
         {
           "src": "assets/n3-outcome-3.png",
           "alt": "Fixerloop app screens after the redesign",
-          "caption": "Redesigned screens."
+          "caption": "The four top-level categories as they shipped."
         }
       ]
     }

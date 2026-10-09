@@ -70,7 +70,7 @@
         {
           "src": "assets/p2-understanding-the-problem.jpg",
           "alt": "Understanding the problem: research into online payment in Tunisia",
-          "caption": "Understanding the problem."
+          "caption": "There was no Tunisian digital wallet to copy, so the problem had to be split by who was paying: enterprises wanting white-label, SMBs wanting a gateway, freelancers wanting an account in minutes. Three different products behind one wallet."
         }
       ]
     },
@@ -86,13 +86,7 @@
       "phase": "Process",
       "heading": "Discover, define, ideate, implement",
       "body": "The work ran on a discover, define, ideate, implement loop — research and synthesis feeding a sharp problem definition, then concepts and design feeding a solution. Working with the CTO meant constant back and forth, which is the reason the final product ended up functional rather than merely drawn.",
-      "images": [
-        {
-          "src": "assets/p1-ux-process.png",
-          "alt": "The Konnect UX process: discover, define, ideate, implement",
-          "caption": "Discover, define, ideate, implement."
-        }
-      ]
+      "images": []
     },
     {
       "id": "validation",
@@ -103,7 +97,7 @@
         {
           "src": "assets/p3-validating-the-design.jpg",
           "alt": "Design validation artefacts for Konnect",
-          "caption": "Validating the design."
+          "caption": "The shipped app: balance, send and request, a pooled “cagnotte” for shared gifts, phone top-up, and a transfer limit stated on the profile rather than discovered at the point of failure."
         }
       ]
     },
@@ -116,7 +110,7 @@
         {
           "src": "assets/01-desktop-47.jpg",
           "alt": "Konnect platform screen",
-          "caption": "Konnect platform."
+          "caption": "The platform the wallet sat on."
         }
       ]
     }

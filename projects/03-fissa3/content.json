@@ -63,17 +63,12 @@
         {
           "src": "assets/p1-user-findings.png",
           "alt": "User research findings for Fissa3",
-          "caption": "Research findings."
+          "caption": "Eight findings that each name a screen to change — under 30 seconds on the home page after login, carts abandoned for want of an edit step, orders sent to the wrong address with no way back."
         },
         {
           "src": "assets/p2-user-personas.jpg",
           "alt": "Fissa3 personas: Kayn the remote developer and Caitlyn the student",
           "caption": "Personas."
-        },
-        {
-          "src": "assets/p3-empathy-mapping.jpg",
-          "alt": "Empathy mapping for Fissa3 users",
-          "caption": "Empathy mapping."
         }
       ]
     },
@@ -85,7 +80,7 @@
         {
           "src": "assets/p4-task-flow.png",
           "alt": "Task flow through the Fissa3 ordering process",
-          "caption": "Task flow."
+          "caption": "Every route to a placed order on one sheet. Six ways into a restaurant and one way out through checkout, which is what kept the cart from growing a second path."
         }
       ]
     },
