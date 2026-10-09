@@ -3578,3 +3578,52 @@ class TestContainerTints(BuildCase):
             block = re.search(selector + r"([^}]*)\}", css)
             with self.subTest(selector=selector):
                 self.assertNotIn("--color-bg-raised", block.group(1))
+
+
+class TestAboutBlockIsACard(BuildCase):
+    """The about block is an object, not loose content on bare paper.
+
+    It sits directly under .fan -- three tinted cards with --radius-xl,
+    --space-8 and a tinted shadow -- and used to be unwrapped text beside a
+    photo. That is what made it read as inconsistent rather than merely
+    quiet: the page goes from three strong card objects to nothing.
+
+    The card also gives the leftover space a job. Measured before the fix:
+    the text column held 279px of content inside a 375px row and was
+    CENTRED, so 96px of it was void split above and below, and the
+    statement's 20ch cap left 212px empty to its right.
+    """
+
+    def test_the_block_is_wrapped_in_a_card(self):
+        self.assertIn('<div class="aboutblock__card">', self.html("index.html"))
+
+    def test_the_card_carries_the_fan_card_geometry(self):
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = re.search(r"\.aboutblock__card\s*\{([^}]*)\}", css)
+        self.assertIsNotNone(block, "no .aboutblock__card rule")
+        body = block.group(1)
+        self.assertRegex(body, r"padding:\s*var\(--space-\d+\)")
+        self.assertRegex(body, r"border-radius:\s*var\(--radius-\w+\)")
+        self.assertRegex(body, r"background:\s*var\(--color-[\w-]+\)")
+
+    def test_the_portrait_is_not_pinned_to_a_ratio(self):
+        """aspect-ratio: 4/5 forced 375px of height whatever sat beside it.
+
+        The text only ever needed 279, and the difference became the void.
+        Height has to follow the row instead, with a floor so that a short
+        paragraph cannot squash a portrait into a letterbox.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = re.search(r"\.aboutblock__portrait img\s*\{([^}]*)\}", css)
+        self.assertIsNotNone(block)
+        body = block.group(1)
+        self.assertNotIn("aspect-ratio", body,
+                         "a fixed ratio reintroduces the vertical void")
+        self.assertRegex(body, r"min-height:\s*\d+px")
+
+    def test_the_columns_stretch_rather_than_centre(self):
+        """align-items: center is the declaration that made the void."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = re.search(r"\.aboutblock__grid\s*\{([^}]*)\}", css)
+        self.assertIsNotNone(block)
+        self.assertIn("align-items: stretch", block.group(1))

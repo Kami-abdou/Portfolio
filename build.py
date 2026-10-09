@@ -1179,6 +1179,7 @@ def build_index(projects):
                      if usable(ab.get("body")) else "")
         out.append(f"""
     <section class="band shell band--aboutblock" id="about-me">
+      <div class="aboutblock__card">
       <p class="aboutblock__label">{e(ab.get("label", "A bit about me"))}</p>
       <div class="aboutblock__grid">
         <figure class="aboutblock__portrait">
@@ -1190,6 +1191,7 @@ def build_index(projects):
           {cta_html}
         </div>
       </div>
+      </div><!-- /.aboutblock__card -->
     </section>
 """)
 

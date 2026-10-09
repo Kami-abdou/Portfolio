@@ -35,7 +35,7 @@
   "metrics": [
     {
       "label": "Tests against the generated HTML",
-      "value": "179"
+      "value": "183"
     },
     {
       "label": "Runtime dependencies",

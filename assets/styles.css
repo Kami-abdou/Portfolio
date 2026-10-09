@@ -2440,6 +2440,27 @@ html { scroll-snap-type: y proximity; }
    ══════════════════════════════════════════════════════════ */
 .band--aboutblock { padding-block: var(--space-16) var(--space-8); }
 
+/* ── a bit about me ───────────────────────────────────────────────────────
+   This block sits directly under .fan -- three generous tinted cards -- and
+   used to be loose content on bare paper, which is what made it read as
+   inconsistent rather than merely quiet. It now takes the same geometry as
+   those cards (--radius-xl, --space-8, the same tinted shadow) with a
+   paper-family fill, so it is recognisably a sibling without competing
+   with them for attention.
+
+   The card also gives the leftover space a job. Measured before: the text
+   column ran 279px of content inside a 375px row, centred, so 96px of it
+   was void split above and below, and the statement's 20ch cap left 212px
+   empty to its right. Inside a padded card the same air reads as margin. */
+.aboutblock__card {
+  /* 32px of padding costs a phone 64px of a 375px screen, which is most of
+     a word per line. The roomier inset starts where there is room for it. */
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-alt);
+  box-shadow: 0 18px 40px -24px rgba(16, 33, 31, 0.45);
+}
+
 .aboutblock__label {
   margin: 0 0 var(--space-6);
   font-family: var(--font-mono);
@@ -2448,13 +2469,20 @@ html { scroll-snap-type: y proximity; }
   text-transform: uppercase;
   color: var(--color-text-faint);
 }
-.aboutblock__grid { display: grid; gap: var(--space-8); align-items: center; }
+/* stretch, not center: centring is what produced two equal voids above and
+   below the text. Stretched, the portrait takes the row's height and the
+   two columns end on the same line. */
+.aboutblock__grid { display: grid; gap: var(--space-8); align-items: stretch; }
 
 .aboutblock__portrait { margin: 0; }
 .aboutblock__portrait img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  /* The 4/5 ratio pinned this to 375px tall whatever sat beside it, and the
+     text only ever needed 279. Height now follows the row, with a floor so
+     a short paragraph can never squash a portrait into a letterbox. */
+  height: 100%;
+  min-height: 320px;
   object-fit: cover;
   /* Biased DOWN, and load-bearing rather than taste: portrait.jpg is 0.56
      aspect going into a taller frame, so `cover` discards height, and at
@@ -2464,7 +2492,20 @@ html { scroll-snap-type: y proximity; }
   border-radius: var(--radius-lg);
 }
 
-.aboutblock__text { display: grid; gap: var(--space-5, var(--space-4)); justify-items: start; }
+.aboutblock__text {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+  /* Centred, having tried the alternatives against the real content.
+     space-between pinned the statement and the button to the portrait's
+     edges, but it did so by opening 77px between the three of them, and a
+     heading, a paragraph and its button stop reading as one thing at that
+     distance. `start` grouped them correctly and left the hole under the
+     button instead. Centred, the group stays a group and the remaining air
+     sits where the card is already padded, which is the one place on this
+     block that empty space looks deliberate. */
+  align-content: center;
+}
 .aboutblock__statement {
   margin: 0;
   font-family: var(--font-display);
@@ -2472,7 +2513,9 @@ html { scroll-snap-type: y proximity; }
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
   letter-spacing: var(--tracking-display);
-  max-width: 20ch;
+  /* 20ch measured 400px inside a 612px column. 26ch uses the column without
+     running past the comfortable reading measure for display type. */
+  max-width: 26ch;
   text-wrap: balance;
 }
 .aboutblock__body {
@@ -2495,7 +2538,11 @@ html { scroll-snap-type: y proximity; }
 .aboutblock__cta:hover { transform: translateX(3px); }
 
 @media (min-width: 900px) {
-  .aboutblock__grid { grid-template-columns: 300px 1fr; gap: var(--space-16); }
+  .aboutblock__card { padding: var(--space-8); }
+  /* The gap was --space-16. Inside a padded card the card's own inset
+     already separates the columns from everything else, so the gap only has
+     to separate them from each other. */
+  .aboutblock__grid { grid-template-columns: 300px 1fr; gap: var(--space-8); }
 }
 
 /* The about page opens on the statement rather than on the word
