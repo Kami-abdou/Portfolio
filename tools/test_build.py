@@ -2292,7 +2292,7 @@ class TestPrimaryNav(BuildCase):
             page = self.html(name)
             logo = re.search(r'<a class="site-head__name" href="([^"]+)"', page)
             self.assertIsNotNone(logo, "%s lost its wordmark" % name)
-            nav = page.split('<nav aria-label="Primary">', 1)[1].split("</nav>", 1)[0]
+            nav = page.split('<nav class="site-nav" aria-label="Primary">', 1)[1].split("</nav>", 1)[0]
             work = re.search(r'<a href="([^"]+)"[^>]*>Work</a>', nav)
             self.assertIsNotNone(work, "%s lost its Work link" % name)
             self.assertEqual(
@@ -2309,7 +2309,7 @@ class TestPrimaryNav(BuildCase):
         current would be a claim a screen reader reads out loud."""
         for slug in ("steer", "konnect", "instadeep", "fixerloop"):
             page = self.html("projects/%s.html" % slug)
-            nav = page.split('<nav aria-label="Primary">', 1)[1].split("</nav>", 1)[0]
+            nav = page.split('<nav class="site-nav" aria-label="Primary">', 1)[1].split("</nav>", 1)[0]
             self.assertNotIn("aria-current", nav,
                              "%s marks a nav item as the current page" % slug)
 
@@ -2336,7 +2336,7 @@ class TestPrimaryNav(BuildCase):
             rel = pl.Path(path).relative_to(ROOT)
             up = "../" * (len(rel.parts) - 1)
             page = pl.Path(path).read_text(encoding="utf-8")
-            nav = re.search(r'<nav aria-label="Primary">(.*?)</nav>', page, re.S)
+            nav = re.search(r'<nav class="site-nav" aria-label="Primary">(.*?)</nav>', page, re.S)
             self.assertIsNotNone(nav, "%s lost its primary nav" % rel)
             self.assertNotIn("mailto:", nav.group(1),
                              "%s still fires a mail client from the nav" % rel)

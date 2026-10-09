@@ -141,12 +141,25 @@ a { color: inherit; }
   color: var(--color-text-muted);
   text-decoration: none;
   font-size: var(--font-size-sm);
-  padding: var(--space-3) var(--space-2);
-  margin: calc(var(--space-3) * -1) calc(var(--space-2) * -1);
-  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  /* The negative margin is GONE, and deliberately. It existed to cancel
+     the padding in layout so the flat header bar stayed 76px tall while
+     the hit area grew to 48. The links sit inside a pill now, and a
+     negative margin there pulls each link into its neighbour and under
+     the pill's own padding -- the target the margin was protecting ends
+     up overlapping the thing drawn around it. The pill supplies its own
+     spacing, so the padding can just be padding. */
+  border-radius: var(--radius-full);
+  transition: color .25s var(--ease-out), background-color .25s var(--ease-out);
 }
 .site-head nav a:hover { color: var(--color-text); }
-.site-head nav a[aria-current="page"] { color: var(--color-accent); }
+/* A filled pill rather than a colour change: the current page reads at a
+   glance instead of on comparison with its neighbour. */
+.site-head nav a[aria-current="page"] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: var(--font-weight-medium);
+}
 
 /* ── smooth cursor trail ─────────────────────────────────
    A canvas trail that follows the pointer with spring physics. It ADDS to
@@ -2159,4 +2172,58 @@ html { scroll-snap-type: y proximity; }
 
 @media (prefers-reduced-motion: reduce) {
   .entry__media img { transition: none; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   THE FLOATING NAV
+   ══════════════════════════════════════════════════════════
+   The header was a full-bleed sticky bar with a blurred backdrop. On a
+   warm paper page built out of rounded cards, a hard-edged bar is the
+   one rectangle left, and it reads as chrome bolted on top rather than
+   as part of the layout.
+
+   It floats now: the links sit in their own pill, and the contact link
+   comes out of that row as a solid button, because a contact link
+   between two page links reads as a third page rather than as the ask.
+   ══════════════════════════════════════════════════════════ */
+.site-head {
+  background: none;
+  backdrop-filter: none;
+  padding-top: calc(var(--inset-top) + var(--space-4));
+  padding-bottom: var(--space-2);
+}
+/* The blur moves onto the pill, where it has an edge to belong to. */
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.site-nav__pill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-bg-raised) 72%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+}
+.site-nav__cta {
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  transition: transform .25s var(--ease-out);
+}
+.site-nav__cta:hover { transform: translateY(-2px); }
+
+@media (max-width: 639px) {
+  /* The pill and the button together overflow a 375px gutter once the
+     wordmark has taken its half, so the button drops its label to its
+     own line rather than squeezing both. */
+  .site-head__inner { flex-wrap: wrap; row-gap: var(--space-3); }
 }

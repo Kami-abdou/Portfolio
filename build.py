@@ -552,14 +552,24 @@ def primary_nav(up, current=None):
     The #work id stays on the band. Nothing in the nav uses it now, but it
     is still a valid thing to link to from outside the site.
     """
+    # Work and About sit inside a floating pill; Contact is pulled out of
+    # it as a solid button. The reference this layout was briefed against
+    # does the same thing, and the reason is that a contact link inside a
+    # row of page links reads as another page rather than as the ask. It
+    # is still the same href, still real navigation to the contact page,
+    # and still marked aria-current when you are on it.
     items = [("work", "%swork" % up, "Work"),
-             ("about", "%sabout" % up, "About"),
-             ("contact", "%scontact" % up, "Contact")]
+             ("about", "%sabout" % up, "About")]
     out = []
     for key, href, label in items:
         mark = ' aria-current="page"' if key == current else ""
         out.append('<a href="%s"%s>%s</a>' % (e(href), mark, e(label)))
-    return '<nav aria-label="Primary">\n        %s\n      </nav>' % "\n        ".join(out)
+    contact_mark = ' aria-current="page"' if current == "contact" else ""
+    return (
+        '<nav class="site-nav" aria-label="Primary">\n'
+        '        <span class="site-nav__pill">\n          %s\n        </span>\n'
+        '        <a class="site-nav__cta" href="%scontact"%s>Say hello</a>\n'
+        '      </nav>' % ("\n          ".join(out), e(up), contact_mark))
 
 
 def head(title, description, *, depth=0, image=None, page_url="",
