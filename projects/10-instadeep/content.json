@@ -69,7 +69,7 @@
     {
       "id": "deeppcb-app",
       "phase": "Product",
-      "heading": "From a list of jobs to a routed board",
+      "heading": "DeepPCB dashboard",
       "body": "DeepPCB sells routing by the hour, so the two screens that carry the product are the one that says whether an hour is still running and the one that spends it.\n\nThe board list puts each job's state on its own card — pending, idle, running — with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.",
       "viewer": true,
       "images": [
