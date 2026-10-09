@@ -49,24 +49,51 @@ class BuildCase(unittest.TestCase):
 
 class TestHomepageTiers(BuildCase):
 
-    def test_highlights_band_holds_four_case_studies(self):
-        """Three, then two, now four.
+    def test_the_bands_split_by_employment(self):
+        """The homepage bands are "full-time jobs" and "everything else".
 
-        A three-lens review (CEO / recruiter / design director) independently
-        led with the same finding: 2,439 words of written prose sat in the
-        content files and reached no visitor, because seven of nine projects
-        carried format:highlights. Fixerloop -- the best commercially framed
-        piece in the set -- and InstaDeep -- the current role, and the
-        thinnest page on the site at 165 words -- were promoted back.
+        They used to split by case-study depth -- four with a written
+        narrative, four without -- and the counts were asserted literally.
+        The split is employment now: a band a recruiter can reconcile
+        against the CV sitting open in the next tab, which the depth split
+        never let them do.
 
-        The running order is the owner's call. InstaDeep leads because it is
-        the current role; Steer follows as the largest scope. The array and
-        each project's `order` have to be changed together -- see
-        test_each_band_reads_in_order below, which is the guard this
-        docstring used to only warn about."""
+        So the assertion is the RULE, not the counts. Every project whose
+        employer appears in `experience` belongs to the first band; every
+        project that is freelance, self-initiated or this site belongs to
+        the second. The counts follow from the data and are free to move.
+        """
+        bands = self.site["sections"]
+        employed = set()
+        for job in self.site.get("experience", []):
+            employed.update(job.get("projects", []))
+
+        first = set(bands["highlights"]["slugs"])
+        second = set(bands["selectedWork"]["slugs"])
+
         self.assertEqual(
-            self.site["sections"]["highlights"]["slugs"],
-            ["instadeep", "steer", "fixerloop", "konnect"])
+            first, employed,
+            "the first band is not the full-time work. In the band but not "
+            "in any job: %s. In a job but not in the band: %s"
+            % (sorted(first - employed), sorted(employed - first)))
+        self.assertEqual(
+            second & employed, set(),
+            "%s came out of a full-time job and is in the 'other things' "
+            "band" % sorted(second & employed))
+
+    def test_every_project_appears_exactly_once(self):
+        """A project in both bands, or in neither, is a content bug."""
+        bands = self.site["sections"]
+        listed = bands["highlights"]["slugs"] + bands["selectedWork"]["slugs"]
+        self.assertEqual(len(listed), len(set(listed)),
+                         "a project is listed twice: %s" % listed)
+        on_disk = {json.loads(p.read_text(encoding="utf-8"))["slug"]
+                   for p in (ROOT / "projects").glob("*/content.json")}
+        self.assertEqual(
+            set(listed), on_disk,
+            "bands and disk disagree. Listed but absent: %s. On disk but "
+            "unlisted: %s" % (sorted(set(listed) - on_disk),
+                              sorted(on_disk - set(listed))))
 
     def test_each_band_reads_in_order(self):
         """`order` must ascend down each band, or the numbering jumps.
@@ -115,22 +142,6 @@ class TestHomepageTiers(BuildCase):
         self.assertLess(
             max(top), min(rest),
             "the bands interleave: case studies are %s, gallery is %s" % (top, rest))
-
-    def test_gallery_band_holds_the_remaining_four(self):
-        """Was six, then five, now six again.
-
-        UnDrive was removed at the owner's request -- its three images came
-        from a Notion export rather than the portfolio Figma file, so it was
-        the one Tier-2 entry with no route to better screens. Its originals
-        are archived outside the repo, not in git.
-
-        `portfolio` then took the sixth slot: this site, entered as its own
-        project. It is the only evidence on the site for the build half of
-        the positioning, and unlike every other entry a stranger can verify
-        it by viewing source."""
-        self.assertEqual(
-            self.site["sections"]["selectedWork"]["slugs"],
-            ["fissa3", "groupado", "smarthub", "portfolio"])
 
     def test_pharmadrive_is_gone_everywhere(self):
         """Removed on the design director's recommendation: lorem ipsum, a
@@ -2309,7 +2320,7 @@ class TestHeroPortrait(BuildCase):
     def test_hero_references_no_avif(self):
         import re
         index = self.html("index.html")
-        hero = re.search(r'<figure class="how__portrait">.*?</figure>',
+        hero = re.search(r'<figure class="aboutblock__portrait">.*?</figure>',
                          index, re.S)
         self.assertIsNotNone(hero, "the portrait figure is gone from the page")
         self.assertNotIn(".avif", hero.group(0),
@@ -2319,7 +2330,7 @@ class TestHeroPortrait(BuildCase):
     def test_hero_image_exists_and_is_a_real_jpeg(self):
         import re, struct
         index = self.html("index.html")
-        src = re.search(r'<figure class="how__portrait">.*?<img src="([^"?]+)',
+        src = re.search(r'<figure class="aboutblock__portrait">.*?<img src="([^"?]+)',
                         index, re.S).group(1)
         path = ROOT / src
         self.assertTrue(path.is_file(), "portrait missing: %s" % src)
@@ -2338,11 +2349,12 @@ class TestHeroPortrait(BuildCase):
         buildings and cuts the subject off at the frame edge -- the one
         thing the portrait exists to show.
 
-        The portrait moved out of the marquee band and into "How I work"
-        when the marquee was removed; the requirement moved with it.
+        The portrait has moved twice -- out of the marquee band into "How
+        I work", and then into the homepage's "A bit about me" block when
+        that replaced it. The requirement moved with it both times.
         """
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split(".how__portrait img {", 1)[1].split("}", 1)[0]
+        block = css.split(".aboutblock__portrait img {", 1)[1].split("}", 1)[0]
         self.assertIn("object-position", block,
                       "the portrait lost its downward crop bias")
 

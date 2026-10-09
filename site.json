@@ -14,9 +14,8 @@
   "intro": "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. I build to find out: a prototype in code answers questions a static frame cannot.",
   "contactLede": "Senior product designer at InstaDeep. Open to conversations about product work and collaborations.",
   "about": [
-    "AI, blockchain and fintech: three domains where someone has to act on a system they cannot check for themselves. That is the work — making an interface carry trust it cannot ask for.",
     "Today I'm a senior product designer at InstaDeep, an AI company acquired by BioNTech, working on their AI products and the design system underneath them. Before that I led product design at Steer, and at T-ledger I designed one of Tunisia's first digital wallets, built on blockchain.",
-    "I also build what I design. This site is the proof: my Figma, my code, my tests.",
+    "Six years, four companies, and one studio of my own — fintech, automotive retail, food delivery, home services and AI.",
     "Based in Tunis — UTC+1, the same working day as Paris and Berlin."
   ],
   "experience": [
@@ -107,23 +106,23 @@
   ],
   "sections": {
     "highlights": {
-      "heading": "Selected case studies",
-      "description": "Four projects where I can show the thinking, not just the outcome.",
+      "heading": "Some recent work",
+      "description": "(from full-time jobs)",
       "slugs": [
         "instadeep",
         "steer",
-        "fixerloop",
-        "konnect"
+        "groupado",
+        "konnect",
+        "fissa3"
       ]
     },
     "selectedWork": {
-      "heading": "Selected work",
-      "description": "Interface work and galleries — the screens, not the write-up.",
+      "heading": "Some other things I do",
+      "description": "Freelance, the studio I run, and the site you are reading.",
       "slugs": [
-        "fissa3",
-        "groupado",
-        "smarthub",
-        "portfolio"
+        "portfolio",
+        "fixerloop",
+        "smarthub"
       ]
     }
   },
@@ -155,24 +154,6 @@
       "value": "Interaction · Design systems"
     }
   ],
-  "principles": {
-    "heading": "How I work",
-    "description": "Product direction, interface craft, and an AI-assisted build practice.",
-    "items": [
-      {
-        "label": "Interaction is the product",
-        "body": "What holds my attention is how a thing responds — what it does while it waits, and how it recovers. The happy path is the easy half."
-      },
-      {
-        "label": "I build what I design",
-        "body": "A prototype in code answers questions a static frame cannot. This site is the proof: my Figma, my code, my tests."
-      },
-      {
-        "label": "Trust has to be visible",
-        "body": "AI, blockchain and fintech all ask people to believe something they cannot check. The interface is where that belief is won or lost."
-      }
-    ]
-  },
   "heroCards": [
     {
       "label": "Case studies",
@@ -212,6 +193,20 @@
         "label": "Ask for the criticism early",
         "body": "A review where nobody disagrees is a review that found nothing. I would rather hear it at the prototype than at the launch, and rather document a disagreement than win it quietly."
       }
+    ]
+  },
+  "aboutBlock": {
+    "label": "A bit about me",
+    "statement": "I design products where the interface has to carry trust.",
+    "body": "AI, blockchain and fintech all ask someone to act on a system they cannot check for themselves. Six years of my work has been in that gap.",
+    "cta": "More about me"
+  },
+  "aboutIntro": {
+    "heading": "Design is how I think.\nBuilding is how I prove it.",
+    "paragraphs": [
+      "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. The happy path is the easy half; the interesting half is everything after it.",
+      "I visualise a product as a system before I draw a screen. The structure comes first — what the states are, what can fail, what each surface is allowed to say — and the interface is what that structure looks like once it has to face someone.",
+      "Then I build it. A prototype in code answers questions a static frame cannot, and it is the fastest way to find out that a flow which reads well does not feel right. This site is the proof: my Figma, my code, and a test suite that checks its own claims."
     ]
   }
 }

@@ -676,7 +676,7 @@ body::after {
    that a visitor is waiting on an animation rather than reading, and the
    largest band on the site holds four. */
 .anim .rise .entry,
-.anim .rise .principles > li {
+.anim .rise .value {
   opacity: 0;
   transform: translateY(14px);
   transition:
@@ -684,11 +684,11 @@ body::after {
     transform 1s var(--ease-out);
 }
 .anim .rise.is-in .entry,
-.anim .rise.is-in .principles > li { opacity: 1; transform: none; }
+.anim .rise.is-in .value { opacity: 1; transform: none; }
 .anim .rise.is-in .entry:nth-child(2),
-.anim .rise.is-in .principles > li:nth-child(2) { transition-delay: .08s; }
+.anim .rise.is-in .value:nth-child(2) { transition-delay: .08s; }
 .anim .rise.is-in .entry:nth-child(3),
-.anim .rise.is-in .principles > li:nth-child(3) { transition-delay: .16s; }
+.anim .rise.is-in .value:nth-child(3) { transition-delay: .16s; }
 .anim .rise.is-in .entry:nth-child(4) { transition-delay: .24s; }
 .anim .rise.is-in .entry:nth-child(n+5) { transition-delay: .3s; }
 
@@ -848,9 +848,6 @@ body::after {
 
 
 /* ── hero: name left, portrait right ───────────── */
-@media (min-width: 900px) {
-}
-
 /* ── oversized next-project teaser ─────────────── */
 .pager { align-items: end; gap: var(--space-8); }
 .pager__link strong { font-size: var(--font-size-2xl); letter-spacing: -0.025em; line-height: var(--line-height-tight); }
@@ -1463,43 +1460,7 @@ html:not(.js) .viewer__tabs { display: none; }
    hierarchy is type and space, which is how all four reference sites do
    theirs.
    ══════════════════════════════════════════════════════════ */
-.principles {
-  list-style: none; margin: 0; padding: 0;
-  display: grid;
-  gap: var(--space-12);
-}
-.principle {
-  display: grid;
-  gap: var(--space-3);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--color-border);
-}
-.principle__index {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--tracking-label);
-  color: var(--color-accent);
-}
-.principle__label {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-snug);
-  letter-spacing: var(--tracking-heading);
-  text-wrap: balance;
-}
-.principle__body {
-  margin: 0;
-  color: var(--color-text-muted);
-  line-height: var(--line-height-normal);
-  max-width: 48ch;
-  text-wrap: pretty;
-}
 
-@media (min-width: 900px) {
-.principles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-8); }
-}
 
 /* ── category chips on a case-study card ──────────────────
    The `tags` list has been in every content.json since the schema was
@@ -1647,7 +1608,7 @@ html { scroll-snap-type: y proximity; }
   .opening__facts,
   .fan,
   .entry,
-  .principle,
+  .value,
   .band--contact,
   .project__head,
   .project__section,
@@ -1978,29 +1939,7 @@ html { scroll-snap-type: y proximity; }
    It used to sit inside the marquee with poster type sliding across it.
    That band is gone, and this is the section that makes a claim about
    how its author works, so this is where the face belongs. */
-.how__intro {
-  display: grid;
-  gap: var(--space-8);
-  align-items: center;
-  margin-bottom: var(--space-12);
-}
-.how__portrait { margin: 0; }
-.how__portrait img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
-  /* Biased DOWN, and this is load-bearing rather than taste. portrait.jpg
-     is 0.56 aspect going into a taller frame, so `cover` discards height;
-     at the default 50% the crop centres on the buildings behind and cuts
-     the subject off at the frame edge -- the one thing it exists to show. */
-  object-position: 50% 38%;
-  border-radius: var(--radius-lg);
-}
-@media (min-width: 900px) {
-.how__intro { grid-template-columns: 280px 1fr; gap: var(--space-16); }
-  .how__intro .band__head { margin-bottom: 0; }
-}
+
 
 /* ══════════════════════════════════════════════════════════
    THE YEAR RAIL
@@ -2398,4 +2337,83 @@ html { scroll-snap-type: y proximity; }
 
 @media (prefers-reduced-motion: reduce) {
   .site-nav__marker { transition: opacity .2s linear; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   A BIT ABOUT ME
+   ══════════════════════════════════════════════════════════
+   Statement, portrait, a paragraph and a door to the about page. It
+   replaced a band of three craft principles whose content moved to the
+   about page, where it sits beside the journey and the values instead
+   of competing with the work for the homepage's attention.
+   ══════════════════════════════════════════════════════════ */
+.band--aboutblock { padding-block: var(--space-16) var(--space-8); }
+
+.aboutblock__label {
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+.aboutblock__grid { display: grid; gap: var(--space-8); align-items: center; }
+
+.aboutblock__portrait { margin: 0; }
+.aboutblock__portrait img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  /* Biased DOWN, and load-bearing rather than taste: portrait.jpg is 0.56
+     aspect going into a taller frame, so `cover` discards height, and at
+     the default 50% the crop centres on the buildings behind and cuts the
+     subject off at the frame edge -- the one thing it exists to show. */
+  object-position: 50% 38%;
+  border-radius: var(--radius-lg);
+}
+
+.aboutblock__text { display: grid; gap: var(--space-5, var(--space-4)); justify-items: start; }
+.aboutblock__statement {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--tracking-display);
+  max-width: 20ch;
+  text-wrap: balance;
+}
+.aboutblock__body {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: var(--line-height-normal);
+  max-width: 48ch;
+  text-wrap: pretty;
+}
+.aboutblock__cta {
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: transform .25s var(--ease-out);
+}
+.aboutblock__cta:hover { transform: translateX(3px); }
+
+@media (min-width: 900px) {
+  .aboutblock__grid { grid-template-columns: 300px 1fr; gap: var(--space-16); }
+}
+
+/* The about page opens on the statement rather than on the word
+   "About" -- a label for a nav item is not a thing to say to someone who
+   has just arrived. */
+.about__statement {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--line-height-tight);
+  max-width: 18ch;
+  text-wrap: balance;
 }

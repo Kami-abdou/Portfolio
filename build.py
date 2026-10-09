@@ -1118,6 +1118,40 @@ def build_index(projects):
     # exact opposite of the point.
     #
     # A short last row is a much smaller cost than an inverted hierarchy.
+    # ── A bit about me ─────────────────────────────────────────────
+    # Statement, portrait, a paragraph and a door to the about page. It
+    # replaced a "How I work" band of three craft principles, whose
+    # content moved to the about page where it sits next to the journey
+    # and the values instead of competing with the work for the
+    # homepage's attention.
+    #
+    # The statement is the sentence that used to be the h1. It was always
+    # the best line on the site, and the hero opens with a greeting now,
+    # so it was free.
+    ab = SITE.get("aboutBlock") or {}
+    if usable(ab.get("statement")):
+        cta = ab.get("cta")
+        cta_html = ('<a class="aboutblock__cta" href="about">%s'
+                    '<span aria-hidden="true"> &rarr;</span></a>'
+                    % e(cta)) if usable(cta) else ""
+        body_html = ('<p class="aboutblock__body">%s</p>' % e(ab["body"])
+                     if usable(ab.get("body")) else "")
+        out.append(f"""
+    <section class="band shell band--aboutblock" id="about-me">
+      <p class="aboutblock__label">{e(ab.get("label", "A bit about me"))}</p>
+      <div class="aboutblock__grid">
+        <figure class="aboutblock__portrait">
+          <img src="{e(hero_img)}{asset_v(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} loading="lazy" decoding="async">
+        </figure>
+        <div class="aboutblock__text">
+          <h2 class="aboutblock__statement">{masked(ab["statement"])}</h2>
+          {body_html}
+          {cta_html}
+        </div>
+      </div>
+    </section>
+""")
+
     # ── The work, as one dated rail ────────────────────────────────
     # Both bands render the same component now. They used to be two
     # different ones -- a horizontal scroller for the case studies and a
@@ -1143,51 +1177,6 @@ def build_index(projects):
       <ol class="rail-years rail-years--{'lg' if large else 'sm'}">
 {rows}
       </ol>
-    </section>
-""")
-
-    # ── How I work ─────────────────────────────────────────────────
-    # Three named principles, after the work rather than before it: the
-    # claim is more credible once the evidence has been seen.
-    #
-    # sandeep.design -- the closest profile to this one anywhere in the
-    # reference set, "6 years building information-dense tools" against six
-    # years across fintech, automotive retail and AI -- gives this a whole
-    # numbered section, and it is the part a hiring manager reads after
-    # deciding the work is good enough to care who made it. This site had
-    # the copy for it (tagline, intro) sitting unlabelled under the hero,
-    # where it read as a caption.
-    principles = SITE.get("principles") or {}
-    items = [i for i in principles.get("items", [])
-             if usable(i.get("label")) and usable(i.get("body"))]
-    if items:
-        rows = "\n".join(
-            '''        <li class="principle">
-          <span class="principle__index" aria-hidden="true">%s</span>
-          <h3 class="principle__label">%s</h3>
-          <p class="principle__body">%s</p>
-        </li>''' % (chr(ord("A") + n), e(i["label"]), e(i["body"]))
-            for n, i in enumerate(items))
-        desc = principles.get("description", "")
-        desc_html = ("\n        <p>%s</p>" % e(desc)) if usable(desc) else ""
-        # The portrait lives here now. It spent two years inside the
-        # marquee, with poster type sliding across it; that band is gone
-        # and this is the section it belongs to -- the one that makes a
-        # claim about how its author works. The reference does the same
-        # thing, a photograph beside the "a bit about me" statement.
-        out.append(f"""
-    <section class="band shell band--principles" id="how">
-      <div class="how__intro">
-        <figure class="how__portrait">
-          <img src="{e(hero_img)}{asset_v(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} loading="lazy" decoding="async">
-        </figure>
-        <div class="band__head">
-          <h2>{masked(principles.get("heading", "How I work"))}</h2>{desc_html}
-        </div>
-      </div>
-      <ul class="principles">
-{rows}
-      </ul>
     </section>
 """)
 
@@ -1429,9 +1418,21 @@ def build_about(index):
                 og_type="profile",
                 image_alt="%s — %s, %s" % (SITE["name"], SITE["title"],
                                            SITE.get("location", "")))]
+    # The page opens on the statement rather than on the word "About",
+    # which is a label for a nav item and not a thing to say to someone
+    # who has just arrived. Two authored lines, same break mechanism as
+    # the homepage h1.
+    intro = SITE.get("aboutIntro") or {}
+    heading = intro.get("heading") or "About"
+    intro_heading = masked(heading.split("\n")[0])
+    for line in heading.split("\n")[1:]:
+        intro_heading += "<br>" + masked(line)
+    intro_body = "\n          ".join(
+        "<p>%s</p>" % e(x) for x in intro.get("paragraphs", []) if usable(x))
+
     out.append(f"""
     <article class="shell about">
-      <h1>{masked("About")}</h1>
+      <h1 class="about__statement">{intro_heading}</h1>
       <div class="about__grid">
         <figure class="about__portrait">
           <picture>
@@ -1439,6 +1440,7 @@ def build_about(index):
           </picture>
         </figure>
         <div class="prose">
+          {intro_body}
           {body}
           <p class="about__cta">
             <a class="btn btn--solid" href="{e(SITE['cv'])}{asset_v(SITE['cv'])}">Download CV (PDF)</a>
