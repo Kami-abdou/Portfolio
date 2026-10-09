@@ -184,15 +184,44 @@ class TestHomepageTiers(BuildCase):
         the most important row on the site. Pinning the literal 3 would have
         failed here for a change that is correct.
         """
-        import re
         index = self.html("index.html")
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        tokens = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
+
+        # The headline band stopped being a grid in the redesign: it is a
+        # horizontal rail now, so it declares a card WIDTH where the
+        # gallery still declares columns. The property being guarded did
+        # not change -- a Tier 1 card has to be wider than a Tier 2 card --
+        # so the test compares the two mechanisms rather than two --cols.
+        self.assertEqual(index.count('<ul class="rail">'), 1,
+                         "expected exactly one case-study rail")
         cols = [int(m) for m in re.findall(r'style="--cols: (\d)"', index)]
-        self.assertEqual(len(cols), 2, "expected exactly two card grids")
-        large, small = cols
-        self.assertLess(large, small,
-                        "the headline band declares %d columns against the "
-                        "gallery band's %d -- equal or more means Tier 1 "
-                        "cards are no longer wider" % (large, small))
+        self.assertEqual(len(cols), 1,
+                         "expected exactly one card grid beside the rail")
+        gallery_cols = cols[0]
+
+        basis = re.search(
+            r"\.rail > li \{.*?flex:\s*0 0 clamp\([^,]+,[^,]+,\s*([\d.]+)px\)",
+            css, re.S)
+        self.assertIsNotNone(basis, "the rail no longer declares a card width")
+        rail_card = float(basis.group(1))
+
+        def px(name, group="space"):
+            return float(tokens[group][name].replace("rem", "")) * 16
+
+        # Widest a gallery column can be: the content column at its cap,
+        # less its two gutters and the gaps between the cards.
+        column = float(tokens["layout"]["maxWidth"].replace("px", ""))
+        gutter = float(tokens["layout"]["gutter"].replace("rem", "")) * 16
+        gap = px("8")
+        gallery_card = (column - 2 * gutter - (gallery_cols - 1) * gap) / gallery_cols
+
+        self.assertGreater(
+            rail_card, gallery_card,
+            "a case-study card is %.0fpx against a gallery card's %.0fpx. "
+            "Tier 1 is no longer the wider of the two, which inverts the "
+            "hierarchy the two bands exist to express."
+            % (rail_card, gallery_card))
 
     def test_headline_cards_are_large_and_the_rest_are_not(self):
         index = self.html("index.html")

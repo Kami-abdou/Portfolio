@@ -297,13 +297,21 @@ a { color: inherit; }
      One ratio for both bands, so a case-study row and a secondary tile read
      as the same system. The tiles come out 264x110, which is a thin strip --
      if that reads as too thin this is the single number to change. */
-  /* 5/4 -- squarer, but deliberately not square. Still ONE ratio for both
-     bands, and this is where it pays off twice: a secondary tile goes from
-     264x110, a sliver that was flagged as probably too thin, to 264x211,
-     which reads as an actual thumbnail. 12/5 was chosen to match the text
-     height and did that well; it just made both the rows and the tiles
-     into letterbox strips. */
-  aspect-ratio: 5 / 4;
+  /* 16/10. Still ONE ratio for both bands -- that is the part that has
+     to hold, and it has survived four different values as the brief moved
+     (16/9, then 12/5, then 5/4, now this).
+
+     5/4 was right while the case studies were full-width two-column rows
+     where the cover was the NARROW column. They are a horizontal rail
+     now, 540px per card, and a near-square cover there was 432px of a
+     703px card: top-heavy, and it pushed the whole band to 1054px so the
+     heading, the cards and the controls could never be seen at once.
+     16/10 takes the cover to 337px and the card to 608.
+
+     The secondary tile goes 264x211 -> 264x165, which is still a
+     thumbnail rather than the 264x110 sliver that 12/5 produced and that
+     was flagged as too thin. */
+  aspect-ratio: 16 / 10;
   transition: border-color .35s var(--ease-out), background .35s var(--ease-out);
 }
 /* Covers ship untreated, on request. A grayscale-and-scrim treatment and
@@ -2092,6 +2100,7 @@ html {
   .opening,
   .opening__facts,
   .hero,
+  .band--rail,
   .grid > li,
   .principle,
   .band--contact,
@@ -2108,11 +2117,183 @@ html {
      The set below is one non-overlapping sequence: the band's own stop is
      its first card. */
 
-  /* No gap between snap points may exceed a viewport, or content between
-     two of them is never fully on screen at rest. The facts strip is in
-     this list for that reason and no other: without it the first gap was
-     652px, from the top of the page to the signature band, and a scroll
-     that settled in the middle of it was 228px from either end -- too far
-     for proximity, so it did not snap, which was the original complaint
-     reproduced exactly. */
+  /* Gaps are kept near a viewport so that wherever a scroll settles
+     there is usually a stop close enough for proximity to catch. The
+     facts strip is in this list for that reason and no other: without it
+     the first gap was 652px, from the top of the page to the signature
+     band, and a scroll that settled in the middle of it was 228px from
+     either end -- too far, so it did not snap, which was the original
+     complaint reproduced exactly.
+
+     ONE run is deliberately longer than a viewport: the case-study band,
+     1149px from its top to the gallery cards below it. That one is left
+     alone on purpose. The only stops that could go inside it are partway
+     down the cards themselves, and snapping a reader to the middle of a
+     card they are reading is worse than not snapping at all. A single
+     coherent block you are meant to linger in is exactly the case
+     proximity exists to stay out of. */
+}
+
+/* ══════════════════════════════════════════════════════════
+   THE CASE-STUDY RAIL
+   ══════════════════════════════════════════════════════════
+   A horizontal scroller, not a carousel, and the distinction is the
+   reason this is safe to use for the most important content on the site.
+
+   The evidence against carousels is specific: slides that advance on
+   their own, content hidden behind controls, and engagement falling off
+   a cliff after the first slide. None of the three applies here. Nothing
+   moves unless the visitor moves it. The next card is always partly on
+   screen -- the peek IS the affordance -- so nothing is hidden. And it
+   is a real scroll container, so a trackpad swipe, a touch drag, Tab,
+   and the arrow keys all work with no script at all; the buttons below
+   are a convenience for a mouse without a horizontal wheel, not the
+   mechanism.
+
+   `x mandatory` here against `y proximity` on the page is not an
+   inconsistency, it is the one condition that makes mandatory safe:
+   every card is NARROWER than the rail, so no card can be scrolled past
+   or left half-reachable. The vertical axis fails that test badly -- a
+   band runs 3591px against a 768px viewport -- which is why the page
+   itself gets proximity.
+   ══════════════════════════════════════════════════════════ */
+
+.band--rail { padding-block: var(--space-16); }
+
+/* The head keeps the content column; the rail itself runs full-bleed so
+   cards can scroll out past the gutter instead of stopping inside it. */
+.band__head--rail {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.rail {
+  list-style: none;
+  margin: 0;
+  display: flex;
+  gap: var(--space-8);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+
+  /* Aligns the first card's edge with the content column, and lets the
+     last one scroll all the way in. Same expression as .shell resolves
+     to, so the rail's left edge tracks the headings above it at every
+     width instead of being a guessed constant. */
+  --rail-inset: max(calc(var(--gutter) + var(--inset-left)),
+                    calc((100vw - var(--max-width)) / 2 + var(--gutter)));
+  padding-inline: var(--rail-inset);
+  scroll-padding-inline-start: var(--rail-inset);
+
+  /* Room for the focus ring, which would otherwise be clipped by the
+     scroll container on the first and last card. */
+  padding-block: var(--space-2);
+}
+
+.rail > li {
+  /* Narrower than the rail at every width, which is the condition that
+     makes `mandatory` safe. At 1024px this is 540px, so roughly 1.8
+     cards are visible and the second one's edge says "there is more". */
+  flex: 0 0 clamp(260px, 72vw, 540px);
+  /* Two values: block axis NONE, inline axis start. A single `start`
+     applies to both axes, which made every card a snap target of the
+     PAGE as well as of the rail -- all four at the same y, so the page
+     gained one stop and lost the four it used to have here. Measured:
+     vertical snapping fell to 1 scroll in 3, missing by 227px and 373px,
+     because the band's own cards had left the vertical sequence and
+     opened a ~900px gap with nothing in it for proximity to catch. */
+  scroll-snap-align: none start;
+  scroll-snap-stop: always;
+}
+
+/* A card in the rail is a vertical card: cover on top, words under it.
+   The two-column case-study card is a shape for a full-width row, and
+   inside a 540px track it would leave a 200px text column. */
+.rail .card--lg {
+  display: block;
+}
+.rail .card--lg .card__media { align-self: stretch; }
+.rail .card--lg .card__body {
+  display: block;
+  padding-top: var(--space-4);
+}
+.rail .card--lg .card__title { font-size: var(--font-size-lg); }
+.rail .card--lg .card__tagline { font-size: var(--font-size-base); }
+.rail .card--lg .card__note {
+  font-size: var(--font-size-sm);
+  max-width: none;
+}
+.rail .card--lg .card__meta { margin-top: var(--space-3); }
+
+/* Three lines of the summary, not five. The full text is on the project
+   page, which is where someone who wants it is going; on the card its
+   job is to say enough to decide. Clamping also makes every card the
+   same height, so the rail's cards share a baseline. */
+.rail .card--lg .card__note {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+/* A thin scrollbar rather than none. Hiding it removes the one piece of
+   permanent evidence that the rail scrolls at all, which is the single
+   most common way this pattern goes wrong. */
+.rail { scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
+.rail::-webkit-scrollbar { height: 6px; }
+.rail::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: var(--radius-full);
+}
+.rail::-webkit-scrollbar-track { background: transparent; }
+
+/* ── the nav: counter and two buttons ── */
+.rail__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.rail__nav[hidden] { display: none; }
+.rail__count {
+  margin: 0 var(--space-2) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.rail__at { color: var(--color-text); }
+.rail__btn {
+  /* 44px, comfortably over the 24x24 that WCAG 2.5.8 asks of a target,
+     and `flex: none` because these sit in a flex row and would otherwise
+     shrink below the declared size -- which is how the pause control
+     once measured 10x24. */
+  flex: none;
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color .25s var(--ease-out), border-color .25s var(--ease-out),
+              background-color .25s var(--ease-out), opacity .25s var(--ease-out);
+}
+.rail__btn:hover:not(:disabled) {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+  background: var(--color-bg-raised-hover);
+}
+.rail__btn:disabled { opacity: .35; cursor: default; }
+
+@media (max-width: 639px) {
+  /* The counter alone on a phone: two 44px targets plus the head's own
+     wrapping left the buttons on a line of their own under the heading,
+     where they read as page navigation rather than as this rail's. Touch
+     has the gesture anyway. */
+  .rail__btn { display: none; }
 }

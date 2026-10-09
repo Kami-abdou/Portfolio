@@ -1165,13 +1165,67 @@ def build_index(projects):
             cols = 3 if n % 3 == 0 else (2 if n % 2 == 0 else min(3, n))
         else:
             cols = 4
-        out.append(f"""
+        if large:
+            # ── The case studies, as a horizontal rail ──────────────
+            #
+            # Asked for as "maybe a slider show". What it deliberately is
+            # NOT is a carousel, and the difference is the whole design.
+            #
+            # The case against carousels is well evidenced and it is about
+            # three specific things: slides that advance on their own,
+            # content hidden behind controls, and engagement collapsing
+            # after the first slide. A rail has none of them. Nothing
+            # moves until the visitor moves it, the next card is always
+            # partly on screen rather than hidden, and scrolling it is the
+            # same gesture as scrolling the page -- trackpad, touch,
+            # keyboard and arrow keys all work without a line of script,
+            # because it is a real scroll container and not a widget.
+            #
+            # So this stays an ordinary <ul> of the same cards. It takes
+            # no carousel ARIA, because a horizontal scroller is not a
+            # carousel and announcing it as one would describe a widget
+            # the visitor does not have.
+            #
+            # `x mandatory` is safe here in a way `y mandatory` is not on
+            # the page itself: every card is NARROWER than the rail, so no
+            # card can be skipped past or left half-reachable. That is the
+            # exact condition the vertical axis fails, where a band runs
+            # 3591px against a 768px viewport.
+            #
+            # The buttons ship `hidden` and JS unhides them, the same
+            # contract as the marquee's pause control: without script the
+            # rail still scrolls natively, and nothing on screen claims a
+            # control that cannot work.
+            out.append(f"""
+    <section class="band band--rail"{anchor}>
+      <div class="shell band__head band__head--rail">
+        <div>
+          <h2>{masked(meta['heading'])}</h2>
+          <p>{e(meta['description'])}</p>
+        </div>
+        <div class="rail__nav" hidden>
+          <p class="rail__count" aria-hidden="true"><span class="rail__at">01</span> / {len(live):02d}</p>
+          <button type="button" class="rail__btn rail__btn--prev" aria-label="Previous case study">
+            <span aria-hidden="true">&larr;</span>
+          </button>
+          <button type="button" class="rail__btn rail__btn--next" aria-label="Next case study">
+            <span aria-hidden="true">&rarr;</span>
+          </button>
+        </div>
+      </div>
+      <ul class="rail">
+{cards}
+      </ul>
+    </section>
+""")
+        else:
+            out.append(f"""
     <section class="band shell"{anchor}>
       <div class="band__head">
         <h2>{masked(meta['heading'])}</h2>
         <p>{e(meta['description'])}</p>
       </div>
-      <ul class="grid {'grid--lg' if large else 'grid--sm'}" style="--cols: {cols}">
+      <ul class="grid grid--sm" style="--cols: {cols}">
 {cards}
       </ul>
     </section>

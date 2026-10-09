@@ -37,7 +37,7 @@
   <link rel="preload" href="assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/fonts.css?v=1f22714f">
   <link rel="stylesheet" href="assets/tokens.css?v=dcb93877">
-  <link rel="stylesheet" href="assets/styles.css?v=8787c0cc">
+  <link rel="stylesheet" href="assets/styles.css?v=211aa66e">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
 </head>
 <body>
@@ -98,12 +98,23 @@
     </section>
 
 
-    <section class="band shell" id="work">
-      <div class="band__head">
-        <h2><span class="mask"><span class="mask__in">Selected case studies</span></span></h2>
-        <p>Four projects where I can show the thinking, not just the outcome.</p>
+    <section class="band band--rail" id="work">
+      <div class="shell band__head band__head--rail">
+        <div>
+          <h2><span class="mask"><span class="mask__in">Selected case studies</span></span></h2>
+          <p>Four projects where I can show the thinking, not just the outcome.</p>
+        </div>
+        <div class="rail__nav" hidden>
+          <p class="rail__count" aria-hidden="true"><span class="rail__at">01</span> / 04</p>
+          <button type="button" class="rail__btn rail__btn--prev" aria-label="Previous case study">
+            <span aria-hidden="true">&larr;</span>
+          </button>
+          <button type="button" class="rail__btn rail__btn--next" aria-label="Next case study">
+            <span aria-hidden="true">&rarr;</span>
+          </button>
+        </div>
       </div>
-      <ul class="grid grid--lg" style="--cols: 2">
+      <ul class="rail">
         <li>
           <div class="card card--lg">
             <span class="card__media">
@@ -302,6 +313,6 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=e7e218f9" defer></script>
-  <script src="assets/enhance.js?v=88241748" defer></script>
+  <script src="assets/enhance.js?v=9e5e1d7e" defer></script>
 </body>
 </html>
