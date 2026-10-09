@@ -2208,7 +2208,13 @@ html { scroll-snap-type: y proximity; }
   backdrop-filter: blur(12px);
   border: 1px solid var(--color-border);
 }
-.site-nav__cta {
+/* `.site-head nav a.site-nav__cta`, not `.site-nav__cta`. The button is an
+   <a> inside .site-head nav, so the generic nav-link rule scores (0,1,2)
+   against this one's (0,1,0) and wins on specificity no matter which comes
+   later in the file. The symptom was the muted ink colour landing on the
+   dark fill: 2.24:1, an unreadable button, found by the contrast sweep
+   rather than by looking -- at a glance it just looks like a dark pill. */
+.site-head nav a.site-nav__cta {
   padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-full);
   background: var(--color-bg-inverse);
@@ -2219,11 +2225,50 @@ html { scroll-snap-type: y proximity; }
   white-space: nowrap;
   transition: transform .25s var(--ease-out);
 }
-.site-nav__cta:hover { transform: translateY(-2px); }
+.site-head nav a.site-nav__cta:hover { transform: translateY(-2px); }
 
 @media (max-width: 639px) {
   /* The pill and the button together overflow a 375px gutter once the
      wordmark has taken its half, so the button drops its label to its
      own line rather than squeezing both. */
   .site-head__inner { flex-wrap: wrap; row-gap: var(--space-3); }
+}
+
+/* ── the wordmark needs its own backdrop ──────────────────
+   The header used to be a full-bleed bar with a blurred background, so
+   everything in it had something behind it. Moving that backdrop onto
+   the nav pill left the wordmark bare, and because the header is still
+   sticky, prose scrolled straight under the name -- two sets of ink on
+   top of each other with nothing between them. Caught on a case study,
+   where the summary runs the full width and passes directly behind it.
+
+   The same pill the nav links sit in, so the header reads as two
+   floating objects rather than one floating and one stranded. */
+.site-head__name {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-bg-raised) 72%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+}
+
+/* ── the case-study sidebar, as a card ────────────────────
+   Contents and facts were loose text in a column, which is what they
+   were on a near-black page where the column edge was the only surface
+   available. On paper a soft card is the honest way to say "this is
+   reference, not narrative", and it is the same object the rest of the
+   layout is built from. */
+@media (min-width: 900px) {
+  .project__meta {
+    padding: var(--space-8);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-raised);
+    border: 1px solid var(--color-border);
+  }
+}
+
+/* The cover takes the layout's radius. A square-cornered full-bleed
+   image is the one hard edge left on a page of rounded surfaces. */
+.cover-band img {
+  border-radius: var(--radius-lg);
 }
