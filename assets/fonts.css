@@ -20,9 +20,13 @@
                 which is the same role Roobert plays on the site this was
                 briefed against. Also variable, one file, 29KB.
 
-   Anton is gone. It existed for the marquee's poster type and the
-   wordmark, and an ultra-condensed grotesk has no place on a warm paper
-   layout built out of rounded cards.
+     Anton  — the wordmark, and nothing else. It went when the marquee did,
+                and came back because the mark it makes is the one the live
+                site has had for two years: two stacked lines of condensed
+                caps, the surname indented. An ultra-condensed grotesk would
+                be wrong for the layout and is exactly right for a logo --
+                the contrast against rounded Gabarito is what makes it read
+                as a mark rather than as a line of text.
 
    Both are preloaded in <head> (see build.py `head`): `font-display: swap`
    without a preload is a layout shift by construction.
@@ -42,4 +46,12 @@
   font-weight: 100 900;
   font-display: swap;
   src: url('fonts/geist-variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Anton';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/anton-400.woff2') format('woff2');
 }

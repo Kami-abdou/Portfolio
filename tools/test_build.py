@@ -253,8 +253,12 @@ class TestHeroPositioning(BuildCase):
         (petradesigns.io, sandeep.design) spend their h1 on the claim.
         """
         page = self.html("index.html")
-        claim = html.escape(self.site["heroClaim"], quote=True)
-        self.assertIn('<h1 class="opening__claim">%s</h1>' % claim, page,
+        # A newline in heroClaim is an author's line break and renders as
+        # <br>, so the rendered h1 is not a character-for-character copy of
+        # the source string. Compare line by line instead.
+        claim = self.site["heroClaim"]
+        rendered = "<br>".join(html.escape(l, quote=True) for l in claim.split("\n"))
+        self.assertIn('<h1 class="opening__claim">%s</h1>' % rendered, page,
                       "the homepage h1 is no longer the visible claim")
         h1s = re.findall(r"<h1[^>]*>", page)
         self.assertEqual(len(h1s), 1, "expected exactly one h1, found %r" % h1s)
@@ -1724,6 +1728,93 @@ class TestCollapsibleSections(BuildCase):
                 self.assertNotIn(
                     "<p", summary,
                     "%s has a <p> inside a <summary>" % page)
+
+
+class TestStylesheetIsWellFormed(BuildCase):
+    """Braces balance, and no rule is left without a body.
+
+    Both of these were real and both were silent. A purge script that
+    removed rules by matching selector text left a stray `}` behind, and
+    from that brace onward the parser was out of sync -- the wordmark's
+    font-family simply never applied, with no error anywhere and the
+    whole suite green. A second pass left `.card:hover .card__tag,`
+    dangling with no declaration block, which is the same shape as the
+    bug that made every masked heading on the site invisible: a
+    multi-selector group whose shared body was deleted with its last
+    selector.
+
+    Neither is visible in a diff and neither throws. CSS has no parse
+    errors to speak of -- it discards what it cannot read and carries on.
+    """
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def stripped(self):
+        """Comments blanked, newlines kept so line numbers stay true."""
+        return re.sub(r"/\*.*?\*/",
+                      lambda m: re.sub(r"[^\n]", " ", m.group(0)),
+                      self.css(), flags=re.S)
+
+    def test_every_brace_is_matched(self):
+        depth, line, bad = 0, 1, []
+        for ch in self.stripped():
+            if ch == "\n":
+                line += 1
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth < 0:
+                    bad.append(line)
+                    depth = 0
+        self.assertEqual(bad, [], "unmatched '}' at line(s) %s -- every rule "
+                                  "after the first one is being parsed in the "
+                                  "wrong context" % bad)
+        self.assertEqual(depth, 0,
+                         "%d block(s) left open at the end of the file" % depth)
+
+    def test_no_selector_is_left_without_a_body(self):
+        """A group whose declaration block was deleted with its last member.
+
+        Depth-tracked rather than line-matched. The first version of this
+        scanned for lines ending in a comma and flagged nine multi-line
+        `transition` values -- the commas inside a declaration block look
+        exactly like the commas between selectors unless you know which
+        side of a brace you are on.
+        """
+        text = self.stripped()
+        depth, chunk, line, start_line = 0, [], 1, 1
+        orphans = []
+        for ch in text:
+            if ch == "\n":
+                line += 1
+            if ch == "{":
+                if depth == 0:
+                    sel = "".join(chunk).strip()
+                    if sel.endswith(","):
+                        orphans.append((start_line, sel.splitlines()[-1][:60]))
+                    chunk = []
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                chunk, start_line = [], line
+            elif depth == 0:
+                if not chunk and not ch.isspace():
+                    start_line = line
+                chunk.append(ch)
+
+        # and the tail: anything after the last } that never reached a {
+        tail = "".join(chunk).strip()
+        if tail.endswith(","):
+            orphans.append((start_line, tail.splitlines()[-1][:60]))
+
+        self.assertEqual(
+            orphans, [],
+            "selector list(s) ending in a comma with no declaration block "
+            "following -- the shared body was deleted with the last "
+            "selector, and everything in the group silently stopped "
+            "applying: %s" % orphans)
 
 
 class TestScrollSnap(BuildCase):

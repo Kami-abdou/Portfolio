@@ -567,7 +567,9 @@ def primary_nav(up, current=None):
     contact_mark = ' aria-current="page"' if current == "contact" else ""
     return (
         '<nav class="site-nav" aria-label="Primary">\n'
-        '        <span class="site-nav__pill">\n          %s\n        </span>\n'
+        '        <span class="site-nav__pill">\n'
+        '          <span class="site-nav__marker" aria-hidden="true"></span>\n'
+        '          %s\n        </span>\n'
         '        <a class="site-nav__cta" href="%scontact"%s>Say hello</a>\n'
         '      </nav>' % ("\n          ".join(out), e(up), contact_mark))
 
@@ -628,6 +630,7 @@ def head(title, description, *, depth=0, image=None, page_url="",
        downloaded twice and the preload buys nothing. -->
   <link rel="preload" href="{up}assets/fonts/geist-variable.woff2{asset_v('assets/fonts/geist-variable.woff2')}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{up}assets/fonts/gabarito-variable.woff2{asset_v('assets/fonts/gabarito-variable.woff2')}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{up}assets/fonts/anton-400.woff2{asset_v('assets/fonts/anton-400.woff2')}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{up}assets/fonts.css{asset_v("assets/fonts.css")}">
   <link rel="stylesheet" href="{up}assets/tokens.css{asset_v("assets/tokens.css")}">
   <link rel="stylesheet" href="{up}assets/styles.css{asset_v("assets/styles.css")}">
@@ -1064,11 +1067,18 @@ def build_index(projects):
                      e(c.get("href", "#work")), e(c.get("cta", "Have a look")))
         for c in cards)
 
+    # A newline in heroClaim is an author's line break, rendered as <br>.
+    # The alternative is letting the measure wrap it, which moves the break
+    # every time the viewport changes -- and the break is the joke here:
+    # the greeting on one line, the job on the next.
+    claim = SITE.get("heroClaim") or SITE["title"]
+    claim_html = "<br>".join(e(line) for line in claim.split("\n"))
+
     out.append(f"""
     <section class="opening shell">
       {status_html}
 
-      <h1 class="opening__claim">{e(SITE.get('heroClaim') or SITE['title'])}</h1>
+      <h1 class="opening__claim">{claim_html}</h1>
 
       <p class="opening__support">{e(SITE.get('heroSupport') or SITE.get('heroStatement', ''))}</p>
 

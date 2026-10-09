@@ -596,3 +596,61 @@
 
   sync();
 })();
+
+
+/* The nav marker: one filled pill that follows the pointer.
+
+   The reference this layout was briefed against positions an absolute
+   div per item and animates left/width. This does the same, and adds the
+   two things that version leaves out: it returns to the CURRENT PAGE when
+   the pointer leaves, so the nav never stops saying where you are, and it
+   follows keyboard focus as well as hover.
+
+   Until this runs, the current page is marked with a tinted background in
+   CSS. `is-live` hands that job to the marker, so the two never paint at
+   once and a visitor with no JS still sees where they are.
+*/
+(function () {
+  var pill = document.querySelector('.site-nav__pill');
+  if (!pill) return;
+  var marker = pill.querySelector('.site-nav__marker');
+  var links = [].slice.call(pill.querySelectorAll('a'));
+  if (!marker || !links.length) return;
+
+  var home = pill.querySelector('a[aria-current="page"]');
+
+  function moveTo(link) {
+    if (!link) {
+      marker.style.width = '0px';
+      pill.classList.remove('is-live');
+      links.forEach(function (a) { a.classList.remove('is-marked'); });
+      return;
+    }
+    // offsetLeft is relative to the pill, which is the marker's
+    // containing block -- so no rect arithmetic and nothing to go stale
+    // when the header moves.
+    marker.style.left = link.offsetLeft + 'px';
+    marker.style.width = link.offsetWidth + 'px';
+    pill.classList.add('is-live');
+    links.forEach(function (a) { a.classList.toggle('is-marked', a === link); });
+  }
+
+  function rest() { moveTo(home); }
+
+  links.forEach(function (link) {
+    link.addEventListener('mouseenter', function () { moveTo(link); });
+    link.addEventListener('focus', function () { moveTo(link); });
+  });
+  pill.addEventListener('mouseleave', rest);
+  pill.addEventListener('focusout', function (ev) {
+    if (!pill.contains(ev.relatedTarget)) rest();
+  });
+
+  // The pill is laid out before the fonts land, and Anton and Gabarito
+  // both change the links' widths when they arrive. Measure after.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(rest);
+  }
+  window.addEventListener('resize', rest, { passive: true });
+  rest();
+})();

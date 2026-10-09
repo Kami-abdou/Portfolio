@@ -32,7 +32,7 @@
   "metrics": [
     {
       "label": "Tests against the generated HTML",
-      "value": "162"
+      "value": "164"
     },
     {
       "label": "Runtime dependencies",
@@ -40,7 +40,7 @@
     },
     {
       "label": "JavaScript shipped, gzipped",
-      "value": "10.7 KB"
+      "value": "11.3 KB"
     }
   ],
   "cover": "assets/cover.jpg",

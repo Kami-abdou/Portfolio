@@ -859,25 +859,6 @@ body::after {
 }
 .pager__link strong { transition: color .3s var(--ease-out); }
 
-/* ── hero portrait: tall crop, hard mono ─────────────
-   The portrait is a 9:16 shot, so the square slot cropped it badly.
-   A 2:3 frame keeps the composition and gives the hero a vertical
-   column to sit against. The mono treatment stays on permanently —
-   it is the look, not a hover trick. */
-
-@media (max-width: 899px) {
-  
-}
-
-
-/* portrait becomes a compact anchor at the foot rather than a column */
-@media (max-width: 899px) {
-  
-}
-
-
-}
-
 /* ── stacked wordmark ────────────────────────────────
    Two lines, surname indented. It was set in the condensed poster face;
    that face left with the marquee, and an ultra-condensed grotesk would
@@ -885,8 +866,13 @@ body::after {
    display face at 600 reads as a mark at this size without fighting it. */
 .site-head__name {
   display: block;
-  font-family: var(--font-display);
-  font-weight: var(--font-weight-semibold);
+  /* The poster face, and the only place on the site that uses it. This is
+     the mark the live site has carried for two years and it should not
+     change just because the page around it did -- the condensed caps
+     against rounded Gabarito are what make it read as a logo rather than
+     as the first line of the page. */
+  font-family: var(--font-poster);
+  font-weight: 400;
   font-size: clamp(1.05rem, 1.9vw, 1.5rem);
   line-height: 0.82;
   letter-spacing: 0.005em;
@@ -2374,4 +2360,42 @@ html { scroll-snap-type: y proximity; }
 
 @media (min-width: 900px) {
   .values { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); }
+}
+
+/* ── the nav marker ───────────────────────────────────────
+   A single filled pill that slides to whichever item you are pointing
+   at, and returns to the current page when you leave. The reference
+   does this with an absolutely-positioned div whose left and width are
+   set per item; so does this, in about twenty lines of vanilla JS.
+
+   Without script the marker never appears and the current page keeps
+   its tinted background, so the nav still says where you are. `is-live`
+   is what JS adds to hand that job over -- the two never paint at once.
+   ══════════════════════════════════════════════════════════ */
+.site-nav__pill { position: relative; }
+.site-nav__marker {
+  position: absolute;
+  inset-block: var(--space-2);
+  left: 0; width: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-inverse);
+  opacity: 0;
+  pointer-events: none;
+  transition: left .42s var(--ease-spring), width .42s var(--ease-spring),
+              opacity .25s var(--ease-out);
+}
+.site-nav__pill.is-live .site-nav__marker { opacity: 1; }
+
+/* The tinted current-page background is the no-JS fallback. Once the
+   marker is live it would paint underneath it, so it goes. */
+.site-nav__pill.is-live a[aria-current="page"] { background: none; }
+
+/* Whichever link the marker is under reads inverted. The class is set in
+   JS rather than inferred from :hover, because the marker also rests on
+   the current page when the pointer is nowhere near the nav. */
+.site-head nav .site-nav__pill a { position: relative; z-index: 1; }
+.site-head nav .site-nav__pill a.is-marked { color: var(--color-text-inverse); }
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav__marker { transition: opacity .2s linear; }
 }
