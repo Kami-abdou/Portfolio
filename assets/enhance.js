@@ -105,7 +105,7 @@
      A vanilla port of reactbits' SmoothCursor. The published component is
      React + Tailwind and installs through shadcn; this site has no
      package.json, no node_modules and no framework, and says so on its own
-     project page ("0 runtime dependencies", "7.3 KB JavaScript"), so the
+     project page ("0 runtime dependencies", "10.6 KB JavaScript"), so the
      component could not be installed. The behaviour is what was wanted, so
      the behaviour is what was ported.
 
@@ -515,4 +515,54 @@
     });
     show(0);
   });
+})();
+
+
+/* The marquee's pause control — WCAG 2.2.2 Pause, Stop, Hide (Level A).
+
+   The three rows in the signature band animate indefinitely, start on their
+   own and are not essential to anything, which is exactly the case 2.2.2
+   covers. A `prefers-reduced-motion` block does not discharge it: the
+   criterion asks for a MECHANISM, and an operating-system preference the
+   visitor may never have heard of is not a mechanism on this page.
+
+   The button ships `hidden` so that a visitor with JS off never sees a
+   control that cannot work. Unhiding it here is the whole progressive-
+   enhancement contract: with no JS the rows still move, but nothing on
+   screen claims you can stop them.
+*/
+(function () {
+  var band = document.querySelector('.hero');
+  var btn = document.querySelector('.wall-pause');
+  if (!band || !btn) return;
+  if (!band.querySelector('.wall__track')) return;
+
+  btn.hidden = false;
+
+  function label(text) {
+    // Only the leading text node. Setting textContent would delete the
+    // visually-hidden span that gives the button its full accessible name.
+    var first = btn.firstChild;
+    if (first && first.nodeType === 3) first.nodeValue = text;
+  }
+
+  function setPaused(paused) {
+    band.classList.toggle('is-paused', paused);
+    btn.setAttribute('aria-pressed', paused ? 'true' : 'false');
+    label(paused ? 'Play' : 'Pause');
+  }
+
+  // Written out rather than bound inline: a ternary that evaluates to a
+  // handler attaches without error and then never fires, which cost an
+  // afternoon once on this file.
+  btn.addEventListener('click', function () {
+    var paused = band.classList.contains('is-paused');
+    setPaused(!paused);
+  });
+
+  // Someone who has asked the OS for less motion gets it stopped to begin
+  // with, and can still start it. The mechanism and the preference are
+  // separate obligations; this honours both.
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  setPaused(!!(calm && calm.matches));
 })();

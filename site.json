@@ -14,7 +14,7 @@
   "intro": "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. I build to find out: a prototype in code answers questions a static frame cannot.",
   "contactLede": "Senior product designer at InstaDeep. Open to conversations about product work and collaborations.",
   "about": [
-    "I design products where the interface has to carry trust — AI, blockchain and fintech.",
+    "AI, blockchain and fintech: three domains where someone has to act on a system they cannot check for themselves. That is the work — making an interface carry trust it cannot ask for.",
     "Today I'm a senior product designer at InstaDeep, an AI company acquired by BioNTech, working on their AI products and the design system underneath them. Before that I led product design at Steer, and at T-ledger I designed one of Tunisia's first digital wallets, built on blockchain.",
     "I also build what I design. This site is the proof: my Figma, my code, my tests.",
     "Based in Tunis — UTC+1, the same working day as Paris and Berlin."
@@ -131,5 +131,46 @@
   "shareImage": "site/share-card.png",
   "heroStatement": "Six years designing products across fintech, automotive retail and AI — and building them. From first research to shipped interface.",
   "metaDescription": "Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.",
-  "aboutDescription": "Senior product designer across AI, blockchain and fintech — what I work on, and why I build the things I design."
+  "aboutDescription": "Senior product designer across AI, blockchain and fintech — what I work on, and why I build the things I design.",
+  "heroClaim": "I design products where the interface has to carry trust.",
+  "heroSupport": "Six years across fintech, automotive retail and AI — and I build what I design. Senior product designer at InstaDeep, an AI company acquired by BioNTech.",
+  "availability": "Open to conversations",
+  "availabilityNote": "Usually a reply the same day.",
+  "portfolioLabel": "Portfolio ’26",
+  "heroFacts": [
+    {
+      "label": "Based in",
+      "value": "Tunis · UTC+1"
+    },
+    {
+      "label": "Now",
+      "value": "InstaDeep"
+    },
+    {
+      "label": "Designing since",
+      "value": "2020"
+    },
+    {
+      "label": "Focus",
+      "value": "Interaction · Design systems"
+    }
+  ],
+  "principles": {
+    "heading": "How I work",
+    "description": "Product direction, interface craft, and an AI-assisted build practice.",
+    "items": [
+      {
+        "label": "Interaction is the product",
+        "body": "What holds my attention is how a thing responds — what it does while it waits, and how it recovers. The happy path is the easy half."
+      },
+      {
+        "label": "I build what I design",
+        "body": "A prototype in code answers questions a static frame cannot. This site is the proof: my Figma, my code, my tests."
+      },
+      {
+        "label": "Trust has to be visible",
+        "body": "AI, blockchain and fintech all ask people to believe something they cannot check. The interface is where that belief is won or lost."
+      }
+    ]
+  }
 }

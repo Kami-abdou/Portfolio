@@ -1,65 +1,39 @@
 /* Self-hosted webfonts — no CDN at runtime, per BUILD.md.
-   Blinker and Sulphur Point are both SIL Open Font License 1.1,
-   which permits redistribution alongside the site.
-   Regenerate with: python3 tools/fetch-fonts.py
+
+   Two faces, both SIL Open Font License 1.1, which permits redistribution
+   alongside the site:
+
+     Geist  — Vercel's grotesk, the whole UI. ONE file carries weights
+              100-900 because it is a variable font, so `font-weight` is a
+              continuous axis here, not a set of discrete cuts. This replaced
+              four static Blinker cuts and three Sulphur Point cuts: 99,288
+              bytes over 8 files became 41,292 over 2.
+
+              Verified rather than assumed: Google serves the same URL for
+              every weight you ask for, which is what a variable face looks
+              like but also what a broken request looks like. Rendering
+              "Handgloves 500" at 64px gave 485.13px at 400, 495.65px at 500
+              and 506.17px at 600, and `font-variation-settings: 'wght' 600`
+              landed on 506.17px exactly. The axis is real.
+
+     Anton  — the poster condensed, and ONLY the marquee band. Nothing else
+              on the site sets it; it is a texture, not a typeface choice.
+
+   Both are preloaded in <head> (see build.py `head`) because `font-display:
+   swap` without a preload is a layout shift by construction: the first paint
+   uses a fallback whose metrics differ, then reflows when the real face
+   lands. Preload + swap is the pair that works.
 */
 
 @font-face {
-  font-family: 'Blinker';
+  font-family: 'Geist';
   font-style: normal;
-  font-weight: 300;
+  /* The variable axis. A single value here would pin one instance and make
+     every weight on the site render identically. */
+  font-weight: 100 900;
   font-display: swap;
-  src: url('fonts/blinker-300.woff2') format('woff2');
+  src: url('fonts/geist-variable.woff2') format('woff2');
 }
-
-@font-face {
-  font-family: 'Blinker';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('fonts/blinker-400.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Blinker';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('fonts/blinker-600.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Blinker';
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url('fonts/blinker-800.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Sulphur Point';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url('fonts/sulphur-point-300.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Sulphur Point';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('fonts/sulphur-point-400.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Sulphur Point';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('fonts/sulphur-point-700.woff2') format('woff2');
-}
-
 
 @font-face {
   font-family: 'Anton';

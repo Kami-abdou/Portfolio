@@ -40,8 +40,8 @@
   ],
   "metrics": [
     {
-      "label": "Shipped",
-      "value": "March 2021 — iOS + Android"
+      "label": "Shipped on iOS and Android",
+      "value": "March 2021"
     },
     {
       "label": "Design team",
@@ -56,13 +56,15 @@
   "sections": [
     {
       "id": "context",
-      "heading": "Overview",
+      "phase": "Context",
+      "heading": "Before Konnect was a company",
       "body": "Konnect began designing its mobile application with the ambition of becoming the biggest digital wallet platform in Tunisia. The goal of this particular piece of work was to identify what was actually broken about online payment in the country, and — with the beta already out — determine the critical features and set the priorities for the next iteration of the product.\n\nKonnect was not a company when I worked on it. It was a project inside T-ledger, the startup I joined. It has since spun out and become its own company.",
       "images": []
     },
     {
       "id": "problem",
-      "heading": "The problem",
+      "phase": "The problem",
+      "heading": "No local convention to lean on",
       "body": "Back in 2020 Tunisia had a serious problem with online payments: for most people, they simply did not work. Konnect answered that with a digital wallet that lets users pay online, send and receive money by bank transfer, buy phone credit, and connect straight to their bank account — all secured with blockchain. Designing the first online digital wallet in a market meant there was no local convention to lean on, so we focused on the SaaS side, particularly B2B and C2B, and built the user-centred design from there.",
       "images": [
         {
@@ -74,13 +76,15 @@
     },
     {
       "id": "role",
+      "phase": "Role",
       "heading": "I was the whole design team",
       "body": "I joined Konnect as a product designer in early 2020 as the only designer in a company of more than fifteen engineers and two product managers. I supported design across every part of the business and led UX and UI on the key parts of the application side of the platform. Over that year I implemented a design process where there had been none, learned to work with the development team and built a real communication channel with them, established a design system, and designed the final brand and identity of Konnect.",
       "images": []
     },
     {
       "id": "process",
-      "heading": "UX process",
+      "phase": "Process",
+      "heading": "Discover, define, ideate, implement",
       "body": "The work ran on a discover, define, ideate, implement loop — research and synthesis feeding a sharp problem definition, then concepts and design feeding a solution. Working with the CTO meant constant back and forth, which is the reason the final product ended up functional rather than merely drawn.",
       "images": [
         {
@@ -92,7 +96,8 @@
     },
     {
       "id": "validation",
-      "heading": "Validating the design",
+      "phase": "Validation",
+      "heading": "Prototypes instead of descriptions",
       "body": "Validation was how we kept the product honest. Define the objectives clearly, involve stakeholders from the start, hold regular design reviews, use prototypes rather than descriptions, gather remote feedback with proper tooling, actively encourage criticism, run usability testing with real users, document every decision and change, handle disagreement professionally, and iterate. Each of those exists because skipping it cost us something at least once.",
       "images": [
         {
@@ -104,7 +109,8 @@
     },
     {
       "id": "outcome",
-      "heading": "The outcome",
+      "phase": "Outcome",
+      "heading": "On the App Store, 29 March 2021",
       "body": "The app shipped. Konnect Pay reached the App Store on 29 March 2021, and the design I delivered was the version that launched on iOS and Android.\n\nWhat the company did afterwards is not my work, but it is the context that makes this worth showing. Konnect became the first payment facilitator licensed by the Central Bank of Tunisia, was the only Tunisian company selected for Visa's inaugural Africa Fintech Accelerator, and raised roughly $1.5M from Attijariwafa Ventures, Renew Capital, Digital Africa Ventures, Sunny Side Venture Partners, Plug and Play Africa and 54 Collective. It has since reported about 4% of Tunisia's online payments market, growing around 20% month on month.\n\nThe product has been fully redesigned since and is now on its seventh major version. What I own is the first one — the release that took the company from a pitch to something people could actually hold.",
       "images": [
         {

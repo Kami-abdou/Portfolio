@@ -24,9 +24,20 @@
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=84b593ce">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=0a9d2f51">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=5a257724">
-  <link rel="stylesheet" href="assets/fonts.css?v=5adcd1d1">
-  <link rel="stylesheet" href="assets/tokens.css?v=0811f1f7">
-  <link rel="stylesheet" href="assets/styles.css?v=efaa2fef">
+  <!-- The two faces, preloaded. `font-display: swap` without this pair is a
+       layout shift by construction: first paint uses a fallback whose metrics
+       differ from Geist's, then the page reflows when the real face arrives.
+       Measured on this site before the preload existed, that cost 0.389 CLS.
+
+       `crossorigin` is required even though these are same-origin. Fonts are
+       always fetched in CORS mode, so a preload without it is a SEPARATE
+       cache entry from the one @font-face goes on to request -- the file gets
+       downloaded twice and the preload buys nothing. -->
+  <link rel="preload" href="assets/fonts/geist-variable.woff2?v=9d846db8" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/fonts.css?v=1f22714f">
+  <link rel="stylesheet" href="assets/tokens.css?v=dcb93877">
+  <link rel="stylesheet" href="assets/styles.css?v=af1abf01">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
 </head>
 <body>
@@ -43,9 +54,29 @@
   </header>
   <main id="main" tabindex="-1">
 
-    <section class="hero">
-      <h1 class="visually-hidden">Abdou Yaackoubi — Senior Product Designer, Interaction Design, Design Systems, AI Products, Prototyping in Code</h1>
+    <section class="opening shell">
+      <p class="opening__status"><span class="opening__avail"><span class="opening__dot" aria-hidden="true"></span>Open to conversations</span><span class="opening__sep" aria-hidden="true"></span><span class="opening__portfolio">Portfolio ’26</span></p>
 
+      <h1 class="opening__claim">I design products where the interface has to carry trust.</h1>
+
+      <p class="opening__support">Six years across fintech, automotive retail and AI — and I build what I design. Senior product designer at InstaDeep, an AI company acquired by BioNTech.</p>
+
+      <div class="opening__actions">
+        <a class="btn btn--solid" href="#work">See the work</a><a class="btn" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="opening__note">Usually a reply the same day.</span>
+      </div>
+
+      <dl class="opening__facts">
+        <div class="opening__fact"><dt>Based in</dt><dd>Tunis · UTC+1</dd></div>
+        <div class="opening__fact"><dt>Now</dt><dd>InstaDeep</dd></div>
+        <div class="opening__fact"><dt>Designing since</dt><dd>2020</dd></div>
+        <div class="opening__fact"><dt>Focus</dt><dd>Interaction · Design systems</dd></div>
+      </dl>
+    </section>
+
+    <!-- The signature band. No heading of its own and nothing to read: the
+         rows are aria-hidden, the portrait carries the alt text, and the
+         section is labelled so it is not an anonymous region. -->
+    <section class="hero" aria-label="Portrait">
       <div class="wall" aria-hidden="true"><div class="wall__row wall__row--fwd" style="--dur: 103s"><div class="wall__track"><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span></div></div><div class="wall__row wall__row--rev" style="--dur: 127s"><div class="wall__track"><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span></div></div><div class="wall__row wall__row--fwd" style="--dur: 149s"><div class="wall__track"><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span></div></div></div>
 
       <figure class="hero__portrait">
@@ -56,19 +87,14 @@
 
       <div class="wall wall--ghost" aria-hidden="true"><div class="wall__row wall__row--fwd" style="--dur: 103s"><div class="wall__track"><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span><span class="wall__word">Senior Product Designer</span></div></div><div class="wall__row wall__row--rev" style="--dur: 127s"><div class="wall__track"><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span><span class="wall__word">Interaction Design</span></div></div><div class="wall__row wall__row--fwd" style="--dur: 149s"><div class="wall__track"><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span><span class="wall__word">Design Systems</span></div></div></div>
 
-      <div class="hero__statement shell">
-        <p class="hero__statement__text">Six years designing products across fintech, automotive retail and AI — and building them. From first research to shipped interface.</p>
-      </div>
-
-      <div class="hero__meta shell">
-        <span>Tunis, Tunisia</span>
-        <span>2020 — 2026</span>
-      </div>
-    </section>
-
-    <section class="hero-copy shell">
-      <p class="hero__tagline">Product direction, interface craft, and an AI-assisted build practice.</p>
-      <p class="hero__intro">What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. I build to find out: a prototype in code answers questions a static frame cannot.</p>
+      <!-- WCAG 2.2.2 Pause, Stop, Hide is Level A, and the three rows below
+           move for longer than five seconds without being essential. A
+           prefers-reduced-motion block does NOT discharge it: the criterion
+           asks for a mechanism, and an OS setting the visitor may not have
+           is not one. Hidden until JS wires it up, because a button that
+           does nothing is worse than no button. -->
+      <button type="button" class="wall-pause" hidden
+              aria-pressed="false">Pause<span class="visually-hidden"> the moving background</span></button>
     </section>
 
 
@@ -87,6 +113,7 @@
               <img src="projects/10-instadeep/assets/cover-brand.jpg" alt=""  width="900" height="450" loading="lazy" decoding="async">
             </span>
             <span class="card__body">
+              <span class="card__tags"><span class="card__tag">Product design</span><span class="card__tag">Design systems</span><span class="card__tag">AI products</span></span>
               <span class="card__title"><a href="projects/instadeep">InstaDeep</a></span>
               <span class="card__tagline">Three product surfaces and the design system they all run on.</span>
               <span class="card__note">Senior product designer at InstaDeep, an AI research company acquired by BioNTech. I work across DeepPCB, their cloud-native PCB routing software, InstaNovo, their protein-sequencing model, and the design system every InstaDeep product surface and demo is built from.</span>
@@ -103,6 +130,7 @@
               <img src="projects/01-steer/assets/01-homepage.jpg" alt=""  width="900" height="2229" loading="lazy" decoding="async">
             </span>
             <span class="card__body">
+              <span class="card__tags"><span class="card__tag">Product Design</span><span class="card__tag">UX Design</span><span class="card__tag">UI Design</span></span>
               <span class="card__title"><a href="projects/steer">Steer</a></span>
               <span class="card__tagline">End-to-end solutions to reinvent the automotive retail industry</span>
               <span class="card__note">A C2C marketplace for used cars built on verified inspection data and a pricing algorithm, plus a B2B web platform for used-car professionals. I set the product direction, ran the research, and designed the identity, the corporate site and the dashboard.</span>
@@ -119,6 +147,7 @@
               <img src="projects/06-fixerloop/assets/cover.jpg" alt=""  width="900" height="600" loading="lazy" decoding="async">
             </span>
             <span class="card__body">
+              <span class="card__tags"><span class="card__tag">Mobile</span><span class="card__tag">UX Design</span><span class="card__tag">UI Design</span></span>
               <span class="card__title"><a href="projects/fixerloop">Fixerloop</a></span>
               <span class="card__tagline">An interface redesign for a services marketplace its own founder found confusing</span>
               <span class="card__note">Fixerloop connects homeowners with professional service providers. The founder came to me because the app had become too complicated to use — clashing colours, unclear copy and a flow he could not defend. The engagement was an interface redesign: 82 screens redrawn across the customer and provider apps, with a component library underneath them.</span>
@@ -135,6 +164,7 @@
               <img src="projects/02-konnect/assets/01-desktop-47.jpg" alt=""  width="900" height="640" loading="lazy" decoding="async">
             </span>
             <span class="card__body">
+              <span class="card__tags"><span class="card__tag">UX Design</span><span class="card__tag">UI Design</span><span class="card__tag">Prototyping</span></span>
               <span class="card__title"><a href="projects/konnect">Konnect</a></span>
               <span class="card__tagline">One of the first digital wallets in Tunisia</span>
               <span class="card__note">Konnect set out to solve online payment in a country where it barely worked. I joined T-ledger as the only designer among more than fifteen engineers and two product managers, ran the full design process, and rebuilt the application end to end. The team still uses that design today.</span>
@@ -161,8 +191,9 @@
               <img src="projects/03-fissa3/assets/p7-hi-fi.jpg" alt=""  width="900" height="2983" loading="lazy" decoding="async">
             </span>
             <span class="card__body">
-              <span class="card__title"><a href="projects/fissa3">Fissa3</a></span>
               
+              <span class="card__title"><a href="projects/fissa3">Fissa3</a></span>
+              <span class="card__tagline">Food delivery built during the COVID lockdowns</span>
               
               <span class="card__meta">2020</span>
             </span>
@@ -177,8 +208,9 @@
               <img src="projects/04-groupado/assets/n1-homepage.jpg" alt=""  width="900" height="4009" loading="lazy" decoding="async">
             </span>
             <span class="card__body">
-              <span class="card__title"><a href="projects/groupado">Groupado</a></span>
               
+              <span class="card__title"><a href="projects/groupado">Groupado</a></span>
+              <span class="card__tagline">A platform where anyone with a skill can teach it</span>
               
               <span class="card__meta">2021</span>
             </span>
@@ -193,8 +225,9 @@
               <img src="projects/08-smarthub/assets/02-web-design-development.jpg" alt=""  width="900" height="2790" loading="lazy" decoding="async">
             </span>
             <span class="card__body">
-              <span class="card__title"><a href="projects/smarthub">Smarthub</a></span>
               
+              <span class="card__title"><a href="projects/smarthub">Smarthub</a></span>
+              <span class="card__tagline">Designing the brand I run</span>
               
               
             </span>
@@ -209,12 +242,38 @@
               <img src="projects/09-portfolio/assets/cover.jpg" alt=""  width="900" height="562" loading="lazy" decoding="async">
             </span>
             <span class="card__body">
-              <span class="card__title"><a href="projects/portfolio">This portfolio</a></span>
               
+              <span class="card__title"><a href="projects/portfolio">This portfolio</a></span>
+              <span class="card__tagline">Designed, built and tested by me — no framework</span>
               
               <span class="card__meta">2026</span>
             </span>
           </div>
+        </li>
+      </ul>
+    </section>
+
+
+    <section class="band shell band--principles">
+      <div class="band__head">
+        <h2><span class="mask"><span class="mask__in">How I work</span></span></h2>
+        <p>Product direction, interface craft, and an AI-assisted build practice.</p>
+      </div>
+      <ul class="principles">
+        <li class="principle">
+          <span class="principle__index" aria-hidden="true">A</span>
+          <h3 class="principle__label">Interaction is the product</h3>
+          <p class="principle__body">What holds my attention is how a thing responds — what it does while it waits, and how it recovers. The happy path is the easy half.</p>
+        </li>
+        <li class="principle">
+          <span class="principle__index" aria-hidden="true">B</span>
+          <h3 class="principle__label">I build what I design</h3>
+          <p class="principle__body">A prototype in code answers questions a static frame cannot. This site is the proof: my Figma, my code, my tests.</p>
+        </li>
+        <li class="principle">
+          <span class="principle__index" aria-hidden="true">C</span>
+          <h3 class="principle__label">Trust has to be visible</h3>
+          <p class="principle__body">AI, blockchain and fintech all ask people to believe something they cannot check. The interface is where that belief is won or lost.</p>
         </li>
       </ul>
     </section>
@@ -243,6 +302,6 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=e7e218f9" defer></script>
-  <script src="assets/enhance.js?v=73c8f4a8" defer></script>
+  <script src="assets/enhance.js?v=88241748" defer></script>
 </body>
 </html>

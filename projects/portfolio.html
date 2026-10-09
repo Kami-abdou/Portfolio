@@ -24,9 +24,20 @@
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png?v=84b593ce">
   <link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png?v=0a9d2f51">
   <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png?v=5a257724">
-  <link rel="stylesheet" href="../assets/fonts.css?v=5adcd1d1">
-  <link rel="stylesheet" href="../assets/tokens.css?v=0811f1f7">
-  <link rel="stylesheet" href="../assets/styles.css?v=efaa2fef">
+  <!-- The two faces, preloaded. `font-display: swap` without this pair is a
+       layout shift by construction: first paint uses a fallback whose metrics
+       differ from Geist's, then the page reflows when the real face arrives.
+       Measured on this site before the preload existed, that cost 0.389 CLS.
+
+       `crossorigin` is required even though these are same-origin. Fonts are
+       always fetched in CORS mode, so a preload without it is a SEPARATE
+       cache entry from the one @font-face goes on to request -- the file gets
+       downloaded twice and the preload buys nothing. -->
+  <link rel="preload" href="../assets/fonts/geist-variable.woff2?v=9d846db8" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/fonts.css?v=1f22714f">
+  <link rel="stylesheet" href="../assets/tokens.css?v=dcb93877">
+  <link rel="stylesheet" href="../assets/styles.css?v=af1abf01">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
 </head>
 <body>
@@ -61,7 +72,7 @@
         <img src="09-portfolio/assets/cover.jpg" alt="" width="900" height="562" loading="eager" decoding="async">
       </figure>
 
-      <section class="insights shell" aria-label="Research at a glance"><div class="insights__grid"><div class="insight"><span class="insight__value">42</span><span class="insight__label">Tests against the generated HTML</span></div><div class="insight"><span class="insight__value">0</span><span class="insight__label">Runtime dependencies</span></div><div class="insight"><span class="insight__value">7.3 KB</span><span class="insight__label">JavaScript shipped</span></div></div></section>
+      <section class="insights shell" aria-label="Research at a glance"><div class="insights__grid"><div class="insight"><span class="insight__value">166</span><span class="insight__label">Tests against the generated HTML</span></div><div class="insight"><span class="insight__value">0</span><span class="insight__label">Runtime dependencies</span></div><div class="insight"><span class="insight__value">10.6 KB</span><span class="insight__label">JavaScript shipped, gzipped</span></div></div></section>
 
       <div class="project__layout shell">
         <aside class="project__meta">
@@ -72,7 +83,8 @@
 
 
       <section class="project__section" id="the-site">
-        <h2><span class="project__num" aria-hidden="true">01</span>The site</h2>
+<p class="project__eyebrow" aria-hidden="true"><span class="project__num">01</span></p>
+        <h2>The site</h2>
         
       </section>
       <div class="shots">
@@ -86,7 +98,8 @@
 
 
       <section class="project__section" id="the-system">
-        <h2><span class="project__num" aria-hidden="true">02</span>The system</h2>
+<p class="project__eyebrow" aria-hidden="true"><span class="project__num">02</span></p>
+        <h2>The system</h2>
         
       </section>
       <div class="shots">
@@ -100,7 +113,8 @@
 
 
       <section class="project__section" id="the-guardrail">
-        <h2><span class="project__num" aria-hidden="true">03</span>The guardrail</h2>
+<p class="project__eyebrow" aria-hidden="true"><span class="project__num">03</span></p>
+        <h2>The guardrail</h2>
         
       </section>
       <div class="shots">
@@ -133,6 +147,6 @@
     </div>
   </footer>
   <script src="../assets/lightbox.js?v=e7e218f9" defer></script>
-  <script src="../assets/enhance.js?v=73c8f4a8" defer></script>
+  <script src="../assets/enhance.js?v=88241748" defer></script>
 </body>
 </html>

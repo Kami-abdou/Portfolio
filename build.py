@@ -605,6 +605,17 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <link rel="icon" type="image/png" sizes="32x32" href="{up}assets/favicon-32.png{asset_v('assets/favicon-32.png')}">
   <link rel="icon" type="image/png" sizes="192x192" href="{up}assets/favicon-192.png{asset_v('assets/favicon-192.png')}">
   <link rel="apple-touch-icon" href="{up}assets/apple-touch-icon.png{asset_v('assets/apple-touch-icon.png')}">
+  <!-- The two faces, preloaded. `font-display: swap` without this pair is a
+       layout shift by construction: first paint uses a fallback whose metrics
+       differ from Geist's, then the page reflows when the real face arrives.
+       Measured on this site before the preload existed, that cost 0.389 CLS.
+
+       `crossorigin` is required even though these are same-origin. Fonts are
+       always fetched in CORS mode, so a preload without it is a SEPARATE
+       cache entry from the one @font-face goes on to request -- the file gets
+       downloaded twice and the preload buys nothing. -->
+  <link rel="preload" href="{up}assets/fonts/geist-variable.woff2{asset_v('assets/fonts/geist-variable.woff2')}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{up}assets/fonts/anton-400.woff2{asset_v('assets/fonts/anton-400.woff2')}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{up}assets/fonts.css{asset_v("assets/fonts.css")}">
   <link rel="stylesheet" href="{up}assets/tokens.css{asset_v("assets/tokens.css")}">
   <link rel="stylesheet" href="{up}assets/styles.css{asset_v("assets/styles.css")}">
@@ -823,8 +834,33 @@ def project_card(project, *, large):
     # nothing else; the rest is on the project's own page, where there is
     # room for it. This is half of "renforcer la hiérarchie typographique":
     # the levels differ by how much they say, not only by type size.
+    # The tagline runs on BOTH tiers now. It used to be case-studies-only,
+    # which left a secondary card saying "07 Smarthub" and a year -- a
+    # visitor had no way to know what Smarthub was without opening it.
+    #
+    # That strip-down answered real feedback ("simplifier les projets
+    # secondaires") and the reasoning under it still holds: the tiers must
+    # differ by how much they say, not only by type size. So the difference
+    # moves rather than disappears. A case-study card carries tags, tagline,
+    # summary and a three-part meta; a secondary card carries the tagline
+    # and the year. Still clearly two tiers, and neither is mute.
     tagline_html = ('<span class="card__tagline">%s</span>' % e(tagline)
-                    if large and tagline else "")
+                    if tagline else "")
+
+    # Category chips, case studies only. Every project has carried a `tags`
+    # list since the schema was written and nothing has ever rendered it.
+    # petradesigns.io leads each project with exactly this -- two or three
+    # category labels above an outcome headline -- and it is the single
+    # cheapest thing on a card: it tells you what KIND of work this was
+    # before you have read a word of prose.
+    #
+    # Three, not all of them: the fourth and fifth are always the generic
+    # ones ("UI Design" after "UX Design"), and five chips wrap to a second
+    # line that competes with the title.
+    tags = [x for x in (project.get("tags") or []) if usable(x)][:3]
+    tags_html = ('<span class="card__tags">%s</span>'
+                 % "".join('<span class="card__tag">%s</span>' % e(x) for x in tags)
+                 if large and tags else "")
     # The description, on case-study rows only. The side-by-side row left a
     # 425px column holding 127px of text, centred in a 453px height -- 72%
     # of it empty, which is what made the band look unfinished. This is the
@@ -882,6 +918,7 @@ def project_card(project, *, large):
               <img src="{e(cover)}" alt="" {dims} loading="lazy" decoding="async">
             </span>
             <span class="card__body">
+              {tags_html}
               <span class="card__title"><a href="projects/{e(project['slug'])}">{e(project['title'])}</a></span>
               {tagline_html}
               {note_html}
@@ -986,10 +1023,76 @@ def build_index(projects):
 
     wall_rows = roles[:3] if len(roles) >= 3 else roles
 
-    out.append(f"""
-    <section class="hero">
-      <h1 class="visually-hidden">{e(SITE['name'])} — {e(", ".join(roles))}</h1>
+    # ── The opening ───────────────────────────────────────────────────
+    # The clarity block, and the page's h1.
+    #
+    # This section is why the redesign exists. The marquee below it used to
+    # BE the hero: the only h1 was `visually-hidden`, the rows are
+    # aria-hidden by construction, and the first readable sentence on the
+    # site sat 760px down the page. A visitor's first screen was a condensed
+    # poster face clipped mid-word and a photograph -- striking, and silent
+    # about what the man does.
+    #
+    # Measured against the four sites this redesign was briefed on: all four
+    # put a specific, readable claim in the first screen, and the two
+    # homepages (petradesigns.io, sandeep.design) both spend their h1 on the
+    # value proposition rather than on a name. The wordmark in the header
+    # already carries the name, and so do <title> and the JSON-LD.
+    #
+    # The marquee is NOT deleted -- it is the site's signature and the one
+    # thing its owner said still felt like his. It moves one section down,
+    # where being arresting costs nothing.
+    facts = [f for f in SITE.get("heroFacts", [])
+             if usable(f.get("label")) and usable(f.get("value"))]
+    facts_html = "\n        ".join(
+        '<div class="opening__fact"><dt>%s</dt><dd>%s</dd></div>'
+        % (e(f["label"]), e(f["value"])) for f in facts)
+    avail = SITE.get("availability", "")
+    avail_note = SITE.get("availabilityNote", "")
+    portfolio_label = SITE.get("portfolioLabel", "")
+    email = SITE.get("email", "")
 
+    # Every one of these is gated, same as the rest of the build: a field
+    # that is missing or still TODO renders nothing rather than an empty
+    # chip, a dangling separator or a mailto: with no address.
+    status_bits = []
+    if usable(avail):
+        status_bits.append(
+            '<span class="opening__avail">'
+            '<span class="opening__dot" aria-hidden="true"></span>%s</span>' % e(avail))
+    if usable(portfolio_label):
+        status_bits.append('<span class="opening__portfolio">%s</span>' % e(portfolio_label))
+    status_html = ('<p class="opening__status">%s</p>'
+                   % '<span class="opening__sep" aria-hidden="true"></span>'.join(status_bits)
+                   ) if status_bits else ""
+
+    actions = ['<a class="btn btn--solid" href="#work">See the work</a>']
+    if usable(email):
+        actions.append('<a class="btn" href="mailto:%s">Email me</a>' % e(email))
+    if usable(avail_note):
+        actions.append('<span class="opening__note">%s</span>' % e(avail_note))
+
+    out.append(f"""
+    <section class="opening shell">
+      {status_html}
+
+      <h1 class="opening__claim">{e(SITE.get('heroClaim') or SITE['title'])}</h1>
+
+      <p class="opening__support">{e(SITE.get('heroSupport') or SITE.get('heroStatement', ''))}</p>
+
+      <div class="opening__actions">
+        {"".join(actions)}
+      </div>
+
+      <dl class="opening__facts">
+        {facts_html}
+      </dl>
+    </section>
+
+    <!-- The signature band. No heading of its own and nothing to read: the
+         rows are aria-hidden, the portrait carries the alt text, and the
+         section is labelled so it is not an anonymous region. -->
+    <section class="hero" aria-label="Portrait">
       {wall(wall_rows, ghost=False)}
 
       <figure class="hero__portrait">
@@ -1000,19 +1103,14 @@ def build_index(projects):
 
       {wall(wall_rows, ghost=True)}
 
-      <div class="hero__statement shell">
-        <p class="hero__statement__text">{e(SITE.get('heroStatement', ''))}</p>
-      </div>
-
-      <div class="hero__meta shell">
-        <span>{e(SITE.get('location', ''))}</span>
-        <span>{e(span)}</span>
-      </div>
-    </section>
-
-    <section class="hero-copy shell">
-      <p class="hero__tagline">{e(SITE['tagline'])}</p>
-      <p class="hero__intro">{e(SITE['intro'])}</p>
+      <!-- WCAG 2.2.2 Pause, Stop, Hide is Level A, and the three rows below
+           move for longer than five seconds without being essential. A
+           prefers-reduced-motion block does NOT discharge it: the criterion
+           asks for a mechanism, and an OS setting the visitor may not have
+           is not one. Hidden until JS wires it up, because a button that
+           does nothing is worse than no button. -->
+      <button type="button" class="wall-pause" hidden
+              aria-pressed="false">Pause<span class="visually-hidden"> the moving background</span></button>
     </section>
 """)
 
@@ -1065,6 +1163,41 @@ def build_index(projects):
     </section>
 """)
 
+    # ── How I work ─────────────────────────────────────────────────
+    # Three named principles, after the work rather than before it: the
+    # claim is more credible once the evidence has been seen.
+    #
+    # sandeep.design -- the closest profile to this one anywhere in the
+    # reference set, "6 years building information-dense tools" against six
+    # years across fintech, automotive retail and AI -- gives this a whole
+    # numbered section, and it is the part a hiring manager reads after
+    # deciding the work is good enough to care who made it. This site had
+    # the copy for it (tagline, intro) sitting unlabelled under the hero,
+    # where it read as a caption.
+    principles = SITE.get("principles") or {}
+    items = [i for i in principles.get("items", [])
+             if usable(i.get("label")) and usable(i.get("body"))]
+    if items:
+        rows = "\n".join(
+            '''        <li class="principle">
+          <span class="principle__index" aria-hidden="true">%s</span>
+          <h3 class="principle__label">%s</h3>
+          <p class="principle__body">%s</p>
+        </li>''' % (chr(ord("A") + n), e(i["label"]), e(i["body"]))
+            for n, i in enumerate(items))
+        desc = principles.get("description", "")
+        desc_html = ("\n        <p>%s</p>" % e(desc)) if usable(desc) else ""
+        out.append(f"""
+    <section class="band shell band--principles">
+      <div class="band__head">
+        <h2>{masked(principles.get("heading", "How I work"))}</h2>{desc_html}
+      </div>
+      <ul class="principles">
+{rows}
+      </ul>
+    </section>
+""")
+
     out.append(contact_band())
     out.append(foot())
 
@@ -1079,13 +1212,19 @@ def build_index(projects):
     (ROOT / "work.html").write_text(page, encoding="utf-8")
 
 
-def contact_band(*, depth=0):
+def contact_band(*, depth=0, level="h2"):
     """The "Let's talk" block, shared by the homepage and /contact.
 
     It was inline in build_index until /contact became a real page. Copying
     it would have meant the email, the CV link and the link list each had two
     places to fall out of date, on the one block where being wrong costs an
     actual opportunity.
+
+    `level` exists because one block cannot be the same rank in both places.
+    On the homepage it is a section under the page's h1, so it is an h2. On
+    /contact it is the only heading on the page, and hardcoding h2 left that
+    page with NO h1 and a hierarchy that started at level two -- measured on
+    the built file, which had exactly one heading element on it.
     """
     up = "../" * depth
     links = "\n        ".join(
@@ -1111,7 +1250,7 @@ def contact_band(*, depth=0):
                  % (e(addr), e(addr))) if addr else ""
     return f"""
     <section class="band band--contact shell" id="contact">
-      <h2>{masked("Let's talk")}</h2>
+      <{level}>{masked("Let's talk")}</{level}>
       <p class="lede">{e(SITE.get("contactLede", ""))}</p>{addr_line}
       <div class="btn-row">
         {links}{cv_btn}
@@ -1134,7 +1273,7 @@ def build_contact():
         page_url="contact",
         nav_current="contact",
     )]
-    out.append(contact_band())
+    out.append(contact_band(level="h1"))
     out.append(foot())
     (ROOT / "contact.html").write_text("\n".join(out), encoding="utf-8")
 
@@ -1440,9 +1579,39 @@ def build_project(project, prev_p, next_p):
     # outcome" invites the question "the outcome of what?".
     numbered = len(live_sections) > 1
 
+    def eyebrow(idx, section):
+        """The `NN · PHASE` line above a section heading.
+
+        pleurat.com runs this on every case study and it is the device that
+        makes one "easy to explore": the eyebrow carries the generic stage
+        name, which frees the heading itself to be a sentence rather than a
+        label. Scannable and in a voice, instead of one or the other.
+
+        The number used to live INSIDE the h2, which also meant its text
+        content was the string "01DeepPCB" -- no separator, so that is what
+        a screen reader announced and what the table of contents inherited.
+        Out here it is a sibling, and the heading is just the heading.
+
+        `phase` is optional. Where a section has none the eyebrow is the
+        number alone, which is exactly what shipped before, so no project
+        has to be rewritten for this to be safe.
+        """
+        phase = section.get("phase")
+        bits = []
+        if numbered:
+            bits.append('<span class="project__num">%02d</span>' % idx)
+        if usable(phase):
+            bits.append('<span class="project__phase">%s</span>' % e(phase))
+        if not bits:
+            return ""
+        # aria-hidden on the whole line: the number is decorative and the
+        # phase repeats what the heading under it already says. Announcing
+        # "zero one overview, overview" helps nobody.
+        return ('<p class="project__eyebrow" aria-hidden="true">%s</p>'
+                % '<span class="project__eyebrow-sep"></span>'.join(bits))
+
     for idx, section in enumerate(live_sections, start=1):
-        num_html = ('<span class="project__num" aria-hidden="true">%02d</span>'
-                    % idx) if numbered else ""
+        num_html = eyebrow(idx, section)
         section_imgs = section.get("images", [])
         if section.get("autoImages"):
             section_imgs = section_imgs + auto_images(d, section["autoImages"])
@@ -1450,7 +1619,8 @@ def build_project(project, prev_p, next_p):
         if section.get("viewer") and section_imgs:
             out.append(f"""
       <section class="project__section" id="{e(section.get('id',''))}">
-        <h2>{num_html}{e(section['heading'])}</h2>
+{num_html}
+        <h2>{e(section['heading'])}</h2>
         {('<div class="prose">%s</div>' % paragraphs(section.get("body"))) if usable(section.get("body")) else ""}
         {viewer(section_imgs, d, depth=1, label=section['heading'])}
       </section>
@@ -1471,7 +1641,8 @@ def build_project(project, prev_p, next_p):
         figs_html = ('\n      <div class="shots%s">\n%s\n      </div>' % (variant, figs)) if figs else ""
         out.append(f"""
       <section class="project__section" id="{e(section.get('id',''))}">
-        <h2>{num_html}{e(section['heading'])}</h2>
+{num_html}
+        <h2>{e(section['heading'])}</h2>
         {body_html}
       </section>{figs_html}
 """)

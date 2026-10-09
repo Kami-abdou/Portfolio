@@ -24,9 +24,20 @@
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=84b593ce">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=0a9d2f51">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=5a257724">
-  <link rel="stylesheet" href="assets/fonts.css?v=5adcd1d1">
-  <link rel="stylesheet" href="assets/tokens.css?v=0811f1f7">
-  <link rel="stylesheet" href="assets/styles.css?v=efaa2fef">
+  <!-- The two faces, preloaded. `font-display: swap` without this pair is a
+       layout shift by construction: first paint uses a fallback whose metrics
+       differ from Geist's, then the page reflows when the real face arrives.
+       Measured on this site before the preload existed, that cost 0.389 CLS.
+
+       `crossorigin` is required even though these are same-origin. Fonts are
+       always fetched in CORS mode, so a preload without it is a SEPARATE
+       cache entry from the one @font-face goes on to request -- the file gets
+       downloaded twice and the preload buys nothing. -->
+  <link rel="preload" href="assets/fonts/geist-variable.woff2?v=9d846db8" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/fonts.css?v=1f22714f">
+  <link rel="stylesheet" href="assets/tokens.css?v=dcb93877">
+  <link rel="stylesheet" href="assets/styles.css?v=af1abf01">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
 </head>
 <body>
@@ -52,7 +63,7 @@
           </picture>
         </figure>
         <div class="prose">
-          <p>I design products where the interface has to carry trust — AI, blockchain and fintech.</p>
+          <p>AI, blockchain and fintech: three domains where someone has to act on a system they cannot check for themselves. That is the work — making an interface carry trust it cannot ask for.</p>
       <p>Today I&#x27;m a senior product designer at InstaDeep, an AI company acquired by BioNTech, working on their AI products and the design system underneath them. Before that I led product design at Steer, and at T-ledger I designed one of Tunisia&#x27;s first digital wallets, built on blockchain.</p>
       <p>I also build what I design. This site is the proof: my Figma, my code, my tests.</p>
       <p>Based in Tunis — UTC+1, the same working day as Paris and Berlin.</p>
@@ -139,6 +150,6 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=e7e218f9" defer></script>
-  <script src="assets/enhance.js?v=73c8f4a8" defer></script>
+  <script src="assets/enhance.js?v=88241748" defer></script>
 </body>
 </html>

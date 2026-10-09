@@ -42,27 +42,30 @@
       "value": "15 people"
     },
     {
-      "label": "Where it went",
-      "value": "Investor-backed, Versailles"
+      "label": "Incubator backing, and a French entity",
+      "value": "Versailles"
     }
   ],
   "cover": "assets/01-homepage.jpg",
   "sections": [
     {
       "id": "context",
-      "heading": "About the project",
+      "phase": "Context",
+      "heading": "Two products for one broken market",
       "body": "The used-car market is difficult on both sides. New cars are getting more expensive in emerging markets, which pushes buyers toward used ones — but a used car may not be reliable and there is no easy way to know before you buy. Steer set out to fix that with two products: a C2C marketplace where buyers get detailed, verified information about a car alongside a pricing algorithm and partner services like warranties and financing, and a B2B web platform for used-car professionals covering inspections, vehicle health analysis, stock management and digital marketing.",
       "images": []
     },
     {
       "id": "problem",
-      "heading": "The problem",
+      "phase": "The problem",
+      "heading": "Every viewing costs another inspection fee",
       "body": "Buying or selling a used car takes an enormous amount of process and time, and you cannot always trust the mechanic. There are red flags everywhere and very little transparency. Every car you go to see costs another inspection fee. Working out whether a given price is fair means asking a lot of people a lot of questions. First-time buyers are the most exposed, because sellers can give false information and there is no straightforward way to check it.",
       "images": []
     },
     {
       "id": "process",
-      "heading": "Design process",
+      "phase": "Process",
+      "heading": "Identity first, interface second",
       "body": "We started by building an identity for the startup and grounding it in market research, working the problem statement and the solution together before touching any interface. Once we understood the market we brainstormed, and I produced low-fidelity designs. We validated those, moved to high fidelity, then walked the developer through them and I followed every step of the build. Miro carried the thinking, Figma carried the design.",
       "images": [
         {
@@ -74,7 +77,8 @@
     },
     {
       "id": "research",
-      "heading": "User research",
+      "phase": "Research",
+      "heading": "Written for twenty, sat down with fifteen",
       "body": "I wrote a survey for people who had bought a used car, were considering one, or wanted a transparent diagnosis of a car they already owned. It was designed for 20 participants and I sat down with 15 of them to gather their answers from lived experience. The questions covered age, employment, budget, what they look for in a car, where they bought it, how long it took, what deceptions they ran into when viewing cars, the profile of the sellers, and what the mechanic cost them. The answers gave me a clear read on their frustrations and goals, and became the foundation for everything that followed.",
       "images": [
         {
@@ -96,7 +100,8 @@
     },
     {
       "id": "competitors",
-      "heading": "Competitor analysis",
+      "phase": "Landscape",
+      "heading": "Where the market left buyers unprotected",
       "body": "Mapping the existing players showed where the market left buyers unprotected, and where verified inspection data could become the thing that differentiated Steer rather than just another listing site.",
       "images": [
         {
@@ -108,7 +113,8 @@
     },
     {
       "id": "solution",
-      "heading": "The solution",
+      "phase": "The solution",
+      "heading": "Inspect once, and trust the number",
       "body": "The platform rests on scalable digital inspection technology paired with a pricing algorithm, so an inspection is efficient, repeatable and trustworthy rather than a cost you pay again at every viewing. On top of that sits a marketplace with customer services designed to make both buying and selling feel supported instead of adversarial.",
       "images": [
         {
@@ -120,7 +126,8 @@
     },
     {
       "id": "screens",
-      "heading": "The corporate site",
+      "phase": "Website",
+      "heading": "The B2B face of the product",
       "body": "We built the B2B-facing website to present the work: what Steer does, who it is for, and how a professional gets started.",
       "images": [
         {
@@ -142,7 +149,8 @@
     },
     {
       "id": "outcome",
-      "heading": "The outcome",
+      "phase": "Outcome",
+      "heading": "Two years as the whole design function",
       "body": "Two years as the entire design function, and the product function with it. From October 2021 to November 2023 I ran the research, the brand, the interface and the roadmap decisions behind them. There was nobody else in design or product.\n\nThat work was what Steer took to investors. The company secured backing from the Versailles Grand Parc incubator in Île-de-France and opened a French entity there. It now builds AI tools for used-vehicle professionals — inspection, pricing, documentation and resale.\n\nThe site has been redesigned since I left. It still runs on the brand I built.",
       "images": []
     }

@@ -238,7 +238,7 @@ class TestHeroPositioning(BuildCase):
         self.assertTrue(
             hits, "heroStatement names no non-AI domain: %r" % self.site["heroStatement"])
 
-    def test_hero_statement_is_rendered_on_the_homepage(self):
+    def test_hero_support_is_rendered_on_the_homepage(self):
         """Compared against the ESCAPED form, which is what build.py writes.
 
         build.py runs every string through html.escape(..., quote=True) (its
@@ -246,9 +246,32 @@ class TestHeroPositioning(BuildCase):
         pass only for copy that happens to contain no apostrophe, ampersand
         or quote -- so it would fail spuriously the moment the owner exercised
         the rewrite freedom this class's docstring promises them.
+
+        This asserts heroSupport, not heroStatement. The two swapped jobs in
+        the redesign: heroStatement is now the <meta> and share-card string
+        and is never painted, while heroSupport is the sentence under the h1.
+        Asserting the invisible one would have let the visible one go blank.
         """
-        rendered = html.escape(self.site["heroStatement"], quote=True)
+        rendered = html.escape(self.site["heroSupport"], quote=True)
         self.assertIn(rendered, self.html("index.html"))
+
+    def test_the_visible_claim_is_a_real_h1(self):
+        """The regression this redesign exists to prevent coming back.
+
+        The marquee hero's only h1 was `visually-hidden` and its three rows
+        were aria-hidden by construction, so the first readable sentence on
+        the site sat 760px down the page -- a first screen that was striking
+        and silent about what its owner does. Both homepages in the brief
+        (petradesigns.io, sandeep.design) spend their h1 on the claim.
+        """
+        page = self.html("index.html")
+        claim = html.escape(self.site["heroClaim"], quote=True)
+        self.assertIn('<h1 class="opening__claim">%s</h1>' % claim, page,
+                      "the homepage h1 is no longer the visible claim")
+        h1s = re.findall(r"<h1[^>]*>", page)
+        self.assertEqual(len(h1s), 1, "expected exactly one h1, found %r" % h1s)
+        self.assertNotIn("visually-hidden", h1s[0],
+                         "the homepage h1 is hidden again: %r" % h1s[0])
 
 
 class TestContentColumnAlignment(BuildCase):
@@ -268,22 +291,39 @@ class TestContentColumnAlignment(BuildCase):
     that produces it instead: a .shell wrapper for position and column, an
     inner element for the measure. Verified by measurement at 375, 1024 and
     1440px -- all content sharing one left edge at each.
+
+    The element moved in the redesign -- `.hero__statement` became `.opening`,
+    a section in normal flow rather than a box absolutely positioned over a
+    marquee -- but the contract did not, and it is still the easiest thing
+    on the page to get wrong. A rebuilt hero reintroduced this exact bug
+    once already, putting the opening at left edge 0 against 32px for
+    everything else, and this class is what caught it.
     """
 
     def test_statement_wrapper_carries_shell(self):
-        self.assertIn('<div class="hero__statement shell">', self.html("index.html"))
+        self.assertIn('<section class="opening shell">', self.html("index.html"))
 
     def test_measure_lives_on_the_inner_element(self):
-        self.assertIn('class="hero__statement__text"', self.html("index.html"))
+        page = self.html("index.html")
+        # Both of them: the claim and the line under it each need their own
+        # measure, and each is a separate chance to put it on the wrapper.
+        self.assertIn('class="opening__claim"', page)
+        self.assertIn('class="opening__support"', page)
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        for sel in (".opening__claim {", ".opening__support {"):
+            block = css.split(sel, 1)[1].split("}", 1)[0]
+            self.assertIn("max-width:", block,
+                          "%s has no measure of its own, so its line length "
+                          "is the full 1200px column" % sel)
 
     def test_statement_does_not_reintroduce_margin_or_max_width(self):
         """The regression is specifically these two properties coming back."""
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split(".hero__statement {", 1)[1].split("}", 1)[0]
+        block = css.split(".opening {", 1)[1].split("}", 1)[0]
         for prop in ("margin", "max-width"):
             self.assertNotIn(prop, block,
-                             ".hero__statement declares %s again, which "
-                             "overrides .shell and breaks alignment" % prop)
+                             ".opening declares %s, which overrides .shell and "
+                             "breaks the content column" % prop)
 
     def test_shell_still_defines_the_column(self):
         """If .shell stops centring, every page moves, not just the hero.
@@ -1287,14 +1327,30 @@ class TestCleanUrls(BuildCase):
 
         Copied, it would have two places to fall out of date on the one
         block where being wrong costs an actual opportunity. So the band is
-        asserted identical on both pages.
+        asserted identical on both pages -- except for its heading RANK,
+        which cannot be the same in both and is the single reason
+        contact_band takes a `level`. On the homepage the block is a
+        section under the page's h1; on /contact it is the page, and
+        hardcoding h2 there left that page with no h1 at all.
+
+        Normalising the tag rather than skipping the comparison: every
+        other byte still has to match, which is what makes it one source.
         """
         def band(page):
-            return self.html(page).split('class="band band--contact', 1)[1] \
-                                  .split("</section>", 1)[0]
+            raw = self.html(page).split('class="band band--contact', 1)[1] \
+                                 .split("</section>", 1)[0]
+            return re.sub(r"</?h[12]>", "<HEADING>", raw)
         self.assertEqual(band("index.html"), band("contact.html"),
                          "the contact band differs between the homepage and "
-                         "/contact, so one of them is stale")
+                         "/contact by more than its heading rank, so one of "
+                         "them is stale")
+
+    def test_the_contact_page_heading_outranks_the_homepage_one(self):
+        """The rank itself, asserted in both directions."""
+        self.assertIn("<h1>", self.html("contact.html").split(
+            'class="band band--contact', 1)[1].split("</section>", 1)[0])
+        self.assertIn("<h2>", self.html("index.html").split(
+            'class="band band--contact', 1)[1].split("</section>", 1)[0])
 
     def test_the_preview_server_matches_the_host(self):
         """Local preview has to resolve URLs the way GitHub Pages does.
@@ -1632,6 +1688,120 @@ class TestCustomDomain(BuildCase):
                          % ", ".join(stale))
 
 
+class TestHeadingOutline(BuildCase):
+    """Every page: exactly one h1, and no level skipped under it.
+
+    /contact had NO h1 at all. The "Let's talk" block is shared with the
+    homepage, where it is correctly an h2 under the page's own h1 -- and
+    the level was hardcoded, so the page that consists of nothing but that
+    block had a document outline starting at level two with no level one
+    above it. One heading on the whole page, and it was the wrong rank.
+
+    Comments are stripped first. build.py writes an explanatory comment
+    containing the literal text "<h1" next to every project cover, and
+    counting raw matches reports two h1s on all eight project pages.
+    """
+
+    PAGES = ("index.html", "work.html", "about.html", "contact.html")
+
+    def outline(self, page):
+        html_src = re.sub(r"<!--.*?-->", "", self.html(page), flags=re.S)
+        return [int(m.group(1)) for m in re.finditer(r"<h([1-6])\b", html_src)]
+
+    def pages(self):
+        slugs = sorted(
+            json.loads(path.read_text(encoding="utf-8"))["slug"]
+            for path in (ROOT / "projects").glob("*/content.json"))
+        return list(self.PAGES) + ["projects/%s.html" % s for s in slugs]
+
+    def test_every_page_has_exactly_one_h1(self):
+        for page in self.pages():
+            levels = self.outline(page)
+            self.assertEqual(
+                levels.count(1), 1,
+                "%s has %d h1 elements (outline: %r)"
+                % (page, levels.count(1), levels))
+
+    def test_the_h1_comes_first(self):
+        for page in self.pages():
+            levels = self.outline(page)
+            self.assertTrue(levels, "%s has no headings at all" % page)
+            self.assertEqual(
+                levels[0], 1,
+                "%s opens at h%d, so its outline has no root: %r"
+                % (page, levels[0], levels))
+
+    def test_no_level_is_skipped(self):
+        for page in self.pages():
+            levels = self.outline(page)
+            for before, after in zip(levels, levels[1:]):
+                self.assertLessEqual(
+                    after, before + 1,
+                    "%s jumps from h%d straight to h%d, which leaves a gap "
+                    "in the outline a screen-reader user navigates by: %r"
+                    % (page, before, after, levels))
+
+
+class TestPortfolioMetricsAreTrue(BuildCase):
+    """The portfolio project's numbers describe THIS repository.
+
+    Every other case study quotes a figure from work done elsewhere, which
+    nothing here can check. These three are different: they are claims
+    about the files in this checkout, made on a page inside it, and they
+    are the only metrics on the site that can be verified rather than
+    trusted.
+
+    They had gone stale, which is the whole argument for this class. The
+    page claimed "42" tests while the suite had grown past 150, and
+    "7.3 KB" of JavaScript while the real figure had grown by nearly half.
+    Both were true when written. Neither had any way to say so afterwards.
+    """
+
+    def metric(self, label_fragment):
+        path = ROOT / "projects" / "09-portfolio" / "content.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for m in data.get("metrics", []):
+            if label_fragment.lower() in m["label"].lower():
+                return m
+        self.fail("no portfolio metric whose label mentions %r" % label_fragment)
+
+    def test_the_test_count_is_the_real_one(self):
+        claimed = self.metric("tests")["value"]
+        src = (ROOT / "tools" / "test_build.py").read_text(encoding="utf-8")
+        actual = len(re.findall(r"^\s+def test_", src, re.M))
+        self.assertEqual(
+            claimed, str(actual),
+            "the portfolio page claims %s tests and there are %d. This is "
+            "the number describing the file it is counted from, so it goes "
+            "stale every time the suite grows." % (claimed, actual))
+
+    def test_the_javascript_weight_is_the_real_one(self):
+        """Gzipped, because that is what 'shipped' means over the wire."""
+        import gzip
+        claimed = self.metric("javascript")["value"]
+        total = sum(len(gzip.compress(f.read_bytes(), 9))
+                    for f in sorted((ROOT / "assets").glob("*.js")))
+        actual = "%.1f KB" % (total / 1024)
+        self.assertEqual(
+            claimed, actual,
+            "the portfolio page claims %s of JavaScript and the files in "
+            "assets/ gzip to %s" % (claimed, actual))
+
+    def test_the_dependency_count_is_still_zero(self):
+        """The claim the whole site is built around, so it gets a check.
+
+        Not a string comparison against the metric alone: the number is
+        only meaningful if nothing has quietly appeared to contradict it.
+        """
+        self.assertEqual(self.metric("dependencies")["value"], "0")
+        for name in ("package.json", "package-lock.json", "node_modules",
+                     "yarn.lock", "pnpm-lock.yaml", "requirements.txt"):
+            self.assertFalse(
+                (ROOT / name).exists(),
+                "%s exists, so '0 runtime dependencies' is no longer a "
+                "claim this repository supports" % name)
+
+
 class TestHeroScrim(BuildCase):
     """The scrim that fades the hero's foot must stay in two named parts.
 
@@ -1654,10 +1824,6 @@ class TestHeroScrim(BuildCase):
     """
 
     REM = 16.0
-    #: Highest the statement's top line reaches above the hero's foot, over
-    #: every viewport measured. 320x568 is the worst case -- narrowest
-    #: measure, so the paragraph wraps to four lines.
-    STATEMENT_TOP_PX = 185
 
     def scrim_lengths(self):
         """Resolve --scrim-solid and --scrim-fade to pixels.
@@ -1716,14 +1882,60 @@ class TestHeroScrim(BuildCase):
                       "the opaque stop no longer uses --scrim-solid, so the "
                       "solid band and the declared height can disagree")
 
-    def test_solid_band_clears_the_statement(self):
-        """The whole point: every line of the paragraph on flat colour."""
-        solid, _ = self.scrim_lengths()
-        self.assertGreaterEqual(
-            solid, self.STATEMENT_TOP_PX,
-            "--scrim-solid is %.0fpx but the paragraph's top line reaches "
-            "%dpx above the hero's foot at 320px wide, so the top line would "
-            "sit on wall letters" % (solid, self.STATEMENT_TOP_PX))
+    def test_the_band_holds_no_text_for_the_scrim_to_rescue(self):
+        """The scrim is small now because its job shrank. Keep it that way.
+
+        This replaced an assertion that --scrim-solid cleared the statement's
+        top line -- 185px, the worst case at 320px wide, where the paragraph
+        wrapped to four lines. That requirement is gone because the paragraph
+        is gone: it lives in .opening, a section above this one in normal flow.
+
+        What has to hold instead is the reason it is gone. Put readable text
+        back inside the band and the old bug returns in full -- wall letters
+        and body copy are both --color-text, the wall is centred while
+        anything pinned to the foot is not, and the gap between them goes
+        negative at about 940px of viewport height. A 32px solid band will
+        not save it, and nothing else here would notice.
+        """
+        page = self.html("index.html")
+        band = page.split('<section class="hero"', 1)[1].split("</section>", 1)[0]
+        band = re.sub(r"<!--.*?-->", " ", band, flags=re.S)
+
+        # The band DOES hold text -- the marquee repeats each role eight
+        # times per row. What makes that safe is that none of it is offered
+        # to a reader: the rows are decoration. So the test is not "no text",
+        # it is "nothing a reader is asked to read".
+        prose = re.findall(r"<(p|h[1-6]|blockquote|li)\b", band)
+        self.assertEqual(
+            prose, [],
+            "the signature band has prose in it again (%r). That is what the "
+            "oversized scrim used to exist for, and it is 32px now: wall "
+            "letters and body copy are both --color-text, so this lands back "
+            "on zero contrast below ~940px of viewport height." % prose)
+
+        # And the thing that makes the marquee decoration in the first place.
+        # The two CONTAINERS carry aria-hidden; the rows and words inside
+        # them inherit it, so matching `class="wall..."` loosely would also
+        # catch .wall__row and fail against markup that is perfectly correct.
+        walls = re.findall(r'<div class="wall(?: wall--ghost)?"[^>]*>', band)
+        self.assertEqual(len(walls), 2,
+                         "expected the two wall copies, found %d" % len(walls))
+        for wall in walls:
+            self.assertIn('aria-hidden="true"', wall,
+                          "a marquee copy is exposed to assistive tech (%r), "
+                          "which makes 24 repetitions of a job title part of "
+                          "the page's readable content" % wall)
+
+    def test_the_scrim_did_not_grow_back(self):
+        """Its only remaining job is a soft foot, not a backdrop for copy."""
+        solid, fade = self.scrim_lengths()
+        self.assertGreater(solid, 0, "the solid band is gone, so the ramp "
+                                     "starts from nothing and reads as an edge")
+        self.assertLessEqual(
+            solid, 64,
+            "--scrim-solid is %.0fpx. It was 232px when a paragraph sat on "
+            "it; with the paragraph gone, anything this large is rubbing out "
+            "the wall for no reason" % solid)
 
     def test_ramp_stays_long_enough_not_to_band(self):
         """A short ramp on a 151px letterform reads as a hard edge.
@@ -2270,6 +2482,26 @@ class TestCardMeta(BuildCase):
         self.assertTrue(out, "the homepage renders no project cards at all")
         return out
 
+    def card_signals(self):
+        """{slug: set of signal names} — which devices each card actually uses."""
+        found = {}
+        for m in re.finditer(r'<div class="(card[^"]*)">(.*?)</div>\s*</li>',
+                             self.html("index.html"), re.S):
+            cls, body = m.group(1), m.group(2)
+            href = re.search(r'card__title"><a href="projects/([^"]+)"', body)
+            if not href:
+                continue
+            sig = set()
+            if 'card__tag"' in body:
+                sig.add("tags")
+            if 'card__note"' in body:
+                sig.add("summary")
+            meta = re.search(r'card__meta">([^<]*)', body)
+            if meta and "\u00b7" in meta.group(1):
+                sig.add("segmented-meta")
+            found[href.group(1)] = sig
+        return found
+
     def test_every_project_has_a_short_meta_line(self):
         import glob
         for path in glob.glob(str(ROOT / "projects" / "*" / "content.json")):
@@ -2291,13 +2523,48 @@ class TestCardMeta(BuildCase):
                 "%s's meta lost its segments (%r) -- a case-study card is "
                 "meant to carry year, domain and role" % (slug, meta))
 
-    def test_secondary_cards_are_simplified(self):
+    def test_the_two_tiers_have_not_converged(self):
+        """The thing the feedback was actually about.
+
+        This asserted something narrower until the redesign: that a
+        secondary card prints NO tagline at all. That rule did keep the
+        tiers apart, and it did it by leaving a card reading "07 Smarthub"
+        and a year -- a visitor had no way to learn what Smarthub was
+        without opening it. petradesigns.io, the site this redesign was
+        briefed to be as clear as, gives every project a line of prose.
+
+        So the tagline runs on both tiers now and the separation moved to
+        three devices a case-study card has exclusively: category chips,
+        the summary paragraph, and a segmented year-domain-role meta. The
+        failure mode is unchanged and so is what is being guarded -- the
+        two bands reading as equals -- but a tier is now distinguished by
+        what it ADDS rather than by what it is denied.
+        """
+        signals = self.card_signals()
+        bands = self.site["sections"]
+        large = [s for s in bands["highlights"]["slugs"] if s in signals]
+        small = [s for s in bands["selectedWork"]["slugs"] if s in signals]
+        self.assertTrue(large and small, "a band rendered no cards")
+
+        exclusive = {"tags", "summary", "segmented-meta"}
+        for slug in large:
+            self.assertEqual(
+                signals[slug], exclusive,
+                "%s is a case study missing %s -- the tier it belongs to is "
+                "defined by carrying all three"
+                % (slug, sorted(exclusive - signals[slug])))
+        for slug in small:
+            leaked = signals[slug] & exclusive
+            self.assertEqual(
+                leaked, set(),
+                "%s is a secondary project using %s, which belongs to the "
+                "case-study tier. The two bands read as equals again."
+                % (slug, sorted(leaked)))
+
+    def test_secondary_meta_is_a_bare_year(self):
         smalls = [c for c in self.cards() if c[0] == "small"]
         self.assertTrue(smalls, "the secondary band renders no cards")
         for _, slug, tag, meta in smalls:
-            self.assertIsNone(
-                tag, "%s is a secondary project still printing a tagline, so "
-                     "the two bands read as equals again" % slug)
             if meta is not None:
                 self.assertNotIn(
                     "\u00b7", meta,

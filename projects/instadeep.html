@@ -24,9 +24,20 @@
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png?v=84b593ce">
   <link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png?v=0a9d2f51">
   <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png?v=5a257724">
-  <link rel="stylesheet" href="../assets/fonts.css?v=5adcd1d1">
-  <link rel="stylesheet" href="../assets/tokens.css?v=0811f1f7">
-  <link rel="stylesheet" href="../assets/styles.css?v=efaa2fef">
+  <!-- The two faces, preloaded. `font-display: swap` without this pair is a
+       layout shift by construction: first paint uses a fallback whose metrics
+       differ from Geist's, then the page reflows when the real face arrives.
+       Measured on this site before the preload existed, that cost 0.389 CLS.
+
+       `crossorigin` is required even though these are same-origin. Fonts are
+       always fetched in CORS mode, so a preload without it is a SEPARATE
+       cache entry from the one @font-face goes on to request -- the file gets
+       downloaded twice and the preload buys nothing. -->
+  <link rel="preload" href="../assets/fonts/geist-variable.woff2?v=9d846db8" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/fonts.css?v=1f22714f">
+  <link rel="stylesheet" href="../assets/tokens.css?v=dcb93877">
+  <link rel="stylesheet" href="../assets/styles.css?v=af1abf01">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
 </head>
 <body>
@@ -65,14 +76,15 @@
 
       <div class="project__layout shell">
         <aside class="project__meta">
-          <nav class="toc" aria-label="On this page"><p class="toc__label">On this page</p><ol class="toc__list"><li><a href="#deeppcb">DeepPCB</a></li><li><a href="#instanovo">InstaNovo</a></li><li><a href="#design-system">Design system</a></li><li><a href="#states">States and recovery</a></li></ol></nav>
+          <nav class="toc" aria-label="On this page"><p class="toc__label">On this page</p><ol class="toc__list"><li><a href="#deeppcb">DeepPCB</a></li><li><a href="#instanovo">InstaNovo</a></li><li><a href="#design-system">Design system</a></li><li><a href="#states">The part nobody screenshots</a></li></ol></nav>
           <div class="facts-group"><p class="facts-group__label">The engagement</p><dl class="facts"><div class="facts__row"><dt>Role</dt><dd>Senior Product Designer</dd></div><div class="facts__row"><dt>Client</dt><dd>InstaDeep</dd></div><div class="facts__row"><dt>Year</dt><dd>January 2024 — present</dd></div><div class="facts__row"><dt>Duration</dt><dd>Ongoing</dd></div><div class="facts__row"><dt>Team</dt><dd>Design of one, across several product teams</dd></div><div class="facts__row"><dt>Status</dt><dd>Ongoing</dd></div></dl></div><div class="facts-group"><p class="facts-group__label">Platforms</p><p class="facts-group__value">Web</p></div><div class="facts-group"><p class="facts-group__label">Toolkit</p><ul class="tools"><li class="tool"><img class="tool__icon tool__icon--plate" src="../assets/tools/figma.png?v=99f9166b" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Figma</span></li><li class="tool"><img class="tool__icon tool__icon--plate" src="../assets/tools/framer.png?v=18193210" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Framer</span></li></ul></div>
         </aside>
         <div class="project__main">
 
 
       <section class="project__section" id="deeppcb">
-        <h2><span class="project__num" aria-hidden="true">01</span>DeepPCB</h2>
+<p class="project__eyebrow" aria-hidden="true"><span class="project__num">01</span><span class="project__eyebrow-sep"></span><span class="project__phase">Product</span></p>
+        <h2>DeepPCB</h2>
         <div class="prose"><p>DeepPCB is InstaDeep&#x27;s cloud-native PCB routing software — a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product&#x27;s public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.</p>
         <p>These are the marketing and onboarding surfaces rather than the routing canvas itself.</p></div>
       </section>
@@ -105,7 +117,8 @@
 
 
       <section class="project__section" id="instanovo">
-        <h2><span class="project__num" aria-hidden="true">02</span>InstaNovo</h2>
+<p class="project__eyebrow" aria-hidden="true"><span class="project__num">02</span><span class="project__eyebrow-sep"></span><span class="project__phase">Product</span></p>
+        <h2>InstaNovo</h2>
         <div class="prose"><p>InstaNovo and InstaNovo+ are de novo peptide sequencing models: they read a mass spectrum and return a peptide sequence without matching it against a reference database, which is the whole point — a database search can only find what is already in the database. Built with the Department of Biotechnology and Biomedicine at the Technical University of Denmark, and published in Nature Machine Intelligence.</p>
         <p>My work was the public face of it: the logo, and a landing page that has to hold two readers at once. A proteomics researcher wants the benchmark before they want anything else — 52% average peptide accuracy across eight biological datasets, 34% more novel peptides, 42% more peptide spectrum matches. Someone deciding whether to fund or adopt it wants to know what that unlocks. So the numbers sit in a band immediately under the hero rather than being saved for a technical page, and the two models get one section each — InstaNovo transcribing, InstaNovo+ refining by diffusion — because the relationship between them is the thing people get wrong.</p>
         <p>The set also includes the states, in the same visual language rather than a default: the 404 is built from real sequence output, and the pre-launch holding page had to look like the product it was holding.</p></div>
@@ -134,7 +147,8 @@
 
 
       <section class="project__section" id="design-system">
-        <h2><span class="project__num" aria-hidden="true">03</span>Design system</h2>
+<p class="project__eyebrow" aria-hidden="true"><span class="project__num">03</span><span class="project__eyebrow-sep"></span><span class="project__phase">System</span></p>
+        <h2>Design system</h2>
         <div class="prose"><p>Every InstaDeep product surface and research demo is built from one system. It exists because the alternative was each team inventing its own buttons, and it had to survive being used by engineers with no designer in the room.</p>
         <p>Browse the components below.</p></div>
       </section>
@@ -188,7 +202,8 @@
 
 
       <section class="project__section" id="states">
-        <h2><span class="project__num" aria-hidden="true">04</span>States and recovery</h2>
+<p class="project__eyebrow" aria-hidden="true"><span class="project__num">04</span><span class="project__eyebrow-sep"></span><span class="project__phase">States</span></p>
+        <h2>The part nobody screenshots</h2>
         <div class="prose"><p>The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows — a routing job that will not converge, a spectrum with no confident call, a link that has gone stale — so the error pages carry each product&#x27;s own grid or sequence motif, say what happened in that product&#x27;s vocabulary, and offer exactly one way back. Two products, one discipline.</p></div>
       </section>
       <div class="shots">
@@ -227,6 +242,6 @@
     </div>
   </footer>
   <script src="../assets/lightbox.js?v=e7e218f9" defer></script>
-  <script src="../assets/enhance.js?v=73c8f4a8" defer></script>
+  <script src="../assets/enhance.js?v=88241748" defer></script>
 </body>
 </html>

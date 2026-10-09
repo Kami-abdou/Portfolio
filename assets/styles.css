@@ -209,18 +209,6 @@ a { color: inherit; }
 
 /* ── hero ────────────────────────────────────────── */
 .hero { padding-block: var(--space-24) var(--space-16); }
-.hero__tagline {
-  margin: var(--space-8) 0 0;
-  max-width: var(--prose-width);
-  font-size: var(--font-size-xl);
-  line-height: var(--line-height-snug);
-  letter-spacing: -0.01em;
-}
-.hero__intro {
-  margin: var(--space-4) 0 0;
-  max-width: var(--prose-width);
-  color: var(--color-text-muted);
-}
 
 /* ── bands + grids ───────────────────────────────── */
 .band { padding-block: var(--space-16); }
@@ -749,16 +737,51 @@ body::after {
    "prefers reduced motion" mean "pretend JavaScript is off", which
    is what a single combined class quietly did.
    ══════════════════════════════════════════════════════════ */
+/* The reveal, in the register mariavasilyeva.com works in: slow and
+   deliberate rather than quick and springy. Her page runs its transforms
+   at 1.4s; this is 1.2s, because hers are page-level transitions that
+   fire once while these fire per section on scroll, and 1.4s on a section
+   you are already reading arrives late.
+
+   The blur is gone, and that is a performance change as much as a visual
+   one. `filter: blur(8px)` animating to 0 across a whole band -- four
+   cards and their covers -- is the most expensive property in this
+   transition by a wide margin, and it was running on every section of
+   every page. None of the four reference sites blurs on reveal. Opacity
+   and transform are both compositor-only.
+
+   Travel dropped 26px -> 18px to match: over a longer duration the same
+   distance reads as drift rather than arrival. */
 .anim .rise {
   opacity: 0;
-  transform: translateY(26px);
-  filter: blur(8px);
+  transform: translateY(18px);
   transition:
-    opacity .6s ease,
-    transform .85s var(--ease-out),
-    filter .85s var(--ease-out);
+    opacity .9s var(--ease-out),
+    transform 1.2s var(--ease-out);
 }
-.anim .rise.is-in { opacity: 1; transform: none; filter: blur(0); }
+.anim .rise.is-in { opacity: 1; transform: none; }
+
+/* Staggered entry for the cards inside a band, so a row assembles instead
+   of appearing whole. Pure CSS off the parent's .is-in -- no per-element
+   JS, no observer per card. The delays stop at the sixth child: beyond
+   that a visitor is waiting on an animation rather than reading, and the
+   largest band on the site holds four. */
+.anim .rise .grid > li,
+.anim .rise .principles > li {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity .8s var(--ease-out),
+    transform 1s var(--ease-out);
+}
+.anim .rise.is-in .grid > li,
+.anim .rise.is-in .principles > li { opacity: 1; transform: none; }
+.anim .rise.is-in .grid > li:nth-child(2),
+.anim .rise.is-in .principles > li:nth-child(2) { transition-delay: .08s; }
+.anim .rise.is-in .grid > li:nth-child(3),
+.anim .rise.is-in .principles > li:nth-child(3) { transition-delay: .16s; }
+.anim .rise.is-in .grid > li:nth-child(4) { transition-delay: .24s; }
+.anim .rise.is-in .grid > li:nth-child(n+5) { transition-delay: .3s; }
 
 /* ── index numbers on cards ──────────────────────── */
 .card__media { position: relative; }
@@ -1030,40 +1053,6 @@ body::after {
   .hero__portrait { max-width: 260px; justify-self: start; }
 }
 
-/* ══════════════════════════════════════════════════════════
-   FULL-VIEWPORT HERO
-   One oversized heading owning the first screen, with metadata
-   anchored top and bottom. Type is pushed as large as the display
-   face allows: the role slot relies on nowrap for a fixed height,
-   so the ceiling is set by the longest role fitting the container,
-   not by taste. Sulphur Point is not condensed, so that ceiling is
-   lower than an ultra-condensed face would permit.
-   ══════════════════════════════════════════════════════════ */
-.hero {
-  display: block;
-  min-height: calc(100dvh - var(--header-height) - var(--inset-top));
-  padding-block: 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-/* metadata as a design element, not fine print */
-.hero__meta {
-  display: flex; justify-content: space-between; gap: var(--space-4);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-faint);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-}
-
-/* the heading owns the middle band */
-
-@media (min-width: 900px) {
-}
-.hero__tagline { margin: 0; font-size: var(--font-size-xl); line-height: var(--line-height-snug); }
-.hero__intro { margin: var(--space-3) 0 0; }
 
 /* portrait becomes a compact anchor at the foot rather than a column */
 .hero__portrait {
@@ -1089,16 +1078,28 @@ body::after {
    ══════════════════════════════════════════════════════════ */
 .hero {
   position: relative;
-  min-height: calc(100dvh - var(--header-height) - var(--inset-top));
+  /* A band, not a screen. This was min-height: 100dvh while the marquee
+     was the hero; now that the lede carries the claim, a full viewport
+     here just pushed the work two screens down on a laptop. */
+  height: clamp(300px, 46vh, 520px);
   display: flex; flex-direction: column; justify-content: center;
   gap: clamp(4px, 1vw, 14px);
   /* The two halves of the scrim below, hoisted so its height is derived
-     from them rather than guessed. --scrim-solid is the opaque band that
-     the statement sits on; --scrim-fade is the ramp above it. */
-  --scrim-solid: calc(var(--space-8) + var(--space-16) + 10rem);
-  --scrim-fade: 6rem;
+     from them rather than guessed. --scrim-fade is the ramp; --scrim-solid
+     is the flat band it starts from.
+
+     Both shrank by an order of magnitude in the redesign, and the reason
+     is structural rather than cosmetic. The solid band used to be 10rem
+     plus two space steps because a PARAGRAPH sat on it, and the wall slid
+     behind that paragraph on a short window -- both were --color-text, so
+     contrast went to nothing. The paragraph now lives in .opening, one
+     section up, in normal flow. There is nothing left inside this band to
+     protect, so the scrim is back to its other job: fading the wall's foot
+     into the page instead of ending on a hard edge. */
+  --scrim-solid: var(--space-8);
+  --scrim-fade: 4rem;
   overflow: hidden;
-  padding-block: var(--space-16);
+  padding-block: var(--space-8);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -1115,13 +1116,20 @@ body::after {
   opacity: 0.16;
 }
 
-/* ── the scrim under the statement ───────────────────────
-   The wall is centred in the hero while .hero__statement is pinned to the
-   foot, so the gap between them is (heroHeight - 368px - wallHeight) / 2 —
-   it closes as the window gets shorter and goes negative at about 940px of
-   viewport height. Below that the statement, which is --color-text, was
-   sitting directly on wall letters that are also --color-text: same colour,
-   nothing in between, zero contrast.
+/* ── the scrim at the foot of the band ───────────────────
+   HISTORY, because the numbers below only make sense with it: this scrim
+   was built to rescue a paragraph. The wall sat centred in the hero while
+   .hero__statement was pinned to its foot, so the gap between them was
+   (heroHeight - 368px - wallHeight) / 2 — it closed as the window got
+   shorter and went negative at about 940px of viewport height. Below that
+   the statement, which is --color-text, sat directly on wall letters that
+   are also --color-text: same colour, nothing between them, zero contrast.
+
+   That paragraph is now the .opening, one section up and in normal flow, so
+   the overlap it describes can no longer occur. What remains is the scrim's
+   other job — fading the wall's foot into the page rather than ending on a
+   hard edge — which is why both halves are an order of magnitude smaller
+   than the sizes this comment goes on to reason about.
 
    Rather than shrink the poster type or move the statement out of the
    stack, this fades the foot of the hero to the page background. The
@@ -1236,27 +1244,6 @@ body::after {
     object-position: 38% 50%;
 }
 
-/* corner metadata pinned to the foot of the hero */
-.hero__meta {
-  position: absolute; z-index: 5;
-  inset-inline: 0; bottom: var(--space-8);
-  display: flex; justify-content: space-between; gap: var(--space-4);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--color-text-faint);
-}
-
-/* the copy that used to sit inside the hero now follows it */
-.hero-copy { padding-block: var(--space-16) 0; }
-.hero-copy .hero__tagline {
-  margin: 0; max-width: var(--prose-width);
-  font-size: var(--font-size-xl); line-height: var(--line-height-snug);
-}
-.hero-copy .hero__intro {
-  margin: var(--space-3) 0 0; max-width: var(--prose-width);
-  color: var(--color-text-muted);
-}
 
 @media (prefers-reduced-motion: reduce) {
   .wall__track { animation: none; }
@@ -1606,49 +1593,6 @@ body::after {
 }
 .tool__name { color: var(--color-text); }
 
-/* ── hero statement ──────────────────────────────────────
-   The wall is decorative and aria-hidden, and the h1 is visually hidden, so
-   without this the first screen states nothing a recruiter can read. Sits
-   above .hero__meta in the same absolutely-positioned stack.
-
-   Two elements, not one, and that split is load-bearing. This used to be a
-   single <p class="hero__statement shell"> that set `margin: 0` and
-   `max-width: 46ch` -- both of which override .shell, which supplies
-   `margin-inline: auto` and `max-width: var(--max-width)`. Killing those on
-   an absolutely-positioned box with `inset-inline: 0` pinned it to the
-   viewport edge, so its text started at the gutter (24px) while every other
-   element on the site starts at the content-column edge (144px at 1440px
-   wide). The statement sat 120px to the left of the entire rest of the page.
-
-   So: the wrapper carries .shell and is left alone, exactly like the
-   .hero__meta sibling directly below it, which never had the bug. The 46ch
-   measure -- which does need to be much narrower than the 1200px column,
-   for line length -- moves to the inner element, where it constrains text
-   without moving the box. Do not put `margin` or `max-width` back on
-   .hero__statement; that is the bug. */
-.hero__statement {
-  position: absolute; z-index: 5;
-  inset-inline: 0; bottom: calc(var(--space-8) + var(--space-12));
-}
-.hero__statement__text {
-  margin: 0;
-  max-width: 46ch;
-  font-size: var(--font-size-lg);
-  line-height: var(--line-height-snug);
-  letter-spacing: -0.01em;
-  color: var(--color-text);
-  text-wrap: balance;
-}
-@media (max-width: 899px) {
-  .hero__statement {
-    bottom: calc(var(--space-8) + var(--space-16));
-  }
-  .hero__statement__text {
-    font-size: var(--font-size-base);
-    max-width: none;
-  }
-}
-
 /* ── screen-in-screen viewer ─────────────────────────────
    A framed browser for stepping through component views. Every panel is in
    the DOM and visible without JS; only .js hides the inactive ones, so the
@@ -1760,4 +1704,315 @@ html:not(.js) .viewer__tabs { display: none; }
    should not be the quiet option. */
 @media (prefers-reduced-motion: reduce) {
   .shot__video { outline: 1px solid var(--color-border-strong); outline-offset: -1px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   THE OPENING — the first screen
+   ══════════════════════════════════════════════════════════
+   The clarity block that replaced the marquee as the top of the page.
+   New class rather than a sixth `.hero` override: `.hero` is already
+   redefined five times in this file, and editing it by text match is how
+   the :root block got destroyed once. This owns its own namespace.
+
+   Type sizes come from the four sites this was briefed on. The claim sits
+   at --font-size-3xl (44-72px) against sandeep.design's 76px, at weight
+   500 -- not 700. Every reference uses medium for display type; bold is
+   what makes a grotesk look like a default. Tracking is -0.035em, the
+   middle of the -0.03/-0.04em the four of them occupy.
+   ══════════════════════════════════════════════════════════ */
+
+.opening {
+  padding-block: clamp(var(--space-16), 11vh, var(--space-32)) var(--space-16);
+  display: grid;
+  gap: var(--space-8);
+  justify-items: start;
+}
+
+/* ── status row ── */
+.opening__status {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.opening__avail { display: inline-flex; align-items: center; gap: var(--space-2); }
+/* The dot is the only thing on the first screen in the accent colour, so
+   "available" is the one idea the palette points at. */
+.opening__dot {
+  width: 7px; height: 7px; border-radius: var(--radius-full);
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+  flex: none;
+}
+.opening__sep { width: 1px; height: 11px; background: var(--color-border-strong); flex: none; }
+.opening__portfolio { color: var(--color-text-faint); }
+
+/* ── the claim: the page's h1 ── */
+.opening__claim {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--tracking-display);
+  /* 26ch breaks this sentence across three lines on desktop and keeps the
+     measure readable; `balance` stops the last line being one orphan word. */
+  max-width: 26ch;
+  text-wrap: balance;
+}
+
+/* ── the support line ── */
+.opening__support {
+  margin: 0;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-muted);
+  max-width: 54ch;
+  text-wrap: pretty;
+}
+
+/* ── actions ── */
+.opening__actions {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0;
+}
+.opening__note {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-faint);
+}
+
+/* ── the facts strip ──
+   Pleurat runs ROLE / TOOLS / YEAR / LIVE across the top of every case
+   study. This is the homepage equivalent, and it is where the roles list
+   kept its meaning once the h1 became a sentence instead of a list. */
+.opening__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-8);
+  margin: var(--space-4) 0 0;
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+  width: 100%;
+}
+.opening__fact dt {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+.opening__fact dd {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+@media (min-width: 640px) {
+  .opening__facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  .opening { gap: var(--space-8); }
+  .opening__support { font-size: var(--font-size-lg); line-height: var(--line-height-snug); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   THE SIGNATURE BAND — the marquee, demoted
+   ══════════════════════════════════════════════════════════
+   What `.hero` is now. It no longer has to be the whole first screen and
+   it no longer holds the statement, which removes the problem the scrim
+   was built to solve: the wall used to overlap the paragraph on a short
+   window, and no scrim height could fix it because the two were stacked
+   in the same box. The paragraph left, so the overlap cannot happen.
+
+   Height drops from a full viewport to a band. At 100dvh it was pushing
+   the work two screens down on a laptop.
+   ══════════════════════════════════════════════════════════ */
+/* ── the pause control (WCAG 2.2.2, Level A) ── */
+.wall-pause {
+  position: absolute; z-index: 6;
+  right: var(--gutter); bottom: var(--space-4);
+  /* flex: none because this sits in a flex column: without it the button
+     shrinks below its declared width and the target collapses. Measured at
+     10x24 once, which fails 2.5.8 outright. */
+  flex: none;
+  min-height: 32px; padding: 0 var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color .25s var(--ease-out), border-color .25s var(--ease-out),
+              background-color .25s var(--ease-out);
+}
+.wall-pause:hover { color: var(--color-text); border-color: var(--color-border-strong); }
+.wall-pause[hidden] { display: none; }
+
+/* Paused state: every row stops, both copies, with no JS per frame. */
+.hero.is-paused .wall__track { animation-play-state: paused; }
+
+/* ══════════════════════════════════════════════════════════
+   HOW I WORK — three named principles
+   ══════════════════════════════════════════════════════════
+   Deliberately NOT three equal cards with a border and a shadow, which is
+   the single most generic shape this section could take. No card at all:
+   a lettered index, a claim, a paragraph, separated by a hairline. The
+   hierarchy is type and space, which is how all four reference sites do
+   theirs.
+   ══════════════════════════════════════════════════════════ */
+.principles {
+  list-style: none; margin: 0; padding: 0;
+  display: grid;
+  gap: var(--space-12);
+}
+.principle {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+.principle__index {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-accent);
+}
+.principle__label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--tracking-heading);
+  text-wrap: balance;
+}
+.principle__body {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: var(--line-height-normal);
+  max-width: 48ch;
+  text-wrap: pretty;
+}
+
+@media (min-width: 900px) {
+  .principles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-8); }
+}
+
+/* ── category chips on a case-study card ──────────────────
+   The `tags` list has been in every content.json since the schema was
+   written and nothing rendered it until the redesign. petradesigns.io
+   leads each project with the same device, and it is the cheapest
+   clarity on the page: what KIND of work this was, before any prose.
+
+   Outlined boxes at radius-sm, not pills. A pill badge is the most
+   generic shape this could take and it would collide with the solid
+   pill the primary action already uses -- two unrelated things reading
+   as the same component. */
+.card__tags {
+  display: flex; flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.card__tag {
+  padding: 3px var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+/* The chips follow the card's own hover, so the whole block reads as one
+   target rather than a title that lights up beside inert labels. */
+.card:hover .card__tag,
+.card:focus-within .card__tag { border-color: var(--color-border-strong); }
+
+/* ── the NN · PHASE eyebrow above a case-study section ────
+   pleurat.com's device, and the reason one of its case studies reads as
+   "classic and easy to explore": the eyebrow carries the stage name, so
+   the heading under it is free to be a sentence instead of a label.
+
+   The number was inside the h2 until the redesign, which is why
+   .project__num carried a translateY nudge to sit on the cap line of
+   type three steps larger. Out here it is on its own baseline with the
+   phase, so the nudge is gone rather than inherited. */
+.project__eyebrow {
+  display: flex; align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.project__eyebrow .project__num {
+  color: var(--color-accent);
+  transform: none;
+}
+.project__phase { color: var(--color-text-faint); }
+/* A hairline rule rather than a middot: at this size a "·" between two
+   uppercase mono strings reads as a stray character. */
+.project__eyebrow-sep {
+  width: var(--space-6); height: 1px;
+  background: var(--color-border-strong);
+  flex: none;
+}
+
+/* The heading can now take the display face and a real size, because it no
+   longer has a small mono number sitting inside it fighting the baseline. */
+.project__section h2 {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-heading);
+  text-wrap: balance;
+  max-width: 24ch;
+}
+
+/* ── insight cells keep their labels on one line ──────────
+   The values are set at up to 68px, so one that wraps to a second or
+   third line pushes its own label down while its neighbours' stay put.
+   Measured on Steer before the fix: two labels at y=10 and the third at
+   y=133, because "Investor-backed, Versailles" ran to three lines.
+
+   The content fix was to make every value a figure again -- the longest
+   is now ten characters. This is the structural half, so a future long
+   value misaligns nothing.
+
+   `margin-top: auto` was the first attempt and it is the wrong axis: it
+   pins each label to the BOTTOM of its cell, so three cells whose labels
+   wrap to different line counts end up with their tops at 1318, 1318 and
+   1298. Bottoms aligned, tops ragged, which is the half nobody looks at.
+
+   Subgrid is the tool for this. The cells share the grid's two rows, so
+   every value is measured against the tallest value and every label
+   starts on the same line. The fallback is plain flow, which is already
+   correct while all eight values on the site are one line -- it is a
+   future long value this protects against, not today's. */
+@supports (grid-template-rows: subgrid) {
+  .insights__grid { grid-template-rows: auto auto; }
+  .insight {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+  }
+}
+
+/* The status row wraps on a phone -- "OPEN TO CONVERSATIONS" and
+   "PORTFOLIO '26" do not share a 375px line -- and a flex separator
+   stays put when that happens, so the hairline was left stranded at the
+   end of the first line pointing at nothing. It is a divider between two
+   things on one line; with the line broken, the break IS the divider. */
+@media (max-width: 639px) {
+  .opening__sep { display: none; }
+  .opening__status { gap: var(--space-2) var(--space-4); }
 }
