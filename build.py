@@ -854,114 +854,89 @@ def screen_count(images):
             % (n, "" if n == 1 else "s"))
 
 
-def project_card(project, *, large):
-    cover = "projects/%s/%s" % (project["_dir"], project["cover"])
-    size = png_size(ROOT / "projects" / project["_dir"] / project["cover"])
-    dims = ' width="%d" height="%d"' % size if size else ""
-    cls = "card card--lg" if large else "card"
-    num = "%02d" % project.get("order", 0)
-    # cards show the tagline, so the TODO rule has to hold here as well
-    tagline = project["tagline"] if usable(project.get("tagline")) else ""
-    # Manager feedback: "Simplifier les projets secondaires". A secondary
-    # card used to carry exactly what a case study carries -- number, cover,
-    # title, tagline and a three-part meta -- so the two bands read as
-    # equals and the visitor had no way to tell which four mattered. The
-    # secondary ones now carry the cover, the title and the year, and
-    # nothing else; the rest is on the project's own page, where there is
-    # room for it. This is half of "renforcer la hiérarchie typographique":
-    # the levels differ by how much they say, not only by type size.
-    # The tagline runs on BOTH tiers now. It used to be case-studies-only,
-    # which left a secondary card saying "07 Smarthub" and a year -- a
-    # visitor had no way to know what Smarthub was without opening it.
-    #
-    # That strip-down answered real feedback ("simplifier les projets
-    # secondaires") and the reasoning under it still holds: the tiers must
-    # differ by how much they say, not only by type size. So the difference
-    # moves rather than disappears. A case-study card carries tags, tagline,
-    # summary and a three-part meta; a secondary card carries the tagline
-    # and the year. Still clearly two tiers, and neither is mute.
-    tagline_html = ('<span class="card__tagline">%s</span>' % e(tagline)
-                    if tagline else "")
+def project_year(project):
+    """The year segment of `meta`, or "" when there is none.
 
-    # Category chips, case studies only. Every project has carried a `tags`
-    # list since the schema was written and nothing has ever rendered it.
-    # petradesigns.io leads each project with exactly this -- two or three
-    # category labels above an outcome headline -- and it is the single
-    # cheapest thing on a card: it tells you what KIND of work this was
-    # before you have read a word of prose.
-    #
-    # Three, not all of them: the fourth and fifth are always the generic
-    # ones ("UI Design" after "UX Design"), and five chips wrap to a second
-    # line that competes with the title.
-    tags = [x for x in (project.get("tags") or []) if usable(x)][:3]
-    tags_html = ('<span class="card__tags">%s</span>'
-                 % "".join('<span class="card__tag">%s</span>' % e(x) for x in tags)
-                 if large and tags else "")
-    # The description, on case-study rows only. The side-by-side row left a
-    # 425px column holding 127px of text, centred in a 453px height -- 72%
-    # of it empty, which is what made the band look unfinished. This is the
-    # copy that fills it. Deliberately NOT on the secondary cards: those are
-    # down to cover, title and year on purpose, and giving them prose back
-    # would undo that. Every project carries the field even so, so moving a
-    # project between the two bands does not lose its description.
-    # The SAME text the case study itself shows under its title -- its
-    # `summary`, which is what a visitor reads on the project page. The card
-    # briefly carried a separate hand-written `cardNote` instead, which meant
-    # two descriptions of one project that could drift apart; that field is
-    # gone. `description` is deliberately not used: it is the invisible
-    # <meta name="description"> string, not what the page displays.
-    note_html = ('<span class="card__note">%s</span>' % e(project["summary"])
-                 if large and usable(project.get("summary")) else "")
-    # Year, domain and role on a case-study card, so a visitor gets the
-    # shape of the engagement without opening it. Not derived from `year`:
-    # those values are prose ("January 2024 — present") and two are TODO.
-    meta = project["meta"] if usable(project.get("meta")) else ""
-    # A secondary card keeps the year and drops the rest. Deliberately the
-    # year-bearing SEGMENT rather than the first one: "first segment" looked
-    # right on seven projects and quietly printed "Design and brand studio"
-    # on the eighth, because Smarthub's meta is "Design and brand studio ·
-    # Founder" -- it has no year, its `year` field is still TODO. A project
-    # with no year now renders no meta at all, which is the same rule the
-    # rest of the build follows for a fact that does not exist yet, and it
-    # keeps the tier honest: every secondary card shows a date or nothing.
-    if meta and not large:
-        segments = [s.strip() for s in meta.split("·")]
-        dated = [s for s in segments if re.search(r"\b(19|20)\d{2}", s)]
-        meta = dated[0] if dated else ""
-    meta_html = ('<span class="card__meta">%s</span>' % e(meta)) if meta else ""
-    # The link wraps the TITLE, not the card. A pseudo-element on it covers
-    # the card so the whole thing stays clickable -- the block-link pattern.
-    #
-    # The card used to be one <a> around everything, which was fine until the
-    # description moved inside it. Measured against production: a card's
-    # accessible name went from 71-128 characters to 11-475, so a screen
-    # reader announced Fixerloop's card as a 475-character paragraph, and the
-    # secondary cards -- stripped of their taglines by then -- went down to
-    # "07 Smarthub". One control, named by a whole paragraph or by almost
-    # nothing depending which band it sat in.
-    #
-    # Now every card's name is its title, which is 8-15 characters and the
-    # same shape in both bands. The tagline, description and meta sit outside
-    # the link as ordinary text, still read in order by anyone browsing the
-    # page and no longer crammed into one control's name. WCAG 2.4.4 is
-    # satisfied by context: they are the link's immediate siblings.
-    return f"""        <li>
-          <div class="{cls}">
-            <span class="card__media">
-              <span class="card__num" aria-hidden="true">{num}</span>
-              <!-- alt="" on purpose: the title beside it names the project, and
-                   describing the cover here made every card announce it twice. -->
-              <img src="{e(cover)}" alt="" {dims} loading="lazy" decoding="async">
-            </span>
-            <span class="card__body">
-              {tags_html}
-              <span class="card__title"><a href="projects/{e(project['slug'])}">{e(project['title'])}</a></span>
-              {tagline_html}
-              {note_html}
-              {meta_html}
-            </span>
+    Taken from `meta` rather than `year` because `year` is prose -- "January
+    2024 — present", "February 2021 — September 2021" -- and one of the eight
+    is still TODO. `meta` carries a short form already written for display.
+
+    Deliberately the segment CONTAINING a year rather than the first one.
+    "First segment" looked right on seven projects and quietly printed
+    "Design and brand studio" on the eighth, because Smarthub's meta is
+    "Design and brand studio · Founder" and has no date in it at all. A
+    project with no year renders no year, which is the rule the rest of the
+    build follows for a fact that does not exist yet.
+    """
+    meta = project.get("meta")
+    if not usable(meta):
+        return ""
+    for segment in (s.strip() for s in meta.split("\u00b7")):
+        if re.search(r"\b(19|20)\d{2}", segment):
+            return segment
+    return ""
+
+
+def work_entry(project, *, large):
+    """One row of the year rail.
+
+    The rail is a dated spine: a dot and a year on the left, the project on
+    the right, oldest at the bottom. It replaced a horizontal scroller for
+    the case studies and a stack of covers for the gallery, so both bands
+    now read as one system and the tiers differ by how much each row says
+    rather than by being different components.
+
+    Tier 1 carries category chips, a summary and a full-width cover.
+    Tier 2 carries a line and a thumbnail. That difference is asserted.
+
+    The link wraps the TITLE and an ::after covers the row, which is the
+    block-link pattern this site has used since the cards: one control per
+    row, named by the project, with the prose read as its siblings rather
+    than crammed into its accessible name.
+    """
+    d = project["_dir"]
+    cover = "projects/%s/%s" % (d, project["cover"])
+    size = png_size(ROOT / "projects" / d / project["cover"])
+    dims = ' width="%d" height="%d"' % size if size else ""
+
+    year = project_year(project)
+    year_html = ('<span class="entry__year">%s</span>' % e(year)) if year else ""
+
+    tagline = project["tagline"] if usable(project.get("tagline")) else ""
+    lede = ('<p class="entry__lede">%s</p>' % e(tagline)) if tagline else ""
+
+    tags_html = note_html = ""
+    if large:
+        tags = [x for x in (project.get("tags") or []) if usable(x)][:3]
+        if tags:
+            tags_html = ('<ul class="entry__tags">%s</ul>'
+                         % "".join("<li>%s</li>" % e(x) for x in tags))
+        if usable(project.get("summary")):
+            note_html = '<p class="entry__note">%s</p>' % e(project["summary"])
+
+    cta = "Read the case study" if large else "See the screens"
+
+    return """        <li class="entry entry--{tier}">
+          <p class="entry__when">
+            <span class="entry__dot" aria-hidden="true"></span>{year}
+          </p>
+          <div class="entry__body">
+            <div class="entry__text">
+              {tags}
+              <h3 class="entry__title"><a href="projects/{slug}">{title}</a></h3>
+              {lede}
+              {note}
+              <span class="entry__cta" aria-hidden="true">{cta} &rarr;</span>
+            </div>
+            <figure class="entry__media">
+              <img src="{cover}" alt="" {dims} loading="lazy" decoding="async">
+            </figure>
           </div>
-        </li>"""
+        </li>""".format(
+        tier="lg" if large else "sm",
+        year=year_html, tags=tags_html, lede=lede, note=note_html, cta=e(cta),
+        slug=e(project["slug"]), title=e(project["title"]),
+        cover=e(cover), dims=dims)
 
 
 # ─────────────────────────────────────────── pages
@@ -1123,89 +1098,31 @@ def build_index(projects):
     # exact opposite of the point.
     #
     # A short last row is a much smaller cost than an inverted hierarchy.
+    # ── The work, as one dated rail ────────────────────────────────
+    # Both bands render the same component now. They used to be two
+    # different ones -- a horizontal scroller for the case studies and a
+    # stack of covers for the gallery -- which meant the page had two
+    # unrelated ways of showing a project and the only thing connecting
+    # them was that they sat under similar headings.
+    #
+    # The tiers still differ, and by more than size: a case study row
+    # carries category chips, a summary paragraph and a full-width cover;
+    # a gallery row carries one line and a thumbnail. That difference is
+    # the hierarchy, and it is asserted.
     for key, large in (("highlights", True), ("selectedWork", False)):
         meta = SITE["sections"][key]
-        anchor = ' id="work"' if key == "highlights" else ""
+        anchor = "work" if key == "highlights" else "gallery"
         live = [s for s in meta["slugs"] if s in slugs]
-        cards = "\n".join(project_card(slugs[s], large=large) for s in live)
-        # The headline band caps at 3 but never declares more columns than it
-        # has cards. Hardcoding 3 was fine at three case studies; when
-        # InstaDeep moved out and left two, it produced a 352px hole in the
-        # most important row on the site. min() closes it, and restores the
-        # third column by itself if a third case study is ever added back.
-        #
-        # The counts must still DIFFER -- that difference is the whole
-        # hierarchy (see the comment above) -- so the small band stays at 4
-        # and the large band can never reach it.
-        # Never declare more columns than there are cards, and never leave a
-        # single orphan on a second row. 3 case studies wanted 3 across; 4
-        # want 2x2, because 3-then-1 puts one card alone under a full row and
-        # reads as a gap rather than a grid. The counts must still DIFFER from
-        # the gallery band's 4 -- that difference IS the hierarchy (see above),
-        # so this can never reach 4.
-        if large:
-            # ── The case studies, as a horizontal rail ──────────────
-            #
-            # Asked for as "maybe a slider show". What it deliberately is
-            # NOT is a carousel, and the difference is the whole design.
-            #
-            # The case against carousels is well evidenced and it is about
-            # three specific things: slides that advance on their own,
-            # content hidden behind controls, and engagement collapsing
-            # after the first slide. A rail has none of them. Nothing
-            # moves until the visitor moves it, the next card is always
-            # partly on screen rather than hidden, and scrolling it is the
-            # same gesture as scrolling the page -- trackpad, touch,
-            # keyboard and arrow keys all work without a line of script,
-            # because it is a real scroll container and not a widget.
-            #
-            # So this stays an ordinary <ul> of the same cards. It takes
-            # no carousel ARIA, because a horizontal scroller is not a
-            # carousel and announcing it as one would describe a widget
-            # the visitor does not have.
-            #
-            # `x mandatory` is safe here in a way `y mandatory` is not on
-            # the page itself: every card is NARROWER than the rail, so no
-            # card can be skipped past or left half-reachable. That is the
-            # exact condition the vertical axis fails, where a band runs
-            # 3591px against a 768px viewport.
-            #
-            # The buttons ship `hidden` and JS unhides them, the same
-            # contract as the marquee's pause control: without script the
-            # rail still scrolls natively, and nothing on screen claims a
-            # control that cannot work.
-            out.append(f"""
-    <section class="band band--rail"{anchor}>
-      <div class="shell band__head band__head--rail">
-        <div>
-          <h2>{masked(meta['heading'])}</h2>
-          <p>{e(meta['description'])}</p>
-        </div>
-        <div class="rail__nav" hidden>
-          <p class="rail__count" aria-hidden="true"><span class="rail__at">01</span> / {len(live):02d}</p>
-          <button type="button" class="rail__btn rail__btn--prev" aria-label="Previous case study">
-            <span aria-hidden="true">&larr;</span>
-          </button>
-          <button type="button" class="rail__btn rail__btn--next" aria-label="Next case study">
-            <span aria-hidden="true">&rarr;</span>
-          </button>
-        </div>
-      </div>
-      <ul class="rail">
-{cards}
-      </ul>
-    </section>
-""")
-        else:
-            out.append(f"""
-    <section class="band shell" id="gallery">
+        rows = "\n".join(work_entry(slugs[s], large=large) for s in live)
+        out.append(f"""
+    <section class="band shell band--work" id="{anchor}">
       <div class="band__head">
         <h2>{masked(meta['heading'])}</h2>
         <p>{e(meta['description'])}</p>
       </div>
-      <ul class="grid grid--sm">
-{cards}
-      </ul>
+      <ol class="rail-years rail-years--{'lg' if large else 'sm'}">
+{rows}
+      </ol>
     </section>
 """)
 

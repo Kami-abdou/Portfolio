@@ -162,75 +162,30 @@ class TestHomepageTiers(BuildCase):
         for stale in ("caseStudies", "otherProjects"):
             self.assertNotIn(stale, self.site["sections"])
 
-    def test_the_two_bands_declare_different_column_counts(self):
-        """The column counts are what make the headline cards bigger.
+    def test_the_two_bands_are_one_component(self):
+        """Both bands render the rail. That is the point of the rail.
 
-        Both bands ran at --cols: 3 briefly, to avoid the short last row that
-        6 cards at 4-up leaves -- and that inverted the hierarchy. grid--lg
-        carries a 48px gap against grid--sm's 32px, so at equal column counts
-        the "large" cards rendered NARROWER (352px vs 363px) and shorter (a
-        3/2 media against 4/3 gave 235px against 272px). Only the title was
-        bigger, so Tier 2 visually outweighed Tier 1 -- the exact opposite of
-        the point of the restructure.
-
-        Measured after the fix at a 1280px viewport: 352px vs 264px wide,
-        media area 83k vs 52k px^2. Equalising these is a regression, not a
-        tidy-up.
-
-        Asserted as an inequality rather than two literals. The headline band
-        is min(3, len(slugs)) so that it never declares more columns than it
-        has cards -- at three case studies that was 3, and when InstaDeep left
-        for the gallery band it became 2 rather than leaving a 352px hole in
-        the most important row on the site. Pinning the literal 3 would have
-        failed here for a change that is correct.
+        They used to be a horizontal scroller and a grid, and this test
+        used to assert that their COLUMN COUNTS differed -- which was the
+        mechanism that made Tier 1 cards bigger. There are no columns now;
+        the tiers differ by what each row says, which TestWorkRail asserts.
+        What is left here is that neither band quietly reverts to its own
+        component.
         """
         index = self.html("index.html")
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        tokens = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
-
-        # The headline band stopped being a grid in the redesign: it is a
-        # horizontal rail now, so it declares a card WIDTH where the
-        # gallery still declares columns. The property being guarded did
-        # not change -- a Tier 1 card has to be wider than a Tier 2 card --
-        # so the test compares the two mechanisms rather than two --cols.
-        self.assertEqual(index.count('<ul class="rail">'), 1,
-                         "expected exactly one case-study rail")
-        self.assertEqual(index.count('<ul class="grid grid--sm">'), 1,
-                         "expected exactly one card grid beside the rail")
-
-        # Both tiers now declare an explicit card width, so both are read
-        # from the stylesheet. The gallery used to be a column COUNT and
-        # this test derived its card width from --cols; when the band
-        # became a single capped column that variable stopped driving
-        # anything, and the derivation went on returning 264px from a
-        # number nothing used. A test that keeps passing off a dead
-        # attribute is worse than one that fails.
-        basis = re.search(
-            r"\.rail > li \{.*?flex:\s*0 0 clamp\([^,]+,[^,]+,\s*([\d.]+)px\)",
-            css, re.S)
-        self.assertIsNotNone(basis, "the rail no longer declares a card width")
-        rail_card = float(basis.group(1))
-
-        cap = re.search(r"\.grid--sm > li \{[^}]*max-width:\s*([\d.]+)px", css)
-        self.assertIsNotNone(cap, "the gallery band no longer caps its cards")
-        gallery_card = float(cap.group(1))
-
-        self.assertNotIn(
-            "--cols", index.split('<ul class="grid grid--sm">', 1)[1][:200],
-            "the gallery band still ships a --cols value that no longer "
-            "drives its layout")
-
-        self.assertGreater(
-            rail_card, gallery_card,
-            "a case-study card is %.0fpx against a gallery card's %.0fpx. "
-            "Tier 1 is no longer the wider of the two, which inverts the "
-            "hierarchy the two bands exist to express."
-            % (rail_card, gallery_card))
-
-    def test_headline_cards_are_large_and_the_rest_are_not(self):
+        self.assertEqual(index.count('<ol class="rail-years'), 2,
+                         "expected both work bands to render the year rail")
+        for stale in ('class="rail"', 'class="grid grid--', 'class="card'):
+            self.assertNotIn(stale, index,
+                             "a band is back on the old %s component" % stale)
+    def test_each_band_renders_its_own_tier(self):
+        """The class carries the tier, so a miscounted band is visible."""
         index = self.html("index.html")
-        self.assertEqual(index.count('class="card card--lg"'), 4)
-        self.assertEqual(index.count('class="card"'), 4)
+        bands = self.site["sections"]
+        self.assertEqual(index.count('class="entry entry--lg"'),
+                         len(bands["highlights"]["slugs"]))
+        self.assertEqual(index.count('class="entry entry--sm"'),
+                         len(bands["selectedWork"]["slugs"]))
 
     def test_instadeep_is_the_first_card(self):
         """The owner's call, replacing an earlier review recommendation.
@@ -1837,7 +1792,7 @@ class TestScrollSnap(BuildCase):
                       "scroll-padding-top no longer tracks the header "
                       "height: %r" % owners[0])
 
-    def test_a_band_is_not_a_snap_target_alongside_its_own_cards(self):
+    def test_a_band_is_not_a_snap_target_alongside_its_own_rows(self):
         """Two candidates 141px apart resolved to neither of them.
 
         Listing `.band` and `.grid > li` together put a parent and its
@@ -1847,8 +1802,8 @@ class TestScrollSnap(BuildCase):
         css = self.css()
         idx = css.index("scroll-snap-align")
         selectors = css[:idx].rsplit("}", 1)[-1]
-        self.assertIn(".grid > li", selectors,
-                      "cards are not snap targets, so the stops are only "
+        self.assertIn(".entry", selectors,
+                      "work rows are not snap targets, so the stops are only "
                       "every section and proximity mostly will not engage")
         self.assertNotRegex(
             selectors, r"(?m)^\s*\.band,",
@@ -2597,385 +2552,178 @@ class TestToolIcons(BuildCase):
         self.assertIn("background", block)
 
 
-class TestCardMeta(BuildCase):
-    """The two card tiers, and what each is allowed to say.
+class TestWorkRail(BuildCase):
+    """The dated rail that both work bands render, and what each tier says.
 
-    Manager feedback split the homepage in two: "Repenser les cartes en
-    image + texte côte à côte dans selected case studies" and "Simplifier
-    les projets secondaires". A case-study card carries cover, title,
-    tagline and the full three-part meta; a secondary card carries cover,
-    title and the year, and nothing else. Both directions are asserted,
-    because the failure mode is the two tiers quietly converging again --
-    which is what the feedback was about to begin with.
+    This replaced TestCardMeta when the bands stopped being two different
+    components -- a horizontal scroller for the case studies and a stack of
+    covers for the gallery -- and became one year rail at two densities.
+    The invariants that survived the change are here; the ones that were
+    about the old mechanism (column counts, the two-column row's shared
+    edges, the cover's column width) went with it.
     """
 
-    def cards(self):
-        """(tier, slug, tagline or None, meta or None) for each card, in order."""
+    def rows(self):
+        """(tier, slug, markup) per entry, in page order."""
+        # Split on the entry boundary rather than matching up to the next
+        # </li>: a row's chips are themselves <li> elements, so a non-greedy
+        # match ends inside the first chip and every row comes back empty.
+        page = self.html("index.html")
         out = []
-        # The card is a <div> and the href lives on the title's <a>: the card
-        # stopped being one giant link so that its accessible name is the
-        # title rather than a whole paragraph. See project_card in build.py.
-        for m in re.finditer(
-                r'<div class="(card[^"]*)">(.*?)</div>',
-                self.html("index.html"), re.S):
-            cls, body = m.group(1), m.group(2)
-            href = re.search(r'card__title"><a href="projects/([^"]+)"', body)
-            if not href:
+        chunks = re.split(r'(?=<li class="entry entry--)', page)
+        for chunk in chunks[1:]:
+            tier = re.match(r'<li class="entry entry--(lg|sm)">', chunk)
+            if not tier:
                 continue
-            slug = href.group(1)
-            tag = re.search(r'card__tagline">([^<]*)', body)
-            meta = re.search(r'card__meta">([^<]*)', body)
-            out.append(("large" if "card--lg" in cls else "small", slug,
-                        tag.group(1) if tag else None,
-                        meta.group(1) if meta else None))
-        self.assertTrue(out, "the homepage renders no project cards at all")
+            body = chunk.split("</ol>", 1)[0]
+            href = re.search(r'entry__title"><a href="projects/([^"]+)"', body)
+            if href:
+                out.append((tier.group(1), href.group(1), body))
+        self.assertTrue(out, "the homepage renders no work rows at all")
         return out
 
-    def card_signals(self):
-        """{slug: set of signal names} — which devices each card actually uses."""
-        found = {}
-        for m in re.finditer(r'<div class="(card[^"]*)">(.*?)</div>\s*</li>',
-                             self.html("index.html"), re.S):
-            cls, body = m.group(1), m.group(2)
-            href = re.search(r'card__title"><a href="projects/([^"]+)"', body)
-            if not href:
-                continue
-            sig = set()
-            if 'card__tag"' in body:
-                sig.add("tags")
-            if 'card__note"' in body:
-                sig.add("summary")
-            meta = re.search(r'card__meta">([^<]*)', body)
-            if meta and "\u00b7" in meta.group(1):
-                sig.add("segmented-meta")
-            found[href.group(1)] = sig
-        return found
-
     def test_every_project_has_a_short_meta_line(self):
-        import glob
-        for path in glob.glob(str(ROOT / "projects" / "*" / "content.json")):
-            project = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+        for path in sorted((ROOT / "projects").glob("*/content.json")):
+            project = json.loads(path.read_text(encoding="utf-8"))
             meta = project.get("meta")
             self.assertTrue(meta, "%s has no meta line" % project["slug"])
             self.assertLessEqual(
                 len(meta), 44,
-                "%s meta is %d chars, too long for a card" % (project["slug"], len(meta)))
-
-    def test_case_study_cards_carry_the_whole_line(self):
-        for tier, slug, tag, meta in self.cards():
-            if tier != "large":
-                continue
-            self.assertTrue(tag, "%s is a case study with no tagline" % slug)
-            self.assertTrue(meta, "%s is a case study with no meta" % slug)
-            self.assertIn(
-                "\u00b7", meta,
-                "%s's meta lost its segments (%r) -- a case-study card is "
-                "meant to carry year, domain and role" % (slug, meta))
+                "%s meta is %d chars, too long for a row"
+                % (project["slug"], len(meta)))
 
     def test_the_two_tiers_have_not_converged(self):
-        """The thing the feedback was actually about.
+        """The thing the old feedback was about, on the new component.
 
-        This asserted something narrower until the redesign: that a
-        secondary card prints NO tagline at all. That rule did keep the
-        tiers apart, and it did it by leaving a card reading "07 Smarthub"
-        and a year -- a visitor had no way to learn what Smarthub was
-        without opening it. petradesigns.io, the site this redesign was
-        briefed to be as clear as, gives every project a line of prose.
-
-        So the tagline runs on both tiers now and the separation moved to
-        three devices a case-study card has exclusively: category chips,
-        the summary paragraph, and a segmented year-domain-role meta. The
-        failure mode is unchanged and so is what is being guarded -- the
-        two bands reading as equals -- but a tier is now distinguished by
-        what it ADDS rather than by what it is denied.
+        A tier is defined by what it ADDS, not by what it is denied: a
+        case-study row carries category chips and a summary paragraph, a
+        gallery row carries neither. The failure mode is the two bands
+        quietly becoming the same thing again, which is what prompted
+        "simplifier les projets secondaires" in the first place.
         """
-        signals = self.card_signals()
-        bands = self.site["sections"]
-        large = [s for s in bands["highlights"]["slugs"] if s in signals]
-        small = [s for s in bands["selectedWork"]["slugs"] if s in signals]
-        self.assertTrue(large and small, "a band rendered no cards")
+        for tier, slug, body in self.rows():
+            has_tags = 'class="entry__tags"' in body
+            has_note = 'class="entry__note"' in body
+            if tier == "lg":
+                self.assertTrue(has_tags, "%s is a case study with no chips" % slug)
+                self.assertTrue(has_note, "%s is a case study with no summary" % slug)
+            else:
+                self.assertFalse(
+                    has_tags or has_note,
+                    "%s is a gallery row using %s, which belongs to the "
+                    "case-study tier -- the two bands read as equals again"
+                    % (slug, "chips" if has_tags else "a summary"))
 
-        exclusive = {"tags", "summary", "segmented-meta"}
-        for slug in large:
+    def test_every_row_carries_its_year(self):
+        """The spine only works if every dot has a date beside it.
+
+        Smarthub is the exception the rule is written for: its meta is
+        "Design and brand studio · Founder" and carries no year at all, so
+        it renders none rather than printing the first segment -- which is
+        how "Design and brand studio" once appeared where a date belonged.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import project_year
+        for tier, slug, body in self.rows():
+            folder = next(p.parent.name for p in (ROOT / "projects").glob("*/content.json")
+                          if json.loads(p.read_text(encoding="utf-8"))["slug"] == slug)
+            project = json.loads(
+                (ROOT / "projects" / folder / "content.json").read_text(encoding="utf-8"))
+            expected = project_year(project)
+            rendered = re.search(r'class="entry__year">([^<]*)<', body)
+            if expected:
+                self.assertIsNotNone(rendered, "%s renders no year" % slug)
+                self.assertEqual(rendered.group(1), expected)
+                self.assertRegex(expected, r"(19|20)\d{2}",
+                                 "%s's year column is %r, which is not a date"
+                                 % (slug, expected))
+            else:
+                self.assertIsNone(
+                    rendered,
+                    "%s has no year in its meta but rendered one anyway" % slug)
+
+    def test_a_row_is_named_by_its_title_not_by_a_paragraph(self):
+        """One control per row, named by the project.
+
+        Measured against an earlier build where the whole row was one <a>:
+        a row's accessible name ran 11 to 475 characters depending on which
+        band it sat in, so a screen reader announced one project as a
+        475-character paragraph and another as "07 Smarthub".
+        """
+        for tier, slug, body in self.rows():
+            links = re.findall(r"<a [^>]*href=\"projects/[^\"]+\"[^>]*>(.*?)</a>",
+                               body, re.S)
             self.assertEqual(
-                signals[slug], exclusive,
-                "%s is a case study missing %s -- the tier it belongs to is "
-                "defined by carrying all three"
-                % (slug, sorted(exclusive - signals[slug])))
-        for slug in small:
-            leaked = signals[slug] & exclusive
-            self.assertEqual(
-                leaked, set(),
-                "%s is a secondary project using %s, which belongs to the "
-                "case-study tier. The two bands read as equals again."
-                % (slug, sorted(leaked)))
+                len(links), 1,
+                "%s has %d links to itself; the row is one control"
+                % (slug, len(links)))
+            name = re.sub(r"<[^>]+>", "", links[0]).strip()
+            self.assertLess(
+                len(name), 40,
+                "%s's link is named by %d characters -- that is prose, not a "
+                "title" % (slug, len(name)))
 
-    def test_secondary_meta_is_a_bare_year(self):
-        smalls = [c for c in self.cards() if c[0] == "small"]
-        self.assertTrue(smalls, "the secondary band renders no cards")
-        for _, slug, tag, meta in smalls:
-            if meta is not None:
-                self.assertNotIn(
-                    "\u00b7", meta,
-                    "%s's secondary meta is back to the full line (%r)"
-                    % (slug, meta))
-                self.assertRegex(
-                    meta, r"^(19|20)\d{2}",
-                    "%s's secondary meta is %r, which is not a year. Taking "
-                    "'the first segment' does this: it is right for seven "
-                    "projects and prints a phrase for Smarthub, whose meta "
-                    "is 'Design and brand studio · Founder'." % (slug, meta))
+    def test_the_whole_row_is_still_clickable(self):
+        """The ::after that turns one title link into a block link."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = css.split(".entry__title a::after {", 1)[1].split("}", 1)[0]
+        self.assertIn("position: absolute", block)
+        self.assertIn("inset: 0", block)
+        entry = css.split("\n.entry {", 1)[1].split("}", 1)[0]
+        self.assertIn(
+            "position: relative", entry,
+            "the row is not a containing block, so its link overlay would "
+            "resolve against the page and cover everything")
 
-    def test_meta_renders_wherever_there_is_one_to_render(self):
-        """Derived from the content, not a hardcoded count.
+    def test_keyboard_focus_lands_on_the_row_not_the_words(self):
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = css.split(".entry__title a:focus-visible::after {", 1)[1].split("}", 1)[0]
+        self.assertIn("outline", block,
+                      "the focus ring is no longer drawn on the row overlay")
 
-        This was `assertEqual(count, 8)` and it broke the moment a secondary
-        card legitimately had nothing to show -- Smarthub has no year, its
-        `year` field is still TODO, and a card with no date now prints no
-        meta rather than substituting a phrase. Deriving the number means
-        fixing that TODO, or adding a project, moves this on its own.
-        """
-        bands = self.site["sections"]
-        large = set(bands["highlights"]["slugs"])
-        small = set(bands["selectedWork"]["slugs"])
-        expect = 0
-        for path in sorted((ROOT / "projects").glob("*/content.json")):
-            project = json.loads(path.read_text(encoding="utf-8"))
-            slug, meta = project["slug"], project.get("meta") or ""
-            if slug in large:
-                expect += 1 if meta else 0
-            elif slug in small:
-                expect += 1 if re.search(r"\b(19|20)\d{2}", meta) else 0
-        self.assertEqual(
-            self.html("index.html").count('class="card__meta"'), expect,
-            "expected %d meta lines from the content files" % expect)
-
-    def test_the_card_shows_the_same_description_as_the_case_study(self):
-        """One description per project, shown in both places.
-
-        The card briefly carried its own hand-written `cardNote`, which meant
-        two descriptions of one project that could drift apart without
-        anything failing. The card now prints the project's `summary` -- the
-        same paragraph the case study shows under its own title -- so this
-        asserts the two strings are EQUAL rather than that each merely
-        exists. `description` is deliberately not the one used: that is the
-        invisible <meta name="description"> string, not what the page shows.
-        """
-        home = self.html("index.html")
-        for tier, slug, _, _ in self.cards():
-            if tier != "large":
+    def test_the_row_shows_the_same_description_as_the_case_study(self):
+        """One source. Two hand-written descriptions drift apart."""
+        for tier, slug, body in self.rows():
+            if tier != "lg":
                 continue
-            card = re.search(
-                r'<div class="card card--lg">(?:(?!</div>).)*?'
-                r'card__title"><a href="projects/%s".*?</div>' % slug,
-                home, re.S)
-            self.assertIsNotNone(card, "%s's row vanished" % slug)
-            note = re.search(r'card__note">([^<]*)', card.group(0))
-            self.assertIsNotNone(note, "%s's row carries no description" % slug)
-
-            page = self.html("projects/%s.html" % slug)
-            shown = re.search(r'class="prose project__summary">([^<]*)', page)
-            self.assertIsNotNone(shown, "%s's page shows no summary" % slug)
+            folder = next(p.parent.name for p in (ROOT / "projects").glob("*/content.json")
+                          if json.loads(p.read_text(encoding="utf-8"))["slug"] == slug)
+            project = json.loads(
+                (ROOT / "projects" / folder / "content.json").read_text(encoding="utf-8"))
+            note = re.search(r'class="entry__note">([^<]*)<', body)
+            self.assertIsNotNone(note, "%s lost its summary" % slug)
             self.assertEqual(
-                note.group(1), shown.group(1),
-                "%s's card and its case study show DIFFERENT descriptions, "
-                "so one of them has drifted:\n  card %r\n  page %r"
-                % (slug, note.group(1)[:70], shown.group(1)[:70]))
-
-    def test_no_project_carries_a_separate_card_description(self):
-        """cardNote is gone; a second description would drift from the first."""
-        for path in sorted((ROOT / "projects").glob("*/content.json")):
-            project = json.loads(path.read_text(encoding="utf-8"))
-            self.assertNotIn(
-                "cardNote", project,
-                "%s has a cardNote again. The card and the case study are "
-                "meant to show one description, not two that can disagree."
-                % project["slug"])
-
-    def test_the_cover_does_not_stretch_past_its_column(self):
-        """Why the cover is pinned to start rather than stretched.
-
-        align-items: stretch applies to both columns of a row, and a
-        stretched cover has a definite height, so aspect-ratio then computes
-        its WIDTH from that height. Fixerloop has the tallest summary of the
-        four: its row grew and its cover came out 717px wide against
-        everyone else's 679, overflowing its column. Pinned, all four
-        measure identically -- 455x364 at the current 5/4.
-        """
-        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
-        rule = css.split(".card--lg .card__media {", 1)[1].split("}", 1)[0]
-        self.assertIn("align-self: start", rule,
-                      "the cover stretches again, so a row with taller text "
-                      "will widen its cover past the grid column")
-
-    def test_secondary_cards_do_not_render_the_description(self):
-        """"Simplifier les projets secondaires" -- prose there undoes it."""
-        for tier, slug, _, _ in self.cards():
-            if tier == "small":
-                card = re.search(
-                    r'<div class="card">(?:(?!</div>).)*?'
-                    r'card__title"><a href="projects/%s".*?</div>' % slug,
-                    self.html("index.html"), re.S)
-                self.assertIsNotNone(card, "%s's card vanished" % slug)
-                self.assertNotIn(
-                    "card__note", card.group(0),
-                    "%s is a secondary project printing a description, which "
-                    "undoes the simplification of that band" % slug)
-
-    def test_the_two_columns_of_a_row_share_top_and_bottom_edges(self):
-        """What stops the words floating in the middle of the column.
-
-        Centred, the body held 127px of content in a 453px row with nothing
-        to line up against. The title is now level with the cover's top
-        corner and the meta is pushed to meet its bottom, so the leftover
-        space falls in one place -- between the description and the meta --
-        where it reads as a gap rather than as a blob.
-        """
-        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
-        rule = css.split(".card--lg {", 1)[1].split("}", 1)[0]
-        self.assertIn("align-items: stretch", rule,
-                      "the row's columns no longer stretch, so nothing in "
-                      "the body can be anchored to the row's edges")
-        body = css.split(".card--lg .card__body {", 1)[1].split("}", 1)[0]
-        self.assertIn("flex-direction: column", body,
-                      "the body is not a column, so margin-top: auto on the "
-                      "meta has nothing to push against")
-        meta = css.split(".card--lg .card__meta {", 1)[1].split("}", 1)[0]
-        self.assertIn("margin-top: auto", meta,
-                      "the meta is no longer pushed to the bottom of the row")
+                note.group(1), html.escape(project["summary"], quote=True),
+                "%s's row text has drifted from its case study's summary" % slug)
 
     def test_both_bands_share_one_cover_ratio(self):
-        """The two card types have to read as the same system.
+        """The two tiers have to read as the same system.
 
-        They used to disagree: 3/2 on a case study, 4/3 on a secondary
-        card. It is 5/4 for both now -- squarer, and deliberately not
-        square. The ratio has moved twice as the brief did: 16/9 for the
-        smallest spread in how much of each cover shows, then 12/5 to match
-        the cover height to the text beside it, then 5/4 for a narrower,
-        squarer cover. What has to hold across all of them is that the two
-        bands agree, because that is what makes a row and a tile read as
-        one system. 5/4 also takes a secondary tile from 264x110, a sliver,
-        to 264x211.
-
-        Worth recording what this does NOT fix, so nobody retunes the frame
-        expecting it to: the spread is still 77 points. Fixerloop's cover is
-        1.50 and shows whole, Groupado's is 900x4009 and shows 13% of
-        itself. Four of the eight covers are full-page screenshots rather
-        than covers, and no single frame reconciles 0.22 with 2.00. That
-        needs four images.
-        """
-        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
-        ratios = re.findall(r"\.card[^{}]*__media[^{}]*\{[^{}]*?aspect-ratio:\s*([^;]+)", css)
-        ratios = [r.strip() for r in ratios]
-        self.assertTrue(ratios, "no cover frame declares an aspect ratio")
-        self.assertEqual(
-            len(set(ratios)), 1,
-            "the two card bands declare different cover ratios (%s), so the "
-            "case-study and secondary cards do not read as one system"
-            % sorted(set(ratios)))
-
-    def css_text(self):
-        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-
-    def test_a_card_is_named_by_its_title_not_by_a_paragraph(self):
-        """The card is a container; the link sits on its title.
-
-        It was one <a> wrapped around everything, which was harmless until
-        the description moved inside it. Measured against production, a
-        card's accessible name went from 71-128 characters to 11-475: a
-        screen reader announced Fixerloop's card as a 475-character
-        paragraph, while the secondary cards -- taglines stripped by then --
-        had dropped to "07 Smarthub". One kind of control, named either by a
-        whole paragraph or by almost nothing depending which band it sat in.
-        That is an accessibility fault and a consistency fault in the same
-        markup.
-
-        The name is the title now, in both bands. The tagline, description
-        and meta are siblings of the link rather than part of it: still read
-        in page order by anyone browsing, no longer crammed into a control's
-        name. WCAG 2.4.4 is met by context, since they sit immediately
-        beside it.
-        """
-        home = self.html("index.html")
-        self.assertNotIn(
-            '<a class="card', home,
-            "a card is an <a> again, which makes its accessible name "
-            "everything inside it -- description, meta and all")
-        names = re.findall(
-            r'card__title"><a href="projects/([^"]+)">([^<]*)</a>', home)
-        self.assertEqual(
-            len(names), 8,
-            "expected 8 title links, found %d" % len(names))
-        for slug, name in names:
-            self.assertTrue(name.strip(), "%s's title link has no text" % slug)
-            self.assertLessEqual(
-                len(name), 40,
-                "%s's link is named %r, %d characters. A card link should be "
-                "named by its title; anything longer means prose has moved "
-                "back inside the anchor." % (slug, name, len(name)))
-        spread = max(len(n) for _, n in names) / max(1, min(len(n) for _, n in names))
-        self.assertLess(
-            spread, 3.0,
-            "the card link names span %.1fx between longest and shortest "
-            "(%s) -- both bands are meant to be named the same way" % (
-                spread, sorted(n for _, n in names)))
-
-    def test_the_whole_card_is_still_clickable(self):
-        """Moving the link to the title must not shrink the hit area."""
-        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
-        card = css.split(".card {", 1)[1].split("}", 1)[0]
-        self.assertIn("position: relative", card,
-                      ".card is not positioned, so the title link's overlay "
-                      "resolves against some other ancestor")
-        over = css.split(".card__title a::after {", 1)[1].split("}", 1)[0]
-        self.assertIn("position: absolute", over)
-        self.assertIn("inset: 0", over,
-                      "the overlay no longer covers the card, so only the "
-                      "title words are clickable")
-
-    def test_keyboard_focus_lands_on_the_card_not_the_words(self):
-        """The overlay is what a pointer hits, so it is what focus describes."""
-        css = re.sub(r"/\*.*?\*/", "", self.css_text(), flags=re.S)
-        self.assertIn(".card__title a:focus-visible::after", css,
-                      "no focus ring on the card overlay, so a keyboard user "
-                      "gets an outline around a few words of title or none")
-        ring = css.split(".card__title a:focus-visible::after {", 1)[1].split("}", 1)[0]
-        # Not assertIn("outline"): that substring also matches outline-offset,
-        # so removing the actual outline and leaving the offset behind passed
-        # a green suite when this was sabotaged. Require a real declaration.
-        self.assertRegex(
-            ring, r"outline:\s*[^;]*(solid|auto|\d+px)",
-            "the focus overlay declares no visible outline (only %r), so a "
-            "keyboard user gets no ring around the card"
-            % " ".join(ring.split()))
-
-    def test_case_studies_are_rows_not_tiles(self):
-        """The side-by-side layout, pinned.
-
-        A 2x2 grid of stacked cards is what the feedback asked to move away
-        from, and it is one CSS rule away from coming back -- the kind of
-        thing a later tidy-up removes as redundant without knowing it was
-        the point.
+        The ratio has moved four times as the brief did -- 16/9, then 12/5,
+        then 5/4, now 16/10 -- and what has to hold across all of them is
+        that the bands agree. A gallery thumbnail is allowed its own ratio
+        ONLY because it is a different shape of row, so that one is named
+        explicitly rather than falling out of a wildcard.
         """
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split(".grid--lg { grid-template-columns: 1fr;", 1)
-        self.assertEqual(len(block), 2,
-                         "the case-study band is no longer a single column, "
-                         "so the cards are back to being tiles")
-        rule = css.split(".card--lg {", 1)[1].split("}", 1)[0]
-        self.assertIn("display: grid", rule,
-                      "the case-study card is not a grid, so its cover and "
-                      "its words cannot sit side by side")
-        self.assertIn("grid-template-columns", rule,
-                      "the case-study card declares no columns")
+        base = css.split(".entry__media img {", 1)[1].split("}", 1)[0]
+        ratio = re.search(r"aspect-ratio:\s*([^;]+);", base)
+        self.assertIsNotNone(ratio, "the rail's media declares no ratio")
+        shared = ratio.group(1).strip()
+        overrides = re.findall(r"\.entry--\w+ \.entry__media img \{[^}]*"
+                               r"aspect-ratio:\s*([^;]+);", css)
+        for other in overrides:
+            self.assertNotEqual(
+                other.strip(), shared,
+                "a tier re-declares the shared ratio %r, which is dead "
+                "weight" % shared)
+        self.assertLessEqual(
+            len(overrides), 1,
+            "more than one tier overrides the cover ratio, so there is no "
+            "shared ratio left: %r" % overrides)
 
-    def test_todo_meta_is_suppressed_not_printed(self):
-        """usable() must gate this like every other field -- BUILD.md rule."""
-        sys.path.insert(0, str(ROOT))
-        from build import usable
-        self.assertFalse(usable("TODO — year"))
-        self.assertNotIn("TODO", self.html("index.html"))
-
+    def test_instadeep_is_the_first_row(self):
+        self.assertEqual(self.rows()[0][1], "instadeep")
 
 class TestAssetVersions(unittest.TestCase):
     """Every ?v= hash in the COMMITTED html must match the committed asset.

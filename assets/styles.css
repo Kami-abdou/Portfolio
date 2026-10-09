@@ -222,140 +222,29 @@ a { color: inherit; }
 }
 .band__head p { margin: var(--space-2) 0 0; color: var(--color-text-muted); }
 
-.grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-12); }
-@media (min-width: 640px) {
-  .grid--sm { gap: var(--space-12); }
-}
-@media (min-width: 900px) {
-  .grid--lg { grid-template-columns: repeat(2, 1fr); }
-  .grid--sm { gap: var(--space-16); }
-}
-
 /* The card is a container, not a link -- see project_card in build.py for
    why. .card__title a carries the href and an ::after that covers the whole
    card, so the entire surface is still clickable while only the title names
    the destination. position: relative is what that overlay resolves
    against. */
-.card { display: block; position: relative; }
-.card__title a {
-  color: inherit;
-  text-decoration: none;
-}
-.card__title a::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  /* above .card__num, which sits at 2, so the badge corner is clickable too */
-  z-index: 3;
-}
+
+
 /* Keyboard focus has to show on the card, not on the few words of the
    title: the overlay is what a pointer hits, so it is what an outline
    should describe. */
-.card__title a:focus-visible { outline: none; }
-.card__title a:focus-visible::after {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 4px;
-  border-radius: var(--radius-lg);
-}
-.card__media {
-  display: block; overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-raised);
-  /* ONE ratio for both bands. The two used to disagree -- 3/2 on a case
-     study, 4/3 on a secondary card -- so the two card types did not read
-     as the same system, which is half of why the covers felt off.
 
-     16/9 rather than something taller, chosen by measurement over the eight
-     covers actually in the repo. It gives the smallest spread in how much
-     of itself each cover shows (77 points against 85 at 3/2 and 89 at 2/1)
-     while keeping the four landscape covers at 86% visible on average, and
-     it takes the case-study row from 453px to 382px, which also drops the
-     text column beside it from 66% empty to 59%.
 
-     What it does NOT fix, and no frame can: the spread is still 77 points.
-     Fixerloop's cover is 1.50 and shows whole; Groupado's is 900x4009 and
-     shows 13% of itself. Four of the eight "covers" are full-page
-     screenshots rather than covers -- steer 0.40, fissa3 0.30, smarthub
-     0.32, groupado 0.22 -- and against the other four at 1.41 to 2.00 no
-     single frame can make them look like one set. That needs four images,
-     not CSS. */
-  /* 12/5. The ratio is chosen so the cover comes out about as tall as the
-     words beside it, which is what "minimize the card so it looks the same
-     size as the content" needs: a case-study row is 679px wide, so 12/5
-     makes the cover 283px, against 204-275px of title, tagline, summary and
-     meta. It was 382px at 16/9 with only 155px of text, and that 227px
-     difference was the gap.
-
-     aspect-ratio: auto was tried first and is the wrong tool: with no fixed
-     ratio the cover sizes to the IMAGE's intrinsic proportions, not to the
-     content, so Steer's 900x2229 cover rendered 1680px tall and the four
-     rows spread 1339px apart. A fixed ratio is what makes them uniform; the
-     only question was which one.
-
-     One ratio for both bands, so a case-study row and a secondary tile read
-     as the same system. The tiles come out 264x110, which is a thin strip --
-     if that reads as too thin this is the single number to change. */
-  /* 16/10. Still ONE ratio for both bands -- that is the part that has
-     to hold, and it has survived four different values as the brief moved
-     (16/9, then 12/5, then 5/4, now this).
-
-     5/4 was right while the case studies were full-width two-column rows
-     where the cover was the NARROW column. They are a horizontal rail
-     now, 540px per card, and a near-square cover there was 432px of a
-     703px card: top-heavy, and it pushed the whole band to 1054px so the
-     heading, the cards and the controls could never be seen at once.
-     16/10 takes the cover to 337px and the card to 608.
-
-     The secondary tile goes 264x211 -> 264x165, which is still a
-     thumbnail rather than the 264x110 sliver that 12/5 produced and that
-     was flagged as too thin. */
-  aspect-ratio: 16 / 10;
-  transition: border-color .35s var(--ease-out), background .35s var(--ease-out);
-}
 /* Covers ship untreated, on request. A grayscale-and-scrim treatment and
    then a blue duotone were both tried here and both removed -- see the two
    commits before this one for the measurements, if the covers ever need to
    be pulled back toward the page again. The bare numbers: they run 87x to
    587x the background's luminance, and the eight of them span 7.2x between
    lightest and darkest. */
-.card__media img {
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: top;
-  transition: transform .7s var(--ease-out);
-}
-.card:hover .card__media {
-  border-color: var(--color-border-strong);
-  background: var(--color-bg-raised-hover);
-}
-.card:hover .card__media img { transform: scale(1.03); }
-.card:hover .card__title,
-.card:focus-within .card__title { color: var(--color-accent); }
-.card__title { transition: color .3s var(--ease-out); }
-.card__body { display: block; padding-top: var(--space-4); }
-.card__title {
-  display: block;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
-  letter-spacing: -0.01em;
-}
-.card--lg .card__title { font-size: var(--font-size-xl); }
-.card__tagline {
-  display: block; margin-top: var(--space-1);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-snug);
-}
+
 
 /* Year, domain and role. Deliberately quieter than the tagline: it is
    reference information a visitor scans, not copy they read. */
-.card__meta {
-  display: block;
-  margin-top: var(--space-2);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  letter-spacing: 0.02em;
-}
+
 
 /* ── buttons ─────────────────────────────────────── */
 .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
@@ -419,7 +308,7 @@ a { color: inherit; }
 }
 .about__grid { display: grid; gap: var(--space-12); }
 @media (min-width: 900px) {
-  .about__grid { grid-template-columns: 320px 1fr; gap: var(--space-16); align-items: start; }
+.about__grid { grid-template-columns: 320px 1fr; gap: var(--space-16); align-items: start; }
 }
 .about__portrait { margin: 0; }
 .about__portrait img {
@@ -460,7 +349,7 @@ a { color: inherit; }
   border-bottom: 1px solid var(--color-border);
 }
 @media (min-width: 700px) {
-  /* Fixed years column so the dates stack into one readable spine. 13rem
+/* Fixed years column so the dates stack into one readable spine. 13rem
      holds the longest string — "February 2021 — September 2021" — on one
      line at this size; below the breakpoint the row goes single-column and
      the date sits above the company instead. */
@@ -582,7 +471,7 @@ a { color: inherit; }
   border-bottom: 1px solid var(--color-border);
 }
 @media (min-width: 640px) {
-  .facts__row { grid-template-columns: 160px 1fr; gap: var(--space-6); }
+.facts__row { grid-template-columns: 160px 1fr; gap: var(--space-6); }
 }
 .facts dt { color: var(--color-text-muted); font-size: var(--font-size-sm); }
 .facts dd { margin: 0; }
@@ -691,7 +580,7 @@ a { color: inherit; }
   color: var(--color-text-faint);
 }
 @media (min-width: 900px) {
-  .facts__row { grid-template-columns: 1fr; gap: var(--space-1); }
+.facts__row { grid-template-columns: 1fr; gap: var(--space-1); }
 }
 
 /* metrics sit on a raised surface so numbers feel deliberate */
@@ -773,7 +662,7 @@ body::after {
    JS, no observer per card. The delays stop at the sixth child: beyond
    that a visitor is waiting on an animation rather than reading, and the
    largest band on the site holds four. */
-.anim .rise .grid > li,
+.anim .rise .entry,
 .anim .rise .principles > li {
   opacity: 0;
   transform: translateY(14px);
@@ -781,36 +670,17 @@ body::after {
     opacity .8s var(--ease-out),
     transform 1s var(--ease-out);
 }
-.anim .rise.is-in .grid > li,
+.anim .rise.is-in .entry,
 .anim .rise.is-in .principles > li { opacity: 1; transform: none; }
-.anim .rise.is-in .grid > li:nth-child(2),
+.anim .rise.is-in .entry:nth-child(2),
 .anim .rise.is-in .principles > li:nth-child(2) { transition-delay: .08s; }
-.anim .rise.is-in .grid > li:nth-child(3),
+.anim .rise.is-in .entry:nth-child(3),
 .anim .rise.is-in .principles > li:nth-child(3) { transition-delay: .16s; }
-.anim .rise.is-in .grid > li:nth-child(4) { transition-delay: .24s; }
-.anim .rise.is-in .grid > li:nth-child(n+5) { transition-delay: .3s; }
+.anim .rise.is-in .entry:nth-child(4) { transition-delay: .24s; }
+.anim .rise.is-in .entry:nth-child(n+5) { transition-delay: .3s; }
 
 /* ── index numbers on cards ──────────────────────── */
-.card__media { position: relative; }
-.card__num {
-  position: absolute; z-index: 2;
-  top: var(--space-4); left: var(--space-4);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  letter-spacing: 0.08em;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  color: var(--color-text);
-  background: color-mix(in srgb, var(--color-bg) 62%, transparent);
-  backdrop-filter: blur(6px);
-}
 
-/* ── variable column count, set per row from the markup ── */
-@media (min-width: 900px) {
-  .grid--lg {
-    grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
-  }
-}
 
 /* ── in-page section index ───────────────────────── */
 .toc { margin-bottom: var(--space-8); }
@@ -929,25 +799,6 @@ body::after {
      and the rows sat flush against each other, one project's meta line
      touching the next one's title. Caught from a screenshot, not from the
      stylesheet. See the test that now checks every var() resolves. */
-  .grid--lg { grid-template-columns: 1fr; gap: var(--space-16); }
-  .card--lg {
-    display: grid;
-    /* The cover is the narrower column now, 0.7 against 1. It was 1.6
-       against 1 -- 679px wide and 283px tall at 12/5, a letterbox band.
-       Narrower and squarer was asked for, and the two pull against
-       matching the text height: a narrower cover leaves a wider text
-       column, so the words get shorter, while a squarer ratio makes the
-       cover taller. Both widen the gap. Measured, 5/4 at 0.7fr costs
-       16-38% empty where 12/5 at 1.6fr was 3-28%, and buys a cover of
-       455x364 instead of 679x283. */
-    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr);
-    gap: var(--space-12);
-    /* stretch, not center: the body has to span the row before anything in
-       it can be anchored to the row's edges. Centred, it held 127px of text
-       in a 453px column -- 72% empty, the words floating with nothing to
-       line up against, which is what made this band look unfinished. */
-    align-items: stretch;
-  }
   /* The cover takes its width from the column and its height from the
      ratio -- it must NOT stretch. align-items: stretch applies to both
      columns, and a stretched cover has a definite height, so aspect-ratio
@@ -956,19 +807,12 @@ body::after {
      717px wide against everyone else's 679, overflowing its column. Pinning
      it to start keeps all four covers identical and lets the row grow under
      the body alone if a summary ever needs more height. */
-  .card--lg .card__media { align-self: start; }
-  .card--lg .card__body {
-    display: flex;
-    flex-direction: column;
-    padding-top: 0;
-  }
-  /* Both columns now share a top AND a bottom edge: the title sits level
+    /* Both columns now share a top AND a bottom edge: the title sits level
      with the cover's top corner and the index badge on it, and the meta is
      pushed down to meet the cover's bottom. The space that is left falls
      between the description and the meta, where it reads as a deliberate
      gap rather than as a centred blob. */
-  .card--lg .card__meta { margin-top: auto; }
-}
+  }
 
 /* Three tiers that cannot be mistaken for one another, built from faces
    the site already uses rather than from new sizes. The title takes the
@@ -976,15 +820,8 @@ body::after {
    up from where it was; the meta is mono and faint, so it reads as data.
    Before this the tagline (sm) and the meta (xs) sat 1.15x apart in the
    same muted colour, which is why the bottom of the page looked flat. */
-.card--lg .card__title {
-  font-family: var(--font-display);
-  font-weight: var(--font-weight-regular);
-  letter-spacing: -0.02em;
-}
-.card__meta {
-  font-family: var(--font-mono);
-  color: var(--color-text-faint);
-}
+
+
 /* ONE rule for the row tagline. This selector had accumulated three
    separate declarations as the design moved -- a size with a margin, then
    a colour, then another size -- which is the same duplicate-selector
@@ -995,19 +832,7 @@ body::after {
    blur: the tagline is the hook at full-strength ink, the description is
    the detail, muted and a step down. At 24/16 the size step now does its
    own work, where 20/17 was leaving it all to the colour. */
-.card--lg .card__tagline {
-  margin-top: var(--space-3);
-  color: var(--color-text);
-  font-size: var(--font-size-lg);
-}
-.card--lg .card__note {
-  display: block;
-  margin-top: var(--space-3);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-normal);
-  max-width: 44ch;
-}
+
 
 /* ── hero: name left, portrait right ───────────── */
 @media (min-width: 900px) {
@@ -1017,7 +842,7 @@ body::after {
 .pager { align-items: end; gap: var(--space-8); }
 .pager__link strong { font-size: var(--font-size-2xl); letter-spacing: -0.025em; line-height: var(--line-height-tight); }
 @media (min-width: 900px) {
-  .pager__link--next strong { font-size: var(--font-size-3xl); }
+.pager__link--next strong { font-size: var(--font-size-3xl); }
 }
 .pager__link strong { transition: color .3s var(--ease-out); }
 
@@ -1082,7 +907,7 @@ body::after {
   margin-block: var(--space-8) var(--space-12);
 }
 @media (min-width: 700px) {
-  .shots { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+.shots { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
   /* a lone image has no pair to sit beside, so let it run the full width */
   .shots .shot:only-child { grid-column: 1 / -1; }
 }
@@ -1182,7 +1007,7 @@ body::after {
   grid-template-columns: 1fr;
 }
 @media (min-width: 700px) {
-  .insights__grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-16); }
+.insights__grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-16); }
 }
 .insight__value {
   display: block;
@@ -1242,7 +1067,7 @@ body::after {
 .project__main { min-width: 0; }
 
 @media (min-width: 1000px) {
-  .project__layout {
+.project__layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 260px;
     gap: var(--space-16);
@@ -1301,7 +1126,7 @@ body::after {
    from their intrinsic dimensions, so this needs no per-image config. */
 .shots--phone { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
 @media (min-width: 700px) {
-  .shots--phone { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.shots--phone { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 }
 .shot[data-phone="true"] .shot__btn {
   background: var(--color-bg-alt);
@@ -1605,10 +1430,10 @@ html:not(.js) .viewer__tabs { display: none; }
 }
 
 @media (min-width: 640px) {
-  .opening__facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.opening__facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @media (min-width: 900px) {
-  .opening { gap: var(--space-8); }
+.opening { gap: var(--space-8); }
   .opening__support { font-size: var(--font-size-lg); line-height: var(--line-height-snug); }
 }
 
@@ -1625,8 +1450,6 @@ html:not(.js) .viewer__tabs { display: none; }
    the work two screens down on a laptop.
    ══════════════════════════════════════════════════════════ */
 /* ── the pause control (WCAG 2.2.2, Level A) ── */
-
-
 
 
 /* Paused state: every row stops, both copies, with no JS per frame. */
@@ -1676,7 +1499,7 @@ html:not(.js) .viewer__tabs { display: none; }
 }
 
 @media (min-width: 900px) {
-  .principles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-8); }
+.principles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-8); }
 }
 
 /* ── category chips on a case-study card ──────────────────
@@ -1689,26 +1512,10 @@ html:not(.js) .viewer__tabs { display: none; }
    generic shape this could take and it would collide with the solid
    pill the primary action already uses -- two unrelated things reading
    as the same component. */
-.card__tags {
-  display: flex; flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-}
-.card__tag {
-  padding: 3px var(--space-2);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--color-text-faint);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-}
+
+
 /* The chips follow the card's own hover, so the whole block reads as one
    target rather than a title that lights up beside inert labels. */
-.card:hover .card__tag,
-.card:focus-within .card__tag { border-color: var(--color-border-strong); }
 
 /* ── the NN · PHASE eyebrow above a case-study section ────
    pleurat.com's device, and the reason one of its case studies reads as
@@ -1823,29 +1630,24 @@ html {
 }
 
 @media (prefers-reduced-motion: no-preference) and (min-height: 480px) {
-  html { scroll-snap-type: y proximity; }
+html { scroll-snap-type: y proximity; }
 
-  /* Sections AND the cards inside them, which is what makes proximity
-     behave like something controlled.
+  /* A band is NOT a snap point while its own rows are. A band and its
+     first row sit ~141px apart, so listing both put two candidates inside
+     a sixth of a viewport of each other and the resolved position came out
+     13 to 50px off a target rather than on one -- jitter, not snapping.
+     The set below is one non-overlapping sequence: a band's own stop is
+     its first row.
 
-     Sections alone put the stops 353 to 3591px apart, and proximity only
-     engages when the scroll settles near one. Measured: a four-notch wheel
-     scroll from the top landed at y=400 with the nearest snap point at
-     628 -- 228px away, outside the threshold, so it did not snap at all.
-     Which is the complaint: the stop was wherever the flick died.
-
-     Adding every card and principle puts a snap point roughly every
-     370px on this layout, so wherever a scroll settles there is one close
-     enough to catch. Dense proximity reads as controlled without ever
-     becoming a trap -- which is the thing mandatory cannot promise here,
-     because a 3591px band and a 900x4009 case-study screenshot are both
-     taller than any viewport, and mandatory would force the scroll past
-     them to the next stop with their middles unreachable. */
+     Gaps are kept near a viewport so that wherever a scroll settles there
+     is usually a stop close enough for proximity to catch. The facts strip
+     is in this list for that reason and no other: without it the first gap
+     ran 652px from the top of the page, and a scroll settling in the
+     middle was 228px from either end -- too far, so it did not snap. */
   .opening,
   .opening__facts,
-  .hero,
-  .band--rail,
-  .grid > li,
+  .fan,
+  .entry,
   .principle,
   .band--contact,
   .project__head,
@@ -1853,13 +1655,6 @@ html {
   .pager {
     scroll-snap-align: start;
   }
-
-  /* A band is NOT a snap point while its own children are. `.band` and its
-     first `li` sit 141px apart, so listing both put two candidates inside
-     a sixth of a viewport of each other and the resolved position came out
-     13 to 50px off a target rather than on one -- jitter, not snapping.
-     The set below is one non-overlapping sequence: the band's own stop is
-     its first card. */
 
   /* Gaps are kept near a viewport so that wherever a scroll settles
      there is usually a stop close enough for proximity to catch. The
@@ -1914,132 +1709,30 @@ html {
   flex-wrap: wrap;
 }
 
-.rail {
-  list-style: none;
-  margin: 0;
-  display: flex;
-  gap: var(--space-8);
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-
-  /* Aligns the first card's edge with the content column, and lets the
-     last one scroll all the way in. Same expression as .shell resolves
-     to, so the rail's left edge tracks the headings above it at every
-     width instead of being a guessed constant. */
-  --rail-inset: max(calc(var(--gutter) + var(--inset-left)),
-                    calc((100vw - var(--max-width)) / 2 + var(--gutter)));
-  padding-inline: var(--rail-inset);
-  scroll-padding-inline-start: var(--rail-inset);
-
-  /* Room for the focus ring, which would otherwise be clipped by the
-     scroll container on the first and last card. */
-  padding-block: var(--space-2);
-}
-
-.rail > li {
-  /* Narrower than the rail at every width, which is the condition that
-     makes `mandatory` safe. At 1024px this is 540px, so roughly 1.8
-     cards are visible and the second one's edge says "there is more". */
-  flex: 0 0 clamp(260px, 72vw, 540px);
-  /* Two values: block axis NONE, inline axis start. A single `start`
-     applies to both axes, which made every card a snap target of the
-     PAGE as well as of the rail -- all four at the same y, so the page
-     gained one stop and lost the four it used to have here. Measured:
-     vertical snapping fell to 1 scroll in 3, missing by 227px and 373px,
-     because the band's own cards had left the vertical sequence and
-     opened a ~900px gap with nothing in it for proximity to catch. */
-  scroll-snap-align: none start;
-  scroll-snap-stop: always;
-}
-
 /* A card in the rail is a vertical card: cover on top, words under it.
    The two-column case-study card is a shape for a full-width row, and
    inside a 540px track it would leave a 200px text column. */
-.rail .card--lg {
-  display: block;
-}
-.rail .card--lg .card__media { align-self: stretch; }
-.rail .card--lg .card__body {
-  display: block;
-  padding-top: var(--space-4);
-}
-.rail .card--lg .card__title { font-size: var(--font-size-lg); }
-.rail .card--lg .card__tagline { font-size: var(--font-size-base); }
-.rail .card--lg .card__note {
-  font-size: var(--font-size-sm);
-  max-width: none;
-}
-.rail .card--lg .card__meta { margin-top: var(--space-3); }
+
 
 /* Three lines of the summary, not five. The full text is on the project
    page, which is where someone who wants it is going; on the card its
    job is to say enough to decide. Clamping also makes every card the
    same height, so the rail's cards share a baseline. */
-.rail .card--lg .card__note {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
-}
+
 
 /* A thin scrollbar rather than none. Hiding it removes the one piece of
    permanent evidence that the rail scrolls at all, which is the single
    most common way this pattern goes wrong. */
-.rail { scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
-.rail::-webkit-scrollbar { height: 6px; }
-.rail::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
-  border-radius: var(--radius-full);
-}
-.rail::-webkit-scrollbar-track { background: transparent; }
+
 
 /* ── the nav: counter and two buttons ── */
-.rail__nav {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-.rail__nav[hidden] { display: none; }
-.rail__count {
-  margin: 0 var(--space-2) 0 0;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--tracking-label);
-  color: var(--color-text-faint);
-  font-variant-numeric: tabular-nums;
-}
-.rail__at { color: var(--color-text); }
-.rail__btn {
-  /* 44px, comfortably over the 24x24 that WCAG 2.5.8 asks of a target,
-     and `flex: none` because these sit in a flex row and would otherwise
-     shrink below the declared size -- which is how the pause control
-     once measured 10x24. */
-  flex: none;
-  width: 44px; height: 44px;
-  display: grid; place-items: center;
-  font-size: var(--font-size-base);
-  color: var(--color-text-muted);
-  background: var(--color-bg-raised);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: color .25s var(--ease-out), border-color .25s var(--ease-out),
-              background-color .25s var(--ease-out), opacity .25s var(--ease-out);
-}
-.rail__btn:hover:not(:disabled) {
-  color: var(--color-text);
-  border-color: var(--color-border-strong);
-  background: var(--color-bg-raised-hover);
-}
-.rail__btn:disabled { opacity: .35; cursor: default; }
+
 
 @media (max-width: 639px) {
-  /* The counter alone on a phone: two 44px targets plus the head's own
+/* The counter alone on a phone: two 44px targets plus the head's own
      wrapping left the buttons on a line of their own under the heading,
      where they read as page navigation rather than as this rail's. Touch
      has the gesture anyway. */
-  .rail__btn { display: none; }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -2170,16 +1863,11 @@ html {
    Tier 1 keeps the hierarchy the two bands exist to express, and keeps
    every cover rendering under its natural width.
    ══════════════════════════════════════════════════════════ */
-.grid--sm {
-  grid-template-columns: minmax(0, 1fr);
-  justify-items: start;
-}
-.grid--sm > li { width: 100%; max-width: 520px; }
+
 
 /* The title carried the small-card size because it used to sit in a
    218px column. At 520 it is the same step as a case-study card. */
-.grid--sm .card__title { font-size: var(--font-size-xl); }
-.grid--sm .card__tagline { font-size: var(--font-size-base); }
+
 
 /* ══════════════════════════════════════════════════════════
    THE FANNED STACK
@@ -2311,6 +1999,164 @@ html {
   border-radius: var(--radius-lg);
 }
 @media (min-width: 900px) {
-  .how__intro { grid-template-columns: 280px 1fr; gap: var(--space-16); }
+.how__intro { grid-template-columns: 280px 1fr; gap: var(--space-16); }
   .how__intro .band__head { margin-bottom: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   THE YEAR RAIL
+   ══════════════════════════════════════════════════════════
+   A dated spine: a dot and a year on the left, the project on the
+   right, newest first. Both work bands render it, which is the point --
+   they used to be two unrelated components, a horizontal scroller and a
+   stack of covers, so the page had two different ways of showing the
+   same kind of thing.
+
+   The tiers differ by what each row SAYS, not by being different
+   components: a case-study row carries chips, a summary and a
+   full-width cover; a gallery row carries one line and a thumbnail.
+   ══════════════════════════════════════════════════════════ */
+
+.band--work { padding-block: var(--space-16) var(--space-24); }
+
+.rail-years {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.entry {
+  display: grid;
+  gap: var(--space-4);
+  padding-block: var(--space-12);
+  border-top: 1px solid var(--color-border);
+  position: relative;
+}
+.entry:first-child { border-top: 0; padding-top: var(--space-4); }
+
+/* ── the spine ── */
+.entry__when {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+.entry__dot {
+  width: 9px; height: 9px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-accent);
+  flex: none;
+}
+/* Filled on hover, so the spine responds to the row you are reading. */
+.entry:hover .entry__dot,
+.entry:focus-within .entry__dot { background: var(--color-accent); }
+
+.entry__body { display: grid; gap: var(--space-6); }
+.entry__text { display: grid; gap: var(--space-3); justify-items: start; }
+
+.entry__tags {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: var(--space-2);
+}
+.entry__tags li {
+  padding: 3px var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  white-space: nowrap;
+}
+
+.entry__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--tracking-heading);
+  line-height: var(--line-height-tight);
+}
+.entry--lg .entry__title { font-size: var(--font-size-2xl); }
+.entry--sm .entry__title { font-size: var(--font-size-xl); }
+
+/* The block link: one control per row, named by the project, with the
+   prose read as its siblings rather than crammed into its accessible
+   name. Same pattern the cards used before this. */
+.entry__title a {
+  color: inherit; text-decoration: none;
+  transition: color .3s var(--ease-out);
+}
+.entry__title a::after {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+}
+.entry:hover .entry__title a { color: var(--color-accent); }
+.entry__title a:focus-visible { outline: none; }
+.entry__title a:focus-visible::after {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 6px;
+  border-radius: var(--radius-lg);
+}
+
+.entry__lede {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-snug);
+  color: var(--color-text);
+  text-wrap: pretty;
+}
+.entry--sm .entry__lede { font-size: var(--font-size-base); color: var(--color-text-muted); }
+.entry__note {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: var(--line-height-normal);
+  max-width: 54ch;
+  text-wrap: pretty;
+}
+.entry__cta {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent);
+}
+
+/* ── the media ── */
+.entry__media { margin: 0; overflow: hidden; border-radius: var(--radius-lg); }
+.entry__media img {
+  display: block; width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: 50% 0;
+  transition: transform .6s var(--ease-out);
+}
+.entry:hover .entry__media img { transform: scale(1.02); }
+
+@media (min-width: 900px) {
+  /* Spine left, project right. The year column is fixed so every dot
+     lines up vertically -- a ragged spine is the one thing that would
+     make this read as a list of unrelated rows again. */
+  .entry {
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: var(--space-12);
+    align-items: start;
+  }
+  .entry--lg { padding-block: var(--space-16); }
+  .entry--lg .entry__body { gap: var(--space-8); }
+
+  /* Tier 2 is a row, not a stack: thumbnail beside the line rather than
+     a cover under it. */
+  .entry--sm .entry__body {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    align-items: center;
+    gap: var(--space-8);
+  }
+  .entry--sm .entry__media img { aspect-ratio: 3 / 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry__media img { transition: none; }
 }
