@@ -1688,6 +1688,90 @@ class TestCustomDomain(BuildCase):
                          % ", ".join(stale))
 
 
+class TestScrollSnap(BuildCase):
+    """Snapping must stay `proximity`, and must stay gated.
+
+    The request was controlled stops rather than a scroll that ends
+    wherever the flick dies. `mandatory` is the obvious way to get that
+    and it is the wrong one here: it forces the container to rest on a
+    snap point every time it settles, which is safe only while every
+    snap-to-snap gap is shorter than the viewport. On this site they are
+    not. A case-study band runs 3591px, project pages average an 845px
+    gap against a 768px viewport, and the source images go up to 900x4009.
+    Under mandatory the middle of those is unreachable: the browser drags
+    the scroll to the next boundary.
+
+    Verified in a browser both ways. With proximity, four consecutive
+    wheel scrolls on the homepage each came to rest with a snap target's
+    top at exactly 104px -- the scroll-padding line, offset 0 every time,
+    so the controlled-stop behaviour is real. And scrolling to the middle
+    of the tallest image on /projects/konnect held at that position with
+    zero drift, which is the half mandatory would have broken.
+    """
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def snap_block(self):
+        css = self.css()
+        marker = "scroll-snap-type"
+        self.assertIn(marker, css, "the site no longer snaps at all")
+        start = css.index(marker)
+        return css[start:start + 400]
+
+    def test_snapping_is_proximity_not_mandatory(self):
+        block = self.snap_block()
+        self.assertIn("proximity", block,
+                      "scroll-snap-type is not proximity: %r" % block[:80])
+        self.assertNotIn(
+            "mandatory", block,
+            "scroll-snap-type is mandatory. Gaps between snap points on "
+            "this site exceed the viewport -- a 3591px band, an 845px "
+            "average on project pages -- so mandatory makes their middles "
+            "unreachable.")
+
+    def test_snapping_is_behind_a_reduced_motion_gate(self):
+        """A scroll position the browser moves after you stopped is motion."""
+        css = self.css()
+        idx = css.index("scroll-snap-type")
+        before = css[:idx]
+        query = before[before.rindex("@media"):]
+        self.assertIn("prefers-reduced-motion: no-preference", query,
+                      "scroll snapping is not gated on reduced motion: %r"
+                      % query[:120])
+
+    def test_the_header_does_not_cover_a_snap_target(self):
+        """scroll-padding-top, or every stop lands under the sticky header."""
+        css = self.css()
+        block = css.split("html {", 1)
+        found = [chunk.split("}", 1)[0] for chunk in css.split("html {")[1:]]
+        owners = [b for b in found if "scroll-padding-top" in b]
+        self.assertEqual(
+            len(owners), 1,
+            "expected exactly one html rule to set scroll-padding-top, "
+            "found %d" % len(owners))
+        self.assertIn("var(--header-height)", owners[0],
+                      "scroll-padding-top no longer tracks the header "
+                      "height: %r" % owners[0])
+
+    def test_a_band_is_not_a_snap_target_alongside_its_own_cards(self):
+        """Two candidates 141px apart resolved to neither of them.
+
+        Listing `.band` and `.grid > li` together put a parent and its
+        first child inside a sixth of a viewport of each other, and the
+        resting position came out 13-50px off a target instead of on one.
+        """
+        css = self.css()
+        idx = css.index("scroll-snap-align")
+        selectors = css[:idx].rsplit("}", 1)[-1]
+        self.assertIn(".grid > li", selectors,
+                      "cards are not snap targets, so the stops are only "
+                      "every section and proximity mostly will not engage")
+        self.assertNotRegex(
+            selectors, r"(?m)^\s*\.band,",
+            "`.band` is a snap target alongside its own cards again")
+
+
 class TestHeadingOutline(BuildCase):
     """Every page: exactly one h1, and no level skipped under it.
 

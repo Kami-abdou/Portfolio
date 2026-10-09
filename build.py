@@ -998,6 +998,14 @@ def build_index(projects):
     # visitor could sit through. Primes make the property structural rather
     # than lucky. See the test that checks the interval.
     #
+    # Raised 103/127/149 -> 149/163/179 on a request for slower motion, but
+    # the duration is the smaller half of that change. Apparent speed is
+    # (track width / 2) / duration, and the track is sized in em -- every
+    # word's width and padding scale with --font-size on .wall__word. The
+    # poster type came down from 13vw to 7vw in the same pass, which shortens
+    # the track by roughly half and halves the pixel speed on its own. The
+    # two together take it from about 65 px/s to about 22.
+    #
     # The wall is rendered twice — once behind the portrait at full strength,
     # once in front at low opacity. That is what makes the type appear to
     # pass across the photograph. Both copies share one animation definition,
@@ -1006,7 +1014,7 @@ def build_index(projects):
     span = ("%s — 2026" % since) if since else ""
 
     #: All prime, so the lowest common multiple is the product. See above.
-    row_durations = (103, 127, 149)
+    row_durations = (149, 163, 179)
 
     def wall(rows, *, ghost):
         out = []
@@ -1021,7 +1029,13 @@ def build_index(projects):
         cls = "wall wall--ghost" if ghost else "wall"
         return '<div class="%s" aria-hidden="true">%s</div>' % (cls, "".join(out))
 
-    wall_rows = roles[:3] if len(roles) >= 3 else roles
+    # The wall's own list. It used to be roles[:3], which tied three lines
+    # chosen to be READ to a list that exists for the facts strip and the
+    # JSON-LD -- so the marquee could not be rewritten without editing the
+    # structured data. Falls back to roles so the wall never renders empty.
+    wall_rows = [r for r in SITE.get("disciplines", []) if usable(r)]
+    if len(wall_rows) < 3:
+        wall_rows = roles[:3] if len(roles) >= 3 else roles
 
     # ── The opening ───────────────────────────────────────────────────
     # The clarity block, and the page's h1.

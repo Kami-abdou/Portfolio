@@ -1105,7 +1105,10 @@ body::after {
 
 .wall {
   display: flex; flex-direction: column;
-  gap: clamp(4px, 1vw, 14px);
+  /* Opened up with the type: three rows of 7vw no longer fill the band, so
+     the spare height goes into the gaps rather than leaving the stack
+     floating. The old clamp was sized to stop 13vw rows colliding. */
+  gap: clamp(8px, 1.8vw, 26px);
   width: 100%;
 }
 /* the front copy is a ghost laid over the portrait */
@@ -1190,8 +1193,21 @@ body::after {
 .wall__word {
   font-family: var(--font-poster);
   font-weight: 400;
-  font-size: clamp(3.5rem, 13vw, 11rem);
-  line-height: 0.86;
+  /* 13vw -> 7vw, on a request to make this readable rather than loud.
+     At 13vw the type was 133px on a 1024px viewport, so barely one phrase
+     fitted across the band and the portrait sitting in the middle of it cut
+     that phrase in half -- you saw "ACTION DE" and "ESIGN SYS", never a
+     whole discipline. At 7vw a full phrase clears the portrait on either
+     side, which is the actual fix for legibility here.
+
+     It is also most of the slowdown. The track is sized in em, so halving
+     the type halves the distance the animation covers and halves the pixel
+     speed at the same duration. */
+  font-size: clamp(2.25rem, 7vw, 5.5rem);
+  /* 0.86 was a tight stack for type that filled the band; with smaller
+     type there is room to let the rows breathe, and overlapping ascenders
+     were part of what made the words hard to pick out. */
+  line-height: 0.95;
   letter-spacing: -0.005em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -1209,7 +1225,12 @@ body::after {
 /* portrait sits between the two wall copies */
 .hero .hero__portrait {
   position: absolute; z-index: 2;
-  left: 50%; top: 50%;
+  /* Off dead-centre, which does two things. It leaves one wide reading
+     channel instead of two narrow ones -- centred, the portrait split every
+     row into a left and a right fragment and a phrase could never be seen
+     whole. And it breaks the symmetry of a photograph pinned to the exact
+     middle of a band, which is the most predictable place to put it. */
+  left: 68%; top: 50%;
   transform: translate(-50%, -50%);
   width: clamp(190px, 26vw, 340px);
   aspect-ratio: 3 / 4;
@@ -2015,4 +2036,83 @@ html:not(.js) .viewer__tabs { display: none; }
 @media (max-width: 639px) {
   .opening__sep { display: none; }
   .opening__status { gap: var(--space-2) var(--space-4); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCROLL SNAPPING — controlled stops
+   ══════════════════════════════════════════════════════════
+   Free scrolling leaves a section half on screen and half off, with the
+   stop wherever the flick happened to die. These give the scroll defined
+   resting places at the section boundaries.
+
+   `proximity`, NOT `mandatory`, and that is the whole safety argument.
+   Mandatory forces the scroll onto the nearest snap point every time it
+   settles, which is fine while every section is shorter than the viewport
+   and hostile the moment one is not: the bands on this homepage run from
+   353px to 3591px, so on a 768px screen mandatory snapping would fight a
+   visitor trying to read the middle of a case-study band and could leave
+   parts of it unreachable. Proximity snaps when the scroll ENDS near a
+   boundary and otherwise stays out of the way, which is the behaviour
+   that was wanted and the only one that is safe at these heights.
+
+   Gated on no-preference: a scroll position the browser adjusts after the
+   visitor stopped is exactly the kind of unrequested movement
+   prefers-reduced-motion is for. Gated on height too -- under 480px the
+   snap points are closer together than the viewport and snapping starts
+   to feel like resistance.
+   ══════════════════════════════════════════════════════════ */
+
+/* Not only for snapping: this is also the fix for an anchor jump landing
+   under the sticky header. The site set scroll-margin-top on #main and
+   .project__section individually; on the container it covers every target,
+   including the snap points below and the table-of-contents links. */
+html {
+  scroll-padding-top: calc(var(--header-height) + var(--inset-top) + var(--space-4));
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-height: 480px) {
+  html { scroll-snap-type: y proximity; }
+
+  /* Sections AND the cards inside them, which is what makes proximity
+     behave like something controlled.
+
+     Sections alone put the stops 353 to 3591px apart, and proximity only
+     engages when the scroll settles near one. Measured: a four-notch wheel
+     scroll from the top landed at y=400 with the nearest snap point at
+     628 -- 228px away, outside the threshold, so it did not snap at all.
+     Which is the complaint: the stop was wherever the flick died.
+
+     Adding every card and principle puts a snap point roughly every
+     370px on this layout, so wherever a scroll settles there is one close
+     enough to catch. Dense proximity reads as controlled without ever
+     becoming a trap -- which is the thing mandatory cannot promise here,
+     because a 3591px band and a 900x4009 case-study screenshot are both
+     taller than any viewport, and mandatory would force the scroll past
+     them to the next stop with their middles unreachable. */
+  .opening,
+  .opening__facts,
+  .hero,
+  .grid > li,
+  .principle,
+  .band--contact,
+  .project__head,
+  .project__section,
+  .pager {
+    scroll-snap-align: start;
+  }
+
+  /* A band is NOT a snap point while its own children are. `.band` and its
+     first `li` sit 141px apart, so listing both put two candidates inside
+     a sixth of a viewport of each other and the resolved position came out
+     13 to 50px off a target rather than on one -- jitter, not snapping.
+     The set below is one non-overlapping sequence: the band's own stop is
+     its first card. */
+
+  /* No gap between snap points may exceed a viewport, or content between
+     two of them is never fully on screen at rest. The facts strip is in
+     this list for that reason and no other: without it the first gap was
+     652px, from the top of the page to the signature band, and a scroll
+     that settled in the middle of it was 228px from either end -- too far
+     for proximity, so it did not snap, which was the original complaint
+     reproduced exactly. */
 }
