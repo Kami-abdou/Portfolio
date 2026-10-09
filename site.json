@@ -117,12 +117,10 @@
       ]
     },
     "selectedWork": {
-      "heading": "Some other things I do",
-      "description": "Freelance, the studio I run, and the site you are reading.",
+      "heading": "Freelance",
+      "description": "An interface redesign between two jobs.",
       "slugs": [
-        "portfolio",
-        "fixerloop",
-        "smarthub"
+        "fixerloop"
       ]
     }
   },
@@ -172,8 +170,8 @@
     {
       "label": "I build them too",
       "body": "This site is the proof — my Figma, my code, and a test suite that checks its own claims.",
-      "cta": "How I work",
-      "href": "#how",
+      "cta": "How I think",
+      "href": "about",
       "tone": "sky"
     }
   ],

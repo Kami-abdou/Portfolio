@@ -1,5 +1,7 @@
 {
   "slug": "portfolio",
+  "published": false,
+  "_retired": "This site, as its own case study. Retired at the owner's request; the claim it supported survives without it, because a stranger can verify this site by viewing source rather than by reading about it.",
   "order": 6,
   "format": "highlights",
   "meta": "2026 · Personal · Design and build",
@@ -32,7 +34,7 @@
   "metrics": [
     {
       "label": "Tests against the generated HTML",
-      "value": "164"
+      "value": "170"
     },
     {
       "label": "Runtime dependencies",

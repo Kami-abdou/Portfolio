@@ -375,11 +375,25 @@ def paragraphs(body):
 
 
 def load_projects():
+    """Every project that is still published, in display order.
+
+    `"published": false` retires one without deleting anything. The folder,
+    the content.json, the assets and the _src originals all stay exactly
+    where they are; the project simply stops being built, stops appearing
+    in either band, stops being linked by the pager and leaves the sitemap.
+    Putting it back is one line.
+
+    That matters because retiring is a judgement call that gets revisited.
+    The alternative -- deleting the folder -- makes the decision permanent
+    and takes the only copy of the originals with it.
+    """
     projects = []
     for folder in sorted((ROOT / "projects").iterdir()):
         cfg = folder / "content.json"
         if cfg.is_file():
             data = json.loads(cfg.read_text(encoding="utf-8"))
+            if data.get("published") is False:
+                continue
             data["_dir"] = folder.name          # e.g. "01-steer"
             projects.append(data)
     projects.sort(key=lambda p: p.get("order", 999))

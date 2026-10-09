@@ -46,6 +46,24 @@ class BuildCase(unittest.TestCase):
         path = ROOT / "projects" / folder / "content.json"
         return json.loads(path.read_text(encoding="utf-8"))
 
+    def live_projects(self):
+        """Every project that still ships, as (folder, parsed content).
+
+        `"published": false` retires one without deleting it, so the
+        folder and its content.json stay on disk and a plain glob still
+        finds them. Several tests used that glob to decide which pages to
+        open, and started erroring on files the build no longer writes the
+        moment a project was retired. This is the single answer to "which
+        projects ship".
+        """
+        out = []
+        for path in sorted((ROOT / "projects").glob("*/content.json")):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if data.get("published") is False:
+                continue
+            out.append((path.parent.name, data))
+        return out
+
 
 class TestHomepageTiers(BuildCase):
 
@@ -87,13 +105,12 @@ class TestHomepageTiers(BuildCase):
         listed = bands["highlights"]["slugs"] + bands["selectedWork"]["slugs"]
         self.assertEqual(len(listed), len(set(listed)),
                          "a project is listed twice: %s" % listed)
-        on_disk = {json.loads(p.read_text(encoding="utf-8"))["slug"]
-                   for p in (ROOT / "projects").glob("*/content.json")}
+        live = {c["slug"] for _, c in self.live_projects()}
         self.assertEqual(
-            set(listed), on_disk,
-            "bands and disk disagree. Listed but absent: %s. On disk but "
-            "unlisted: %s" % (sorted(set(listed) - on_disk),
-                              sorted(on_disk - set(listed))))
+            set(listed), live,
+            "bands and published projects disagree. Listed but not "
+            "published: %s. Published but unlisted: %s"
+            % (sorted(set(listed) - live), sorted(live - set(listed))))
 
     def test_each_band_reads_in_order(self):
         """`order` must ascend down each band, or the numbering jumps.
@@ -1651,8 +1668,7 @@ class TestCollapsibleSections(BuildCase):
     """
 
     def pages(self):
-        return ["projects/%s.html" % json.loads(p.read_text(encoding="utf-8"))["slug"]
-                for p in sorted((ROOT / "projects").glob("*/content.json"))]
+        return ["projects/%s.html" % c["slug"] for _, c in self.live_projects()]
 
     def body(self, page):
         return re.sub(r"<!--.*?-->", "", self.html(page), flags=re.S)
@@ -1739,6 +1755,111 @@ class TestCollapsibleSections(BuildCase):
                 self.assertNotIn(
                     "<p", summary,
                     "%s has a <p> inside a <summary>" % page)
+
+
+class TestNoDeadAnchors(BuildCase):
+    """Every in-page link points at an id that exists on that page.
+
+    A fragment that matches nothing does not error -- the browser stays
+    exactly where it is, which is indistinguishable from a link that did
+    not register the click. It has happened twice here: the hero's third
+    card pointed at `#how` after the band carrying that id was replaced,
+    and survived a restructure plus a round of cutting because nothing
+    looks wrong until you click it.
+    """
+
+    def pages(self):
+        pages = ["index.html", "work.html", "about.html", "contact.html"]
+        for path in sorted((ROOT / "projects").glob("*/content.json")):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if data.get("published") is not False:
+                pages.append("projects/%s.html" % data["slug"])
+        return pages
+
+    def test_every_fragment_link_has_a_target(self):
+        for page in self.pages():
+            src = re.sub(r"<!--.*?-->", "", self.html(page), flags=re.S)
+            ids = set(re.findall(r'id="([^"]+)"', src))
+            dead = []
+            for href in re.findall(r'href="(#[^"]*)"', src):
+                target = href[1:]
+                if target and target not in ids:
+                    dead.append(href)
+            self.assertEqual(
+                dead, [],
+                "%s links to fragment(s) that do not exist on it: %s"
+                % (page, sorted(set(dead))))
+
+
+class TestRetiredProjects(BuildCase):
+    """`"published": false` retires a project without deleting anything.
+
+    Retiring is a judgement call that gets revisited -- Smarthub and this
+    site were both cut from the bands after a review of what the portfolio
+    was claiming. Deleting the folders would make that permanent and take
+    the only copy of the _src originals with it.
+
+    So the flag has to do four things, and all four are asserted: no page,
+    no sitemap entry, no band listing, and every file still on disk.
+    """
+
+    def retired(self):
+        out = []
+        for path in sorted((ROOT / "projects").glob("*/content.json")):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if data.get("published") is False:
+                out.append((path.parent, data))
+        return out
+
+    def test_a_retired_project_builds_no_page(self):
+        for folder, data in self.retired():
+            page = ROOT / "projects" / ("%s.html" % data["slug"])
+            self.assertFalse(
+                page.is_file(),
+                "%s is retired but %s still exists -- a page nothing links "
+                "to, still reachable and still indexable"
+                % (data["slug"], page.name))
+
+    def test_a_retired_project_leaves_the_sitemap(self):
+        sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
+        for folder, data in self.retired():
+            self.assertNotIn(
+                "/projects/%s" % data["slug"], sitemap,
+                "%s is retired but still in the sitemap, which invites a "
+                "crawler to a page that is not there" % data["slug"])
+
+    def test_a_retired_project_is_in_no_band(self):
+        listed = (self.site["sections"]["highlights"]["slugs"]
+                  + self.site["sections"]["selectedWork"]["slugs"])
+        for folder, data in self.retired():
+            self.assertNotIn(
+                data["slug"], listed,
+                "%s is retired but still listed in a band, so the homepage "
+                "links to a page the build no longer writes" % data["slug"])
+
+    def test_retiring_deletes_nothing(self):
+        """The whole point. The content and the originals stay."""
+        for folder, data in self.retired():
+            self.assertTrue((folder / "content.json").is_file())
+            assets = folder / "assets"
+            self.assertTrue(
+                assets.is_dir(),
+                "%s lost its assets folder -- retiring is meant to be "
+                "reversible" % data["slug"])
+            src = assets / "_src"
+            if src.exists():
+                self.assertTrue(
+                    any(src.iterdir()),
+                    "%s's _src is empty. Those are the only copies of the "
+                    "originals." % data["slug"])
+
+    def test_a_retired_project_states_why(self):
+        """So the next person does not have to guess, or undo it blindly."""
+        for folder, data in self.retired():
+            self.assertTrue(
+                (data.get("_retired") or "").strip(),
+                "%s is retired with no `_retired` note saying why"
+                % data["slug"])
 
 
 class TestStylesheetIsWellFormed(BuildCase):
@@ -1933,9 +2054,7 @@ class TestHeadingOutline(BuildCase):
         return [int(m.group(1)) for m in re.finditer(r"<h([1-6])\b", html_src)]
 
     def pages(self):
-        slugs = sorted(
-            json.loads(path.read_text(encoding="utf-8"))["slug"]
-            for path in (ROOT / "projects").glob("*/content.json"))
+        slugs = sorted(c["slug"] for _, c in self.live_projects())
         return list(self.PAGES) + ["projects/%s.html" % s for s in slugs]
 
     def test_every_page_has_exactly_one_h1(self):
@@ -2222,8 +2341,14 @@ class TestConsolidation(BuildCase):
         bytes as /work, which is the canonical of the pair, so listing both
         would ask a crawler to decide what the canonical already decided.
         """
-        self.assertIn("11 URLs", self.stdout)
-        self.assertIn("8 pages", self.stdout)
+        # Derived, because retiring a project legitimately changes both and
+        # a literal here just means editing a test to record what happened.
+        live = len(self.live_projects())
+        self.assertIn("%d pages" % live, self.stdout,
+                      "the build wrote a different number of project pages "
+                      "than there are published projects")
+        # pages + index, work, about, contact + the homepage's second URL
+        self.assertIn("%d URLs" % (live + 3), self.stdout)
 
 
 class TestHighlightsFormat(BuildCase):
@@ -2259,10 +2384,12 @@ class TestHighlightsFormat(BuildCase):
 
     def test_eyebrow_follows_tier_not_category(self):
         """Fissa3 and Groupado are category:case-study but Tier 2."""
-        for slug in ("fissa3", "groupado", "smarthub", "portfolio"):
+        for slug in [c["slug"] for _, c in self.live_projects()
+                     if c.get("format") == "highlights"]:
             self.assertIn(">Project<", self.html("projects/%s.html" % slug),
                           "%s does not read as a Tier-2 page" % slug)
-        for slug in ("steer", "konnect", "fixerloop", "instadeep"):
+        for slug in [c["slug"] for _, c in self.live_projects()
+                     if c.get("format") != "highlights"]:
             self.assertIn(">Case study<", self.html("projects/%s.html" % slug),
                           "%s does not read as a case study" % slug)
 
@@ -2496,33 +2623,51 @@ class TestToolIcons(BuildCase):
         only -- so deleting framer.png left the whole suite green. Assert
         each mark where it is used, or the test is decoration.
         """
-        expected = {
-            "projects/portfolio.html": {"Figma": "figma.png",
-                                        "Claude Code": "claude-code.png"},
-            "projects/instadeep.html": {"Figma": "figma.png",
-                                        "Framer": "framer.png"},
-        }
-        for page, want in expected.items():
-            chips = dict(self._chips(page))
-            for name, filename in want.items():
-                self.assertEqual(chips.get(name), filename,
-                                 "%s on %s" % (name, page))
+        # Asserted against the about page, which renders the whole toolkit,
+        # and from the FILES rather than from a hand-written list: every
+        # mark on disk has to be referenced by some chip. That is the only
+        # version that fails when a file is deleted, which is the point --
+        # an earlier one checked two project pages and went green when
+        # framer.png was removed, because neither page used it.
+        chips = dict(self._chips("about.html"))
+        used = set(chips.values())
+        on_disk = {f.name for f in (ROOT / "assets" / "tools").glob("*.png")}
+        self.assertEqual(
+            on_disk - used, set(),
+            "mark(s) on disk that no chip references: %s"
+            % sorted(on_disk - used))
+        for name, filename in chips.items():
+            if filename:
+                self.assertIn(filename, on_disk,
+                              "%s references a mark that is not on disk: %s"
+                              % (name, filename))
 
     def test_tools_without_a_file_fall_back_to_a_monogram(self):
-        """Python is the last tool with no mark on disk.
+        """A tool with no mark on disk still renders, as its initial.
 
-        Git was in this list until its supplied file was usable. The file
-        was always RGBA -- it just had the transparency checkerboard painted
-        into opaque pixels, so it looked like a grey checked square. A
-        border flood-fill cleared the background and left the mark, including
-        the white branch glyph INSIDE the red diamond, which a plain colour
-        key would have punched straight through.
+        This used to name Python, the one tool in the content with no
+        supplied file -- and Python only ever appeared on the project that
+        has since been retired, so the case vanished from the rendered
+        site along with it.
+
+        The mechanism still has to work: the next tool someone adds will
+        not have a mark either. So it is tested against the function
+        rather than against a page, which is also the version that cannot
+        rot when the content changes.
         """
-        chips = dict(self._chips("projects/portfolio.html"))
-        self.assertIsNone(chips.get("Python"),
-                          "Python has no icon file but rendered an <img>")
-        self.assertEqual(chips.get("Git"), "git.png")
-
+        sys.path.insert(0, str(ROOT))
+        from build import tool_chips
+        known = tool_chips(["Figma"])
+        self.assertIn("assets/tools/figma.png", known,
+                      "a tool WITH a mark stopped rendering it")
+        unknown = tool_chips(["Kaleidoscope"])
+        self.assertNotIn("<img", unknown,
+                         "a tool with no mark on disk tried to render one")
+        self.assertIn("Kaleidoscope", unknown,
+                      "a tool with no mark lost its name as well")
+        self.assertIn(">K<", unknown,
+                      "a tool with no mark renders no monogram, so its chip "
+                      "is a bare word where every neighbour has a glyph")
     def test_the_about_page_toolkit_uses_chips_too(self):
         """It was the one place the toolkit rendered as "A · B · C" text.
 
