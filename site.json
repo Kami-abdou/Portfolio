@@ -15,7 +15,7 @@
   "contactLede": "Senior product designer at InstaDeep. Open to conversations about product work and collaborations.",
   "about": [
     "Today I'm a senior product designer at InstaDeep, an AI company acquired by BioNTech, working on their AI products and the design system underneath them. Before that I led product design at Steer, and at T-ledger I designed one of Tunisia's first digital wallets, built on blockchain.",
-    "Six years, four companies, and one studio of my own — fintech, automotive retail, food delivery, home services and AI.",
+    "Six years and four companies — fintech, automotive retail, food delivery, home services and AI.",
     "Based in Tunis — UTC+1, the same working day as Paris and Berlin."
   ],
   "experience": [
@@ -47,15 +47,9 @@
       ]
     },
     {
-      "company": "T+ informatique",
-      "role": "UI Designer, freelance",
-      "years": "2021",
-      "place": "France"
-    },
-    {
       "company": "T-ledger",
       "role": "Product Designer",
-      "years": "2020 — 2021",
+      "years": "Jan 2020 — Jan 2021",
       "note": "Sole designer across both of the company's products.",
       "projects": [
         "konnect",
