@@ -208,7 +208,6 @@ a { color: inherit; }
 .site-foot__links a:hover { color: var(--color-text); }
 
 /* ── hero ────────────────────────────────────────── */
-.hero { padding-block: var(--space-24) var(--space-16); }
 
 /* ── bands + grids ───────────────────────────────── */
 .band { padding-block: var(--space-16); }
@@ -870,7 +869,6 @@ body::after {
 }
 
 /* ── hero: let the name breathe, and add a hairline close ── */
-.hero { border-bottom: 1px solid var(--color-border); }
 
 /* ══════════════════════════════════════════════════════════
    OVERSIZED DISPLAY + MASK REVEALS
@@ -890,14 +888,18 @@ body::after {
   transform: translateY(105%);
   transition: transform .95s var(--ease-reveal) .05s;
 }
+/* The revealed state. This was a THREE-selector group -- the third was
+   `.anim .hero .mask__in`, which fired the marquee band's heading on load
+   instead of on scroll. Removing the marquee meant removing that selector,
+   and deleting it by matching its text took the shared declaration block
+   with it: the two selectors above were left dangling with no body, so
+   every masked heading on the site stayed translated 105% down inside its
+   own clip. Invisible, on every page, with the whole suite green -- the
+   tests assert markup and tokens, and this was rendered geometry. */
 .anim .is-in .mask__in,
-.anim .mask.is-in .mask__in,
-.anim .hero .mask__in { transform: translateY(0); }
+.anim .mask.is-in .mask__in { transform: translateY(0); }
 
-/* the hero fires on load rather than on scroll */
-.anim .hero .mask__in {
-  animation: maskUp 1s var(--ease-reveal) .15s both;
-}
+
 @keyframes maskUp { from { transform: translateY(105%); } to { transform: none; } }
 
 /* ── scale ─────────────────────────────────────── */
@@ -1008,29 +1010,8 @@ body::after {
 }
 
 /* ── hero: name left, portrait right ───────────── */
-.hero { display: grid; gap: var(--space-12); align-items: end; }
 @media (min-width: 900px) {
-  .hero {
-    grid-template-columns: 1.55fr 0.45fr;
-    gap: var(--space-16);
-    padding-block: var(--space-24) var(--space-24);
-  }
 }
-.hero__portrait {
-  margin: 0; overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-raised);
-  aspect-ratio: 1;
-  max-width: 320px;
-}
-.hero__portrait img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  filter: grayscale(1) contrast(1.05);
-  transition: filter .7s var(--ease-out), transform .9s var(--ease-out);
-}
-.hero__portrait:hover img { filter: grayscale(0); transform: scale(1.03); }
 
 /* ── oversized next-project teaser ─────────────── */
 .pager { align-items: end; gap: var(--space-8); }
@@ -1045,247 +1026,29 @@ body::after {
    A 2:3 frame keeps the composition and gives the hero a vertical
    column to sit against. The mono treatment stays on permanently —
    it is the look, not a hover trick. */
-.hero__portrait {
-  aspect-ratio: 2 / 3;
-  max-width: 340px;
-  justify-self: end;
-  align-self: end;
-}
-.hero__portrait img {
-  filter: var(--filter-mono);
-  transition: transform 1s var(--ease-out);
-}
-.hero__portrait:hover img { transform: scale(1.04); }
 
 @media (max-width: 899px) {
-  .hero__portrait { max-width: 260px; justify-self: start; }
+  
 }
 
 
 /* portrait becomes a compact anchor at the foot rather than a column */
-.hero__portrait {
-  aspect-ratio: 3 / 4;
-  max-width: 210px;
-  justify-self: end;
-  margin: 0;
-}
 @media (max-width: 899px) {
-  .hero__portrait { max-width: 150px; justify-self: start; }
-}
-
-/* ══════════════════════════════════════════════════════════
-   MARQUEE WALL HERO
-   Rows of oversized condensed type scrolling horizontally with the
-   portrait sitting over them. Each track holds the words twice and
-   slides exactly -50%, so the loop is seamless with no JS.
-
-   The wall is rendered twice: once behind the portrait at full
-   strength, once in front at low opacity. That front copy is what
-   makes the type read as passing across the photograph. Both copies
-   use the same animation, so they stay in step on their own.
-   ══════════════════════════════════════════════════════════ */
-.hero {
-  position: relative;
-  /* A band, not a screen. This was min-height: 100dvh while the marquee
-     was the hero; now that the lede carries the claim, a full viewport
-     here just pushed the work two screens down on a laptop. */
-  height: clamp(300px, 46vh, 520px);
-  display: flex; flex-direction: column; justify-content: center;
-  gap: clamp(4px, 1vw, 14px);
-  /* The two halves of the scrim below, hoisted so its height is derived
-     from them rather than guessed. --scrim-fade is the ramp; --scrim-solid
-     is the flat band it starts from.
-
-     Both shrank by an order of magnitude in the redesign, and the reason
-     is structural rather than cosmetic. The solid band used to be 10rem
-     plus two space steps because a PARAGRAPH sat on it, and the wall slid
-     behind that paragraph on a short window -- both were --color-text, so
-     contrast went to nothing. The paragraph now lives in .opening, one
-     section up, in normal flow. There is nothing left inside this band to
-     protect, so the scrim is back to its other job: fading the wall's foot
-     into the page instead of ending on a hard edge. */
-  --scrim-solid: var(--space-8);
-  --scrim-fade: 4rem;
-  overflow: hidden;
-  padding-block: var(--space-8);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.wall {
-  display: flex; flex-direction: column;
-  /* Opened up with the type: three rows of 7vw no longer fill the band, so
-     the spare height goes into the gaps rather than leaving the stack
-     floating. The old clamp was sized to stop 13vw rows colliding. */
-  gap: clamp(8px, 1.8vw, 26px);
-  width: 100%;
-}
-/* the front copy is a ghost laid over the portrait */
-.wall--ghost {
-  position: absolute; inset-block: 50%; inset-inline: 0;
-  transform: translateY(-50%);
-  z-index: 3; pointer-events: none;
-  opacity: 0.16;
-}
-
-/* ── the scrim at the foot of the band ───────────────────
-   HISTORY, because the numbers below only make sense with it: this scrim
-   was built to rescue a paragraph. The wall sat centred in the hero while
-   .hero__statement was pinned to its foot, so the gap between them was
-   (heroHeight - 368px - wallHeight) / 2 — it closed as the window got
-   shorter and went negative at about 940px of viewport height. Below that
-   the statement, which is --color-text, sat directly on wall letters that
-   are also --color-text: same colour, nothing between them, zero contrast.
-
-   That paragraph is now the .opening, one section up and in normal flow, so
-   the overlap it describes can no longer occur. What remains is the scrim's
-   other job — fading the wall's foot into the page rather than ending on a
-   hard edge — which is why both halves are an order of magnitude smaller
-   than the sizes this comment goes on to reason about.
-
-   Rather than shrink the poster type or move the statement out of the
-   stack, this fades the foot of the hero to the page background. The
-   statement always lands on flat colour, the wall reads as running off the
-   bottom edge, and it holds at every viewport height instead of only tall
-   ones. Sits above the ghost copy (3) and below the text (5).
-
-   --scrim-solid is a fixed length, not a percentage. A percentage drifts
-   with the hero: at a 700px window the fade landed mid-paragraph and the
-   worst case measured 4.04:1, still failing. Anchoring it to the same
-   tokens that position the statement — its own bottom offset plus 10rem of
-   room for the paragraph to wrap — keeps every line on solid colour at any
-   height. The paragraph's top sits 159px above the hero's foot on desktop
-   and 185px at 320px wide, where it wraps to four lines, so 256px of solid
-   leaves at least 71px spare.
-
-   The total height is --scrim-solid + --scrim-fade, not clamp(380px, 55%,
-   500px). The clamp sized the WHOLE scrim off the hero, so the ramp — the
-   only part that is actually a fade — was whatever was left over, and it
-   ballooned from 124px on a short window to 244px on a 1080p one. That is
-   backwards: the ramp wants to be constant and the solid band is what has
-   a real requirement. At 1920x1080 the old scrim reached 500px and rubbed
-   out the whole third row plus the foot of the accent row; it now reaches
-   352px at every size and the ramp is a constant 96px, inside the 124px
-   that was already shipping at the clamp's floor, so it cannot band.
-
-   Re-measured at 1440x900/700, 1920x1080, 1024x768, 390x844 and 320x568 by
-   hiding every hero child except .wall and reading the rendered pixels: the
-   solid band is flat --color-bg in all six, brightest pixel rgb(15,16,16)
-   (the body grain), worst case 16.30:1 against --color-text.
-
-   One thing this cannot fix: on a short window the wall physically overlaps
-   the paragraph. At 1440x700 the wall's foot lands 65px above the hero's,
-   inside the band that keeps the paragraph legible, so the third row is
-   hidden no matter how short the scrim gets. That is the stacking, not the
-   scrim — the fix would be a shorter wall or a smaller poster size. */
-.hero::after {
-  content: "";
-  position: absolute; z-index: 4;
-  inset-inline: 0; bottom: 0;
-  height: calc(var(--scrim-solid) + var(--scrim-fade));
-  pointer-events: none;
-  background: linear-gradient(
-    to top,
-    var(--color-bg) 0,
-    var(--color-bg) var(--scrim-solid),
-    transparent 100%);
-}
-
-.wall__row { overflow: hidden; }
-.wall__track {
-  display: flex; width: max-content;
-  animation: wallSlide var(--dur, 30s) linear infinite;
-  will-change: transform;
-}
-.wall__row--rev .wall__track { animation-direction: reverse; }
-
-.wall__word {
-  font-family: var(--font-poster);
-  font-weight: 400;
-  /* 13vw -> 7vw, on a request to make this readable rather than loud.
-     At 13vw the type was 133px on a 1024px viewport, so barely one phrase
-     fitted across the band and the portrait sitting in the middle of it cut
-     that phrase in half -- you saw "ACTION DE" and "ESIGN SYS", never a
-     whole discipline. At 7vw a full phrase clears the portrait on either
-     side, which is the actual fix for legibility here.
-
-     It is also most of the slowdown. The track is sized in em, so halving
-     the type halves the distance the animation covers and halves the pixel
-     speed at the same duration. */
-  font-size: clamp(2.25rem, 7vw, 5.5rem);
-  /* 0.86 was a tight stack for type that filled the band; with smaller
-     type there is room to let the rows breathe, and overlapping ascenders
-     were part of what made the words hard to pick out. */
-  line-height: 0.95;
-  letter-spacing: -0.005em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  padding-inline: 0.11em;
-  color: var(--color-text);
-}
-/* middle row picks up the accent, as one band of colour in the stack */
-.wall__row:nth-child(2) .wall__word { color: var(--color-accent); }
-
-@keyframes wallSlide {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-50%, 0, 0); }
-}
-
-/* portrait sits between the two wall copies */
-.hero .hero__portrait {
-  position: absolute; z-index: 2;
-  /* Off dead-centre, which does two things. It leaves one wide reading
-     channel instead of two narrow ones -- centred, the portrait split every
-     row into a left and a right fragment and a phrase could never be seen
-     whole. And it breaks the symmetry of a photograph pinned to the exact
-     middle of a band, which is the most predictable place to put it. */
-  left: 68%; top: 50%;
-  transform: translate(-50%, -50%);
-  width: clamp(190px, 26vw, 340px);
-  aspect-ratio: 3 / 4;
-  max-width: none; margin: 0;
-  border-radius: 0;
-  border: 0;
-  background: none;
-  overflow: hidden;
-}
-/* The crop is HORIZONTAL here, which is the opposite of what it used to be.
-
-   The previous portrait was 900x1598 -- 0.56 against a 0.75 frame -- so
-   `cover` matched the width and threw away 398px of height, centred on the
-   buildings, which cut the subject off at the frame edge. That is why this
-   rule carried `50% 72%`: a downward bias to drag him back into shot.
-
-   The replacement is 1702x2062, 0.825, which is WIDER than the frame. Cover
-   now matches the height and discards 34px of width, so the vertical
-   component does nothing at all and the horizontal one does the work. He
-   stands in the left ~35% of the frame, so a centred crop shaves his
-   shoulder; 38% keeps him whole and leaves the street receding to the right.
-
-   The filter changed with it. contrast(1.15) brightness(1.2) existed to
-   rescue a backlit silhouette measured at 47/255. In this photograph his
-   face measures 108.6 against a lit wall at 135.3 -- it needs no rescuing,
-   so the treatment goes back toward the graphic mono the site is built on.
-   1.4/1.02 was picked over 1.75/0.92 by looking: the stronger setting
-   crushes his coat and scarf into one black mass and blows the highlights
-   on the render. Values live in tokens.json. */
-  .hero .hero__portrait img {
-    filter: var(--filter-mono);
-    object-position: 38% 50%;
+  
 }
 
 
-@media (prefers-reduced-motion: reduce) {
-  .wall__track { animation: none; }
-  .wall--ghost { display: none; }
 }
 
 /* ── stacked wordmark ────────────────────────────────
-   Two lines, surname indented, in the condensed poster face.
-   Reads as a mark rather than a line of text. */
+   Two lines, surname indented. It was set in the condensed poster face;
+   that face left with the marquee, and an ultra-condensed grotesk would
+   be the one hard edge on a page built out of soft rounded cards. The
+   display face at 600 reads as a mark at this size without fighting it. */
 .site-head__name {
   display: block;
-  font-family: var(--font-poster);
-  font-weight: 400;
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-semibold);
   font-size: clamp(1.05rem, 1.9vw, 1.5rem);
   line-height: 0.82;
   letter-spacing: 0.005em;
@@ -1862,31 +1625,12 @@ html:not(.js) .viewer__tabs { display: none; }
    the work two screens down on a laptop.
    ══════════════════════════════════════════════════════════ */
 /* ── the pause control (WCAG 2.2.2, Level A) ── */
-.wall-pause {
-  position: absolute; z-index: 6;
-  right: var(--gutter); bottom: var(--space-4);
-  /* flex: none because this sits in a flex column: without it the button
-     shrinks below its declared width and the target collapses. Measured at
-     10x24 once, which fails 2.5.8 outright. */
-  flex: none;
-  min-height: 32px; padding: 0 var(--space-4);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  background: var(--color-bg-raised);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: color .25s var(--ease-out), border-color .25s var(--ease-out),
-              background-color .25s var(--ease-out);
-}
-.wall-pause:hover { color: var(--color-text); border-color: var(--color-border-strong); }
-.wall-pause[hidden] { display: none; }
+
+
+
 
 /* Paused state: every row stops, both copies, with no JS per frame. */
-.hero.is-paused .wall__track { animation-play-state: paused; }
+
 
 /* ══════════════════════════════════════════════════════════
    HOW I WORK — three named principles
@@ -2436,3 +2180,137 @@ html {
    218px column. At 520 it is the same step as a case-study card. */
 .grid--sm .card__title { font-size: var(--font-size-xl); }
 .grid--sm .card__tagline { font-size: var(--font-size-base); }
+
+/* ══════════════════════════════════════════════════════════
+   THE FANNED STACK
+   ══════════════════════════════════════════════════════════
+   Three cards at opposing rotations, overlapping like a hand held in
+   one fist. It replaced a marquee of ultra-condensed poster type that
+   belonged to a near-black page.
+
+   The rotations are small and ALTERNATE in sign. One shared angle reads
+   as a mistake -- a grid that slipped -- where +/- reads as deliberate.
+   Nothing animates on its own, so WCAG 2.2.2 does not apply here rather
+   than being satisfied: the only motion is the lift on hover and focus.
+
+   Negative horizontal margins are what makes it a fan rather than a
+   row: each card pulls into its neighbour so the edges tuck under.
+   ══════════════════════════════════════════════════════════ */
+.fan { padding-block: var(--space-12) var(--space-24); }
+
+.fan__stack {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-6);
+}
+
+.fan__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  background: var(--color-card-sand);
+  color: var(--color-text);
+  /* Tinted rather than black: a neutral shadow on a warm paper ground
+     reads as grey haze. This one carries the ink's own hue. */
+  box-shadow: 0 18px 40px -24px rgba(16, 33, 31, 0.45);
+  transition: transform .45s var(--ease-out), box-shadow .45s var(--ease-out);
+}
+.fan__card--sand { background: var(--color-card-sand); }
+.fan__card--teal { background: var(--color-card-teal); }
+.fan__card--sky  { background: var(--color-card-sky); }
+
+.fan__label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--tracking-heading);
+}
+.fan__body {
+  margin: 0;
+  flex: 1;
+  color: var(--color-text-muted);
+  line-height: var(--line-height-snug);
+  text-wrap: pretty;
+}
+/* The pill, in the reference's register: solid ink on a pastel card. */
+.fan__cta {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: transform .25s var(--ease-out), background-color .25s var(--ease-out);
+}
+.fan__cta:hover { transform: translateX(3px); }
+
+/* The fan only exists where there is room for cards to overlap. Below
+   this they stack square, which is the honest mobile form -- a rotated
+   card at 325px wide clips its own corners against the gutter. */
+@media (min-width: 900px) {
+  .fan__stack {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding-inline: var(--space-8);
+  }
+  .fan__card { min-height: 310px; }
+  /* The overlap is translateX, NOT a negative margin. A margin changes
+     the layout box, so the two outer cards came out 336px against the
+     middle one's 304 -- a 32px difference that reads as a mistake rather
+     than as a fan. Transform moves the painted card without touching the
+     grid, so all three stay one column wide and only their positions
+     differ. (Their rotated bounding boxes still differ, which is
+     geometry, not layout: measure offsetWidth, not getBoundingClientRect.) */
+  .fan__card:nth-child(1) { transform: rotate(-5deg) translate(var(--space-8), 6px); }
+  .fan__card:nth-child(2) { transform: rotate(1.5deg); z-index: 2; }
+  .fan__card:nth-child(3) { transform: rotate(5deg) translate(calc(var(--space-8) * -1), 6px); }
+
+  /* Hover lifts the card out of the fan and squares it up, so the one
+     you are reading is the one in front and the only one straight. */
+  .fan__card:hover,
+  .fan__card:focus-within {
+    transform: rotate(0deg) translateY(-10px);
+    z-index: 3;
+    box-shadow: 0 30px 60px -28px rgba(16, 33, 31, 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fan__card { transition: none; }
+}
+
+/* ── the portrait, in How I work ──────────────────────────
+   It used to sit inside the marquee with poster type sliding across it.
+   That band is gone, and this is the section that makes a claim about
+   how its author works, so this is where the face belongs. */
+.how__intro {
+  display: grid;
+  gap: var(--space-8);
+  align-items: center;
+  margin-bottom: var(--space-12);
+}
+.how__portrait { margin: 0; }
+.how__portrait img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  /* Biased DOWN, and this is load-bearing rather than taste. portrait.jpg
+     is 0.56 aspect going into a taller frame, so `cover` discards height;
+     at the default 50% the crop centres on the buildings behind and cuts
+     the subject off at the frame edge -- the one thing it exists to show. */
+  object-position: 50% 38%;
+  border-radius: var(--radius-lg);
+}
+@media (min-width: 900px) {
+  .how__intro { grid-template-columns: 280px 1fr; gap: var(--space-16); }
+  .how__intro .band__head { margin-bottom: 0; }
+}

@@ -476,67 +476,6 @@ class TestCV(BuildCase):
                                  % (page, href))
 
 
-class TestMarqueeStagger(BuildCase):
-    """The three hero rows must not line up again in a viewable timespan.
-
-    Each row scrolls at its own duration so the wall reads as three
-    independent bands rather than one moving block. They realign after the
-    lowest common multiple of the three durations, which means the numbers
-    want to share as few factors as possible -- and that is invisible from
-    looking at them.
-
-    The shipped values are 103/127/149, all prime, so the interval is their
-    product: 541 hours, or 22 days. The previous 70/82/94 managed 37.5
-    hours, which was fine but incidental -- the tidier 70/80/90 shares a
-    factor of 10 and realigns after 1.4 hours, and 72/84/96 shares 12 and
-    does it every 34 minutes, which someone could actually sit through. All
-    of them look equally reasonable in a diff, so the property is asserted
-    rather than trusted to whoever next adjusts the speed.
-    """
-
-    #: Comfortably longer than any session, short enough to leave room to
-    #: tune the speed. Primes clear it by about 90x.
-    MIN_RESYNC_HOURS = 6
-
-    def durations(self):
-        found = [int(d) for d in re.findall(r'--dur:\s*(\d+)s',
-                                            self.html("index.html"))]
-        # the wall ships twice, once behind the portrait and once as a ghost
-        # overlay, so each duration appears exactly twice
-        self.assertTrue(found, "the hero rows carry no --dur at all")
-        uniq = sorted(set(found))
-        self.assertEqual(len(found), len(uniq) * 2,
-                         "expected each duration twice (wall + ghost), got %s"
-                         % found)
-        return uniq
-
-    def test_the_rows_run_at_different_speeds(self):
-        d = self.durations()
-        self.assertGreaterEqual(len(d), 2,
-                                "every row runs at the same speed, so the "
-                                "wall reads as one block: %s" % d)
-
-    def test_they_do_not_realign_within_a_session(self):
-        from math import lcm
-        d = self.durations()
-        hours = lcm(*d) / 3600
-        self.assertGreaterEqual(
-            hours, self.MIN_RESYNC_HOURS,
-            "rows %s realign every %.2f h, under the %d h floor -- they "
-            "share too many factors and will visibly sync"
-            % (d, hours, self.MIN_RESYNC_HOURS))
-
-    def test_the_speed_stays_in_a_readable_range(self):
-        """Fast enough to be motion, slow enough to read the words."""
-        d = self.durations()
-        self.assertGreaterEqual(min(d), 40,
-                                "the fastest row is %ds, quick enough that "
-                                "the poster type is a blur" % min(d))
-        self.assertLessEqual(max(d), 180,
-                             "the slowest row is %ds, slow enough to look "
-                             "static" % max(d))
-
-
 class TestSmoothCursor(BuildCase):
     """The cursor trail, and the three ways it could hurt someone.
 
@@ -1233,7 +1172,13 @@ class TestLinkIcons(BuildCase):
         row would shift as it loaded. This asserts the non-square case
         specifically, because the three square marks would pass either way.
         """
-        img = re.search(r'<img class="btn__icon"[^>]*links/cv\.png[^>]*>',
+        # class="btn__icon[^"]*" rather than class="btn__icon": whether a
+        # mark gets a plate depends on the page background, and this test
+        # is about DIMENSIONS. Pinning the bare class made it fail the
+        # moment the palette went from near-black to paper and cv.png
+        # started needing a plate -- for a reason that has nothing to do
+        # with what it asserts.
+        img = re.search(r'<img class="btn__icon[^"]*"[^>]*links/cv\.png[^>]*>',
                         self.html("contact.html"))
         self.assertIsNotNone(img, "the CV button lost its mark")
         w = re.search(r'width="(\d+)"', img.group(0))
@@ -2024,156 +1969,6 @@ class TestPortfolioMetricsAreTrue(BuildCase):
                 "claim this repository supports" % name)
 
 
-class TestHeroScrim(BuildCase):
-    """The scrim that fades the hero's foot must stay in two named parts.
-
-    It exists because the wall and the statement are both --color-text: on a
-    short window the poster type slides in behind the paragraph and contrast
-    goes to nothing. The fix is a band of solid --color-bg under the text
-    with a ramp above it.
-
-    The bug was that the WHOLE thing was sized off the hero --
-    clamp(380px, 55%, 500px) -- so the ramp was only ever the remainder. It
-    ran 124px on a short window and 244px on a 1080p one, and at 1920x1080
-    the scrim reached 500px and rubbed out the entire third row of the wall
-    plus the foot of the accent row. The solid band is the part with a real
-    requirement; the ramp wants to be constant. So they are now two tokens
-    and the height is their sum.
-
-    Measured by hiding every hero child except .wall and reading the
-    rendered pixels at 1440x900/700, 1920x1080, 1024x768, 390x844 and
-    320x568: the solid band is flat --color-bg in all six.
-    """
-
-    REM = 16.0
-
-    def scrim_lengths(self):
-        """Resolve --scrim-solid and --scrim-fade to pixels.
-
-        The tokens they are built from live in tokens.css, which build.py
-        generates, so this resolves against the built file rather than
-        hardcoding 2rem/4rem -- change a space step and the test follows.
-        """
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        tokens = (ROOT / "assets" / "tokens.css").read_text(encoding="utf-8")
-
-        def px(expr):
-            for name, value in re.findall(r"(--[\w-]+):\s*([^;]+);", tokens):
-                expr = expr.replace("var(%s)" % name, value.strip())
-            expr = re.sub(r"\bcalc\b", "", expr)
-            total = 0.0
-            for number, unit in re.findall(r"([\d.]+)(rem|px)", expr):
-                total += float(number) * (self.REM if unit == "rem" else 1)
-            self.assertNotIn("var(", expr, "unresolved token in %r" % expr)
-            return total
-
-        # Six separate rules in this stylesheet open with `.hero {`, so
-        # splitting on the first one reads a block that never mentioned the
-        # scrim and the test passes for the wrong reason -- the exact way an
-        # earlier nav test went green while asserting nothing. Take every
-        # .hero block and require that exactly one declares the tokens.
-        blocks = [chunk.split("}", 1)[0] for chunk in css.split(".hero {")[1:]]
-        owners = [b for b in blocks if "--scrim-" in b]
-        self.assertEqual(len(owners), 1,
-                         "expected exactly one .hero rule to declare the "
-                         "scrim tokens, found %d" % len(owners))
-        found = dict(re.findall(r"(--scrim-\w+):\s*([^;]+);", owners[0]))
-        self.assertEqual(set(found), {"--scrim-solid", "--scrim-fade"},
-                         "the scrim's parts are no longer declared on .hero")
-        return px(found["--scrim-solid"]), px(found["--scrim-fade"])
-
-    def test_height_is_the_sum_of_the_two_parts(self):
-        """A literal or a percentage here is the regression, whatever it says."""
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split(".hero::after {", 1)[1].split("}", 1)[0]
-        height = re.search(r"height:\s*([^;]+);", block).group(1)
-        self.assertIn("var(--scrim-solid)", height,
-                      "the scrim height stopped tracking its solid band: %r" % height)
-        self.assertIn("var(--scrim-fade)", height,
-                      "the scrim height stopped tracking its ramp: %r" % height)
-        self.assertNotIn("%", height,
-                         "the scrim is sizing itself off the hero again, which "
-                         "is what made the ramp balloon to 244px: %r" % height)
-
-    def test_gradient_stops_at_the_same_token_as_the_height(self):
-        """If the stop and the height drift apart the ramp silently changes."""
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split(".hero::after {", 1)[1].split("}", 1)[0]
-        gradient = block.split("background:", 1)[1]
-        self.assertIn("var(--color-bg) var(--scrim-solid)", gradient,
-                      "the opaque stop no longer uses --scrim-solid, so the "
-                      "solid band and the declared height can disagree")
-
-    def test_the_band_holds_no_text_for_the_scrim_to_rescue(self):
-        """The scrim is small now because its job shrank. Keep it that way.
-
-        This replaced an assertion that --scrim-solid cleared the statement's
-        top line -- 185px, the worst case at 320px wide, where the paragraph
-        wrapped to four lines. That requirement is gone because the paragraph
-        is gone: it lives in .opening, a section above this one in normal flow.
-
-        What has to hold instead is the reason it is gone. Put readable text
-        back inside the band and the old bug returns in full -- wall letters
-        and body copy are both --color-text, the wall is centred while
-        anything pinned to the foot is not, and the gap between them goes
-        negative at about 940px of viewport height. A 32px solid band will
-        not save it, and nothing else here would notice.
-        """
-        page = self.html("index.html")
-        band = page.split('<section class="hero"', 1)[1].split("</section>", 1)[0]
-        band = re.sub(r"<!--.*?-->", " ", band, flags=re.S)
-
-        # The band DOES hold text -- the marquee repeats each role eight
-        # times per row. What makes that safe is that none of it is offered
-        # to a reader: the rows are decoration. So the test is not "no text",
-        # it is "nothing a reader is asked to read".
-        prose = re.findall(r"<(p|h[1-6]|blockquote|li)\b", band)
-        self.assertEqual(
-            prose, [],
-            "the signature band has prose in it again (%r). That is what the "
-            "oversized scrim used to exist for, and it is 32px now: wall "
-            "letters and body copy are both --color-text, so this lands back "
-            "on zero contrast below ~940px of viewport height." % prose)
-
-        # And the thing that makes the marquee decoration in the first place.
-        # The two CONTAINERS carry aria-hidden; the rows and words inside
-        # them inherit it, so matching `class="wall..."` loosely would also
-        # catch .wall__row and fail against markup that is perfectly correct.
-        walls = re.findall(r'<div class="wall(?: wall--ghost)?"[^>]*>', band)
-        self.assertEqual(len(walls), 2,
-                         "expected the two wall copies, found %d" % len(walls))
-        for wall in walls:
-            self.assertIn('aria-hidden="true"', wall,
-                          "a marquee copy is exposed to assistive tech (%r), "
-                          "which makes 24 repetitions of a job title part of "
-                          "the page's readable content" % wall)
-
-    def test_the_scrim_did_not_grow_back(self):
-        """Its only remaining job is a soft foot, not a backdrop for copy."""
-        solid, fade = self.scrim_lengths()
-        self.assertGreater(solid, 0, "the solid band is gone, so the ramp "
-                                     "starts from nothing and reads as an edge")
-        self.assertLessEqual(
-            solid, 64,
-            "--scrim-solid is %.0fpx. It was 232px when a paragraph sat on "
-            "it; with the paragraph gone, anything this large is rubbing out "
-            "the wall for no reason" % solid)
-
-    def test_ramp_stays_long_enough_not_to_band(self):
-        """A short ramp on a 151px letterform reads as a hard edge.
-
-        124px was the shortest ramp the old clamp ever produced, and it
-        shipped without banding, so it is the evidence-backed ceiling on how
-        far this can be cut -- not a number picked for feel.
-        """
-        _, fade = self.scrim_lengths()
-        self.assertGreater(fade, 0, "the scrim lost its ramp and is now a hard edge")
-        self.assertLessEqual(
-            fade, 124,
-            "--scrim-fade is %.0fpx, longer than the 124px the old clamp's "
-            "floor produced -- the ramp is growing back into the wall" % fade)
-
-
 class TestInstaDeepEntry(BuildCase):
 
     def test_page_exists(self):
@@ -2468,20 +2263,20 @@ class TestHeroPortrait(BuildCase):
     def test_hero_references_no_avif(self):
         import re
         index = self.html("index.html")
-        hero = re.search(r'<figure class="hero__portrait">.*?</figure>',
+        hero = re.search(r'<figure class="how__portrait">.*?</figure>',
                          index, re.S)
-        self.assertIsNotNone(hero, "hero portrait figure is gone from the page")
+        self.assertIsNotNone(hero, "the portrait figure is gone from the page")
         self.assertNotIn(".avif", hero.group(0),
-                         "an AVIF source is back in the hero -- verify its "
+                         "an AVIF source is back on the portrait -- verify its "
                          "PIXELS in a browser, not its bytes, before shipping")
 
     def test_hero_image_exists_and_is_a_real_jpeg(self):
         import re, struct
         index = self.html("index.html")
-        src = re.search(r'<figure class="hero__portrait">.*?<img src="([^"?]+)',
+        src = re.search(r'<figure class="how__portrait">.*?<img src="([^"?]+)',
                         index, re.S).group(1)
         path = ROOT / src
-        self.assertTrue(path.is_file(), "hero portrait missing: %s" % src)
+        self.assertTrue(path.is_file(), "portrait missing: %s" % src)
         head = path.read_bytes()[:2]
         self.assertEqual(head, b"\xff\xd8", "%s is not a JPEG" % src)
         # A black or empty encode compresses to almost nothing. The real file
@@ -2492,15 +2287,18 @@ class TestHeroPortrait(BuildCase):
     def test_hero_portrait_is_cropped_to_include_the_subject(self):
         """object-position must stay biased down.
 
-        portrait.jpg is 0.56 aspect going into a 3/4 frame, so `cover` throws
-        away height. At the default 50% the crop centres on the buildings and
-        cuts the subject off at the frame edge -- the one thing the portrait
-        exists to show.
+        portrait.jpg is 0.56 aspect going into a taller frame, so `cover`
+        throws away height. At the default 50% the crop centres on the
+        buildings and cuts the subject off at the frame edge -- the one
+        thing the portrait exists to show.
+
+        The portrait moved out of the marquee band and into "How I work"
+        when the marquee was removed; the requirement moved with it.
         """
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split(".hero .hero__portrait img {", 1)[1].split("}", 1)[0]
+        block = css.split(".how__portrait img {", 1)[1].split("}", 1)[0]
         self.assertIn("object-position", block,
-                      "the hero portrait lost its downward crop bias")
+                      "the portrait lost its downward crop bias")
 
 
 class TestPrimaryNav(BuildCase):
@@ -2702,34 +2500,96 @@ class TestToolIcons(BuildCase):
         self.assertGreater(checked, 0, "no tool icons referenced anywhere")
 
     def test_the_plate_is_decided_by_measurement_not_by_hand(self):
-        """Dark marks get a plate, light marks must not.
+        """A plate must IMPROVE a mark's contrast, or it must not be there.
 
         The plate was briefly applied to every icon. That fixed Framer
-        (1.06:1 against the page) and broke the opposite case: MCP measures
-        14.91:1 on the page and 1.20:1 on a white plate. Both directions are
-        invisible, and neither announces itself.
+        (1.06:1 against the page) and broke the opposite case: a light mark
+        measured 14.91:1 on the page and 1.20:1 on a white plate. Both
+        directions are invisible, and neither announces itself.
 
-        build.py decides per icon by averaging the luminance of the opaque
-        pixels, so swapping a file re-decides automatically. These assert the
-        outcome on the rendered page rather than the mechanism.
+        This used to assert a LIST -- Figma, Framer, VWO and MCP plated;
+        Creative Cloud, Miro, Notion, Jira and Claude Code bare. That list
+        was correct for a near-black page and became exactly wrong when the
+        palette went to warm paper: twelve of the fourteen marks on the site
+        flipped sides, because the plate decision is a function of the
+        background and the background changed.
+
+        So the assertion is now the property the list was standing in for,
+        which holds under any palette: a plated mark reads better on the
+        plate than on the page, and a bare mark does not. That is also the
+        bug the list was written for -- plate-everything fails it on the
+        first light mark it reaches.
         """
-        import re
+        sys.path.insert(0, str(ROOT))
+        from build import (_png_pixels, _relative_luminance, _hex_luminance,
+                           PAGE_LUMINANCE, TOKENS)
+
+        def ink(path):
+            total = count = 0.0
+            for r, g, b, a in _png_pixels(path):
+                if a > 128:
+                    total += _relative_luminance(r, g, b)
+                    count += 1
+            return (total / count) if count else None
+
+        def ratio(a, b):
+            return (max(a, b) + 0.05) / (min(a, b) + 0.05)
+
+        plate_lum = _hex_luminance(TOKENS["color"]["bgInverse"])
+
+        # The floor comes from the function's own signature rather than a
+        # copy of the number, so tuning it in one place moves both.
+        src = (ROOT / "build.py").read_text(encoding="utf-8")
+        threshold = float(re.search(r"def icon_needs_plate\([^)]*threshold=([\d.]+)",
+                                    src).group(1))
         about = self.html("about.html")
-        chips = {}
-        for m in re.findall(r'<li class="tool">(.*?)</li>', about, re.S):
-            name = re.search(r'tool__name">([^<]+)', m).group(1)
-            if "tool__icon" in m:
-                chips[name] = "tool__icon--plate" in m
-        # dark marks: would vanish on #02050C without it. MCP belongs here
-        # too and the build does plate it -- see icon_needs_plate, whose
-        # docstring used to cite MCP as the canonical LIGHT mark until the
-        # file was swapped for a near-black one.
-        for name in ("Figma", "Framer", "VWO", "MCP"):
-            self.assertTrue(chips.get(name), "%s lost its plate" % name)
-        # light marks: the plate would erase them instead
-        for name in ("Creative Cloud", "Miro", "Notion", "Jira", "Claude Code"):
-            self.assertFalse(chips.get(name, True),
-                             "%s got a plate it does not need" % name)
+
+        plated = bare = 0
+        for chip in re.findall(r'<li class="tool">(.*?)</li>', about, re.S):
+            src = re.search(r'tool__icon[^"]*"\s+src="([^"?]+)', chip)
+            if not src:
+                continue
+            name = re.search(r'tool__name">([^<]+)', chip).group(1)
+            path = ROOT / src.group(1).replace("../", "")
+            if not path.is_file():
+                continue
+            i = ink(path)
+            if i is None:
+                continue
+
+            on_page, on_plate = ratio(i, PAGE_LUMINANCE), ratio(i, plate_lum)
+            has_plate = "tool__icon--plate" in chip
+
+            if has_plate:
+                plated += 1
+                self.assertGreater(
+                    on_plate, on_page,
+                    "%s is plated but reads WORSE on the plate (%.2f:1) than "
+                    "on the page (%.2f:1) -- the plate is erasing it"
+                    % (name, on_plate, on_page))
+                self.assertLess(
+                    on_page, threshold,
+                    "%s is plated but already clears the floor on the page "
+                    "(%.2f:1 against %.1f) -- the plate is decoration"
+                    % (name, on_page, threshold))
+            else:
+                bare += 1
+                # Deliberately NOT "the page beats the plate". The rule is
+                # that a bare mark is legible, not that it is optimal: Git
+                # measures 3.53:1 on paper and 4.18:1 on a plate, so a
+                # plate would be an improvement and is still not needed.
+                # Asserting the stronger thing failed on a mark that is
+                # perfectly fine, which is a test inventing a requirement.
+                self.assertGreaterEqual(
+                    on_page, threshold,
+                    "%s is bare at %.2f:1 on the page, under the %.1f floor "
+                    "-- it needs the plate it did not get"
+                    % (name, on_page, threshold))
+
+        # Neither direction may be empty, or the rule has collapsed into
+        # "always" or "never" and stopped being a measurement.
+        self.assertGreater(plated, 0, "no mark on the page carries a plate")
+        self.assertGreater(bare, 0, "every mark carries a plate")
 
     def test_the_plate_class_still_carries_a_background(self):
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
@@ -3236,9 +3096,10 @@ class TestCustomProperties(BuildCase):
     meta line touched the next project's title. Nothing warned; the
     stylesheet is valid CSS and the build was happy.
 
-    A var() carrying a fallback is exempt: `var(--cols, 2)` and
-    `var(--dur, 30s)` are set per element from the HTML and are meant to be
-    absent from the stylesheet.
+    A var() carrying a fallback is exempt: `var(--cols, 2)` is set per
+    element from the HTML and is meant to be absent from the stylesheet.
+    (`var(--dur, 30s)` was the other example until the marquee it timed
+    was removed.)
     """
 
     def test_every_custom_property_resolves(self):

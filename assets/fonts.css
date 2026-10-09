@@ -1,44 +1,45 @@
 /* Self-hosted webfonts — no CDN at runtime, per BUILD.md.
 
-   Two faces, both SIL Open Font License 1.1, which permits redistribution
-   alongside the site:
+   Two faces, both SIL Open Font License 1.1:
 
-     Geist  — Vercel's grotesk, the whole UI. ONE file carries weights
-              100-900 because it is a variable font, so `font-weight` is a
-              continuous axis here, not a set of discrete cuts. This replaced
-              four static Blinker cuts and three Sulphur Point cuts: 99,288
-              bytes over 8 files became 41,292 over 2.
+     Gabarito — the display face. Rounded geometric, which is the register
+                this redesign is built in. Variable 100-900 in one 34KB
+                file.
 
-              Verified rather than assumed: Google serves the same URL for
-              every weight you ask for, which is what a variable face looks
-              like but also what a broken request looks like. Rendering
-              "Handgloves 500" at 64px gave 485.13px at 400, 495.65px at 500
-              and 506.17px at 600, and `font-variation-settings: 'wght' 600`
-              landed on 506.17px exactly. The axis is real.
+                WARNING for whoever probes this next: Gabarito is
+                DUPLEXED. Every weight occupies the same advance width, so
+                the usual "render a string at 400 and 800 and compare
+                widths" test reports a dead axis on a font whose axis is
+                perfectly alive. Measured: "Handgloves 500" at 64px is
+                1008px wide at 400, 500, 600 AND 800, while the rendered
+                pixels are visibly four different weights. Check the
+                pixels, not the metrics. (The upside of duplexing is that
+                a weight change never reflows a line.)
 
-     Anton  — the poster condensed, and ONLY the marquee band. Nothing else
-              on the site sets it; it is a texture, not a typeface choice.
+     Geist    — the body face, kept from the previous design. A neo-grotesk,
+                which is the same role Roobert plays on the site this was
+                briefed against. Also variable, one file, 29KB.
 
-   Both are preloaded in <head> (see build.py `head`) because `font-display:
-   swap` without a preload is a layout shift by construction: the first paint
-   uses a fallback whose metrics differ, then reflows when the real face
-   lands. Preload + swap is the pair that works.
+   Anton is gone. It existed for the marquee's poster type and the
+   wordmark, and an ultra-condensed grotesk has no place on a warm paper
+   layout built out of rounded cards.
+
+   Both are preloaded in <head> (see build.py `head`): `font-display: swap`
+   without a preload is a layout shift by construction.
 */
+
+@font-face {
+  font-family: 'Gabarito';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/gabarito-variable.woff2') format('woff2');
+}
 
 @font-face {
   font-family: 'Geist';
   font-style: normal;
-  /* The variable axis. A single value here would pin one instance and make
-     every weight on the site render identically. */
   font-weight: 100 900;
   font-display: swap;
   src: url('fonts/geist-variable.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Anton';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('fonts/anton-400.woff2') format('woff2');
 }

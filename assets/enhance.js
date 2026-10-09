@@ -94,9 +94,12 @@
 
     /* Masked headings observe themselves. Relying on an enclosing wrapper
        is fragile — a heading that sits outside one would stay translated
-       off-screen forever. The hero is excluded; it animates on load. */
+       off-screen forever.
+
+       There used to be a `.hero` exclusion here, because the marquee band
+       animated its own heading on load. That band is gone, and with it the
+       one element that had to opt out. Every mask is observed now. */
     document.querySelectorAll('.mask').forEach(function (el) {
-      if (el.closest('.hero')) return;
       watcher.observe(el);
     });
   }
@@ -514,176 +517,6 @@
       });
     });
     show(0);
-  });
-})();
-
-
-/* The marquee's pause control — WCAG 2.2.2 Pause, Stop, Hide (Level A).
-
-   The three rows in the signature band animate indefinitely, start on their
-   own and are not essential to anything, which is exactly the case 2.2.2
-   covers. A `prefers-reduced-motion` block does not discharge it: the
-   criterion asks for a MECHANISM, and an operating-system preference the
-   visitor may never have heard of is not a mechanism on this page.
-
-   The button ships `hidden` so that a visitor with JS off never sees a
-   control that cannot work. Unhiding it here is the whole progressive-
-   enhancement contract: with no JS the rows still move, but nothing on
-   screen claims you can stop them.
-*/
-(function () {
-  var band = document.querySelector('.hero');
-  var btn = document.querySelector('.wall-pause');
-  if (!band || !btn) return;
-  if (!band.querySelector('.wall__track')) return;
-
-  btn.hidden = false;
-
-  function label(text) {
-    // Only the leading text node. Setting textContent would delete the
-    // visually-hidden span that gives the button its full accessible name.
-    var first = btn.firstChild;
-    if (first && first.nodeType === 3) first.nodeValue = text;
-  }
-
-  function setPaused(paused) {
-    band.classList.toggle('is-paused', paused);
-    btn.setAttribute('aria-pressed', paused ? 'true' : 'false');
-    label(paused ? 'Play' : 'Pause');
-  }
-
-  // Written out rather than bound inline: a ternary that evaluates to a
-  // handler attaches without error and then never fires, which cost an
-  // afternoon once on this file.
-  btn.addEventListener('click', function () {
-    var paused = band.classList.contains('is-paused');
-    setPaused(!paused);
-  });
-
-  // Someone who has asked the OS for less motion gets it stopped to begin
-  // with, and can still start it. The mechanism and the preference are
-  // separate obligations; this honours both.
-  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
-  setPaused(!!(calm && calm.matches));
-})();
-
-
-/* The case-study rail's buttons and counter.
-
-   The rail scrolls natively, so this adds nothing a trackpad, a touch
-   screen or the keyboard could not already do. It exists for a mouse
-   without a horizontal wheel, where a horizontal scroller is otherwise
-   genuinely awkward, and for the position readout.
-
-   Which is why the nav ships `hidden` and is unhidden here: with no
-   script the rail still works completely, and nothing on screen offers a
-   control that would do nothing.
-*/
-(function () {
-  var rails = document.querySelectorAll('.rail');
-  if (!rails.length) return;
-
-  var calm = window.matchMedia
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  Array.prototype.forEach.call(rails, function (rail) {
-    var section = rail.closest('.band--rail');
-    if (!section) return;
-    var nav = section.querySelector('.rail__nav');
-    var prev = section.querySelector('.rail__btn--prev');
-    var next = section.querySelector('.rail__btn--next');
-    var at = section.querySelector('.rail__at');
-    var cards = rail.children;
-    if (!nav || !prev || !next || !cards.length) return;
-
-    nav.hidden = false;
-
-    /* The scrollLeft at which card i is the snapped one.
-
-       Measured in LAYOUT space -- offsetLeft, which does not move when the
-       rail scrolls -- rather than from getBoundingClientRect(). Rects are
-       viewport-relative, so reading them while a scroll is in flight gives
-       a position that is already stale, and the arithmetic built on it
-       lands near a snap point instead of on one. Measured before the
-       change: clicking through the rail came to rest at 549, 1116, 623 and
-       35 against snap positions of 572, 1144, 572 and 0 -- consistently
-       about one scroll-padding out.
-
-       Card 0 sits exactly on the padding line at scrollLeft 0, so every
-       other card's distance from it IS the scroll offset that snaps it. */
-    function snapPos(i) {
-      return cards[i].offsetLeft - cards[0].offsetLeft;
-    }
-
-    function atEnd() {
-      return rail.scrollLeft >= rail.scrollWidth - rail.clientWidth - 1;
-    }
-
-    function nearest() {
-      // The last card can never BE the snapped one: its snap position is
-      // past the end of the scroll range, because snapping its left edge
-      // to the padding line would need to scroll further than there is
-      // content. Measured: snap positions 0/572/1144/1716 against a
-      // maximum scroll of 1280. So at the end the nearest card by edge is
-      // the second-to-last and the counter read "03 / 04" with the fourth
-      // card the only one fully on screen. At the end, it is the last.
-      if (atEnd()) return cards.length - 1;
-      var x = rail.scrollLeft;
-      var best = 0;
-      var bestDistance = Infinity;
-      for (var i = 0; i < cards.length; i++) {
-        var d = Math.abs(snapPos(i) - x);
-        if (d < bestDistance) { bestDistance = d; best = i; }
-      }
-      return best;
-    }
-
-    function go(step) {
-      var i = nearest() + step;
-      if (i < 0) i = 0;
-      if (i > cards.length - 1) i = cards.length - 1;
-      var from = rail.scrollLeft;
-      var to = snapPos(i);
-
-      // scrollTo with an absolute target rather than scrollBy with a
-      // delta: if anything lands mid-animation the absolute form still
-      // converges on the right card instead of compounding an error.
-      rail.scrollTo({ left: to, behavior: calm ? 'auto' : 'smooth' });
-
-      // Not every environment honours behavior: 'smooth'. The spec says
-      // it should degrade to an instant jump; some do nothing at all and
-      // leave the container exactly where it was, which turns both
-      // buttons into dead controls with no error anywhere. Measured in
-      // this project's own test browser: a smooth scrollTo on the rail
-      // AND on the page both stayed at 0 through 1.4s of sampling.
-      //
-      // So the move is verified rather than assumed. 120ms is long
-      // enough that a real smooth scroll has visibly started and short
-      // enough that the fallback still reads as a response to the click.
-      if (!calm) {
-        setTimeout(function () {
-          if (Math.abs(rail.scrollLeft - from) < 1) rail.scrollLeft = to;
-        }, 120);
-      }
-    }
-
-    function update() {
-      if (at) {
-        var n = nearest() + 1;
-        at.textContent = (n < 10 ? '0' : '') + n;
-      }
-      // A 1px slack: scrollLeft is fractional on a zoomed or scaled
-      // display, so === 0 and === max both miss and the buttons never
-      // disable.
-      prev.disabled = rail.scrollLeft <= 1;
-      next.disabled = atEnd();
-    }
-
-    prev.addEventListener('click', function () { go(-1); });
-    next.addEventListener('click', function () { go(1); });
-    rail.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update, { passive: true });
-    update();
   });
 })();
 

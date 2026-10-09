@@ -10,11 +10,6 @@
     "AI Products",
     "Prototyping in Code"
   ],
-  "disciplines": [
-    "Product design",
-    "UX UI designer",
-    "Creative Designer"
-  ],
   "tagline": "Product direction, interface craft, and an AI-assisted build practice.",
   "intro": "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. I build to find out: a prototype in code answers questions a static frame cannot.",
   "contactLede": "Senior product designer at InstaDeep. Open to conversations about product work and collaborations.",
@@ -177,5 +172,28 @@
         "body": "AI, blockchain and fintech all ask people to believe something they cannot check. The interface is where that belief is won or lost."
       }
     ]
-  }
+  },
+  "heroCards": [
+    {
+      "label": "Case studies",
+      "body": "Four projects where I can show the thinking, not just the outcome.",
+      "cta": "Read the case studies",
+      "href": "#work",
+      "tone": "sand"
+    },
+    {
+      "label": "Interface work",
+      "body": "Screens and galleries from eight products across six years.",
+      "cta": "See the screens",
+      "href": "#gallery",
+      "tone": "teal"
+    },
+    {
+      "label": "I build them too",
+      "body": "This site is the proof — my Figma, my code, and a test suite that checks its own claims.",
+      "cta": "How I work",
+      "href": "#how",
+      "tone": "sky"
+    }
+  ]
 }
