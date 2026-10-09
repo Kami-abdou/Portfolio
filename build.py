@@ -1312,13 +1312,21 @@ def cv_block(index):
         work = ('<p class="cv__work">%s</p>' % "\n            ".join(links)
                 if links else "")
 
-        body = ['<h3 class="cv__company">%s</h3>' % e(job["company"]),
+        # Compact line always; place, note and project links in a panel
+        # that opens on hover. The detail is NOT hidden from assistive tech
+        # -- it collapses with max-height and opacity rather than display
+        # or visibility, so it stays in the accessibility tree and is read
+        # in order whether or not anyone can hover.
+        head = ['<h3 class="cv__company">%s</h3>' % e(job["company"]),
                 '<p class="cv__role">%s</p>' % e(job["role"])]
-        body += [b for b in (place, note, work) if b]
+        detail = [b for b in (place, note, work) if b]
+        detail_html = ('\n            <div class="cv__detail">\n              %s\n'
+                       '            </div>' % "\n              ".join(detail)
+                       ) if detail else ""
         rows.append('        <li class="cv__row">\n          %s\n'
-                    '          <div class="cv__body">\n            %s\n'
+                    '          <div class="cv__body">\n            %s%s\n'
                     '          </div>\n        </li>'
-                    % (years, "\n            ".join(body)))
+                    % (years, "\n            ".join(head), detail_html))
 
     kit = ""
     if SITE.get("toolkit"):
@@ -1343,6 +1351,40 @@ def cv_block(index):
       <ol class="cv__list">
 {chr(10).join(rows)}
       </ol>{kit}
+    </section>
+"""
+
+
+def values_block():
+    """The values section: how he works, as against what he designs.
+
+    Separate from the homepage's `principles`, which are about craft. This
+    is the part a hiring manager is actually trying to find out, and every
+    item is drawn from a sentence already in a case study -- a value with
+    nothing behind it is decoration.
+    """
+    block = SITE.get("values") or {}
+    items = [i for i in block.get("items", [])
+             if usable(i.get("label")) and usable(i.get("body"))]
+    if not items:
+        return ""
+    rows = "\n".join(
+        '''        <li class="value">
+          <span class="value__num" aria-hidden="true">%02d</span>
+          <h3 class="value__label">%s</h3>
+          <p class="value__body">%s</p>
+        </li>''' % (n, e(i["label"]), e(i["body"]))
+        for n, i in enumerate(items, 1))
+    desc = block.get("description", "")
+    desc_html = ("\n        <p>%s</p>" % e(desc)) if usable(desc) else ""
+    return f"""
+    <section class="shell band band--values" aria-labelledby="values">
+      <div class="band__head">
+        <h2 id="values">{masked(block.get("heading", "Values I believe in"))}</h2>{desc_html}
+      </div>
+      <ol class="values">
+{rows}
+      </ol>
     </section>
 """
 
@@ -1397,7 +1439,8 @@ def build_about(index):
         </div>
       </div>
     </article>
-{cv_block(index)}""")
+{cv_block(index)}
+{values_block()}""")
     out.append(foot())
     (ROOT / "about.html").write_text("\n".join(out), encoding="utf-8")
 

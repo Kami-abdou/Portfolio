@@ -195,5 +195,23 @@
       "href": "#how",
       "tone": "sky"
     }
-  ]
+  ],
+  "values": {
+    "heading": "Values I believe in",
+    "description": "Craft is most of the job. The rest is how you behave when the work gets ambiguous, late, or contested — these are what I come back to.",
+    "items": [
+      {
+        "label": "Stay next to the build",
+        "body": "Design that stops at handoff gets built as something else. At Steer I walked the developers through every screen and followed the build; at Konnect the constant back and forth with the CTO is the reason it shipped functional rather than merely drawn."
+      },
+      {
+        "label": "Design for the room you are not in",
+        "body": "The InstaDeep system had to survive being used by engineers with no designer present. If a component only works while I am there to explain it, I have not finished it."
+      },
+      {
+        "label": "Ask for the criticism early",
+        "body": "A review where nobody disagrees is a review that found nothing. I would rather hear it at the prototype than at the launch, and rather document a disagreement than win it quietly."
+      }
+    ]
+  }
 }

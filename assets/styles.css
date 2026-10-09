@@ -2272,3 +2272,106 @@ html { scroll-snap-type: y proximity; }
 .cover-band img {
   border-radius: var(--radius-lg);
 }
+
+/* ══════════════════════════════════════════════════════════
+   THE JOURNEY — detail on hover
+   ══════════════════════════════════════════════════════════
+   Each role shows years, company and title; the place, the note and the
+   case-study links open underneath when you hover the row.
+
+   THE DETAIL IS NOT HIDDEN. It collapses with max-height and opacity,
+   never display or visibility, so it stays in the accessibility tree and
+   is read in order by a screen reader whether or not anyone can hover.
+   And the collapse itself is scoped to `hover: hover and pointer: fine`:
+   on a touch screen there is no hover to give, so everything is simply
+   open rather than unreachable. `:focus-within` covers the keyboard,
+   which works because every row that carries a note also carries a link
+   into its case study.
+   ══════════════════════════════════════════════════════════ */
+.cv__row {
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-inline: calc(var(--space-4) * -1);
+  transition: background-color .3s var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cv__detail {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-top: 0;
+    transition: max-height .45s var(--ease-out),
+                opacity .3s var(--ease-out),
+                margin-top .45s var(--ease-out);
+  }
+  .cv__row:hover,
+  .cv__row:focus-within { background: var(--color-bg-raised); }
+  .cv__row:hover .cv__detail,
+  .cv__row:focus-within .cv__detail {
+    /* A generous ceiling rather than a measured height: max-height cannot
+       animate to `auto`, and the tallest row here (T-ledger: a place, a
+       note and two project links) measures well under this. Too low and
+       the row clips its own last line, which is the failure mode worth
+       over-shooting. */
+    max-height: 24rem;
+    opacity: 1;
+    margin-top: var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv__detail, .cv__row { transition: none; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   VALUES
+   ══════════════════════════════════════════════════════════
+   Numbered, because a value with an ordinal in front of it reads as a
+   considered list rather than as three adjectives. Separate from the
+   homepage's craft principles: that section is what he designs, this is
+   how he works with the people around him.
+   ══════════════════════════════════════════════════════════ */
+.band--values { padding-block: 0 var(--space-24); }
+
+.values {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-8);
+  counter-reset: value;
+}
+.value {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border);
+}
+.value__num {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-accent);
+}
+.value__label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--tracking-heading);
+  text-wrap: balance;
+}
+.value__body {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: var(--line-height-normal);
+  text-wrap: pretty;
+}
+
+@media (min-width: 900px) {
+  .values { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); }
+}
