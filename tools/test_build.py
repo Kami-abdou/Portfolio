@@ -195,26 +195,30 @@ class TestHomepageTiers(BuildCase):
         # so the test compares the two mechanisms rather than two --cols.
         self.assertEqual(index.count('<ul class="rail">'), 1,
                          "expected exactly one case-study rail")
-        cols = [int(m) for m in re.findall(r'style="--cols: (\d)"', index)]
-        self.assertEqual(len(cols), 1,
+        self.assertEqual(index.count('<ul class="grid grid--sm">'), 1,
                          "expected exactly one card grid beside the rail")
-        gallery_cols = cols[0]
 
+        # Both tiers now declare an explicit card width, so both are read
+        # from the stylesheet. The gallery used to be a column COUNT and
+        # this test derived its card width from --cols; when the band
+        # became a single capped column that variable stopped driving
+        # anything, and the derivation went on returning 264px from a
+        # number nothing used. A test that keeps passing off a dead
+        # attribute is worse than one that fails.
         basis = re.search(
             r"\.rail > li \{.*?flex:\s*0 0 clamp\([^,]+,[^,]+,\s*([\d.]+)px\)",
             css, re.S)
         self.assertIsNotNone(basis, "the rail no longer declares a card width")
         rail_card = float(basis.group(1))
 
-        def px(name, group="space"):
-            return float(tokens[group][name].replace("rem", "")) * 16
+        cap = re.search(r"\.grid--sm > li \{[^}]*max-width:\s*([\d.]+)px", css)
+        self.assertIsNotNone(cap, "the gallery band no longer caps its cards")
+        gallery_card = float(cap.group(1))
 
-        # Widest a gallery column can be: the content column at its cap,
-        # less its two gutters and the gaps between the cards.
-        column = float(tokens["layout"]["maxWidth"].replace("px", ""))
-        gutter = float(tokens["layout"]["gutter"].replace("rem", "")) * 16
-        gap = px("8")
-        gallery_card = (column - 2 * gutter - (gallery_cols - 1) * gap) / gallery_cols
+        self.assertNotIn(
+            "--cols", index.split('<ul class="grid grid--sm">', 1)[1][:200],
+            "the gallery band still ships a --cols value that no longer "
+            "drives its layout")
 
         self.assertGreater(
             rail_card, gallery_card,

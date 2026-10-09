@@ -225,11 +225,11 @@ a { color: inherit; }
 
 .grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-12); }
 @media (min-width: 640px) {
-  .grid--sm { grid-template-columns: repeat(2, 1fr); gap: var(--space-8); }
+  .grid--sm { gap: var(--space-12); }
 }
 @media (min-width: 900px) {
   .grid--lg { grid-template-columns: repeat(2, 1fr); }
-  .grid--sm { grid-template-columns: repeat(4, 1fr); }
+  .grid--sm { gap: var(--space-16); }
 }
 
 /* The card is a container, not a link -- see project_card in build.py for
@@ -808,7 +808,7 @@ body::after {
 
 /* ── variable column count, set per row from the markup ── */
 @media (min-width: 900px) {
-  .grid--sm, .grid--lg {
+  .grid--lg {
     grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
   }
 }
@@ -2407,3 +2407,32 @@ html {
   transition: color .25s var(--ease-out), border-color .25s var(--ease-out);
 }
 .sections__toggle:hover { color: var(--color-text); border-color: var(--color-border-strong); }
+
+/* ══════════════════════════════════════════════════════════
+   SELECTED WORK — one column, at a size you can actually read
+   ══════════════════════════════════════════════════════════
+   This band was four columns, which put each cover at 218x136. Its own
+   description promises "the screens, not the write-up" and then showed
+   the screens at a size where no screen is legible -- a UI screenshot at
+   218px is a smudge, so the band was texture rather than evidence.
+
+   One column at 520px is 2.4x the width. The reference for this
+   (haythem.cv/gallery) runs a 540px single column with 207px between
+   items, and the thing that makes it read as clean is that every image
+   is the SAME width -- no grid, no competing aspect ratios.
+
+   520 and not wider: the covers are 900px from the image pipeline, and
+   the case-study cards in the rail are 540. Tier 2 staying just inside
+   Tier 1 keeps the hierarchy the two bands exist to express, and keeps
+   every cover rendering under its natural width.
+   ══════════════════════════════════════════════════════════ */
+.grid--sm {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+}
+.grid--sm > li { width: 100%; max-width: 520px; }
+
+/* The title carried the small-card size because it used to sit in a
+   218px column. At 520 it is the same step as a case-study card. */
+.grid--sm .card__title { font-size: var(--font-size-xl); }
+.grid--sm .card__tagline { font-size: var(--font-size-base); }

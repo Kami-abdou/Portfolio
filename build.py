@@ -1195,11 +1195,6 @@ def build_index(projects):
         # the gallery band's 4 -- that difference IS the hierarchy (see above),
         # so this can never reach 4.
         if large:
-            n = len(live)
-            cols = 3 if n % 3 == 0 else (2 if n % 2 == 0 else min(3, n))
-        else:
-            cols = 4
-        if large:
             # ── The case studies, as a horizontal rail ──────────────
             #
             # Asked for as "maybe a slider show". What it deliberately is
@@ -1259,7 +1254,7 @@ def build_index(projects):
         <h2>{masked(meta['heading'])}</h2>
         <p>{e(meta['description'])}</p>
       </div>
-      <ul class="grid grid--sm" style="--cols: {cols}">
+      <ul class="grid grid--sm">
 {cards}
       </ul>
     </section>
