@@ -47,12 +47,17 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "site" / "_src" / "favicon-portrait.webp"
 
 #: Square crop box on the 1376x1505 original, as (left, top, side).
-#: Chosen against the picture, not by centring: the face sits above the
-#: middle of the frame and the subject's hand enters from the right, so a
-#: centred crop clips the chin and gives away a third of the width to a
-#: wall. This box puts the cap at the top edge and the chin near the
-#: bottom one.
-CROP = (250, 300, 860)
+#: Not a centred crop: the face sits above the middle of the frame and the
+#: subject's hand enters from the right, so centring clips the chin and
+#: spends a third of the width on a wall. The box is placed on the face
+#: and then widened about that point.
+#:
+#: 860 was a head-and-cap crop, tight to the jaw. This is the owner's
+#: asked-for step out: head, shoulders and watch, with the face still the
+#: largest thing in frame. There is not much further to go -- at 1200 the
+#: face stops carrying the icon at 32px, and the widest square available
+#: about this centre is ~1360 before it runs off the original.
+CROP = (160, 240, 1040)
 
 #: (filename, pixels, disc?) -- see "Two shapes, on purpose" above.
 OUTPUTS = [
