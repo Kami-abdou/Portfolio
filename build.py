@@ -1116,7 +1116,7 @@ def build_index(projects):
     claim_html = "<br>".join(e(line) for line in claim.split("\n"))
 
     out.append(f"""
-    <div class="shell">
+    <div class="shell hero-band">
       <div class="hero-card">
     <section class="opening">
       {status_html}

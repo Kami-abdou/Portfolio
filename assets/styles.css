@@ -1433,6 +1433,18 @@ html:not(.js) .viewer__tabs { display: none; }
    sideways and 12px vertically beyond where the grid thinks the card
    stops. Anything less than that at the panel edge and the corners of the
    outer two cards touch it. */
+/* The panel needs the clearance every other section already has. While the
+   opening was loose content it carried its own clamp(space-16, 11vh,
+   space-32) of top padding, and the text cleared the header even though
+   the section started flush against it. Wrapping it in a card made the
+   section's top edge VISIBLE, and a visible edge at a measured gap of 0
+   reads as the menu sitting on the panel.
+
+   --space-16 is not a new number: .band and .about both open on it, which
+   is why the about card already cleared the header by 64px and this did
+   not. Bottom stays 0 -- the next band brings its own. */
+.hero-band { padding-block: var(--space-16) 0; }
+
 .hero-card {
   /* Same two-step padding as the other cards, and it has to stay the same:
      a card's padding is what insets its content, so a card padded
@@ -1722,7 +1734,17 @@ html { scroll-snap-type: y proximity; }
      is in this list for that reason and no other: without it the first gap
      ran 652px from the top of the page, and a scroll settling in the
      middle was 228px from either end -- too far, so it did not snap. */
-  .opening,
+  /* NOT .opening. It was the first entry here, and a snap target in the
+     first screen means the browser snaps PAST the top of the page on
+     load: the page came to rest at scrollY 126 and would not return to 0,
+     which put the hero panel's top edge 24px behind the floating nav.
+
+     It was always wrong and was merely small -- .opening used to start at
+     134, snapping to 30, which nobody noticed. Wrapping the opening in a
+     panel moved its border box to 230 and turned 30 into 126.
+
+     The top of the page is already a resting position. It does not need
+     a snap point, and giving it one takes the real top away. */
   .opening__facts,
   .fan,
   .entry,

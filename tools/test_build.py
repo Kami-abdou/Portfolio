@@ -331,7 +331,7 @@ class TestContentColumnAlignment(BuildCase):
         page = self.html("index.html")
         self.assertRegex(
             page,
-            r'<div class="shell">\s*<div class="hero-card">\s*'
+            r'<div class="shell[^"]*">\s*<div class="hero-card">\s*'
             r'<section class="opening">',
             "the opening is no longer inside a .shell > .hero-card wrapper")
         self.assertNotIn('<section class="opening shell">', page,
@@ -2036,6 +2036,36 @@ class TestScrollSnap(BuildCase):
     of the tallest image on /projects/konnect held at that position with
     zero drift, which is the half mandatory would have broken.
     """
+
+    def test_the_first_section_is_not_a_snap_target(self):
+        """A snap point in the first screen takes the top of the page away.
+
+        `.opening` was the first entry in the target list. With
+        scroll-padding-top at 104px, a target whose box starts at 230
+        snaps to scrollY 126 -- and on a fresh load the page came to rest
+        there and would NOT return to 0. scrollTo(0, 0) read back 126
+        immediately. The visible symptom was the floating nav sitting on
+        top of the hero panel, 24px over its rounded top edge.
+
+        It was wrong before the panel existed and merely too small to
+        notice: .opening started at 134 and snapped to 30. Wrapping the
+        opening in a card moved its border box to 230 and turned 30 into
+        126, which is why this surfaced as a layout bug rather than a
+        scrolling one.
+
+        The top of a page is already a resting position. Giving it a snap
+        point can only move the rest position off it.
+        """
+        css = self.css()
+        start = css.index("scroll-snap-align: start")
+        # the selector list immediately above the declaration
+        selectors = css[:start].rsplit("}", 1)[-1]
+        selectors = selectors.rsplit("*/", 1)[-1]
+        names = [x.strip() for x in selectors.split(",") if x.strip()]
+        self.assertNotIn(
+            ".opening", names,
+            "`.opening` is a snap target again; the page will rest below "
+            "its own top and the nav will overlap the hero panel")
 
     def css(self):
         return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
