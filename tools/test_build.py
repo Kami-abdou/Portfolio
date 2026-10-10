@@ -321,7 +321,47 @@ class TestContentColumnAlignment(BuildCase):
     """
 
     def test_statement_wrapper_carries_shell(self):
-        self.assertIn('<section class="opening shell">', self.html("index.html"))
+        """.opening no longer carries .shell itself -- it sits in one.
+
+        The greeting and the fan share a panel now, so the chain is
+        .shell > .hero-card > .opening. What matters is unchanged: the
+        column still comes from a .shell ancestor and never from .opening,
+        which is the thing that broke last time.
+        """
+        page = self.html("index.html")
+        self.assertRegex(
+            page,
+            r'<div class="shell">\s*<div class="hero-card">\s*'
+            r'<section class="opening">',
+            "the opening is no longer inside a .shell > .hero-card wrapper")
+        self.assertNotIn('<section class="opening shell">', page,
+                         "the opening carries .shell AND sits in one, so the "
+                         "gutter is applied twice")
+
+    def test_the_page_keeps_exactly_two_left_edges(self):
+        """A card insets its own content. That is fine; drifting is not.
+
+        Measured at 1024px: card outer edges (the hero panel, the about
+        card) sit on the page column at 24, and their content sits one
+        padding step in at 56, as does every other card's. Content that is
+        not in a card stays at 24. Two edges, each internally consistent.
+
+        This is asserted structurally rather than geometrically, because the
+        way it goes wrong is a card being given a different padding step
+        from the others -- which produces a third edge nobody chose.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        pads = {}
+        for sel in (".hero-card", ".aboutblock__card", ".about__card"):
+            block = re.search(re.escape(sel) + r"\s*\{([^}]*)\}", css)
+            self.assertIsNotNone(block, "no %s rule" % sel)
+            pad = re.search(r"padding:\s*var\(--(space-\d+)\)", block.group(1))
+            self.assertIsNotNone(pad, "%s has no single-step padding" % sel)
+            pads[sel] = pad.group(1)
+        self.assertEqual(
+            len(set(pads.values())), 1,
+            "the cards inset their content by different amounts (%s), which "
+            "puts their contents on different left edges" % pads)
 
     def test_measure_lives_on_the_inner_element(self):
         page = self.html("index.html")

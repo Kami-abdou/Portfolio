@@ -1421,8 +1421,39 @@ html:not(.js) .viewer__tabs { display: none; }
    middle of the -0.03/-0.04em the four of them occupy.
    ══════════════════════════════════════════════════════════ */
 
+/* ── the opening panel ────────────────────────────────────────────────────
+   The greeting and the three cards under it are one object now, in the
+   same surface language as .aboutblock__card and .about__card. They used
+   to be two sections of loose content with the page showing through
+   between them, which left the fan reading as something that had been put
+   below the hero rather than as part of it.
+
+   The padding is not decoration here. The fan cards are rotated 5deg, and
+   a rotated box overhangs its layout box: at roughly 300x310 that is 13px
+   sideways and 12px vertically beyond where the grid thinks the card
+   stops. Anything less than that at the panel edge and the corners of the
+   outer two cards touch it. */
+.hero-card {
+  /* Same two-step padding as the other cards, and it has to stay the same:
+     a card's padding is what insets its content, so a card padded
+     differently from its siblings puts their contents on different left
+     edges. 24px still clears the 13px rotation overhang, and the fan is
+     square below 900px anyway. */
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-alt);
+  box-shadow: 0 18px 40px -24px rgba(16, 33, 31, 0.45);
+}
+@media (min-width: 900px) {
+  .hero-card { padding: var(--space-8); }
+}
+
 .opening {
-  padding-block: clamp(var(--space-16), 11vh, var(--space-32)) var(--space-16);
+  /* Was clamp(space-16, 11vh, space-32) / space-16 -- the breathing room a
+     section needs when the page is its backdrop. The panel's own padding
+     is that room now, so this only has to separate the greeting from the
+     fan beneath it. */
+  padding-block: var(--space-8) var(--space-12);
   display: grid;
   gap: var(--space-8);
   justify-items: start;
@@ -1931,7 +1962,9 @@ html { scroll-snap-type: y proximity; }
    Negative horizontal margins are what makes it a fan rather than a
    row: each card pulls into its neighbour so the edges tuck under.
    ══════════════════════════════════════════════════════════ */
-.fan { padding-block: var(--space-12) var(--space-24); }
+/* Bottom padding only, and small: the panel closes the section now, where
+   this used to have to hold space against the band below it. */
+.fan { padding-block: 0 var(--space-2); }
 
 .fan__stack {
   list-style: none;

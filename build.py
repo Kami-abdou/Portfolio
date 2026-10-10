@@ -1116,7 +1116,9 @@ def build_index(projects):
     claim_html = "<br>".join(e(line) for line in claim.split("\n"))
 
     out.append(f"""
-    <section class="opening shell">
+    <div class="shell">
+      <div class="hero-card">
+    <section class="opening">
       {status_html}
 
       <h1 class="opening__claim">{claim_html}</h1>
@@ -1140,11 +1142,13 @@ def build_index(projects):
          No pause control here and none needed: nothing moves on its own.
          The rotation is static and the only motion is on hover, which is
          WCAG 2.2.2 not applying rather than being satisfied. -->
-    <section class="fan shell" aria-label="What's here">
+    <section class="fan" aria-label="What's here">
       <ul class="fan__stack">
 {fan_cards}
       </ul>
     </section>
+      </div><!-- /.hero-card -->
+    </div>
 """)
 
     # Two tiers: 3 across for the headline band, 4 for the rest.
