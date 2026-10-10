@@ -2115,19 +2115,45 @@ html { scroll-snap-type: y proximity; }
 .entry:first-child { border-top: 0; padding-top: var(--space-4); }
 
 /* ── the spine ── */
+/* The year is set in the display face, not the mono label face it used to
+   share with the eyebrows. At 13px mono it was a caption on a row whose
+   title runs 32px; it read as metadata rather than as the thing the rail
+   is ordered by.
+
+   The column had to grow with it. Measure the string as it RENDERS, not
+   as it is authored: text-transform makes "2024-now" set as "2024-NOW",
+   and caps are wider -- 159px against 141 at 32/700. Measuring the
+   authored text put the column at 176 and the date silently wrapped to
+   two lines, which is the one thing a fixed spine column cannot do. With
+   the dot and its gap the column needs 183; it is 192, leaving 9px.
+   The next longest string, "2020-21", takes 110.
+
+   Colour stays --color-text-faint. The reference this came from sets its
+   numerals in a very light grey, which on this paper computes to about
+   1.4:1 -- fine for a decorative numeral, not for the date on a job. At
+   32px/700 this is large text by WCAG, so 3:1 would have been the bar and
+   4.55:1 clears it comfortably; the size is what makes these visible, not
+   the weight of the ink. */
 .entry__when {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--tracking-label);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--tracking-display);
   text-transform: uppercase;
+  /* So a future size change overflows visibly instead of quietly wrapping
+     the spine into two ragged lines, which is how this went wrong once. */
+  white-space: nowrap;
   color: var(--color-text-faint);
 }
+/* Scaled with the type it sits beside: a 9px dot next to 32px numerals
+   reads as a speck. Still the accent ring that fills on hover. */
 .entry__dot {
-  width: 9px; height: 9px;
+  width: 12px; height: 12px;
   border-radius: var(--radius-full);
   border: 2px solid var(--color-accent);
   flex: none;
@@ -2233,7 +2259,9 @@ html { scroll-snap-type: y proximity; }
      lines up vertically -- a ragged spine is the one thing that would
      make this read as a list of unrelated rows again. */
   .entry {
-    grid-template-columns: 160px minmax(0, 1fr);
+    /* 192, not 160: the year is 32px display type now, and "2024-NOW"
+       renders 159px wide -- 183 with the dot and its gap. */
+    grid-template-columns: 192px minmax(0, 1fr);
     gap: var(--space-12);
     align-items: start;
   }
