@@ -929,18 +929,18 @@ class TestFontFamilies(BuildCase):
 
 
 class TestFavicon(BuildCase):
-    """The AY mark, regenerated from the site's own Anton webfont.
+    """The mark: the owner's portrait, cropped and scaled DOWN to each size.
 
-    The owner supplied it as one 32x32 PNG -- a white disc with a black AY.
-    Fine for a tab, useless for anything bigger: upscaled to 180 for the
-    iOS home screen it is visibly mush. The mark is Anton, which ships in
-    this repo and is the same face as the wordmark, so tools/make-favicon.py
-    re-sets it at 512 and scales DOWN instead.
+    This was an "AY" monogram re-set in Anton. The owner asked for their
+    face instead, so tools/make-favicon.py now crops
+    site/_src/favicon-portrait.webp and scales down from 860px.
 
-    The size was measured, not guessed: rendering at a candidate size,
-    downscaling to 32 and diffing ink pixels against the supplied file gave
-    a clear minimum at 344px -- 21 differing pixels of 1024, against 43-53
-    either side. What remains is antialiasing, not a shape difference.
+    The shape rules did not change with the source and are the part worth
+    guarding: the browser icons are a transparent disc, and the touch icon
+    is an opaque square because iOS composites onto black before masking.
+    Both are asserted below, because both fail silently -- in a tab strip
+    and on someone's home screen, which is to say nowhere anyone looks
+    during development.
     """
 
     @staticmethod
@@ -1027,11 +1027,38 @@ class TestFavicon(BuildCase):
         gen = ROOT / "tools" / "make-favicon.py"
         self.assertTrue(gen.is_file(), "tools/make-favicon.py is missing")
         src = gen.read_text(encoding="utf-8")
-        self.assertIn("anton-400.woff2", src,
-                      "the generator no longer uses the site's own typeface")
-        self.assertIn("FONT_SIZE = 344", src,
-                      "the measured font size changed without the comparison "
-                      "against the supplied file being redone")
+        self.assertIn("favicon-portrait.webp", src,
+                      "the generator no longer names its source image")
+        self.assertRegex(src, r"CROP = \(\d+, \d+, \d+\)",
+                         "the crop box is what frames the face; it has to "
+                         "stay a named constant, not a number inside a call")
+
+    def test_the_source_photograph_is_committed(self):
+        """A derived mark is only re-runnable if its source ships with it.
+
+        The generator reads one file. If it is not in the repo, the three
+        PNGs become unreproducible the moment anyone wants the crop moved
+        by ten pixels.
+        """
+        src = ROOT / "site" / "_src" / "favicon-portrait.webp"
+        self.assertTrue(src.is_file(),
+                        "site/_src/favicon-portrait.webp is missing, so the "
+                        "icons cannot be regenerated")
+        self.assertGreater(src.stat().st_size, 10_000,
+                           "the source looks like a placeholder")
+
+    def test_the_tab_icon_stays_small(self):
+        """favicon-32 is fetched on every first visit; the others are not.
+
+        A photograph costs more bytes than two letterforms, and the 192 and
+        180 are only fetched when someone adds the site to a home screen.
+        The 32 is the one that is actually on the critical path, so it is
+        the one with a ceiling.
+        """
+        size = (ROOT / "assets" / "favicon-32.png").stat().st_size
+        self.assertLess(size, 8_000,
+                        "favicon-32.png is %d bytes; it loads on every first "
+                        "visit" % size)
 
 
 class TestLinkIcons(BuildCase):
