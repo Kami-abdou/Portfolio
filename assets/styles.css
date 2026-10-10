@@ -1498,12 +1498,23 @@ html:not(.js) .viewer__tabs { display: none; }
 .opening__claim {
   margin: 0;
   font-family: var(--font-display);
-  font-size: var(--font-size-3xl);
+  /* --font-size-3xl with a lower FLOOR, and only the floor: the vw track
+     and the ceiling are the token's, so this matches every other 3xl
+     heading from 470px up.
+
+     The floor had to move because the claim is three authored lines now.
+     At 375px the panel leaves 279px of content width and the longest
+     line, "I build what I design.", needs about 32px of type to hold --
+     at the token's 40px floor it broke, and the hero rendered as five
+     ragged lines instead of three. The token itself is shared by eight
+     rules and could not follow. */
+  font-size: clamp(2rem, 8.5vw, 5.5rem);
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-tight);
   letter-spacing: var(--tracking-display);
-  /* 26ch breaks this sentence across three lines on desktop and keeps the
-     measure readable; `balance` stops the last line being one orphan word. */
+  /* A cap, not the thing that breaks the lines -- the breaks are authored
+     as newlines in heroClaim. It keeps the measure sane if that copy ever
+     grows a long line, and `balance` stops an orphan word. */
   max-width: 26ch;
   text-wrap: balance;
 }
