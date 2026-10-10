@@ -3627,3 +3627,90 @@ class TestAboutBlockIsACard(BuildCase):
         block = re.search(r"\.aboutblock__grid\s*\{([^}]*)\}", css)
         self.assertIsNotNone(block)
         self.assertIn("align-items: stretch", block.group(1))
+
+
+class TestMaskedHeadingsHaveNoPhantomLine(BuildCase):
+    """A <br> between two masked lines renders an EMPTY line box.
+
+    .mask and .mask__in are both display:block, so masked lines already
+    stack. Joining them with <br> as well puts a line break between two
+    block boxes, and the browser gives that break its own line -- a full
+    line-height of nothing.
+
+    On the about page that was 90px of phantom gap in an 87px heading: two
+    lines of type measured 370px tall where they should measure 181. It is
+    invisible in the markup, survives every other test, and just looks like
+    someone chose a bad leading.
+    """
+
+    def pages(self):
+        names = ["index.html", "work.html", "about.html", "contact.html"]
+        for folder, data in self.live_projects():
+            names.append("projects/%s.html" % data["slug"])
+        return names
+
+    def test_no_br_sits_between_two_masked_lines(self):
+        pattern = re.compile(r'</span>\s*<br\s*/?>\s*<span class="mask"')
+        for name in self.pages():
+            with self.subTest(page=name):
+                self.assertIsNone(
+                    pattern.search(self.html(name)),
+                    "%s joins masked lines with <br>, which renders an empty "
+                    "line between them" % name)
+
+    def test_the_about_statement_is_two_stacked_masks(self):
+        html = self.html("about.html")
+        statement = re.search(r'<h1 class="about__statement">(.*?)</h1>',
+                              html, re.S)
+        self.assertIsNotNone(statement)
+        inner = statement.group(1)
+        self.assertEqual(inner.count('<span class="mask">'), 2)
+        self.assertNotIn("<br>", inner)
+
+
+class TestAboutIntroIsACard(BuildCase):
+    """The about page opens on a surface, and in the display teal."""
+
+    def test_the_intro_is_wrapped_in_a_card(self):
+        self.assertIn('<div class="about__card">', self.html("about.html"))
+
+    def test_the_statement_uses_the_deep_display_teal(self):
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = re.search(r"\.about__statement\s*\{([^}]*)\}", css)
+        self.assertIsNotNone(block)
+        self.assertIn("var(--color-accent-deep)", block.group(1))
+
+    def test_the_statement_cap_clears_its_longest_line(self):
+        """18ch was 846px; the longest sentence needs 880 and had 1024.
+
+        The cap, not the type size, was breaking the heading over three
+        lines. Anything at or below 18ch puts it straight back.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = re.search(r"\.about__statement\s*\{([^}]*)\}", css)
+        cap = re.search(r"max-width:\s*(\d+)ch", block.group(1))
+        self.assertIsNotNone(cap, "no ch cap on the statement")
+        self.assertGreaterEqual(
+            int(cap.group(1)), 20,
+            "a cap this tight re-wraps 'Building is how I prove it.'")
+
+    def test_the_display_teal_clears_AA_on_every_surface_it_lands_on(self):
+        tokens = json.loads(
+            (ROOT / "tokens.json").read_text(encoding="utf-8"))["color"]
+        ink = tokens["accentDeep"]
+
+        def lum(h):
+            def ch(c):
+                c /= 255
+                return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+            r, g, b = (int(h[i:i + 2], 16) for i in (1, 3, 5))
+            return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
+
+        for ground in ("bg", "bgAlt"):
+            hexv = tokens[ground]
+            a, b = sorted((lum(ink), lum(hexv)), reverse=True)
+            ratio = (a + 0.05) / (b + 0.05)
+            with self.subTest(ground=ground):
+                self.assertGreaterEqual(
+                    ratio, 4.5,
+                    "%s on %s is %.2f:1" % (ink, hexv, ratio))

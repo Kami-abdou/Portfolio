@@ -362,9 +362,20 @@ a { color: inherit; }
 .about__grid { grid-template-columns: 320px 1fr; gap: var(--space-16); align-items: start; }
 }
 .about__portrait { margin: 0; }
+/* The prose runs ~1150px against a 426px photo, and with align-items:start
+   that left 720px of empty column. Sticky spends it instead of leaving it:
+   the portrait travels with the reader down the page. */
+@media (min-width: 900px) {
+  .about__portrait {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-6));
+  }
+}
 .about__portrait img {
   width: 100%; border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
+  /* No border. The card is the surface now, and a hairline around a photo
+     inside a tinted card is the same hard edge the media frames dropped. */
+  border: 0;
 }
 .about .prose p { margin: 0 0 var(--space-6); }
 .about__cta { margin-top: var(--space-8); }
@@ -2548,10 +2559,31 @@ html { scroll-snap-type: y proximity; }
 /* The about page opens on the statement rather than on the word
    "About" -- a label for a nav item is not a thing to say to someone who
    has just arrived. */
+/* ── the about page opens on a card ───────────────────────────────────────
+   Same move as .aboutblock__card on the homepage, and for the same reason:
+   this section was loose content on bare paper while the rest of the page
+   is built from surfaces. --color-bg-alt, not white -- #FFFFFF is the one
+   value that cannot merge with this paper. */
+.about__card {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-alt);
+  box-shadow: 0 18px 40px -24px rgba(16, 33, 31, 0.45);
+}
+
 .about__statement {
   font-family: var(--font-display);
   letter-spacing: var(--tracking-display);
   line-height: var(--line-height-tight);
-  max-width: 18ch;
+  /* 18ch measured 846px. "Building is how I prove it." needs 880 and had
+     1024 of room, so the cap -- not the type size -- was what broke the
+     sentence over two lines. 21ch is 987: clear of the sentence, still
+     short of the column, and still a cap at narrower viewports because ch
+     scales with the clamped font size. */
+  max-width: 21ch;
   text-wrap: balance;
+  /* Deep teal rather than the near-black ink. At 7.19:1 on paper this is
+     AAA, and it beats --color-accent (4.39 on a tinted card) because the
+     accent is tuned for small UI text, not for 87px of display type. */
+  color: var(--color-accent-deep);
 }

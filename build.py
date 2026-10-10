@@ -1467,14 +1467,17 @@ def build_about(index):
     # the homepage h1.
     intro = SITE.get("aboutIntro") or {}
     heading = intro.get("heading") or "About"
-    intro_heading = masked(heading.split("\n")[0])
-    for line in heading.split("\n")[1:]:
-        intro_heading += "<br>" + masked(line)
+    # No <br> between the lines. .mask and .mask__in are both display:block,
+    # so the masked lines already stack -- and a <br> between two blocks
+    # renders an EMPTY line box between them. That phantom line is why this
+    # heading measured 370px tall when two lines of it come to 181.
+    intro_heading = "".join(masked(line) for line in heading.split("\n"))
     intro_body = "\n          ".join(
         "<p>%s</p>" % e(x) for x in intro.get("paragraphs", []) if usable(x))
 
     out.append(f"""
     <article class="shell about">
+      <div class="about__card">
       <h1 class="about__statement">{intro_heading}</h1>
       <div class="about__grid">
         <figure class="about__portrait">
@@ -1493,6 +1496,7 @@ def build_about(index):
           </div>
         </div>
       </div>
+      </div><!-- /.about__card -->
     </article>
 {cv_block(index)}
 {values_block()}""")
