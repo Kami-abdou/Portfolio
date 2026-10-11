@@ -1210,10 +1210,18 @@ def build_index(projects):
     # carries category chips, a summary paragraph and a full-width cover;
     # a gallery row carries one line and a thumbnail. That difference is
     # the hierarchy, and it is asserted.
+    # Both keys are optional, and a band with nothing live in it renders
+    # nothing at all. Retiring the last project in a band used to leave its
+    # heading and an empty <ol> on the page, and removing the band from
+    # site.json used to raise a KeyError here instead.
     for key, large in (("highlights", True), ("selectedWork", False)):
-        meta = SITE["sections"][key]
+        meta = SITE.get("sections", {}).get(key)
+        if not meta:
+            continue
         anchor = "work" if key == "highlights" else "gallery"
         live = [s for s in meta["slugs"] if s in slugs]
+        if not live:
+            continue
         rows = "\n".join(work_entry(slugs[s], large=large) for s in live)
         out.append(f"""
     <section class="band shell band--work" id="{anchor}">
@@ -1880,9 +1888,9 @@ def main():
             if s.get("autoImages"):
                 imgs += len(auto_images(p["_dir"], s["autoImages"]))
     print("tokens.css   %d custom properties" % n_vars)
-    print("index.html   %d highlights, %d other projects"
-          % (len(SITE["sections"]["highlights"]["slugs"]),
-             len(SITE["sections"]["selectedWork"]["slugs"])))
+    bands = SITE.get("sections", {})
+    print("index.html   %s"
+          % ", ".join("%d %s" % (len(v["slugs"]), k) for k, v in bands.items()))
     print("about.html   %d paragraphs, %d roles, %d toolkit groups"
           % (len(SITE["about"]), len(SITE.get("experience", [])),
              len(SITE.get("toolkit", []))))

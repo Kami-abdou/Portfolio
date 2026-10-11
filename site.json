@@ -109,13 +109,6 @@
         "konnect",
         "fissa3"
       ]
-    },
-    "selectedWork": {
-      "heading": "Freelance",
-      "description": "An interface redesign between two jobs.",
-      "slugs": [
-        "fixerloop"
-      ]
     }
   },
   "url": "https://abdouyaackoubi.com",
@@ -149,17 +142,10 @@
   "heroCards": [
     {
       "label": "Case studies",
-      "body": "Four projects where I can show the thinking, not just the outcome.",
+      "body": "Five projects where I can show the thinking, not just the outcome.",
       "cta": "Read the case studies",
       "href": "#work",
       "tone": "sand"
-    },
-    {
-      "label": "Interface work",
-      "body": "Screens and galleries from eight products across six years.",
-      "cta": "See the screens",
-      "href": "#gallery",
-      "tone": "teal"
     },
     {
       "label": "I build them too",

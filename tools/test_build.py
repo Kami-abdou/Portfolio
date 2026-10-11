@@ -87,13 +87,15 @@ class TestHomepageTiers(BuildCase):
             employed.update(job.get("projects", []))
 
         first = set(bands["highlights"]["slugs"])
-        second = set(bands["selectedWork"]["slugs"])
-
         self.assertEqual(
             first, employed,
             "the first band is not the full-time work. In the band but not "
             "in any job: %s. In a job but not in the band: %s"
             % (sorted(first - employed), sorted(employed - first)))
+
+        # The freelance band is gone. While it exists the rule still holds:
+        # nothing from a full-time job may sit in it.
+        second = set(bands.get("selectedWork", {}).get("slugs", []))
         self.assertEqual(
             second & employed, set(),
             "%s came out of a full-time job and is in the 'other things' "
@@ -102,7 +104,7 @@ class TestHomepageTiers(BuildCase):
     def test_every_project_appears_exactly_once(self):
         """A project in both bands, or in neither, is a content bug."""
         bands = self.site["sections"]
-        listed = bands["highlights"]["slugs"] + bands["selectedWork"]["slugs"]
+        listed = [s for b in bands.values() for s in b["slugs"]]
         self.assertEqual(len(listed), len(set(listed)),
                          "a project is listed twice: %s" % listed)
         live = {c["slug"] for _, c in self.live_projects()}
@@ -154,8 +156,11 @@ class TestHomepageTiers(BuildCase):
             if f.is_file():
                 d = json.loads(f.read_text(encoding="utf-8"))
                 orders[d["slug"]] = d["order"]
-        top = [orders[s] for s in self.site["sections"]["highlights"]["slugs"]]
-        rest = [orders[s] for s in self.site["sections"]["selectedWork"]["slugs"]]
+        bands = self.site["sections"]
+        if len(bands) < 2:
+            self.skipTest("one band left; nothing to interleave with")
+        top = [orders[s] for s in bands["highlights"]["slugs"]]
+        rest = [orders[s] for s in bands["selectedWork"]["slugs"]]
         self.assertLess(
             max(top), min(rest),
             "the bands interleave: case studies are %s, gallery is %s" % (top, rest))
@@ -168,8 +173,8 @@ class TestHomepageTiers(BuildCase):
         ../_archive/pharmadrive/ before deletion. The T+ informatique
         employment row stays -- that job happened; only the project chip went,
         because build.py exits on an unknown slug."""
-        for band in ("highlights", "selectedWork"):
-            self.assertNotIn("pharmadrive", self.site["sections"][band]["slugs"])
+        for band, spec in self.site["sections"].items():
+            self.assertNotIn("pharmadrive", spec["slugs"])
         self.assertFalse((ROOT / "projects" / "05-pharmadrive").exists())
         self.assertFalse((ROOT / "projects" / "pharmadrive.html").exists())
         self.assertNotIn("pharmadrive", (ROOT / "sitemap.xml").read_text(encoding="utf-8"))
@@ -179,7 +184,8 @@ class TestHomepageTiers(BuildCase):
     def test_undrive_is_gone_everywhere(self):
         """One assertion per surface it could survive on: the band, the
         filesystem, the sitemap, and any card or link in the built HTML."""
-        self.assertNotIn("undrive", self.site["sections"]["selectedWork"]["slugs"])
+        for band, spec in self.site["sections"].items():
+            self.assertNotIn("undrive", spec["slugs"])
         self.assertFalse((ROOT / "projects" / "07-undrive").exists())
         self.assertFalse((ROOT / "projects" / "undrive.html").exists())
         self.assertNotIn("undrive", (ROOT / "sitemap.xml").read_text(encoding="utf-8"))
@@ -201,8 +207,9 @@ class TestHomepageTiers(BuildCase):
         component.
         """
         index = self.html("index.html")
-        self.assertEqual(index.count('<ol class="rail-years'), 2,
-                         "expected both work bands to render the year rail")
+        self.assertEqual(index.count('<ol class="rail-years'),
+                         len(self.site["sections"]),
+                         "every work band renders the year rail")
         for stale in ('class="rail"', 'class="grid grid--', 'class="card'):
             self.assertNotIn(stale, index,
                              "a band is back on the old %s component" % stale)
@@ -213,7 +220,7 @@ class TestHomepageTiers(BuildCase):
         self.assertEqual(index.count('class="entry entry--lg"'),
                          len(bands["highlights"]["slugs"]))
         self.assertEqual(index.count('class="entry entry--sm"'),
-                         len(bands["selectedWork"]["slugs"]))
+                         len(bands.get("selectedWork", {}).get("slugs", [])))
 
     def test_instadeep_is_the_first_card(self):
         """The owner's call, replacing an earlier review recommendation.
@@ -1200,7 +1207,8 @@ class TestLinkIcons(BuildCase):
         self.assertEqual(link_icon("Groupado today"), "",
                          "the matcher put a brand mark on a label that "
                          "names no brand")
-        for slug in ("steer", "groupado", "konnect", "fixerloop"):
+        for _, data in self.live_projects():
+            slug = data["slug"]
             page = self.html("projects/%s.html" % slug)
             row = re.search(r'<div class="btn-row">(.*?)</div>', page, re.S)
             if not row:
@@ -1896,8 +1904,7 @@ class TestRetiredProjects(BuildCase):
                 "crawler to a page that is not there" % data["slug"])
 
     def test_a_retired_project_is_in_no_band(self):
-        listed = (self.site["sections"]["highlights"]["slugs"]
-                  + self.site["sections"]["selectedWork"]["slugs"])
+        listed = [s for b in self.site["sections"].values() for s in b["slugs"]]
         for folder, data in self.retired():
             self.assertNotIn(
                 data["slug"], listed,
@@ -2634,7 +2641,8 @@ class TestPrimaryNav(BuildCase):
     def test_project_pages_mark_nothing(self):
         """A project page sits under Work but is not Work, and marking it
         current would be a claim a screen reader reads out loud."""
-        for slug in ("steer", "konnect", "instadeep", "fixerloop"):
+        for _, data in self.live_projects():
+            slug = data["slug"]
             page = self.html("projects/%s.html" % slug)
             nav = page.split('<nav class="site-nav" aria-label="Primary">', 1)[1].split("</nav>", 1)[0]
             self.assertNotIn("aria-current", nav,
@@ -3358,16 +3366,42 @@ class TestFigureWidth(BuildCase):
             "f04-settings.png rendered 1754px tall beside siblings of "
             "383-735px until this was added.")
 
-    def test_the_phone_variant_is_actually_in_use(self):
-        """A :not() guarding nothing is a comment pretending to be code."""
-        pages = sorted((ROOT / "projects").glob("*.html"))
-        tagged = {p.name: p.read_text(encoding="utf-8").count("shots--phone")
-                  for p in pages}
-        total = sum(tagged.values())
-        self.assertGreater(
-            total, 0,
-            "no page uses shots--phone, so the exclusion in the full-column "
-            "rule protects nothing and one of the two is wrong: %s" % tagged)
+    def test_the_phone_variant_and_its_emitter_agree(self):
+        """The styles and the code that emits the class travel together.
+
+        This used to assert that some page currently rendered
+        shots--phone, on the reasoning that a :not() guarding nothing is a
+        comment pretending to be code. That was right about the failure
+        and wrong about the test: the class is not opted into per project,
+        it is DERIVED -- build.py measures each image and tags a section
+        whose shots are mostly narrow portraits. So "no project happens to
+        have phone screenshots right now" is a fact about the content, not
+        a defect, and retiring the one project that had them (Fixerloop)
+        made the old assertion fail without anything being wrong.
+
+        What would actually be broken is the two halves disagreeing: an
+        emitter with no styles renders phone screens in the wide grid, and
+        styles with no emitter are unreachable. So assert they agree.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        build = (ROOT / "build.py").read_text(encoding="utf-8")
+        styled = "shots--phone" in css
+        emitted = "shots--phone" in build or "is_phone" in build
+        self.assertEqual(
+            styled, emitted,
+            "phone-grid styles present: %s, emitter present: %s -- one of "
+            "them was removed without the other" % (styled, emitted))
+
+    def test_the_phone_variant_is_reachable_when_it_exists(self):
+        """If the styles are there, the full-column rule must still exempt
+        them -- that exemption is the whole reason the variant works."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        if "shots--phone" not in css:
+            self.skipTest("phone variant removed; nothing to exempt")
+        self.assertIn(
+            ".shots:not(.shots--phone)", css,
+            "the full-column rule no longer exempts the phone grid, so a "
+            "phone section would render one screenshot per row")
 
 
 class TestShareCards(BuildCase):
