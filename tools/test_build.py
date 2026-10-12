@@ -3472,3 +3472,101 @@ class TestAboutIntroIsACard(BuildCase):
                 self.assertGreaterEqual(
                     ratio, 4.5,
                     "%s on %s is %.2f:1" % (ink, hexv, ratio))
+
+
+class TestCursorLabel(BuildCase):
+    """The contextual label that replaced the cursor trail.
+
+    The trail it replaced was always on, drew under the pointer wherever it
+    went, and at 6% ink under a 9px blur left grey smudges across the
+    headline. Every assertion here is one of the ways that could come back.
+    """
+
+    def js(self):
+        return (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def block(self):
+        js = self.js()
+        self.assertIn("contextual cursor label", js, "the module is gone")
+        return js.split("contextual cursor label", 1)[1].split("reading progress", 1)[0]
+
+    def rule(self):
+        css = self.css()
+        self.assertIn(".cursor-label {", css, "the label has no styles")
+        return css.split(".cursor-label {", 1)[1].split("}", 1)[0]
+
+    def test_it_cannot_intercept_a_click(self):
+        """It tracks the pointer, so without this it would eat every click."""
+        self.assertIn("pointer-events: none", self.rule())
+
+    def test_it_is_hidden_from_assistive_tech(self):
+        """It restates an affordance the page already gives in text."""
+        self.assertIn('setAttribute(\'aria-hidden\', \'true\')', self.block())
+
+    def test_it_never_renders_at_rest(self):
+        """The trail's defining flaw was being visible with nothing to say.
+
+        Hidden is the default state in CSS; the class is added only when a
+        target is under the pointer.
+        """
+        rule = self.rule()
+        self.assertIn("opacity: 0", rule)
+        self.assertIn("visibility: hidden", rule)
+        self.assertIn(".cursor-label.is-on", self.css(),
+                      "nothing ever shows it")
+
+    def test_it_is_offset_so_it_cannot_cover_what_it_labels(self):
+        """Drawn ON the hotspot it would be the smudge again, just sharper."""
+        rule = self.rule()
+        margin = re.search(r"margin:\s*(\d+)px\s+\d+\s+\d+\s+(\d+)px", rule)
+        self.assertIsNotNone(margin, "no offset from the pointer")
+        self.assertGreater(int(margin.group(1)), 0, "sits on the pointer vertically")
+        self.assertGreater(int(margin.group(2)), 0, "sits on the pointer horizontally")
+
+    def test_nothing_is_built_without_a_fine_pointer(self):
+        """A touch screen has no hover, so there is nothing to label."""
+        block = self.block()
+        guard = block.split("createElement", 1)[0]
+        self.assertIn("(pointer: fine)", guard,
+                      "the element is created before the pointer is checked")
+
+    def test_reduced_motion_keeps_the_label_and_drops_the_easing(self):
+        """The label is information; the easing is the only motion in it."""
+        css = self.css()
+        self.assertRegex(
+            css,
+            r"@media \(prefers-reduced-motion: reduce\) \{[^}]*\.cursor-label",
+            "the label does not respond to reduced motion at all")
+        block = css.split("prefers-reduced-motion: reduce", 1)[1]
+        block = block[:block.index("\n}\n")]
+        self.assertNotIn("display: none", block,
+                         "reduced motion hides the label outright, which "
+                         "removes information rather than movement")
+
+    def test_it_says_nothing_inside_the_lightbox(self):
+        """The image is already full screen there, so 'Open' would be a lie."""
+        self.assertIn("closest('.lb')", self.block())
+
+    def test_the_transform_is_batched_to_one_frame(self):
+        """pointermove fires far faster than the screen repaints."""
+        block = self.block()
+        self.assertIn("requestAnimationFrame", block)
+        self.assertIn("if (!pframe)", block,
+                      "a frame is requested per event rather than per paint")
+
+    def test_it_labels_only_the_non_obvious_targets(self):
+        """Buttons and nav links already read as pressable.
+
+        Labelling them would be the trail's other mistake -- decoration
+        dressed as help -- so the list stays short and specific.
+        """
+        block = self.block()
+        self.assertIn(".shot__btn", block)
+        self.assertIn(".entry__media", block)
+        for noise in ("'.btn'", '".btn"', ".site-nav", ".fan__card"):
+            self.assertNotIn(noise, block,
+                             "%s is labelled, but it already looks clickable"
+                             % noise)

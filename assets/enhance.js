@@ -104,6 +104,96 @@
     });
   }
 
+  /* ── contextual cursor label ──────────────────────
+     Says what a click will do, where that is not obvious.
+
+     This replaced a spring-physics trail that drew under the pointer
+     everywhere it went. The trail was decorative, was always on, and on
+     warm paper its 6%-ink-under-9px-blur read as smudges across the
+     headline. The rule it broke is the one this follows: motion should do
+     a job, and it should not sit on top of what someone is reading.
+
+     So: nothing at rest, and a label only over the two things on this site
+     that are clickable without looking it -- a screenshot, which opens
+     full-screen, and a row in the work rail, which opens a case study.
+     Buttons and nav links are skipped on purpose; the native pointer
+     already says those are pressable and a second hint is noise.
+
+     The native cursor is left alone. A custom cursor that REPLACES the
+     system one is unusable the moment its script fails, and this is a
+     hint, not a necessity.
+
+     Fine pointers only. There is no hover on a touch screen, so there is
+     nothing to label and no element is created at all. */
+  if (window.matchMedia('(pointer: fine)').matches) {
+    var LABELS = [
+      ['.shot__btn', 'Open'],
+      ['.entry__media', 'Read'],
+      ['.entry__title a', 'Read']
+    ];
+
+    var pill = document.createElement('div');
+    pill.className = 'cursor-label';
+    /* Decorative duplication of an affordance the page already states in
+       text; a screen reader should not meet it twice. */
+    pill.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(pill);
+
+    var px = 0, py = 0, pframe = 0, current = null;
+
+    function placePill() {
+      pframe = 0;
+      pill.style.transform = 'translate3d(' + px + 'px,' + py + 'px,0)';
+    }
+
+    function labelFor(target) {
+      if (!target || !target.closest) return null;
+      /* Inside the lightbox the image is already full-screen, so "Open"
+         would be a lie -- and .shot__btn is reused by the viewer zoom. */
+      if (target.closest('.lb')) return null;
+      for (var i = 0; i < LABELS.length; i++) {
+        if (target.closest(LABELS[i][0])) return LABELS[i][1];
+      }
+      return null;
+    }
+
+    document.addEventListener('pointermove', function (e) {
+      /* A pen or mouse only. A coarse pointer firing pointermove once on
+         tap would flash the pill for a frame. */
+      if (e.pointerType === 'touch') return;
+      px = e.clientX;
+      py = e.clientY;
+
+      var next = labelFor(e.target);
+      if (next !== current) {
+        current = next;
+        if (next) {
+          pill.textContent = next;
+          pill.classList.add('is-on');
+        } else {
+          pill.classList.remove('is-on');
+        }
+      }
+      /* One transform per frame however many moves arrive. */
+      if (!pframe) pframe = requestAnimationFrame(placePill);
+    }, { passive: true });
+
+    /* Leaving the window, or anything that steals the pointer, must not
+       strand the pill mid-screen. */
+    function hidePill() {
+      current = null;
+      pill.classList.remove('is-on');
+    }
+    document.addEventListener('pointerleave', hidePill);
+    document.addEventListener('pointercancel', hidePill);
+    window.addEventListener('blur', hidePill);
+    /* A click that opens the lightbox leaves the pointer where it was, so
+       nothing fires to clear a label that is now wrong. */
+    document.addEventListener('click', function (e) {
+      if (labelFor(e.target)) hidePill();
+    });
+  }
+
   /* ── reading progress ────────────────────────────
      Case studies are long; show how much is left. */
   var bar = document.querySelector('.progress__bar');

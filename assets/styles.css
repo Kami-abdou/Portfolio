@@ -199,6 +199,63 @@ a { color: inherit; }
   font-weight: var(--font-weight-medium);
 }
 
+/* ── contextual cursor label ──────────────────────────────────────────────
+   What replaced the trail, and deliberately not the same kind of thing.
+
+   The trail was always on, drew under the pointer wherever it went, and at
+   6% of the ink under a 9px blur it left grey smudges across the hero. This
+   renders NOTHING at rest. It appears only over an element whose click is
+   not self-evident -- a screenshot, a row in the work rail -- and says what
+   the click does.
+
+   Offset down-right of the pointer, never under it, so it cannot sit on top
+   of the thing you are reading. The native cursor is untouched: this adds a
+   label beside it rather than replacing it, so a failure here costs a hint,
+   not the ability to see where you are pointing.
+
+   Fixed and pointer-events:none, so it can never take a click or change what
+   is underneath. */
+.cursor-label {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  pointer-events: none;
+  /* The pill is drawn down-right of the hotspot; translate3d carries the
+     pointer position and this carries the offset, so the two never fight. */
+  margin: 14px 0 0 16px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  /* Hidden state. visibility (not display) so the transform keeps updating
+     while it is away and it does not fly in from the last place it was. */
+  opacity: 0;
+  visibility: hidden;
+  transform-origin: 0 0;
+  scale: 0.9;
+  transition: opacity .18s var(--ease-out), scale .18s var(--ease-out),
+              visibility 0s linear .18s;
+}
+.cursor-label.is-on {
+  opacity: 1;
+  visibility: visible;
+  scale: 1;
+  transition: opacity .18s var(--ease-out), scale .18s var(--ease-out),
+              visibility 0s;
+}
+/* The label is information, so it still appears -- it just stops easing in.
+   Following the pointer is the pointer's own movement, not an animation. */
+@media (prefers-reduced-motion: reduce) {
+  .cursor-label,
+  .cursor-label.is-on { transition: none; scale: 1; }
+}
+
 .site-foot {
   margin-top: var(--space-32);
   border-top: 1px solid var(--color-border);
