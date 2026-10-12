@@ -2074,28 +2074,32 @@ html { scroll-snap-type: y proximity; }
   .fan__card:nth-child(2) { transform: rotate(1.5deg); z-index: 2; }
   .fan__card:nth-child(3) { transform: rotate(5deg) translate(calc(var(--space-8) * -1), 6px); }
 
-  /* A hand of two.
-     The three rotations above are -5 / +1.5 / +5: the middle card is the
-     near-upright one the outer two lean against. Drop a card and the rules
-     still match by position, so two cards came out leaning -5 and +1.5 --
-     one tilted, one almost straight, which reads as a tilted card next to
-     a crooked one rather than as a pair. And the track stayed
-     repeat(3, 1fr), so they sat in columns 1 and 2 with the third empty
-     and the whole group left of centre.
+  /* A hand of two, for when the card list is one short.
+     Not currently reached -- there are three cards -- but the list comes
+     from site.json and has been two before.
 
-     Two columns, centred, and a symmetric lean. :has() is how the rule
-     knows the count; the site already depends on newer CSS than this
-     (container queries, color-mix). */
+     The three rotations above are -5 / +1.5 / +5: the middle card is the
+     near-upright one the outer two lean against, and it is also the only
+     one with a z-index. Drop it and the remaining rules still match by
+     position, so two cards came out at -5 and +1.5 with the track still
+     repeat(3, 1fr): one tilted, one almost straight, sitting in columns 1
+     and 2 with the third empty and the group left of centre.
+
+     The first fix for that overlapped and clipped the second card's text,
+     and the reason is worth keeping: a ROTATED card is wider than its
+     layout box. At 380x310 and 3.5deg the painted box measures
+     380*cos(3.5) + 310*sin(3.5) = 398px, 18px past the column it was
+     given, while the two translate values pulled another 48px of overlap
+     on top. So: no translate here, and a gap wider than the 18px of
+     overhang. The lean is the whole effect; the convergence was never
+     needed with only two. */
   .fan__stack:has(> :nth-child(2):last-child) {
     grid-template-columns: repeat(2, minmax(0, 380px));
+    gap: var(--space-6);
     justify-content: center;
   }
-  .fan__card:first-child:nth-last-child(2) {
-    transform: rotate(-3.5deg) translate(var(--space-6), 5px);
-  }
-  .fan__card:first-child:nth-last-child(2) ~ .fan__card {
-    transform: rotate(3.5deg) translate(calc(var(--space-6) * -1), 5px);
-  }
+  .fan__card:first-child:nth-last-child(2) { transform: rotate(-3.5deg); }
+  .fan__card:first-child:nth-last-child(2) ~ .fan__card { transform: rotate(3.5deg); }
 
   /* Hover lifts the card out of the fan and squares it up, so the one
      you are reading is the one in front and the only one straight. */
