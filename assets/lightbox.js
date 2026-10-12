@@ -25,7 +25,6 @@
      is open and painting it is pure waste. A class on the root rather than a
      call into enhance.js, so neither file has to know the other exists -- and
      so CSS can read the same fact and stop compositing the canvas too. */
-  var OVERLAY = 'has-overlay';
 
   function open(btn) {
     var pic = btn.querySelector('img');
@@ -34,7 +33,6 @@
     img.alt = pic ? pic.alt : '';
     box.hidden = false;
     document.body.style.overflow = 'hidden';
-    document.documentElement.classList.add(OVERLAY);
     closeBtn.focus();
   }
 
@@ -42,7 +40,6 @@
     box.hidden = true;
     img.removeAttribute('src');
     document.body.style.overflow = '';
-    document.documentElement.classList.remove(OVERLAY);
     if (opener) { opener.focus(); opener = null; }
   }
 
