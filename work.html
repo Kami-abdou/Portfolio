@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Abdou Yaackoubi — Senior Product Designer</title>
-  <meta name="description" content="Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.">
+  <title>Abdou Yaackoubi - Senior Product Designer</title>
+  <meta name="description" content="Senior product designer. Six years across fintech, automotive retail and AI: designing products and building them.">
   <meta name="author" content="Abdou Yaackoubi">
   <link rel="canonical" href="https://abdouyaackoubi.com/work">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Abdou Yaackoubi">
-  <meta property="og:title" content="Abdou Yaackoubi — Senior Product Designer">
-  <meta property="og:description" content="Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.">
+  <meta property="og:title" content="Abdou Yaackoubi - Senior Product Designer">
+  <meta property="og:description" content="Senior product designer. Six years across fintech, automotive retail and AI: designing products and building them.">
   <meta property="og:url" content="https://abdouyaackoubi.com/work">
   <meta property="og:image" content="https://abdouyaackoubi.com/site/share-card.png">
-  <meta property="og:image:alt" content="Abdou Yaackoubi — Senior Product Designer">
+  <meta property="og:image:alt" content="Abdou Yaackoubi - Senior Product Designer">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Abdou Yaackoubi — Senior Product Designer">
-  <meta name="twitter:description" content="Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.">
+  <meta name="twitter:title" content="Abdou Yaackoubi - Senior Product Designer">
+  <meta name="twitter:description" content="Senior product designer. Six years across fintech, automotive retail and AI: designing products and building them.">
   <meta name="theme-color" content="#F4F1E8">
   <meta name="color-scheme" content="light">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=2aadc8c2">
@@ -37,21 +37,33 @@
   <link rel="preload" href="assets/fonts/gabarito-variable.woff2?v=bab69a2a" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/fonts.css?v=4dfe30ff">
-  <link rel="stylesheet" href="assets/tokens.css?v=78fcd920">
-  <link rel="stylesheet" href="assets/styles.css?v=f18d4112">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
+  <link rel="stylesheet" href="assets/tokens.css?v=83e1e874">
+  <link rel="stylesheet" href="assets/styles.css?v=2c23955b">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI: designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
+  <script>
+    /* Before first paint, or the page renders in the system theme and then
+       snaps to the stored one. Inline and synchronous on purpose: a deferred
+       script runs after the first frame, which IS the flash.
+       Wrapped because Safari throws on localStorage in private browsing, and
+       an exception here would take the rest of the head with it. */
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-head">
     <div class="shell site-head__inner">
-      <a class="site-head__name" href="work" aria-label="Abdou Yaackoubi — home"><span class="wordmark__line">Abdou</span><span class="wordmark__line wordmark__line--in">Yaackoubi</span></a>
+      <a class="site-head__name" href="work" aria-label="Abdou Yaackoubi, home"><span class="wordmark__line">Abdou</span><span class="wordmark__line wordmark__line--in">Yaackoubi</span></a>
       <nav class="site-nav" aria-label="Primary">
         <span class="site-nav__pill">
           <span class="site-nav__marker" aria-hidden="true"></span>
           <a href="work" aria-current="page">Work</a>
           <a href="about">About</a>
         </span>
+        <button class="theme-toggle" type="button" aria-label="Switch between light and dark" aria-pressed="false"><span class="theme-toggle__dial" aria-hidden="true"></span></button>
         <a class="site-nav__cta" href="contact">Say hello</a>
       </nav>
     </div>
@@ -65,7 +77,7 @@
 
       <h1 class="opening__claim">Hi, I&#x27;m Abdou.<br>Product Designer.<br>I build what I design.</h1>
 
-      <p class="opening__support">Driving growth at InstaDeep, an AI company acquired by BioNTech — after six years across fintech, automotive retail and AI.</p>
+      <p class="opening__support">Driving growth at InstaDeep, an AI company acquired by BioNTech. Six years across fintech, automotive retail and AI.</p>
 
       <div class="opening__actions">
         <a class="btn btn--solid" href="#work">See the work</a><a class="btn" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="opening__note">Usually a reply the same day.</span>
@@ -101,7 +113,7 @@
         </li>
         <li class="fan__card fan__card--sky">
           <h2 class="fan__label">I build them too</h2>
-          <p class="fan__body">This site is the proof — my Figma, my code, and a test suite that checks its own claims.</p>
+          <p class="fan__body">This site is the proof: my Figma, my code, and a test suite that checks its own claims.</p>
           <a class="fan__cta" href="about">How I think<span aria-hidden="true"> &rarr;</span></a>
         </li>
       </ul>
@@ -135,7 +147,7 @@
       <ol class="rail-years rail-years--lg">
         <li class="entry entry--lg">
           <p class="entry__when">
-            <span class="entry__dot" aria-hidden="true"></span><span class="entry__year">2024–now</span>
+            <span class="entry__dot" aria-hidden="true"></span><span class="entry__year">2024-now</span>
           </p>
           <div class="entry__body">
             <div class="entry__text">
@@ -152,7 +164,7 @@
         </li>
         <li class="entry entry--lg">
           <p class="entry__when">
-            <span class="entry__dot" aria-hidden="true"></span><span class="entry__year">2021–23</span>
+            <span class="entry__dot" aria-hidden="true"></span><span class="entry__year">2021-23</span>
           </p>
           <div class="entry__body">
             <div class="entry__text">
@@ -176,7 +188,7 @@
               <ul class="entry__tags"><li>UX Design</li><li>UI Design</li><li>Web</li></ul>
               <h3 class="entry__title"><a href="projects/groupado">Groupado</a></h3>
               <p class="entry__lede">A platform where anyone with a skill can teach it</p>
-              <p class="entry__note">Groupado lets people turn what they know into experiences others can join, online or in person. I joined the startup as they opened their first Tunis office and spent eight months building out the main product — a website and a mobile application — with the homepage designed around search visibility from the start.</p>
+              <p class="entry__note">Groupado lets people turn what they know into experiences others can join, online or in person. I joined the startup as they opened their first Tunis office and spent eight months building out the main product (a website and a mobile application), with the homepage designed around search visibility from the start.</p>
               <span class="entry__cta" aria-hidden="true">Read the case study &rarr;</span>
             </div>
             <figure class="entry__media" data-tint="teal">
@@ -186,7 +198,7 @@
         </li>
         <li class="entry entry--lg">
           <p class="entry__when">
-            <span class="entry__dot" aria-hidden="true"></span><span class="entry__year">2020–21</span>
+            <span class="entry__dot" aria-hidden="true"></span><span class="entry__year">2020-21</span>
           </p>
           <div class="entry__body">
             <div class="entry__text">
@@ -210,7 +222,7 @@
               <ul class="entry__tags"><li>UX Design</li><li>UI Design</li><li>User Research</li></ul>
               <h3 class="entry__title"><a href="projects/fissa3">Fissa3</a></h3>
               <p class="entry__lede">Food delivery built during the COVID lockdowns</p>
-              <p class="entry__note">A Tunisian food delivery platform whose stated purpose was not margin but employment — developing the business of restaurateurs and creating work for people who did not have it. I ran the research, personas and empathy mapping, then took it from task flows through sketches and wireframes to high fidelity.</p>
+              <p class="entry__note">A Tunisian food delivery platform whose stated purpose was not margin but employment: developing the business of restaurateurs and creating work for people who did not have it. I ran the research, personas and empathy mapping, then took it from task flows through sketches and wireframes to high fidelity.</p>
               <span class="entry__cta" aria-hidden="true">Read the case study &rarr;</span>
             </div>
             <figure class="entry__media" data-tint="sand">
@@ -245,6 +257,6 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=652506b0" defer></script>
-  <script src="assets/enhance.js?v=bc50f276" defer></script>
+  <script src="assets/enhance.js?v=6f8e8d35" defer></script>
 </body>
 </html>

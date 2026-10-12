@@ -1,18 +1,18 @@
 {
   "slug": "steer",
   "order": 2,
-  "meta": "2021–23 · Automotive retail · Design lead",
+  "meta": "2021-23 · Automotive retail · Design lead",
   "tint": "sky",
   "title": "Steer",
   "tagline": "End-to-end solutions to reinvent the automotive retail industry",
   "summary": "A C2C marketplace for used cars built on verified inspection data and a pricing algorithm, plus a B2B web platform for used-car professionals. I set the product direction, ran the research, and designed the identity, the corporate site and the dashboard.",
   "description": "A C2C used-car marketplace built on verified inspection data and a pricing algorithm. Sole designer and product lead, with 15 user interviews.",
-  "role": "Product Designer Lead — sole designer and product owner",
+  "role": "Product Designer Lead: sole designer and product owner",
   "client": "Steer",
-  "year": "October 2021 — November 2023",
+  "year": "October 2021 - November 2023",
   "duration": "2 years",
   "team": "No other designer. I was the design and product function.",
-  "status": "Shipped — steeraiautos.com is live; the company is now based in Versailles, France",
+  "status": "Shipped: steeraiautos.com is live; the company is now based in Versailles, France",
   "tags": [
     "Product Design",
     "UX Design",
@@ -36,7 +36,7 @@
   "metrics": [
     {
       "label": "Design and product team",
-      "value": "1 — me"
+      "value": "1 (me)"
     },
     {
       "label": "Interviewed in person",
@@ -53,7 +53,7 @@
       "id": "context",
       "phase": "Context",
       "heading": "Two products for one broken market",
-      "body": "The used-car market is difficult on both sides. New cars are getting more expensive in emerging markets, which pushes buyers toward used ones — but a used car may not be reliable and there is no easy way to know before you buy. Steer set out to fix that with two products: a C2C marketplace where buyers get detailed, verified information about a car alongside a pricing algorithm and partner services like warranties and financing, and a B2B web platform for used-car professionals covering inspections, vehicle health analysis, stock management and digital marketing.",
+      "body": "The used-car market is difficult on both sides. New cars are getting more expensive in emerging markets, which pushes buyers toward used ones, but a used car may not be reliable and there is no easy way to know before you buy. Steer set out to fix that with two products: a C2C marketplace where buyers get detailed, verified information about a car alongside a pricing algorithm and partner services like warranties and financing, and a B2B web platform for used-car professionals covering inspections, vehicle health analysis, stock management and digital marketing.",
       "images": []
     },
     {
@@ -84,7 +84,7 @@
         {
           "src": "assets/p4-user-persona.jpg",
           "alt": "Steer user personas built from the survey",
-          "caption": "Two buyers the interviews kept producing — the first-car saver and the manager trading up. They want the same car for opposite reasons, which is why price and condition had to be readable separately."
+          "caption": "Two buyers the interviews kept producing: the first-car saver and the manager trading up. They want the same car for opposite reasons, which is why price and condition had to be readable separately."
         },
         {
           "src": "assets/p5-user-journey.jpg",
@@ -102,7 +102,7 @@
         {
           "src": "assets/p3-competitor-analysis.png",
           "alt": "Competitor analysis of used-car marketplaces",
-          "caption": "Facebook, Automobile.tn and Tayara.tn — what people actually used. None offered an inspection or a price estimate, which is the gap Steer was built into."
+          "caption": "Facebook, Automobile.tn and Tayara.tn: what people actually used. None offered an inspection or a price estimate, which is the gap Steer was built into."
         }
       ]
     },
@@ -146,7 +146,7 @@
       "id": "outcome",
       "phase": "Outcome",
       "heading": "Two years as the whole design function",
-      "body": "Two years as the entire design function, and the product function with it. From October 2021 to November 2023 I ran the research, the brand, the interface and the roadmap decisions behind them. There was nobody else in design or product.\n\nThat work was what Steer took to investors. The company secured backing from the Versailles Grand Parc incubator in Île-de-France and opened a French entity there. It now builds AI tools for used-vehicle professionals — inspection, pricing, documentation and resale.\n\nThe site has been redesigned since I left. It still runs on the brand I built.",
+      "body": "Two years as the entire design function, and the product function with it. From October 2021 to November 2023 I ran the research, the brand, the interface and the roadmap decisions behind them. There was nobody else in design or product.\n\nThat work was what Steer took to investors. The company secured backing from the Versailles Grand Parc incubator in Île-de-France and opened a French entity there. It now builds AI tools for used-vehicle professionals: inspection, pricing, documentation and resale.\n\nThe site has been redesigned since I left. It still runs on the brand I built.",
       "images": []
     }
   ]

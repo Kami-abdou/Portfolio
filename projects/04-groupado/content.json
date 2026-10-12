@@ -6,14 +6,14 @@
   "tint": "teal",
   "title": "Groupado",
   "tagline": "A platform where anyone with a skill can teach it",
-  "summary": "Groupado lets people turn what they know into experiences others can join, online or in person. I joined the startup as they opened their first Tunis office and spent eight months building out the main product — a website and a mobile application — with the homepage designed around search visibility from the start.",
+  "summary": "Groupado lets people turn what they know into experiences others can join, online or in person. I joined the startup as they opened their first Tunis office and spent eight months building out the main product (a website and a mobile application), with the homepage designed around search visibility from the start.",
   "description": "A marketplace for turning what you know into experiences others can join, with an SEO-led homepage structure rather than one retrofitted after.",
   "role": "UX / UI Designer",
   "client": "Groupado",
-  "year": "February 2021 — September 2021",
+  "year": "February 2021 - September 2021",
   "duration": "8 months",
   "team": "Groupado's team; I covered design.",
-  "status": "Live — groupado.com is still running",
+  "status": "Live: groupado.com is still running",
   "tags": [
     "UX Design",
     "UI Design",
@@ -54,7 +54,7 @@
     {
       "id": "problem",
       "heading": "The problem",
-      "body": "How do you create a platform for people with talent, knowledge or skills to teach others — and at the same time let users find the right activities to do, or the right subjects and skills to learn, whether that happens online or outdoors?",
+      "body": "How do you create a platform for people with talent, knowledge or skills to teach others, and at the same time let users find the right activities to do, or the right subjects and skills to learn, whether that happens online or outdoors?",
       "images": []
     },
     {
@@ -65,20 +65,20 @@
         {
           "src": "assets/n1-homepage.jpg",
           "alt": "Groupado homepage with location-led slider",
-          "caption": "Homepage — structured around search visibility."
+          "caption": "Homepage: structured around search visibility."
         }
       ]
     },
     {
       "id": "features",
       "heading": "Three problems a marketplace like this has to solve",
-      "body": "The first is quality. A platform where anyone can teach is only as good as its worst class, so teachers meet criteria before they can publish — a level of experience or demonstrable expertise in the subject they intend to teach. The second is discovery. If people cannot find the workshop they would have loved, the supply might as well not exist, so discovery is a combination of search, browse-by-category and personalised recommendation rather than any one of those alone. The third is trust in the plumbing: people are handing over personal and financial information, which means encryption and fraud prevention are a design constraint, not an engineering afterthought.",
+      "body": "The first is quality. A platform where anyone can teach is only as good as its worst class, so teachers meet criteria before they can publish: a level of experience or demonstrable expertise in the subject they intend to teach. The second is discovery. If people cannot find the workshop they would have loved, the supply might as well not exist, so discovery is a combination of search, browse-by-category and personalised recommendation rather than any one of those alone. The third is trust in the plumbing: people are handing over personal and financial information, which means encryption and fraud prevention are a design constraint, not an engineering afterthought.",
       "images": []
     },
     {
       "id": "outcome",
       "heading": "The outcome",
-      "body": "Eight months at Groupado, from February to September 2021. I redesigned the website and worked on a second product I am not able to show.\n\nWhat is here is the marketplace loop — discovering an experience, understanding what it involves, choosing between online and local, and messaging the person running it. The rest of what I did there sits under an agreement, which is the honest reason this case study is shorter than the time I spent on it.\n\nGroupado is still going. It now runs training across Tunisia, Dubai and Côte d'Ivoire, and lists GIZ and Poulina Group among its partners.",
+      "body": "Eight months at Groupado, from February to September 2021. I redesigned the website and worked on a second product I am not able to show.\n\nWhat is here is the marketplace loop: discovering an experience, understanding what it involves, choosing between online and local, and messaging the person running it. The rest of what I did there sits under an agreement, which is the honest reason this case study is shorter than the time I spent on it.\n\nGroupado is still going. It now runs training across Tunisia, Dubai and Côte d'Ivoire, and lists GIZ and Poulina Group among its partners.",
       "images": [
         {
           "src": "assets/n2-outcome-1.jpg",

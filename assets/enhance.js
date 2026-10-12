@@ -194,6 +194,48 @@
     });
   }
 
+  /* ── theme toggle ─────────────────────────────────
+     The head script has already applied any stored choice before paint;
+     this only wires the control and keeps it in sync.
+
+     "System" is the default and stays the default: nothing is written to
+     storage until the visitor actually presses the button. A site that
+     stamps a theme on first visit can never follow the system again. */
+  var themeBtn = document.querySelector(".theme-toggle");
+  if (themeBtn) {
+    var root = document.documentElement;
+    var sysDark = window.matchMedia("(prefers-color-scheme: dark)");
+
+    function activeTheme() {
+      return root.dataset.theme || (sysDark.matches ? "dark" : "light");
+    }
+    function sync() {
+      var dark = activeTheme() === "dark";
+      themeBtn.setAttribute("aria-pressed", dark ? "true" : "false");
+      /* The label names the DESTINATION, which is what a screen reader user
+         needs to decide whether to press it. */
+      themeBtn.setAttribute("aria-label",
+        dark ? "Switch to the light theme" : "Switch to the dark theme");
+    }
+    sync();
+
+    themeBtn.addEventListener("click", function () {
+      var next = activeTheme() === "dark" ? "light" : "dark";
+      root.dataset.theme = next;
+      try { localStorage.setItem("theme", next); } catch (e) {}
+      sync();
+    });
+
+    /* Follow the system while the visitor has not chosen. addEventListener
+       rather than addListener: the old API is deprecated and gone in newer
+       Safari. */
+    if (sysDark.addEventListener) {
+      sysDark.addEventListener("change", function () {
+        if (!root.dataset.theme) sync();
+      });
+    }
+  }
+
   /* ── reading progress ────────────────────────────
      Case studies are long; show how much is left. */
   var bar = document.querySelector('.progress__bar');

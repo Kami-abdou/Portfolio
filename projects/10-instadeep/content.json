@@ -2,14 +2,14 @@
   "slug": "instadeep",
   "order": 1,
   "title": "InstaDeep",
-  "meta": "2024–now · AI · Senior product designer",
+  "meta": "2024-now · AI · Senior product designer",
   "tint": "sky",
   "tagline": "Three product surfaces and the design system they all run on.",
   "summary": "Senior product designer at InstaDeep, an AI research company acquired by BioNTech. I work across DeepPCB, their cloud-native PCB routing software, InstaNovo, their protein-sequencing model, and the design system every InstaDeep product surface and demo is built from.",
-  "description": "Design highlights from InstaDeep — DeepPCB, InstaNovo, and the design system behind every product surface.",
+  "description": "Design highlights from InstaDeep: DeepPCB, InstaNovo, and the design system behind every product surface.",
   "role": "Senior Product Designer",
   "client": "InstaDeep",
-  "year": "January 2024 — present",
+  "year": "January 2024 - present",
   "duration": "Ongoing",
   "team": "Design of one, across several product teams",
   "status": "Ongoing",
@@ -48,17 +48,17 @@
       "id": "deeppcb",
       "phase": "Product",
       "heading": "DeepPCB",
-      "body": "DeepPCB is InstaDeep's cloud-native PCB routing software — a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product's public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.\n\nThese are the marketing and onboarding surfaces rather than the routing canvas itself.",
+      "body": "DeepPCB is InstaDeep's cloud-native PCB routing software: a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product's public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.\n\nThese are the marketing and onboarding surfaces rather than the routing canvas itself.",
       "images": [
         {
           "src": "assets/p01-home.jpg",
           "alt": "DeepPCB home page",
-          "caption": "Home — the claim, stated once, above a routed board."
+          "caption": "Home: the claim, stated once, above a routed board."
         },
         {
           "src": "assets/p02-enterprise.jpg",
           "alt": "DeepPCB enterprise page",
-          "caption": "Enterprise — the same router, argued to a buyer instead of an engineer."
+          "caption": "Enterprise: the same router, argued to a buyer instead of an engineer."
         },
         {
           "src": "assets/p03-pricing.jpg",
@@ -71,14 +71,14 @@
       "id": "deeppcb-app",
       "phase": "Product",
       "heading": "DeepPCB dashboard",
-      "body": "DeepPCB sells routing by the hour, so the two screens that carry the product are the one that says whether an hour is still running and the one that spends it.\n\nThe board list puts each job's state on its own card — pending, idle, running — with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.",
+      "body": "DeepPCB sells routing by the hour, so the two screens that carry the product are the one that says whether an hour is still running and the one that spends it.\n\nThe board list puts each job's state on its own card (pending, idle, running), with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.",
       "viewer": true,
       "images": [
         {
           "src": "assets/app1-boards.jpg",
           "label": "Boards",
           "alt": "DeepPCB board list, each board a card with its job status and file type",
-          "caption": "Status lives on the card — pending, idle, running — and the credit balance sits above the nav, so “is my board done, and can I afford the next one” is answered without opening anything."
+          "caption": "Status lives on the card (pending, idle, running), and the credit balance sits above the nav, so “is my board done, and can I afford the next one” is answered without opening anything."
         },
         {
           "src": "assets/app2-editor.jpg",
@@ -92,18 +92,18 @@
       "id": "instanovo",
       "phase": "Product",
       "heading": "InstaNovo",
-      "body": "InstaNovo and InstaNovo+ are de novo peptide sequencing models: they read a mass spectrum and return a peptide sequence without matching it against a reference database, which is the whole point — a database search can only find what is already in the database. Built with the Department of Biotechnology and Biomedicine at the Technical University of Denmark, and published in Nature Machine Intelligence.\n\nMy work was the public face of it: the logo, and a landing page that has to hold two readers at once. A proteomics researcher wants the benchmark before they want anything else — 52% average peptide accuracy across eight biological datasets, 34% more novel peptides, 42% more peptide spectrum matches. Someone deciding whether to fund or adopt it wants to know what that unlocks. So the numbers sit in a band immediately under the hero rather than being saved for a technical page, and the two models get one section each — InstaNovo transcribing, InstaNovo+ refining by diffusion — because the relationship between them is the thing people get wrong.\n\nThe set also includes the states, in the same visual language rather than a default: the 404 is built from real sequence output, and the pre-launch holding page had to look like the product it was holding.",
+      "body": "InstaNovo and InstaNovo+ are de novo peptide sequencing models: they read a mass spectrum and return a peptide sequence without matching it against a reference database, which is the whole point: a database search can only find what is already in the database. Built with the Department of Biotechnology and Biomedicine at the Technical University of Denmark, and published in Nature Machine Intelligence.\n\nMy work was the public face of it: the logo, and a landing page that has to hold two readers at once. A proteomics researcher wants the benchmark before they want anything else: 52% average peptide accuracy across eight biological datasets, 34% more novel peptides, 42% more peptide spectrum matches. Someone deciding whether to fund or adopt it wants to know what that unlocks. So the numbers sit in a band immediately under the hero rather than being saved for a technical page, and the two models get one section each: InstaNovo transcribing, InstaNovo+ refining by diffusion, because the relationship between them is the thing people get wrong.\n\nThe set also includes the states, in the same visual language rather than a default: the 404 is built from real sequence output, and the pre-launch holding page had to look like the product it was holding.",
       "images": [
         {
           "src": "assets/in1-landing.jpg",
           "alt": "InstaNovo landing page, full scroll: hero, benchmark band, a section each for InstaNovo and InstaNovo+, capability cards, research and contact",
-          "caption": "The landing page. Benchmarks in a band under the hero, not buried — a researcher reads the number before the pitch."
+          "caption": "The landing page. Benchmarks in a band under the hero, not buried. A researcher reads the number before the pitch."
         },
         {
           "video": "assets/in4-hero-animation.mp4",
           "poster": "assets/in4-hero-animation.jpg",
           "alt": "Animated hero graphic: a mass spectrum on the left resolving into clusters of predicted peptide sequences on the right",
-          "caption": "The hero animation. A mass spectrum on the left resolves into predicted sequences on the right — the model's actual job, stated once, in motion. Muted, and it does not start until you ask."
+          "caption": "The hero animation. A mass spectrum on the left resolves into predicted sequences on the right: the model's actual job, stated once, in motion. Muted, and it does not start until you ask."
         },
         {
           "src": "assets/in3-coming-soon.jpg",
@@ -124,17 +124,17 @@
       "id": "states",
       "phase": "States",
       "heading": "Off the grid, and page not found",
-      "body": "The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows — a routing job that will not converge, a spectrum with no confident call, a link that has gone stale — so the error pages carry each product's own grid or sequence motif, say what happened in that product's vocabulary, and offer exactly one way back. Two products, one discipline.",
+      "body": "The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows: a routing job that will not converge, a spectrum with no confident call, a link that has gone stale, so the error pages carry each product's own grid or sequence motif, say what happened in that product's vocabulary, and offer exactly one way back. Two products, one discipline.",
       "images": [
         {
           "src": "assets/p10-404.jpg",
           "alt": "DeepPCB 404 page: a monospace 404 label, PAGE NOT FOUND set large, and a single Go to Homepage action",
-          "caption": "DeepPCB — one message, one route out. “Off the grid” and “reconnect” are the router's own vocabulary, not generic error copy."
+          "caption": "DeepPCB: one message, one route out. “Off the grid” and “reconnect” are the router's own vocabulary, not generic error copy."
         },
         {
           "src": "assets/in2-404.jpg",
           "alt": "InstaNovo 404 page: the headline 404 | Page not found beside a peptide-sequence field forming a shape",
-          "caption": "InstaNovo — the field on the right is real sequence output, so even the error page is made of what the product does."
+          "caption": "InstaNovo: the field on the right is real sequence output, so even the error page is made of what the product does."
         }
       ]
     }

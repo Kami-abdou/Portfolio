@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>About — Abdou Yaackoubi</title>
-  <meta name="description" content="Senior product designer across AI, blockchain and fintech — what I work on, and why I build the things I design.">
+  <title>About - Abdou Yaackoubi</title>
+  <meta name="description" content="Senior product designer across AI, blockchain and fintech: what I work on, and why I build the things I design.">
   <meta name="author" content="Abdou Yaackoubi">
   <link rel="canonical" href="https://abdouyaackoubi.com/about">
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="Abdou Yaackoubi">
-  <meta property="og:title" content="About — Abdou Yaackoubi">
-  <meta property="og:description" content="Senior product designer across AI, blockchain and fintech — what I work on, and why I build the things I design.">
+  <meta property="og:title" content="About - Abdou Yaackoubi">
+  <meta property="og:description" content="Senior product designer across AI, blockchain and fintech: what I work on, and why I build the things I design.">
   <meta property="og:url" content="https://abdouyaackoubi.com/about">
   <meta property="og:image" content="https://abdouyaackoubi.com/site/share-card.png">
-  <meta property="og:image:alt" content="Abdou Yaackoubi — Senior Product Designer, Tunis, Tunisia">
+  <meta property="og:image:alt" content="Abdou Yaackoubi - Senior Product Designer, Tunis, Tunisia">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="About — Abdou Yaackoubi">
-  <meta name="twitter:description" content="Senior product designer across AI, blockchain and fintech — what I work on, and why I build the things I design.">
+  <meta name="twitter:title" content="About - Abdou Yaackoubi">
+  <meta name="twitter:description" content="Senior product designer across AI, blockchain and fintech: what I work on, and why I build the things I design.">
   <meta name="theme-color" content="#F4F1E8">
   <meta name="color-scheme" content="light">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=2aadc8c2">
@@ -37,21 +37,33 @@
   <link rel="preload" href="assets/fonts/gabarito-variable.woff2?v=bab69a2a" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/fonts.css?v=4dfe30ff">
-  <link rel="stylesheet" href="assets/tokens.css?v=78fcd920">
-  <link rel="stylesheet" href="assets/styles.css?v=f18d4112">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
+  <link rel="stylesheet" href="assets/tokens.css?v=83e1e874">
+  <link rel="stylesheet" href="assets/styles.css?v=2c23955b">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI: designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
+  <script>
+    /* Before first paint, or the page renders in the system theme and then
+       snaps to the stored one. Inline and synchronous on purpose: a deferred
+       script runs after the first frame, which IS the flash.
+       Wrapped because Safari throws on localStorage in private browsing, and
+       an exception here would take the rest of the head with it. */
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-head">
     <div class="shell site-head__inner">
-      <a class="site-head__name" href="work" aria-label="Abdou Yaackoubi — home"><span class="wordmark__line">Abdou</span><span class="wordmark__line wordmark__line--in">Yaackoubi</span></a>
+      <a class="site-head__name" href="work" aria-label="Abdou Yaackoubi, home"><span class="wordmark__line">Abdou</span><span class="wordmark__line wordmark__line--in">Yaackoubi</span></a>
       <nav class="site-nav" aria-label="Primary">
         <span class="site-nav__pill">
           <span class="site-nav__marker" aria-hidden="true"></span>
           <a href="work">Work</a>
           <a href="about" aria-current="page">About</a>
         </span>
+        <button class="theme-toggle" type="button" aria-label="Switch between light and dark" aria-pressed="false"><span class="theme-toggle__dial" aria-hidden="true"></span></button>
         <a class="site-nav__cta" href="contact">Say hello</a>
       </nav>
     </div>
@@ -68,12 +80,12 @@
           </picture>
         </figure>
         <div class="prose">
-          <p>What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. The happy path is the easy half; the interesting half is everything after it.</p>
-          <p>I visualise a product as a system before I draw a screen. The structure comes first — what the states are, what can fail, what each surface is allowed to say — and the interface is what that structure looks like once it has to face someone.</p>
+          <p>What holds my attention is interaction design: how a thing responds, what it does while it waits, and how it recovers. The happy path is the easy half; the interesting half is everything after it.</p>
+          <p>I visualise a product as a system before I draw a screen. The structure comes first (what the states are, what can fail, what each surface is allowed to say), and the interface is what that structure looks like once it has to face someone.</p>
           <p>Then I build it. A prototype in code answers questions a static frame cannot, and it is the fastest way to find out that a flow which reads well does not feel right. This site is the proof: my Figma, my code, and a test suite that checks its own claims.</p>
           <p>Today I&#x27;m a senior product designer at InstaDeep, an AI company acquired by BioNTech, working on their AI products and the design system underneath them. Before that I led product design at Steer, and at T-ledger I designed one of Tunisia&#x27;s first digital wallets, built on blockchain.</p>
       <p>Six years and four companies: Fintech, Automotive retail, Food delivery, Home services and AI.</p>
-      <p>Based in Tunis — UTC+1</p>
+      <p>Based in Tunis, UTC+1</p>
           <p class="about__cta">
             <a class="btn btn--solid" href="site/CV-Abdou-Yaackoubi.pdf?v=6dfe9d01">Download CV (PDF)</a>
           </p>
@@ -90,7 +102,7 @@
       <h2 class="cv__head" id="experience">Experience</h2>
       <ol class="cv__list">
         <li class="cv__row">
-          <p class="cv__years"><time>Jan 2024 — present</time></p>
+          <p class="cv__years"><time>Jan 2024 - present</time></p>
           <div class="cv__body">
             <h3 class="cv__company">InstaDeep</h3>
             <p class="cv__role">Senior Product Designer</p>
@@ -101,7 +113,7 @@
           </div>
         </li>
         <li class="cv__row">
-          <p class="cv__years"><time>Oct 2021 — Nov 2023</time></p>
+          <p class="cv__years"><time>Oct 2021 - Nov 2023</time></p>
           <div class="cv__body">
             <h3 class="cv__company">Steer</h3>
             <p class="cv__role">Product Designer Lead</p>
@@ -113,7 +125,7 @@
           </div>
         </li>
         <li class="cv__row">
-          <p class="cv__years"><time>Feb 2021 — Sep 2021</time></p>
+          <p class="cv__years"><time>Feb 2021 - Sep 2021</time></p>
           <div class="cv__body">
             <h3 class="cv__company">Groupado</h3>
             <p class="cv__role">UX / UI Designer</p>
@@ -123,7 +135,7 @@
           </div>
         </li>
         <li class="cv__row">
-          <p class="cv__years"><time>Jan 2020 — Jan 2021</time></p>
+          <p class="cv__years"><time>Jan 2020 - Jan 2021</time></p>
           <div class="cv__body">
             <h3 class="cv__company">T-ledger</h3>
             <p class="cv__role">Product Designer</p>
@@ -150,7 +162,7 @@
     <section class="shell band band--values" aria-labelledby="values">
       <div class="band__head">
         <h2 id="values"><span class="mask"><span class="mask__in">Values I believe in</span></span></h2>
-        <p>Craft is most of the job. The rest is how you behave when the work gets ambiguous, late, or contested — these are what I come back to.</p>
+        <p>Craft is most of the job. The rest is how you behave when the work gets ambiguous, late, or contested. These are what I come back to.</p>
       </div>
       <ol class="values">
         <li class="value">
@@ -183,6 +195,6 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=652506b0" defer></script>
-  <script src="assets/enhance.js?v=bc50f276" defer></script>
+  <script src="assets/enhance.js?v=6f8e8d35" defer></script>
 </body>
 </html>

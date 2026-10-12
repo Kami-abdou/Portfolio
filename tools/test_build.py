@@ -2128,35 +2128,47 @@ class TestHighlightsFormat(BuildCase):
         """A TOC over image blocks with no prose is navigation to nothing."""
         self.assertNotIn('class="toc"', self.html("projects/fissa3.html"))
 
-    def test_a_lone_section_is_not_numbered(self):
-        """A leading "01" claims a position in a sequence that does not exist.
+    def test_no_section_is_numbered(self):
+        """Section-number eyebrows are gone, on every page, not just lone ones.
 
-        Trimming prose used to leave UnDrive and PharmaDrive with one live
-        section each, both titled "The outcome" -- so "01 The outcome" invited
-        "the outcome of what?" exactly where the setup used to be.
+        This used to assert the narrower rule: a page with ONE live section
+        must not print "01", because a leading number claims a position in a
+        sequence that does not exist. Multi-section pages were required TO be
+        numbered.
 
-        Both projects have since been removed, so NO page has a lone section
-        today and this passes vacuously on the first loop. That is deliberate:
-        asserted as a property over every page rather than against a named
-        slug, so it starts failing again the moment a one-section page
-        reappears, instead of erroring on a file that no longer exists -- which
-        is how this test broke when PharmaDrive went.
+        The wider rule replaced it. Section-number eyebrows are banned
+        outright: if the reader can count, the number tells them nothing, and
+        the ordered table of contents beside the sections already carries the
+        sequence. The phase label stays, because an eyebrow that NAMES the
+        topic in plain language -- "Product", "System", "States" -- is the
+        thing numbering was standing in for.
+
+        Asserted as a property over every page rather than against a named
+        slug, so it keeps holding as projects come and go.
         """
         import glob
-        lone = multi = 0
+        checked = 0
         for path in sorted(glob.glob(str(ROOT / "projects" / "*.html"))):
             name = "projects/" + pathlib.Path(path).name
             page = self.html(name)
-            sections = page.count('class="project__section"')
-            if sections == 1:
-                lone += 1
-                self.assertNotIn("project__num", page,
-                                 "%s numbers its only section" % name)
-            elif sections > 1:
-                multi += 1
-                self.assertEqual(sections, page.count("project__num"),
-                                 "%s lost its section numbering" % name)
-        self.assertGreater(multi, 0, "no multi-section page left to check")
+            if not page.count('class="project__section"'):
+                continue
+            checked += 1
+            self.assertNotIn(
+                "project__num", page,
+                "%s prints a section-number eyebrow" % name)
+        self.assertGreater(checked, 0, "no case-study page left to check")
+
+    def test_the_phase_eyebrow_survives(self):
+        """Removing the number must not take the topic label with it.
+
+        The number and the phase were siblings in one eyebrow, so deleting
+        the wrong half would leave section headers with no label at all.
+        """
+        page = self.html("projects/instadeep.html")
+        self.assertIn("project__phase", page,
+                      "section headers lost their topic label along with "
+                      "the number")
 
 
 class TestHeroPortrait(BuildCase):
@@ -3570,3 +3582,221 @@ class TestCursorLabel(BuildCase):
             self.assertNotIn(noise, block,
                              "%s is labelled, but it already looks clickable"
                              % noise)
+
+
+class TestNoEmDashes(BuildCase):
+    """Zero em-dashes and en-dashes in anything a visitor can see.
+
+    The site shipped 71 em-dashes and 9 en-dashes. They are the clearest
+    signal that copy was machine-written, which matters more than usual
+    here: reviewers now discount case studies precisely because authorship
+    is hard to verify, so the punctuation that reads as AI is a cost the
+    work does not need to carry.
+
+    Attributes are checked as well as text. A dash in a <title> shows in
+    the tab, the bookmark and the search result; a dash in alt text is
+    read aloud. Both are visible, just not in the body.
+
+    Comments are stripped before checking. A dash inside a CSS or HTML
+    comment reaches nobody.
+    """
+
+    DASHES = ("—", "–")
+
+    def pages(self):
+        names = ["index.html", "work.html", "about.html", "contact.html"]
+        for _, data in self.live_projects():
+            names.append("projects/%s.html" % data["slug"])
+        return names
+
+    def stripped(self, name):
+        h = self.html(name)
+        for pattern in (r"<script.*?</script>", r"<style.*?</style>", r"<!--.*?-->"):
+            h = re.sub(pattern, " ", h, flags=re.S)
+        return h
+
+    def test_no_page_ships_a_dash(self):
+        for name in self.pages():
+            h = self.stripped(name)
+            with self.subTest(page=name):
+                found = sum(h.count(d) for d in self.DASHES)
+                if found:
+                    ctx = []
+                    for d in self.DASHES:
+                        for m in re.finditer(re.escape(d), h):
+                            ctx.append(" ".join(
+                                h[max(0, m.start()-40):m.end()+40].split()))
+                    self.fail("%s ships %d dash(es): %s"
+                              % (name, found, " | ".join(ctx[:3])))
+
+    def test_the_source_is_clean_too(self):
+        """Fixing the HTML and not the JSON means the next build undoes it."""
+        import glob
+        for path in sorted(glob.glob(str(ROOT / "projects" / "*" / "content.json"))):
+            data = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+            if data.get("published") is False:
+                continue
+            blob = json.dumps(data, ensure_ascii=False)
+            with self.subTest(project=pathlib.Path(path).parent.name):
+                for d in self.DASHES:
+                    self.assertNotIn(d, blob)
+        site = json.dumps(self.site, ensure_ascii=False)
+        for d in self.DASHES:
+            self.assertNotIn(d, site, "site.json still holds a dash")
+
+
+class TestDarkMode(BuildCase):
+    """The site has two themes, and they stay in step.
+
+    It was light-only. A portfolio read on a dark-mode machine rendered a
+    bright cream page in a dark browser, which is the one place the craft
+    was working against itself.
+    """
+
+    def tokens(self):
+        return json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
+
+    def css(self):
+        return (ROOT / "assets" / "tokens.css").read_text(encoding="utf-8")
+
+    def test_every_light_token_has_a_dark_one(self):
+        """A missing dark value is a light colour surviving into dark mode.
+
+        It does not raise and it does not look obviously broken. It just
+        leaves one element lit from the wrong palette.
+        """
+        t = self.tokens()
+        light, dark = set(t["color"]), set(t.get("colorDark", {}))
+        self.assertEqual(light, dark,
+                         "light-only: %s. dark-only: %s"
+                         % (sorted(light - dark), sorted(dark - light)))
+
+    def test_both_selectors_are_emitted(self):
+        """System preference AND an explicit choice, and the guard between.
+
+        Without :not([data-theme="light"]) a visitor who picks light on a
+        dark-system machine gets the media query applied anyway, and the
+        toggle appears broken.
+        """
+        css = self.css()
+        self.assertIn("@media (prefers-color-scheme: dark)", css)
+        self.assertIn(':root:not([data-theme="light"])', css)
+        self.assertIn(':root[data-theme="dark"]', css)
+
+    def test_color_scheme_lets_the_browser_follow(self):
+        """Form controls, scrollbars and spinners are drawn by the browser.
+
+        Without this they stay light on a dark page.
+        """
+        self.assertIn("color-scheme: light dark", self.css())
+
+    def test_styles_hold_no_colour_literals(self):
+        """A literal cannot follow the theme, so it is a dark-mode bug.
+
+        The six tinted shadows were the last of them: ink-coloured, which
+        on a dark page means a shadow the same colour as the surface.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+        lits = re.findall(r"(#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\))", css)
+        self.assertEqual(lits, [],
+                         "styles.css holds colour literals that cannot "
+                         "follow the theme: %s" % lits[:5])
+
+    def test_the_no_flash_script_runs_before_paint(self):
+        """Deferred, it runs after the first frame, and that frame IS the flash."""
+        for page in ("index.html", "about.html"):
+            h = self.html(page)
+            head = h.split("</head>", 1)[0]
+            with self.subTest(page=page):
+                self.assertIn('localStorage.getItem("theme")', head,
+                              "the theme is not restored before paint")
+                # the <script> that holds it must be inline and synchronous
+                tag = None
+                for m in re.finditer(r"<script\b([^>]*)>(.*?)</script>",
+                                     head, re.S):
+                    if "localStorage" in m.group(2):
+                        tag = m
+                        break
+                self.assertIsNotNone(tag, "no inline script restores the theme")
+                attrs, body = tag.group(1), tag.group(2)
+                self.assertNotIn("defer", attrs,
+                                 "a deferred script runs after the first "
+                                 "frame, and that frame is the flash")
+                self.assertNotIn("async", attrs)
+                self.assertNotIn("src=", attrs,
+                                 "an external script is a round trip before "
+                                 "the page can paint its own theme")
+                self.assertIn("try", body,
+                              "localStorage throws in Safari private mode; "
+                              "an unguarded read takes the head with it")
+
+
+class TestThemeToggle(BuildCase):
+    """The control that lets a visitor override the system.
+
+    The warm paper is most of what this site's identity is. Following the
+    system alone means a visitor on a dark machine never sees it.
+    """
+
+    def test_it_is_on_every_page(self):
+        for page in ("index.html", "work.html", "about.html", "contact.html"):
+            with self.subTest(page=page):
+                self.assertIn('class="theme-toggle"', self.html(page))
+
+    def test_it_is_a_button_not_a_link(self):
+        """It changes the page's state; it does not navigate."""
+        h = self.html("index.html")
+        m = re.search(r'<button class="theme-toggle"[^>]*>', h)
+        self.assertIsNotNone(m, "the toggle is not a <button>")
+        self.assertIn('type="button"', m.group(0),
+                      "a button without type defaults to submit")
+        self.assertIn("aria-pressed", m.group(0),
+                      "nothing tells a screen reader the state")
+        self.assertIn("aria-label", m.group(0),
+                      "the control is a shape with no accessible name")
+
+    def test_the_target_is_large_enough(self):
+        """WCAG 2.5.8 asks 24x24; the platform norm for touch is 44."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        block = re.search(r"\.theme-toggle\s*\{([^}]*)\}", css)
+        self.assertIsNotNone(block)
+        w = re.search(r"width:\s*(\d+)px", block.group(1))
+        self.assertIsNotNone(w, "no explicit width on the toggle")
+        self.assertGreaterEqual(int(w.group(1)), 44)
+
+    def test_nothing_is_stored_until_the_visitor_chooses(self):
+        """Stamping a theme on first visit means never following the system again."""
+        js = (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+        block = js.split("theme toggle", 1)[1].split("/* ──", 1)[0]
+        setter = block.index("localStorage.setItem")
+        click = block.index('addEventListener("click"')
+        self.assertLess(click, setter,
+                        "the theme is written to storage outside the click "
+                        "handler, so a first visit pins the theme forever")
+
+
+class TestViewTransitions(BuildCase):
+    """Navigation reads as one site rather than a stack of documents."""
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def test_the_at_rule_is_present(self):
+        self.assertIn("@view-transition", self.css())
+        self.assertIn("navigation: auto", self.css())
+
+    def test_exactly_one_element_is_named(self):
+        """Naming several turns a transition into a slideshow."""
+        names = re.findall(r"view-transition-name:\s*([\w-]+)", self.css())
+        self.assertEqual(len(names), 1,
+                         "expected one named element, got %s" % names)
+
+    def test_reduced_motion_stops_the_animation(self):
+        """WCAG 2.3.3: motion the visitor did not ask for."""
+        css = self.css()
+        blocks = re.findall(
+            r"@media \(prefers-reduced-motion: reduce\) \{(.*?)\n\}", css, re.S)
+        self.assertTrue(
+            any("view-transition" in b for b in blocks),
+            "view transitions ignore prefers-reduced-motion")

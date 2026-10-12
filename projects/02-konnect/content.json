@@ -1,18 +1,18 @@
 {
   "slug": "konnect",
   "order": 4,
-  "meta": "2020–21 · Fintech · Product designer",
+  "meta": "2020-21 · Fintech · Product designer",
   "tint": "teal",
   "title": "Konnect",
   "tagline": "One of the first digital wallets in Tunisia",
   "summary": "Konnect set out to solve online payment in a country where it barely worked. I joined T-ledger as the only designer among more than fifteen engineers and two product managers, ran the full design process, and rebuilt the application end to end. The team still uses that design today.",
   "description": "Tunisia's first digital wallet. Sole designer among 15+ engineers, rebuilding the payment application end to end for iOS, Android and web.",
-  "role": "Product Designer — sole designer, through the early days and first launch",
-  "client": "T-ledger — Konnect began as a project inside it",
-  "year": "2020–2021",
-  "duration": "February 2020 – January 2021",
+  "role": "Product Designer: sole designer, through the early days and first launch",
+  "client": "T-ledger: Konnect began as a project inside it",
+  "year": "2020-2021",
+  "duration": "February 2020 - January 2021",
   "team": "One designer (me), 15+ engineers, 2 product managers",
-  "status": "Shipped — launched March 2021, still live and now in its 7th major version",
+  "status": "Shipped: launched March 2021, still live and now in its 7th major version",
   "tags": [
     "UX Design",
     "UI Design",
@@ -46,7 +46,7 @@
     },
     {
       "label": "Design team",
-      "value": "1 — me"
+      "value": "1 (me)"
     },
     {
       "label": "Engineers supported",
@@ -59,14 +59,14 @@
       "id": "context",
       "phase": "Context",
       "heading": "Before Konnect was a company",
-      "body": "Konnect began designing its mobile application with the ambition of becoming the biggest digital wallet platform in Tunisia. The goal of this particular piece of work was to identify what was actually broken about online payment in the country, and — with the beta already out — determine the critical features and set the priorities for the next iteration of the product.\n\nKonnect was not a company when I worked on it. It was a project inside T-ledger, the startup I joined. It has since spun out and become its own company.",
+      "body": "Konnect began designing its mobile application with the ambition of becoming the biggest digital wallet platform in Tunisia. The goal of this particular piece of work was to identify what was actually broken about online payment in the country, and, with the beta already out, determine the critical features and set the priorities for the next iteration of the product.\n\nKonnect was not a company when I worked on it. It was a project inside T-ledger, the startup I joined. It has since spun out and become its own company.",
       "images": []
     },
     {
       "id": "problem",
       "phase": "The problem",
       "heading": "No local convention to lean on",
-      "body": "Back in 2020 Tunisia had a serious problem with online payments: for most people, they simply did not work. Konnect answered that with a digital wallet that lets users pay online, send and receive money by bank transfer, buy phone credit, and connect straight to their bank account — all secured with blockchain. Designing the first online digital wallet in a market meant there was no local convention to lean on, so we focused on the SaaS side, particularly B2B and C2B, and built the user-centred design from there.",
+      "body": "Back in 2020 Tunisia had a serious problem with online payments: for most people, they simply did not work. Konnect answered that with a digital wallet that lets users pay online, send and receive money by bank transfer, buy phone credit, and connect straight to their bank account, all secured with blockchain. Designing the first online digital wallet in a market meant there was no local convention to lean on, so we focused on the SaaS side, particularly B2B and C2B, and built the user-centred design from there.",
       "images": [
         {
           "src": "assets/p2-understanding-the-problem.jpg",
@@ -86,7 +86,7 @@
       "id": "process",
       "phase": "Process",
       "heading": "Discover, define, ideate, implement",
-      "body": "The work ran on a discover, define, ideate, implement loop — research and synthesis feeding a sharp problem definition, then concepts and design feeding a solution. Working with the CTO meant constant back and forth, which is the reason the final product ended up functional rather than merely drawn.",
+      "body": "The work ran on a discover, define, ideate, implement loop: research and synthesis feeding a sharp problem definition, then concepts and design feeding a solution. Working with the CTO meant constant back and forth, which is the reason the final product ended up functional rather than merely drawn.",
       "images": []
     },
     {
@@ -106,7 +106,7 @@
       "id": "outcome",
       "phase": "Outcome",
       "heading": "On the App Store, 29 March 2021",
-      "body": "The app shipped. Konnect Pay reached the App Store on 29 March 2021, and the design I delivered was the version that launched on iOS and Android.\n\nWhat the company did afterwards is not my work, but it is the context that makes this worth showing. Konnect became the first payment facilitator licensed by the Central Bank of Tunisia, was the only Tunisian company selected for Visa's inaugural Africa Fintech Accelerator, and raised roughly $1.5M from Attijariwafa Ventures, Renew Capital, Digital Africa Ventures, Sunny Side Venture Partners, Plug and Play Africa and 54 Collective. It has since reported about 4% of Tunisia's online payments market, growing around 20% month on month.\n\nThe product has been fully redesigned since and is now on its seventh major version. What I own is the first one — the release that took the company from a pitch to something people could actually hold.",
+      "body": "The app shipped. Konnect Pay reached the App Store on 29 March 2021, and the design I delivered was the version that launched on iOS and Android.\n\nWhat the company did afterwards is not my work, but it is the context that makes this worth showing. Konnect became the first payment facilitator licensed by the Central Bank of Tunisia, was the only Tunisian company selected for Visa's inaugural Africa Fintech Accelerator, and raised roughly $1.5M from Attijariwafa Ventures, Renew Capital, Digital Africa Ventures, Sunny Side Venture Partners, Plug and Play Africa and 54 Collective. It has since reported about 4% of Tunisia's online payments market, growing around 20% month on month.\n\nThe product has been fully redesigned since and is now on its seventh major version. What I own is the first one: the release that took the company from a pitch to something people could actually hold.",
       "images": [
         {
           "src": "assets/01-desktop-47.jpg",

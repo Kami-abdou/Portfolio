@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>InstaDeep — Abdou Yaackoubi</title>
-  <meta name="description" content="Design highlights from InstaDeep — DeepPCB, InstaNovo, and the design system behind every product surface.">
+  <title>InstaDeep - Abdou Yaackoubi</title>
+  <meta name="description" content="Design highlights from InstaDeep: DeepPCB, InstaNovo, and the design system behind every product surface.">
   <meta name="author" content="Abdou Yaackoubi">
   <link rel="canonical" href="https://abdouyaackoubi.com/projects/instadeep">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="Abdou Yaackoubi">
-  <meta property="og:title" content="InstaDeep — Abdou Yaackoubi">
-  <meta property="og:description" content="Design highlights from InstaDeep — DeepPCB, InstaNovo, and the design system behind every product surface.">
+  <meta property="og:title" content="InstaDeep - Abdou Yaackoubi">
+  <meta property="og:description" content="Design highlights from InstaDeep: DeepPCB, InstaNovo, and the design system behind every product surface.">
   <meta property="og:url" content="https://abdouyaackoubi.com/projects/instadeep">
   <meta property="og:image" content="https://abdouyaackoubi.com/projects/10-instadeep/assets/share.jpg">
-  <meta property="og:image:alt" content="InstaDeep — Three product surfaces and the design system they all run on.">
+  <meta property="og:image:alt" content="InstaDeep - Three product surfaces and the design system they all run on.">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="InstaDeep — Abdou Yaackoubi">
-  <meta name="twitter:description" content="Design highlights from InstaDeep — DeepPCB, InstaNovo, and the design system behind every product surface.">
+  <meta name="twitter:title" content="InstaDeep - Abdou Yaackoubi">
+  <meta name="twitter:description" content="Design highlights from InstaDeep: DeepPCB, InstaNovo, and the design system behind every product surface.">
   <meta name="theme-color" content="#F4F1E8">
   <meta name="color-scheme" content="light">
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png?v=2aadc8c2">
@@ -37,21 +37,33 @@
   <link rel="preload" href="../assets/fonts/gabarito-variable.woff2?v=bab69a2a" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../assets/fonts/anton-400.woff2?v=2e308a05" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/fonts.css?v=4dfe30ff">
-  <link rel="stylesheet" href="../assets/tokens.css?v=78fcd920">
-  <link rel="stylesheet" href="../assets/styles.css?v=f18d4112">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
+  <link rel="stylesheet" href="../assets/tokens.css?v=83e1e874">
+  <link rel="stylesheet" href="../assets/styles.css?v=2c23955b">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI: designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
+  <script>
+    /* Before first paint, or the page renders in the system theme and then
+       snaps to the stored one. Inline and synchronous on purpose: a deferred
+       script runs after the first frame, which IS the flash.
+       Wrapped because Safari throws on localStorage in private browsing, and
+       an exception here would take the rest of the head with it. */
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-head">
     <div class="shell site-head__inner">
-      <a class="site-head__name" href="../work" aria-label="Abdou Yaackoubi — home"><span class="wordmark__line">Abdou</span><span class="wordmark__line wordmark__line--in">Yaackoubi</span></a>
+      <a class="site-head__name" href="../work" aria-label="Abdou Yaackoubi, home"><span class="wordmark__line">Abdou</span><span class="wordmark__line wordmark__line--in">Yaackoubi</span></a>
       <nav class="site-nav" aria-label="Primary">
         <span class="site-nav__pill">
           <span class="site-nav__marker" aria-hidden="true"></span>
           <a href="../work">Work</a>
           <a href="../about">About</a>
         </span>
+        <button class="theme-toggle" type="button" aria-label="Switch between light and dark" aria-pressed="false"><span class="theme-toggle__dial" aria-hidden="true"></span></button>
         <a class="site-nav__cta" href="../contact">Say hello</a>
       </nav>
     </div>
@@ -81,7 +93,7 @@
       <div class="project__layout shell">
         <aside class="project__meta">
           <nav class="toc" aria-label="On this page"><p class="toc__label">On this page</p><ol class="toc__list"><li><a href="#deeppcb">DeepPCB</a></li><li><a href="#deeppcb-app">DeepPCB dashboard</a></li><li><a href="#instanovo">InstaNovo</a></li><li><a href="#design-system">Design system</a></li><li><a href="#states">Off the grid, and page not found</a></li></ol></nav>
-          <div class="facts-group"><p class="facts-group__label">The engagement</p><dl class="facts"><div class="facts__row"><dt>Role</dt><dd>Senior Product Designer</dd></div><div class="facts__row"><dt>Client</dt><dd>InstaDeep</dd></div><div class="facts__row"><dt>Year</dt><dd>January 2024 — present</dd></div><div class="facts__row"><dt>Duration</dt><dd>Ongoing</dd></div><div class="facts__row"><dt>Team</dt><dd>Design of one, across several product teams</dd></div><div class="facts__row"><dt>Status</dt><dd>Ongoing</dd></div></dl></div><div class="facts-group"><p class="facts-group__label">Platforms</p><p class="facts-group__value">Web</p></div><div class="facts-group"><p class="facts-group__label">Toolkit</p><ul class="tools"><li class="tool"><img class="tool__icon" src="../assets/tools/figma.png?v=99f9166b" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Figma</span></li><li class="tool"><img class="tool__icon" src="../assets/tools/framer.png?v=18193210" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Framer</span></li></ul></div>
+          <div class="facts-group"><p class="facts-group__label">The engagement</p><dl class="facts"><div class="facts__row"><dt>Role</dt><dd>Senior Product Designer</dd></div><div class="facts__row"><dt>Client</dt><dd>InstaDeep</dd></div><div class="facts__row"><dt>Year</dt><dd>January 2024 - present</dd></div><div class="facts__row"><dt>Duration</dt><dd>Ongoing</dd></div><div class="facts__row"><dt>Team</dt><dd>Design of one, across several product teams</dd></div><div class="facts__row"><dt>Status</dt><dd>Ongoing</dd></div></dl></div><div class="facts-group"><p class="facts-group__label">Platforms</p><p class="facts-group__value">Web</p></div><div class="facts-group"><p class="facts-group__label">Toolkit</p><ul class="tools"><li class="tool"><img class="tool__icon" src="../assets/tools/figma.png?v=99f9166b" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Figma</span></li><li class="tool"><img class="tool__icon" src="../assets/tools/framer.png?v=18193210" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Framer</span></li></ul></div>
         </aside>
         <div class="project__main">
 
@@ -89,25 +101,25 @@
 
       <details class="project__section" id="deeppcb" open>
         <summary class="section__summary">
-<span class="project__eyebrow" aria-hidden="true"><span class="project__num">01</span><span class="project__eyebrow-sep"></span><span class="project__phase">Product</span></span>
+<span class="project__eyebrow" aria-hidden="true"><span class="project__phase">Product</span></span>
           <h2>DeepPCB</h2>
           <span class="section__count">3 screens</span>
         </summary>
         <div class="section__body">
-        <div class="prose"><p>DeepPCB is InstaDeep&#x27;s cloud-native PCB routing software — a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product&#x27;s public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.</p>
+        <div class="prose"><p>DeepPCB is InstaDeep&#x27;s cloud-native PCB routing software: a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product&#x27;s public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.</p>
         <p>These are the marketing and onboarding surfaces rather than the routing canvas itself.</p></div>
       <div class="shots">
         <figure class="shot" data-tall="true">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/p01-home.full.jpg" aria-label="Open full image: DeepPCB home page">
             <img src="10-instadeep/assets/p01-home.jpg" alt="DeepPCB home page" width="900" height="2708" loading="lazy" decoding="async">
           </button>
-          <figcaption>Home — the claim, stated once, above a routed board.</figcaption>
+          <figcaption>Home: the claim, stated once, above a routed board.</figcaption>
         </figure>
         <figure class="shot" data-tall="true">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/p02-enterprise.full.jpg" aria-label="Open full image: DeepPCB enterprise page">
             <img src="10-instadeep/assets/p02-enterprise.jpg" alt="DeepPCB enterprise page" width="900" height="2279" loading="lazy" decoding="async">
           </button>
-          <figcaption>Enterprise — the same router, argued to a buyer instead of an engineer.</figcaption>
+          <figcaption>Enterprise: the same router, argued to a buyer instead of an engineer.</figcaption>
         </figure>
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/p03-pricing.full.jpg" aria-label="Open full image: DeepPCB pricing page">
@@ -122,41 +134,41 @@
 
       <details class="project__section" id="deeppcb-app">
         <summary class="section__summary">
-<span class="project__eyebrow" aria-hidden="true"><span class="project__num">02</span><span class="project__eyebrow-sep"></span><span class="project__phase">Product</span></span>
+<span class="project__eyebrow" aria-hidden="true"><span class="project__phase">Product</span></span>
           <h2>DeepPCB dashboard</h2>
           <span class="section__count">2 screens</span>
         </summary>
         <div class="section__body">
         <div class="prose"><p>DeepPCB sells routing by the hour, so the two screens that carry the product are the one that says whether an hour is still running and the one that spends it.</p>
-        <p>The board list puts each job&#x27;s state on its own card — pending, idle, running — with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.</p></div>
-        <div class="viewer" data-viewer><div class="viewer__frame"><div class="viewer__bar" aria-hidden="true"><span></span><span></span><span></span></div><div class="viewer__stage"><div class="viewer__panel is-on" id="vp-0" role="tabpanel" aria-labelledby="vt-0"><button class="shot__btn viewer__zoom" type="button" data-full="10-instadeep/assets/app1-boards.full.jpg" aria-label="Open full size: DeepPCB board list, each board a card with its job status and file type" style="max-width:900px"><img src="10-instadeep/assets/app1-boards.jpg" alt="DeepPCB board list, each board a card with its job status and file type" width="900" height="506" loading="lazy" decoding="async"></button><p class="viewer__cap">Status lives on the card — pending, idle, running — and the credit balance sits above the nav, so “is my board done, and can I afford the next one” is answered without opening anything.</p></div><div class="viewer__panel" id="vp-1" role="tabpanel" aria-labelledby="vt-1"><button class="shot__btn viewer__zoom" type="button" data-full="10-instadeep/assets/app2-editor.full.jpg" aria-label="Open full size: DeepPCB board editor with layer tree, anomaly counts and the routing assistant" style="max-width:900px"><img src="10-instadeep/assets/app2-editor.jpg" alt="DeepPCB board editor with layer tree, anomaly counts and the routing assistant" width="900" height="506" loading="lazy" decoding="async"></button><p class="viewer__cap">The board is the page. Anomalies and the assistant left, the layer and component tree right, and the run priced at 45 minutes on the button before it is started.</p></div></div></div><div class="viewer__tabs" role="tablist" aria-label="DeepPCB dashboard"><button class="viewer__tab is-on" id="vt-0" role="tab" type="button" aria-controls="vp-0" aria-selected="true" data-i="0">Boards</button><button class="viewer__tab" id="vt-1" role="tab" type="button" aria-controls="vp-1" aria-selected="false" data-i="1">Editor</button></div></div>
+        <p>The board list puts each job&#x27;s state on its own card (pending, idle, running), with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.</p></div>
+        <div class="viewer" data-viewer><div class="viewer__frame"><div class="viewer__bar" aria-hidden="true"><span></span><span></span><span></span></div><div class="viewer__stage"><div class="viewer__panel is-on" id="vp-0" role="tabpanel" aria-labelledby="vt-0"><button class="shot__btn viewer__zoom" type="button" data-full="10-instadeep/assets/app1-boards.full.jpg" aria-label="Open full size: DeepPCB board list, each board a card with its job status and file type" style="max-width:900px"><img src="10-instadeep/assets/app1-boards.jpg" alt="DeepPCB board list, each board a card with its job status and file type" width="900" height="506" loading="lazy" decoding="async"></button><p class="viewer__cap">Status lives on the card (pending, idle, running), and the credit balance sits above the nav, so “is my board done, and can I afford the next one” is answered without opening anything.</p></div><div class="viewer__panel" id="vp-1" role="tabpanel" aria-labelledby="vt-1"><button class="shot__btn viewer__zoom" type="button" data-full="10-instadeep/assets/app2-editor.full.jpg" aria-label="Open full size: DeepPCB board editor with layer tree, anomaly counts and the routing assistant" style="max-width:900px"><img src="10-instadeep/assets/app2-editor.jpg" alt="DeepPCB board editor with layer tree, anomaly counts and the routing assistant" width="900" height="506" loading="lazy" decoding="async"></button><p class="viewer__cap">The board is the page. Anomalies and the assistant left, the layer and component tree right, and the run priced at 45 minutes on the button before it is started.</p></div></div></div><div class="viewer__tabs" role="tablist" aria-label="DeepPCB dashboard"><button class="viewer__tab is-on" id="vt-0" role="tab" type="button" aria-controls="vp-0" aria-selected="true" data-i="0">Boards</button><button class="viewer__tab" id="vt-1" role="tab" type="button" aria-controls="vp-1" aria-selected="false" data-i="1">Editor</button></div></div>
         </div>
       </details>
 
 
       <details class="project__section" id="instanovo">
         <summary class="section__summary">
-<span class="project__eyebrow" aria-hidden="true"><span class="project__num">03</span><span class="project__eyebrow-sep"></span><span class="project__phase">Product</span></span>
+<span class="project__eyebrow" aria-hidden="true"><span class="project__phase">Product</span></span>
           <h2>InstaNovo</h2>
           <span class="section__count">3 screens</span>
         </summary>
         <div class="section__body">
-        <div class="prose"><p>InstaNovo and InstaNovo+ are de novo peptide sequencing models: they read a mass spectrum and return a peptide sequence without matching it against a reference database, which is the whole point — a database search can only find what is already in the database. Built with the Department of Biotechnology and Biomedicine at the Technical University of Denmark, and published in Nature Machine Intelligence.</p>
-        <p>My work was the public face of it: the logo, and a landing page that has to hold two readers at once. A proteomics researcher wants the benchmark before they want anything else — 52% average peptide accuracy across eight biological datasets, 34% more novel peptides, 42% more peptide spectrum matches. Someone deciding whether to fund or adopt it wants to know what that unlocks. So the numbers sit in a band immediately under the hero rather than being saved for a technical page, and the two models get one section each — InstaNovo transcribing, InstaNovo+ refining by diffusion — because the relationship between them is the thing people get wrong.</p>
+        <div class="prose"><p>InstaNovo and InstaNovo+ are de novo peptide sequencing models: they read a mass spectrum and return a peptide sequence without matching it against a reference database, which is the whole point: a database search can only find what is already in the database. Built with the Department of Biotechnology and Biomedicine at the Technical University of Denmark, and published in Nature Machine Intelligence.</p>
+        <p>My work was the public face of it: the logo, and a landing page that has to hold two readers at once. A proteomics researcher wants the benchmark before they want anything else: 52% average peptide accuracy across eight biological datasets, 34% more novel peptides, 42% more peptide spectrum matches. Someone deciding whether to fund or adopt it wants to know what that unlocks. So the numbers sit in a band immediately under the hero rather than being saved for a technical page, and the two models get one section each: InstaNovo transcribing, InstaNovo+ refining by diffusion, because the relationship between them is the thing people get wrong.</p>
         <p>The set also includes the states, in the same visual language rather than a default: the 404 is built from real sequence output, and the pre-launch holding page had to look like the product it was holding.</p></div>
       <div class="shots">
         <figure class="shot" data-tall="true">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/in1-landing.full.jpg" aria-label="Open full image: InstaNovo landing page, full scroll: hero, benchmark band, a section each for InstaNovo and InstaNovo+, capability cards, research and contact">
             <img src="10-instadeep/assets/in1-landing.jpg" alt="InstaNovo landing page, full scroll: hero, benchmark band, a section each for InstaNovo and InstaNovo+, capability cards, research and contact" width="900" height="4666" loading="lazy" decoding="async">
           </button>
-          <figcaption>The landing page. Benchmarks in a band under the hero, not buried — a researcher reads the number before the pitch.</figcaption>
+          <figcaption>The landing page. Benchmarks in a band under the hero, not buried. A researcher reads the number before the pitch.</figcaption>
         </figure>
         <figure class="shot shot--video">
           <video class="shot__video" controls muted loop playsinline preload="metadata" poster="10-instadeep/assets/in4-hero-animation.jpg" width="1280" height="720">
             <source src="10-instadeep/assets/in4-hero-animation.mp4" type="video/mp4">
             <a href="10-instadeep/assets/in4-hero-animation.mp4">Download the animation (MP4)</a>
           </video>
-          <figcaption>The hero animation. A mass spectrum on the left resolves into predicted sequences on the right — the model&#x27;s actual job, stated once, in motion. Muted, and it does not start until you ask.</figcaption>
+          <figcaption>The hero animation. A mass spectrum on the left resolves into predicted sequences on the right: the model&#x27;s actual job, stated once, in motion. Muted, and it does not start until you ask.</figcaption>
         </figure>
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/in3-coming-soon.full.jpg" aria-label="Open full image: InstaNovo pre-launch holding page with COMING SOON set large, the last letters fading out">
@@ -171,7 +183,7 @@
 
       <details class="project__section" id="design-system">
         <summary class="section__summary">
-<span class="project__eyebrow" aria-hidden="true"><span class="project__num">04</span><span class="project__eyebrow-sep"></span><span class="project__phase">System</span></span>
+<span class="project__eyebrow" aria-hidden="true"><span class="project__phase">System</span></span>
           <h2>Design system</h2>
           <span class="section__count">9 screens</span>
         </summary>
@@ -180,48 +192,48 @@
         <p>Browse the components below.</p></div>
       <div class="shots">
         <figure class="shot">
-          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/01-every-variant.png" aria-label="Open full image: Every variant — InstaDeep design system">
-            <img src="10-instadeep/assets/components/01-every-variant.png" alt="Every variant — InstaDeep design system" width="1880" height="2090" loading="lazy" decoding="async">
+          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/01-every-variant.png" aria-label="Open full image: Every variant, InstaDeep design system">
+            <img src="10-instadeep/assets/components/01-every-variant.png" alt="Every variant, InstaDeep design system" width="1880" height="2090" loading="lazy" decoding="async">
           </button>
         </figure>
         <figure class="shot">
-          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/02-guidelines.png" aria-label="Open full image: Guidelines — InstaDeep design system">
-            <img src="10-instadeep/assets/components/02-guidelines.png" alt="Guidelines — InstaDeep design system" width="1510" height="1650" loading="lazy" decoding="async">
+          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/02-guidelines.png" aria-label="Open full image: Guidelines, InstaDeep design system">
+            <img src="10-instadeep/assets/components/02-guidelines.png" alt="Guidelines, InstaDeep design system" width="1510" height="1650" loading="lazy" decoding="async">
           </button>
         </figure>
         <figure class="shot" data-tall="true">
-          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/03-states-and-values.png" aria-label="Open full image: States and values — InstaDeep design system">
-            <img src="10-instadeep/assets/components/03-states-and-values.png" alt="States and values — InstaDeep design system" width="1510" height="2280" loading="lazy" decoding="async">
+          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/03-states-and-values.png" aria-label="Open full image: States and values, InstaDeep design system">
+            <img src="10-instadeep/assets/components/03-states-and-values.png" alt="States and values, InstaDeep design system" width="1510" height="2280" loading="lazy" decoding="async">
           </button>
         </figure>
         <figure class="shot" data-tall="true">
-          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/04-types-and-icons.png" aria-label="Open full image: Types and icons — InstaDeep design system">
-            <img src="10-instadeep/assets/components/04-types-and-icons.png" alt="Types and icons — InstaDeep design system" width="1510" height="2360" loading="lazy" decoding="async">
+          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/04-types-and-icons.png" aria-label="Open full image: Types and icons, InstaDeep design system">
+            <img src="10-instadeep/assets/components/04-types-and-icons.png" alt="Types and icons, InstaDeep design system" width="1510" height="2360" loading="lazy" decoding="async">
           </button>
         </figure>
         <figure class="shot">
-          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/05-layout-and-spacing.png" aria-label="Open full image: Layout and spacing — InstaDeep design system">
-            <img src="10-instadeep/assets/components/05-layout-and-spacing.png" alt="Layout and spacing — InstaDeep design system" width="1640" height="1480" loading="lazy" decoding="async">
+          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/05-layout-and-spacing.png" aria-label="Open full image: Layout and spacing, InstaDeep design system">
+            <img src="10-instadeep/assets/components/05-layout-and-spacing.png" alt="Layout and spacing, InstaDeep design system" width="1640" height="1480" loading="lazy" decoding="async">
           </button>
         </figure>
         <figure class="shot">
-          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/06-hierarchy.png" aria-label="Open full image: Hierarchy — InstaDeep design system">
-            <img src="10-instadeep/assets/components/06-hierarchy.png" alt="Hierarchy — InstaDeep design system" width="1510" height="1080" loading="lazy" decoding="async">
+          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/06-hierarchy.png" aria-label="Open full image: Hierarchy, InstaDeep design system">
+            <img src="10-instadeep/assets/components/06-hierarchy.png" alt="Hierarchy, InstaDeep design system" width="1510" height="1080" loading="lazy" decoding="async">
           </button>
         </figure>
         <figure class="shot">
-          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/07-destructive-actions.png" aria-label="Open full image: Destructive actions — InstaDeep design system">
-            <img src="10-instadeep/assets/components/07-destructive-actions.png" alt="Destructive actions — InstaDeep design system" width="1510" height="1250" loading="lazy" decoding="async">
+          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/07-destructive-actions.png" aria-label="Open full image: Destructive actions, InstaDeep design system">
+            <img src="10-instadeep/assets/components/07-destructive-actions.png" alt="Destructive actions, InstaDeep design system" width="1510" height="1250" loading="lazy" decoding="async">
           </button>
         </figure>
         <figure class="shot">
-          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/08-sidebar-states.png" aria-label="Open full image: Sidebar states — InstaDeep design system">
-            <img src="10-instadeep/assets/components/08-sidebar-states.png" alt="Sidebar states — InstaDeep design system" width="1160" height="1080" loading="lazy" decoding="async">
+          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/08-sidebar-states.png" aria-label="Open full image: Sidebar states, InstaDeep design system">
+            <img src="10-instadeep/assets/components/08-sidebar-states.png" alt="Sidebar states, InstaDeep design system" width="1160" height="1080" loading="lazy" decoding="async">
           </button>
         </figure>
         <figure class="shot">
-          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/09-sidebar-expanded.png" aria-label="Open full image: Sidebar expanded — InstaDeep design system">
-            <img src="10-instadeep/assets/components/09-sidebar-expanded.png" alt="Sidebar expanded — InstaDeep design system" width="573" height="1080" loading="lazy" decoding="async">
+          <button class="shot__btn" type="button" data-full="10-instadeep/assets/components/09-sidebar-expanded.png" aria-label="Open full image: Sidebar expanded, InstaDeep design system">
+            <img src="10-instadeep/assets/components/09-sidebar-expanded.png" alt="Sidebar expanded, InstaDeep design system" width="573" height="1080" loading="lazy" decoding="async">
           </button>
         </figure>
       </div>
@@ -231,24 +243,24 @@
 
       <details class="project__section" id="states">
         <summary class="section__summary">
-<span class="project__eyebrow" aria-hidden="true"><span class="project__num">05</span><span class="project__eyebrow-sep"></span><span class="project__phase">States</span></span>
+<span class="project__eyebrow" aria-hidden="true"><span class="project__phase">States</span></span>
           <h2>Off the grid, and page not found</h2>
           <span class="section__count">2 screens</span>
         </summary>
         <div class="section__body">
-        <div class="prose"><p>The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows — a routing job that will not converge, a spectrum with no confident call, a link that has gone stale — so the error pages carry each product&#x27;s own grid or sequence motif, say what happened in that product&#x27;s vocabulary, and offer exactly one way back. Two products, one discipline.</p></div>
+        <div class="prose"><p>The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows: a routing job that will not converge, a spectrum with no confident call, a link that has gone stale, so the error pages carry each product&#x27;s own grid or sequence motif, say what happened in that product&#x27;s vocabulary, and offer exactly one way back. Two products, one discipline.</p></div>
       <div class="shots">
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/p10-404.full.jpg" aria-label="Open full image: DeepPCB 404 page: a monospace 404 label, PAGE NOT FOUND set large, and a single Go to Homepage action">
             <img src="10-instadeep/assets/p10-404.jpg" alt="DeepPCB 404 page: a monospace 404 label, PAGE NOT FOUND set large, and a single Go to Homepage action" width="900" height="506" loading="lazy" decoding="async">
           </button>
-          <figcaption>DeepPCB — one message, one route out. “Off the grid” and “reconnect” are the router&#x27;s own vocabulary, not generic error copy.</figcaption>
+          <figcaption>DeepPCB: one message, one route out. “Off the grid” and “reconnect” are the router&#x27;s own vocabulary, not generic error copy.</figcaption>
         </figure>
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/in2-404.full.jpg" aria-label="Open full image: InstaNovo 404 page: the headline 404 | Page not found beside a peptide-sequence field forming a shape">
             <img src="10-instadeep/assets/in2-404.jpg" alt="InstaNovo 404 page: the headline 404 | Page not found beside a peptide-sequence field forming a shape" width="900" height="520" loading="lazy" decoding="async">
           </button>
-          <figcaption>InstaNovo — the field on the right is real sequence output, so even the error page is made of what the product does.</figcaption>
+          <figcaption>InstaNovo: the field on the right is real sequence output, so even the error page is made of what the product does.</figcaption>
         </figure>
       </div>
         </div>
@@ -275,6 +287,6 @@
     </div>
   </footer>
   <script src="../assets/lightbox.js?v=652506b0" defer></script>
-  <script src="../assets/enhance.js?v=bc50f276" defer></script>
+  <script src="../assets/enhance.js?v=6f8e8d35" defer></script>
 </body>
 </html>

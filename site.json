@@ -11,18 +11,18 @@
     "Prototyping in Code"
   ],
   "tagline": "Product direction, interface craft, and an AI-assisted build practice.",
-  "intro": "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. I build to find out: a prototype in code answers questions a static frame cannot.",
+  "intro": "What holds my attention is interaction design: how a thing responds, what it does while it waits, and how it recovers. I build to find out: a prototype in code answers questions a static frame cannot.",
   "contactLede": "Senior product designer at InstaDeep. Open to conversations about product work and collaborations.",
   "about": [
     "Today I'm a senior product designer at InstaDeep, an AI company acquired by BioNTech, working on their AI products and the design system underneath them. Before that I led product design at Steer, and at T-ledger I designed one of Tunisia's first digital wallets, built on blockchain.",
     "Six years and four companies: Fintech, Automotive retail, Food delivery, Home services and AI.",
-    "Based in Tunis — UTC+1"
+    "Based in Tunis, UTC+1"
   ],
   "experience": [
     {
       "company": "InstaDeep",
       "role": "Senior Product Designer",
-      "years": "Jan 2024 — present",
+      "years": "Jan 2024 - present",
       "note": "AI products, and the design system every InstaDeep product surface and demo runs on.",
       "projects": [
         "instadeep"
@@ -31,7 +31,7 @@
     {
       "company": "Steer",
       "role": "Product Designer Lead",
-      "years": "Oct 2021 — Nov 2023",
+      "years": "Oct 2021 - Nov 2023",
       "place": "Tunis, then Versailles",
       "note": "The only person in design and product, leading the front-end and back-end engineers. The company went on to raise in France.",
       "projects": [
@@ -41,7 +41,7 @@
     {
       "company": "Groupado",
       "role": "UX / UI Designer",
-      "years": "Feb 2021 — Sep 2021",
+      "years": "Feb 2021 - Sep 2021",
       "projects": [
         "groupado"
       ]
@@ -49,7 +49,7 @@
     {
       "company": "T-ledger",
       "role": "Product Designer",
-      "years": "Jan 2020 — Jan 2021",
+      "years": "Jan 2020 - Jan 2021",
       "note": "Sole designer across both of the company's products.",
       "projects": [
         "konnect",
@@ -113,11 +113,11 @@
   },
   "url": "https://abdouyaackoubi.com",
   "shareImage": "site/share-card.png",
-  "heroStatement": "Six years designing products across fintech, automotive retail and AI — and building them. From first research to shipped interface.",
-  "metaDescription": "Senior product designer. Six years across fintech, automotive retail and AI — designing products and building them.",
-  "aboutDescription": "Senior product designer across AI, blockchain and fintech — what I work on, and why I build the things I design.",
+  "heroStatement": "Six years across fintech, automotive retail and AI: designing products and building them. From first research to shipped interface.",
+  "metaDescription": "Senior product designer. Six years across fintech, automotive retail and AI: designing products and building them.",
+  "aboutDescription": "Senior product designer across AI, blockchain and fintech: what I work on, and why I build the things I design.",
   "heroClaim": "Hi, I'm Abdou.\nProduct Designer.\nI build what I design.",
-  "heroSupport": "Driving growth at InstaDeep, an AI company acquired by BioNTech — after six years across fintech, automotive retail and AI.",
+  "heroSupport": "Driving growth at InstaDeep, an AI company acquired by BioNTech. Six years across fintech, automotive retail and AI.",
   "availability": "Open to conversations",
   "availabilityNote": "Usually a reply the same day.",
   "portfolioLabel": "Portfolio ’26",
@@ -156,7 +156,7 @@
     },
     {
       "label": "I build them too",
-      "body": "This site is the proof — my Figma, my code, and a test suite that checks its own claims.",
+      "body": "This site is the proof: my Figma, my code, and a test suite that checks its own claims.",
       "cta": "How I think",
       "href": "about",
       "tone": "sky"
@@ -164,7 +164,7 @@
   ],
   "values": {
     "heading": "Values I believe in",
-    "description": "Craft is most of the job. The rest is how you behave when the work gets ambiguous, late, or contested — these are what I come back to.",
+    "description": "Craft is most of the job. The rest is how you behave when the work gets ambiguous, late, or contested. These are what I come back to.",
     "items": [
       {
         "label": "Stay next to the build",
@@ -189,8 +189,8 @@
   "aboutIntro": {
     "heading": "Design is how I think.\nBuilding is how I prove it.",
     "paragraphs": [
-      "What holds my attention is interaction design — how a thing responds, what it does while it waits, and how it recovers. The happy path is the easy half; the interesting half is everything after it.",
-      "I visualise a product as a system before I draw a screen. The structure comes first — what the states are, what can fail, what each surface is allowed to say — and the interface is what that structure looks like once it has to face someone.",
+      "What holds my attention is interaction design: how a thing responds, what it does while it waits, and how it recovers. The happy path is the easy half; the interesting half is everything after it.",
+      "I visualise a product as a system before I draw a screen. The structure comes first (what the states are, what can fail, what each surface is allowed to say), and the interface is what that structure looks like once it has to face someone.",
       "Then I build it. A prototype in code answers questions a static frame cannot, and it is the fastest way to find out that a flow which reads well does not feel right. This site is the proof: my Figma, my code, and a test suite that checks its own claims."
     ]
   }
