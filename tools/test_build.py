@@ -378,8 +378,14 @@ class TestContentColumnAlignment(BuildCase):
         self.assertIn('class="opening__support"', page)
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
         for sel in (".opening__claim {", ".opening__support {"):
-            block = css.split(sel, 1)[1].split("}", 1)[0]
-            self.assertIn("max-width:", block,
+            # A selector may legitimately appear in more than one rule -- the
+            # layout rule and, separately, an animation rule. Taking only the
+            # first match made this test depend on source order, so it checks
+            # the union of every block for the selector.
+            blocks = "".join(part.split("}", 1)[0]
+                             for part in css.split(sel)[1:])
+            self.assertTrue(blocks, "%s has no rule at all" % sel)
+            self.assertIn("max-width:", blocks,
                           "%s has no measure of its own, so its line length "
                           "is the full 1200px column" % sel)
 
@@ -3255,55 +3261,74 @@ class TestContainerTints(BuildCase):
                     r'\[data-tint="%s"\]\s*\{\s*--tint:\s*var\(--color-media-\w+\);?\s*\}'
                     % tint)
 
-    def test_every_media_tint_is_paper_family(self):
-        """Warmth (R-B) at or above zero. This is the whole design rule.
+    def test_every_media_tint_steps_toward_the_screenshot(self):
+        """The frame sits BETWEEN the page and the image. That is its job.
 
-        The first version of this pointed the tints at the saturated hero
-        card tokens, which are COOL -- cardSky is -12. Measured against
-        paper (+12) that put the frame as far from the page as the image it
-        was framing, and the container still read as a foreign panel.
+        On the warm-paper build this read as "every tint must be warm",
+        because every screenshot was cooler than the page and the frame had
+        to meet it halfway. The site is near-black now and the direction
+        inverted: screenshots are LIGHTER than the page, so a frame that is
+        darker than the page leans away from the thing it frames and the
+        hard edge comes back.
 
-        What governs it is direction, not distance: the same distance
-        travelled warm reads as paper under more ink, travelled cool it
-        reads as a different material. A future tint pointed at a cool
-        token would rebuild the exact bug this was written to kill, and
-        would look subtly wrong without failing anything else.
+        So the rule is stated in the general form it always had. For the
+        default (dark) theme every media tint is lighter than the page; for
+        the light theme every one is darker.
         """
         tokens = json.loads(
-            (ROOT / "tokens.json").read_text(encoding="utf-8"))["color"]
-        media = {k: v for k, v in tokens.items() if k.startswith("media")}
-        self.assertEqual(len(media), len(self.TINTS),
-                         "expected one media token per tint, got %r" % media)
-        for name, hexval in media.items():
-            with self.subTest(token=name):
-                r, g, b = (int(hexval[i:i + 2], 16) for i in (1, 3, 5))
-                self.assertGreaterEqual(
-                    r - b, 0,
-                    "%s (%s) has warmth %+d -- a cool tint reads as foreign "
-                    "material against the warm paper, which is the bug this "
-                    "whole treatment exists to fix." % (name, hexval, r - b))
+            (ROOT / "tokens.json").read_text(encoding="utf-8"))
+
+        def luma(h):
+            def ch(c):
+                c /= 255
+                return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+            r, g, b = (int(h[i:i + 2], 16) for i in (1, 3, 5))
+            return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
+
+        for group, lighter in (("color", True), ("colorLight", False)):
+            palette = tokens[group]
+            page = luma(palette["bg"])
+            for name, hexv in palette.items():
+                if not name.startswith("media"):
+                    continue
+                with self.subTest(theme=group, token=name):
+                    if lighter:
+                        self.assertGreater(
+                            luma(hexv), page,
+                            "%s (%s) is darker than the page it frames, so it "
+                            "leans away from the screenshot" % (name, hexv))
+                    else:
+                        self.assertLess(
+                            luma(hexv), page,
+                            "%s (%s) is lighter than the page it frames"
+                            % (name, hexv))
 
     def test_the_media_family_holds_one_lightness(self):
         """Hue is the only variable; otherwise the page pulses as it scrolls.
 
-        Six covers each carrying a different tint means six frames down one
-        column. If their lightness also varied, scrolling would visibly
-        brighten and dim, and the tints would read as a mistake rather than
-        as a system.
+        Five covers each carrying a different tint means five frames down
+        one column. If their lightness varied too, scrolling would visibly
+        brighten and dim and the tints would read as a mistake.
         """
         tokens = json.loads(
-            (ROOT / "tokens.json").read_text(encoding="utf-8"))["color"]
-        lumas = []
-        for name, hexval in tokens.items():
-            if not name.startswith("media"):
-                continue
-            r, g, b = (int(hexval[i:i + 2], 16) for i in (1, 3, 5))
-            lumas.append((name, 0.299 * r + 0.587 * g + 0.114 * b))
-        spread = max(l for _, l in lumas) - min(l for _, l in lumas)
-        self.assertLess(
-            spread, 3.0,
-            "media tints span %.1f of luma (%s); they are meant to differ in "
-            "hue alone." % (spread, ", ".join("%s %.1f" % x for x in lumas)))
+            (ROOT / "tokens.json").read_text(encoding="utf-8"))
+
+        def luma(h):
+            def ch(c):
+                c /= 255
+                return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+            r, g, b = (int(h[i:i + 2], 16) for i in (1, 3, 5))
+            return (0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)) * 100
+
+        for group in ("color", "colorLight"):
+            vals = [(k, luma(v)) for k, v in tokens[group].items()
+                    if k.startswith("media")]
+            spread = max(l for _, l in vals) - min(l for _, l in vals)
+            with self.subTest(theme=group):
+                self.assertLess(
+                    spread, 1.5,
+                    "%s media tints span %.2f of luma (%s)"
+                    % (group, spread, ", ".join("%s %.2f" % x for x in vals)))
 
     def test_the_tint_reaches_every_case_study_article(self):
         for folder, data in self.live_projects():
@@ -3332,22 +3357,27 @@ class TestContainerTints(BuildCase):
         """
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
         for selector in (r"\.entry__media\s*\{", r"\.shot__btn\s*\{"):
-            block = re.search(selector + r"([^}]*)\}", css)
-            self.assertIsNotNone(block, "no rule matching %s" % selector)
-            body = block.group(1)
+            # Union of every block for the selector: these elements now carry
+            # a layout rule AND a scroll-driven animation rule, and which one
+            # comes first in the file is not something this test should care
+            # about.
+            bodies = "".join(m.group(1) for m in
+                             re.finditer(selector + r"([^}]*)\}", css))
+            self.assertTrue(bodies, "no rule matching %s" % selector)
             with self.subTest(selector=selector):
-                self.assertIn("var(--tint", body,
+                self.assertIn("var(--tint", bodies,
                               "container does not paint the tint")
-                self.assertRegex(body, r"padding:\s*var\(--space-\d+\)",
+                self.assertRegex(bodies, r"padding:\s*var\(--space-\d+\)",
                                  "container has no inset, so no tint shows")
 
     def test_no_container_still_paints_itself_white(self):
         """bg-raised is #FFFFFF -- the one value that cannot merge with paper."""
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
         for selector in (r"\.entry__media\s*\{", r"\.shot__btn\s*\{"):
-            block = re.search(selector + r"([^}]*)\}", css)
+            bodies = "".join(m.group(1) for m in
+                             re.finditer(selector + r"([^}]*)\}", css))
             with self.subTest(selector=selector):
-                self.assertNotIn("--color-bg-raised", block.group(1))
+                self.assertNotIn("--color-bg-raised", bodies)
 
 
 class TestAboutBlockIsACard(BuildCase):
@@ -3501,9 +3531,15 @@ class TestCursorLabel(BuildCase):
         return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
 
     def block(self):
+        """Just this module. Bounded by the one that follows it, because an
+        unbounded split runs into unrelated code and makes the assertions
+        below lie about what the cursor label does."""
         js = self.js()
         self.assertIn("contextual cursor label", js, "the module is gone")
-        return js.split("contextual cursor label", 1)[1].split("reading progress", 1)[0]
+        after = js.split("contextual cursor label", 1)[1]
+        end = after.find("theme toggle")
+        self.assertGreater(end, 0, "cannot find the end of the cursor module")
+        return after[:end]
 
     def rule(self):
         css = self.css()
@@ -3579,9 +3615,10 @@ class TestCursorLabel(BuildCase):
         self.assertIn(".shot__btn", block)
         self.assertIn(".entry__media", block)
         for noise in ("'.btn'", '".btn"', ".site-nav", ".fan__card"):
-            self.assertNotIn(noise, block,
-                             "%s is labelled, but it already looks clickable"
-                             % noise)
+            self.assertNotIn(
+                noise, block,
+                "%s is in the cursor-label target list, but it already "
+                "looks clickable" % noise)
 
 
 class TestNoEmDashes(BuildCase):
@@ -3659,17 +3696,17 @@ class TestDarkMode(BuildCase):
     def css(self):
         return (ROOT / "assets" / "tokens.css").read_text(encoding="utf-8")
 
-    def test_every_light_token_has_a_dark_one(self):
-        """A missing dark value is a light colour surviving into dark mode.
+    def test_the_two_palettes_are_one_to_one(self):
+        """A missing value is one element lit from the wrong palette.
 
-        It does not raise and it does not look obviously broken. It just
-        leaves one element lit from the wrong palette.
+        It does not raise and it does not look obviously broken, which is
+        exactly why it needs a test.
         """
         t = self.tokens()
-        light, dark = set(t["color"]), set(t.get("colorDark", {}))
-        self.assertEqual(light, dark,
-                         "light-only: %s. dark-only: %s"
-                         % (sorted(light - dark), sorted(dark - light)))
+        default, alt = set(t["color"]), set(t.get("colorLight", {}))
+        self.assertEqual(default, alt,
+                         "default-only: %s. light-only: %s"
+                         % (sorted(default - alt), sorted(alt - default)))
 
     def test_both_selectors_are_emitted(self):
         """System preference AND an explicit choice, and the guard between.
@@ -3679,16 +3716,20 @@ class TestDarkMode(BuildCase):
         toggle appears broken.
         """
         css = self.css()
-        self.assertIn("@media (prefers-color-scheme: dark)", css)
-        self.assertIn(':root:not([data-theme="light"])', css)
-        self.assertIn(':root[data-theme="dark"]', css)
+        # Dark is the DEFAULT, so :root carries it and light is the override.
+        # Emitting light in :root would flash white on every cold load.
+        self.assertIn("--color-bg: #060C0B", css.split("@media", 1)[0],
+                      "the dark palette is not the :root default")
+        self.assertIn("@media (prefers-color-scheme: light)", css)
+        self.assertIn(':root:not([data-theme="dark"])', css)
+        self.assertIn(':root[data-theme="light"]', css)
 
     def test_color_scheme_lets_the_browser_follow(self):
         """Form controls, scrollbars and spinners are drawn by the browser.
 
         Without this they stay light on a dark page.
         """
-        self.assertIn("color-scheme: light dark", self.css())
+        self.assertIn("color-scheme: dark light", self.css())
 
     def test_styles_hold_no_colour_literals(self):
         """A literal cannot follow the theme, so it is a dark-mode bug.
@@ -3800,3 +3841,100 @@ class TestViewTransitions(BuildCase):
         self.assertTrue(
             any("view-transition" in b for b in blocks),
             "view transitions ignore prefers-reduced-motion")
+
+
+class TestScrollDrivenMotion(BuildCase):
+    """The motion layer, and the one way it can hide the work.
+
+    Scroll-driven animation fails in a specific, expensive way: an element
+    whose keyframes start at `opacity: 0` and whose timeline never runs
+    stays at zero forever. On a portfolio that means a blank page where the
+    work should be, in exactly the browsers that cannot report it.
+    """
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def test_every_timeline_is_behind_a_supports_guard(self):
+        """Unsupported browsers must get the page, not an empty column."""
+        css = re.sub(r"/\*.*?\*/", "", self.css(), flags=re.S)   # comments out
+        self.assertIn("animation-timeline", css, "the motion layer is gone")
+        guards = re.findall(r"@supports \(animation-timeline:", css)
+        self.assertTrue(guards, "no @supports guard around scroll-driven motion")
+        # Every DECLARATION must sit inside a guard. Scanned per line and
+        # skipping @supports lines, because the guard's own CONDITION reads
+        # `@supports (animation-timeline: view())` -- matching the bare
+        # string, or a regex that runs to the next semicolon, counts the
+        # guard as the thing it is guarding against.
+        guards_seen = 0
+        for line in css.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("@supports") and "animation-timeline" in stripped:
+                guards_seen += 1
+                continue
+            if re.match(r"animation-timeline\s*:", stripped):
+                self.assertGreater(
+                    guards_seen, 0,
+                    "%r is declared before any @supports guard, so an "
+                    "unsupporting browser would hold the element at its "
+                    "from-state" % stripped)
+
+    def test_the_resting_state_is_the_visible_one(self):
+        """Outside the guard every element must already be in its end state.
+
+        The keyframes animate FROM transparent TO solid. Nothing may set
+        opacity: 0 on these elements outside the guarded block, or the
+        fallback is a blank element rather than a static one.
+        """
+        css = self.css()
+        outside = re.sub(
+            r"@supports \(animation-timeline: view\(\)\)\s*\{.*?\n\}",
+            "", css, flags=re.S)
+        for sel in (r"\.entry__media", r"\.shot\b"):
+            blocks = "".join(m.group(1) for m in
+                             re.finditer(sel + r"\s*\{([^}]*)\}", outside))
+            with self.subTest(selector=sel):
+                self.assertNotRegex(
+                    blocks, r"opacity:\s*0\s*;",
+                    "%s is transparent outside the @supports guard" % sel)
+
+    def test_reduced_motion_is_honoured(self):
+        """Scroll-linked movement is movement nobody asked for."""
+        css = self.css()
+        guard = css.split("@supports (animation-timeline: view())", 1)[1]
+        head = guard[:400]
+        self.assertIn("prefers-reduced-motion: no-preference", head,
+                      "scroll-driven motion is not gated on reduced motion")
+
+    def test_the_hero_cascade_holds_its_end_state(self):
+        """`both` is what stops the hero snapping back after it lands."""
+        css = self.css()
+        block = re.search(r"\.opening__status,(.*?)\n\}", css, re.S)
+        self.assertIsNotNone(block, "the hero cascade is gone")
+        self.assertIn("both", block.group(1),
+                      "the hero animation has no fill-mode, so it reverts "
+                      "to transparent when it finishes")
+
+    def test_motion_adds_no_library(self):
+        """The layer is declarative: no animation library on the main thread."""
+        js = (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+        self.assertNotIn("ScrollTrigger", js)
+        self.assertNotIn("gsap", js.lower())
+
+    def test_no_scroll_listener_drives_an_animation(self):
+        """A scroll handler runs on every scroll frame. CSS timelines do not.
+
+        Counted rather than matched, so a failure names the number instead
+        of printing the whole file.
+
+        One listener remains and is allowed: the table-of-contents marker
+        reads the position of several headings to decide which is current.
+        That is a QUERY, not an animation, and no declarative timeline
+        expresses "whichever of these is nearest the top".
+        """
+        js = (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+        listeners = len(re.findall(r"addEventListener\(\s*['\"]scroll['\"]", js))
+        self.assertLessEqual(
+            listeners, 1,
+            "%d scroll listeners; anything that drives an animation belongs "
+            "on an animation-timeline instead" % listeners)

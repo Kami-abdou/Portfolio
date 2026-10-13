@@ -236,28 +236,14 @@
     }
   }
 
-  /* ── reading progress ────────────────────────────
-     Case studies are long; show how much is left. */
-  var bar = document.querySelector('.progress__bar');
-  if (bar) {
-    var article = document.querySelector('.project');
-    var ticking = false;
-    var draw = function () {
-      ticking = false;
-      var box = article.getBoundingClientRect();
-      var travel = box.height - window.innerHeight;
-      var done = travel > 0 ? (-box.top / travel) : 0;
-      bar.style.transform = 'scaleX(' + Math.min(1, Math.max(0, done)) + ')';
-    };
-    var onScroll = function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(draw);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    draw();
-  }
+  /* Reading progress moved to a scroll timeline in styles.css. It was a
+     window scroll listener with a rAF guard, which is the careful version
+     of a pattern that no longer needs to exist: the bar is pure animation,
+     and CSS can drive it off the main thread.
+
+     The section marker below keeps its listener on purpose. It asks which
+     of several headings is nearest the top, which is a query, not an
+     animation, and no timeline expresses it. */
 
   /* ── mark the section you're reading in the index ──
      Tracks the heading nearest the top of the viewport rather than

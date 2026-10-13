@@ -256,6 +256,112 @@ a { color: inherit; }
   .cursor-label.is-on { transition: none; scale: 1; }
 }
 
+/* ══════════════════════════════════════════════════════════
+   SCROLL-DRIVEN MOTION
+   ══════════════════════════════════════════════════════════
+   MOTION_INTENSITY 8, on the work rather than on the chrome. Every block
+   below answers §5's question -- what does this animation communicate --
+   in one line, or it would not be here.
+
+   Native `animation-timeline`, not JavaScript. Scroll handlers were the
+   reason scroll effects used to cost frames; this runs off the main thread
+   and nothing has to be cleaned up. It is also why there is no library.
+
+   Two guards wrap all of it, and both matter:
+
+     @supports (animation-timeline: view())
+         A browser without it must not be left holding an element at
+         opacity 0 forever. Outside the guard every element is in its
+         FINAL state, so an unsupporting browser simply shows the page.
+     prefers-reduced-motion: no-preference
+         Scroll-linked movement is movement the visitor did not ask for.
+
+   The order is deliberate: the rule sets the resting state, and only then
+   does the guarded block animate toward it.
+   ══════════════════════════════════════════════════════════ */
+
+/* The spine, drawn segment by segment.
+   Communicates: chronology. The rail IS a timeline, and a line that builds
+   as you descend says so better than a column of loose dots. Per entry
+   rather than one long line, because view() on a 5500px element has no
+   useful range -- a segment is one row tall and reads naturally. */
+@media (min-width: 900px) {
+  .entry { position: relative; }
+  .entry::before {
+    content: "";
+    position: absolute;
+    /* the dot is 12px wide at the column's left edge, so its centre is 6;
+       the line is 1px, so 5 puts it dead centre under the dot */
+    left: 5px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--color-border-strong);
+    transform-origin: top center;
+  }
+}
+
+/* Covers arrive rather than being there already.
+   Communicates: sequence. Five projects down one column read as a list;
+   arriving one at a time reads as a walk through the work. */
+@keyframes rail-media-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.985); }
+}
+/* Case-study screens, same reason, tighter range: there are up to nine in
+   a section and a long range would leave the last ones still arriving. */
+@keyframes shot-in {
+  from { opacity: 0; transform: translateY(14px); }
+}
+@keyframes spine-draw {
+  from { transform: scaleY(0); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    @media (min-width: 900px) {
+      .entry::before {
+        animation: spine-draw linear both;
+        animation-timeline: view();
+        /* drawn while the row enters, finished before it is being read */
+        animation-range: entry 0% entry 85%;
+      }
+    }
+    .entry__media {
+      animation: rail-media-in linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 75%;
+    }
+    .shot {
+      animation: shot-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+
+/* The hero, on load rather than on scroll: there is nothing to scroll yet.
+   Communicates: hierarchy. It walks the eye down in reading order instead
+   of dropping five elements at once, which is the difference between a
+   page that arrives and a page that is just suddenly there.
+
+   `both` holds the end state, so nothing snaps back. The cascade is short
+   on purpose: a hero a visitor has to WAIT through is a hero they resent. */
+@keyframes hero-step-in {
+  from { opacity: 0; transform: translateY(14px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .opening__status,
+  .opening__support,
+  .opening__actions,
+  .opening__facts {
+    animation: hero-step-in .55s var(--ease-out) both;
+  }
+  .opening__status  { animation-delay: .05s; }
+  .opening__support { animation-delay: .22s; }
+  .opening__actions { animation-delay: .30s; }
+  .opening__facts   { animation-delay: .38s; }
+}
+
 /* ── cross-document view transitions ─────────────────────────────────────
    MOTION_INTENSITY 6, and motivated rather than decorative: it communicates
    a state transition. Clicking a case study currently blanks the page and
@@ -925,11 +1031,32 @@ body::after {
   height: 2px; margin-bottom: calc(var(--space-2) * -1);
   background: var(--color-border);
 }
+/* Driven by the scroll position itself, not by a scroll handler.
+   §5.D bans window scroll listeners for animation: they run on every
+   scroll frame and cannot be batched off the main thread. A scroll
+   timeline is the same effect computed by the compositor.
+
+   scroll(root block) tracks the whole document rather than the article.
+   On a case study the article IS nearly the whole document, and counting
+   the pager and footer is arguably more honest: the bar fills when the
+   page is finished, not when the prose is.
+
+   The resting state is scaleX(0) and that is correct unguarded too: a
+   browser without scroll timelines shows an empty track, which is what
+   the bar looked like before any JavaScript ran. It reads as a bar at
+   zero, not as a broken element. */
 .progress__bar {
   display: block; height: 100%;
   background: var(--color-accent);
   transform: scaleX(0);
   transform-origin: left center;
+}
+@keyframes progress-fill { to { transform: scaleX(1); } }
+@supports (animation-timeline: scroll()) {
+  .progress__bar {
+    animation: progress-fill linear both;
+    animation-timeline: scroll(root block);
+  }
 }
 
 /* ── hero: let the name breathe, and add a hairline close ── */
