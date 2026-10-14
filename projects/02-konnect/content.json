@@ -5,9 +5,9 @@
   "tint": "teal",
   "title": "Konnect",
   "tagline": "One of the first digital wallets in Tunisia",
-  "summary": "Konnect set out to solve online payment in a country where it barely worked. I joined T-ledger as the only designer among more than fifteen engineers and two product managers, ran the full design process, and rebuilt the application end to end. The team still uses that design today.",
+  "summary": "Konnect set out to solve online payment in a country where it barely worked. I was its first designer, the only one among more than fifteen engineers and two product managers, and I designed the MVP that launched: the brand, the mobile application and the landing page. That release took the company from a pitch to a product, and Konnect went on to become the first payment facilitator licensed by the Central Bank of Tunisia.",
   "description": "Tunisia's first digital wallet. Sole designer among 15+ engineers, rebuilding the payment application end to end for iOS, Android and web.",
-  "role": "Product Designer: sole designer, through the early days and first launch",
+  "role": "Product Designer: first designer on the product, brand through to first launch",
   "client": "T-ledger: Konnect began as a project inside it",
   "year": "2020-2021",
   "duration": "February 2020 - January 2021",
@@ -41,16 +41,20 @@
   ],
   "metrics": [
     {
-      "label": "Shipped on iOS and Android",
-      "value": "March 2021"
+      "value": "First",
+      "label": "Designer on the product, brand through to launch"
     },
     {
-      "label": "Design team",
-      "value": "1 (me)"
+      "value": "15+",
+      "label": "Engineers, and no other designer"
     },
     {
-      "label": "Engineers supported",
-      "value": "15+"
+      "value": "3",
+      "label": "Surfaces I owned: brand, mobile app, landing page"
+    },
+    {
+      "value": "$1.5M",
+      "label": "Raised by Konnect after the MVP shipped"
     }
   ],
   "cover": "assets/01-desktop-47.jpg",
