@@ -289,12 +289,24 @@ class TestHeroPositioning(BuildCase):
         """
         page = self.html("index.html")
         # A newline in heroClaim is an author's line break and renders as
-        # <br>, so the rendered h1 is not a character-for-character copy of
-        # the source string. Compare line by line instead.
+        # its own .claim__line span, so the rendered h1 is not a
+        # character-for-character copy of the source string. Compare line
+        # by line instead. The last line carries the selection frame and
+        # is marked for it; everything else is a plain line.
         claim = self.site["heroClaim"]
-        rendered = "<br>".join(html.escape(l, quote=True) for l in claim.split("\n"))
+        lines = claim.split("\n")
+        rendered = "".join(
+            '<span class="claim__line%s">%s</span>'
+            % (" claim__line--built" if i == len(lines) - 1 else "",
+               html.escape(l, quote=True))
+            for i, l in enumerate(lines))
         self.assertIn('<h1 class="opening__claim">%s</h1>' % rendered, page,
                       "the homepage h1 is no longer the visible claim")
+        # The spans stack as blocks, so a <br> between them would render a
+        # phantom empty line box between every pair.
+        self.assertNotIn("<br>", re.search(
+            r'<h1 class="opening__claim">.*?</h1>', page, re.S).group(0),
+            "the claim stacks with blocks; a <br> adds a phantom line")
         h1s = re.findall(r"<h1[^>]*>", page)
         self.assertEqual(len(h1s), 1, "expected exactly one h1, found %r" % h1s)
         self.assertNotIn("visually-hidden", h1s[0],
@@ -3938,3 +3950,82 @@ class TestScrollDrivenMotion(BuildCase):
             listeners, 1,
             "%d scroll listeners; anything that drives an animation belongs "
             "on an animation-timeline instead" % listeners)
+
+
+class TestTheClaimAssembles(BuildCase):
+    """The hero's selection frame, and the two ways it could cost more than
+    it is worth.
+
+    The last line of the h1 is framed on load the way a design tool frames
+    a selected layer: edges, four corner handles, and a label naming it.
+    It holds for about a second and releases.
+
+    Failure one is the same shape as the scroll-driven case next door. The
+    decorations are drawn by an animation, so if the animation never runs
+    -- old browser, reduced motion, anything -- whatever they rest at is
+    what the visitor gets forever. They rest at opacity 0, which means the
+    failure mode is the finished page rather than a permanent orange box
+    around the headline.
+
+    Failure two is the accessibility tree. A frame is decoration, and
+    decoration that reaches a screen reader as content is worse than no
+    frame at all. It is drawn entirely on ::before and ::after, so the
+    heading's text is still exactly the sentence.
+    """
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def test_only_the_last_claim_line_is_framed(self):
+        page = self.html("index.html")
+        lines = self.site["heroClaim"].split("\n")
+        self.assertEqual(page.count('class="claim__line"'), len(lines) - 1)
+        self.assertEqual(page.count('class="claim__line claim__line--built"'), 1)
+        # and it is the LAST one, not whichever line happens to match
+        last = html.escape(lines[-1], quote=True)
+        self.assertIn('claim__line--built">%s</span></h1>' % last, page)
+
+    def test_the_decorations_rest_invisible(self):
+        """So a browser that ignores the animation gets the end state."""
+        css = self.css()
+        rest = re.search(
+            r"\.claim__line--built::before,\s*\n\s*\.claim__line--built::after\s*\{([^}]*)\}",
+            css)
+        self.assertIsNotNone(rest, "the two decoration layers share no resting rule")
+        self.assertIn("opacity: 0", rest.group(1),
+                      "the frame does not rest invisible, so a browser that "
+                      "never runs the animation keeps it on screen forever")
+
+    def test_the_animation_is_behind_a_reduced_motion_guard(self):
+        css = self.css()
+        for name in ("claim-frame", "claim-tag"):
+            decl = re.search(r"animation:\s*%s\b[^;]*;" % name, css)
+            self.assertIsNotNone(decl, "%s is never used" % name)
+            before = css[:decl.start()]
+            opened = before.rfind("@media (prefers-reduced-motion: no-preference)")
+            self.assertNotEqual(opened, -1,
+                                "%s is not inside a reduced-motion guard" % name)
+            # the guard must still be open where the declaration sits
+            self.assertGreater(before.count("{", opened), before.count("}", opened),
+                               "%s sits after its guard closed" % name)
+
+    def test_both_keyframes_end_invisible(self):
+        """Nothing is left drawn on the headline when the beat is over."""
+        css = self.css()
+        for name in ("claim-frame", "claim-tag"):
+            body = re.search(r"@keyframes %s\s*\{(.*?)\n\}" % name, css, re.S)
+            self.assertIsNotNone(body, "@keyframes %s is missing" % name)
+            end = re.search(r"100%\s*\{([^}]*)\}", body.group(1))
+            self.assertIsNotNone(end, "%s has no 100%% stop" % name)
+            self.assertIn("opacity: 0", end.group(1),
+                          "%s ends with something still on screen" % name)
+
+    def test_the_frame_adds_nothing_to_the_heading_text(self):
+        """Decoration on pseudo-elements, so the h1 still reads as a sentence."""
+        page = self.html("index.html")
+        h1 = re.search(r"<h1 class=\"opening__claim\">(.*?)</h1>", page, re.S).group(1)
+        text = re.sub(r"<[^>]+>", "", h1)
+        self.assertEqual(text, html.escape("".join(self.site["heroClaim"].split("\n")),
+                                           quote=True),
+                         "the h1 carries something other than the claim")
+        self.assertNotIn("aria-", h1, "the frame should need no aria patching")

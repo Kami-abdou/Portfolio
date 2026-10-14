@@ -1768,6 +1768,151 @@ html:not(.js) .viewer__tabs { display: none; }
 .opening__sep { width: 1px; height: 11px; background: var(--color-border-strong); flex: none; }
 .opening__portfolio { color: var(--color-text-faint); }
 
+/* ── the claim assembles ─────────────────────────────────────────────────
+   MOTION_INTENSITY 6, and the one piece of motion on this site that is
+   about the work rather than about the page.
+
+   The last line of the h1 is "I build what I design." On load it arrives
+   already selected: a dashed frame, four corner handles, and a label
+   naming the thing. The frame holds for about a second and then releases,
+   leaving the sentence with nothing drawn on it.
+
+   The label says `h1` rather than a pixel size. A size would have to be a
+   number written into CSS, and the real number changes with every
+   viewport -- a measurement badge that is wrong at most widths is worse
+   than no badge. `h1` is true at every width, and it is the better joke:
+   a BUILD-side name inside a DESIGN-side selection, which is the sentence
+   it is drawn around.
+
+   Both layers rest at opacity 0 and are only ever shown BY the animation.
+   That is what makes this safe: no JavaScript, no reduced-motion
+   fallback to write, and no state to clean up. A browser that ignores the
+   animation, or a visitor who asked for less motion, gets the clean type
+   that is the end state anyway.
+
+   Drawn entirely on pseudo-elements, so the heading's text content is
+   still exactly the sentence -- nothing here is in the accessibility
+   tree, and nothing here is selectable. */
+.claim__line { display: block; }
+.claim__line--built {
+  position: relative;
+  /* A block so the lines stack, but shrunk to its text so the frame is
+     drawn around the SENTENCE and not around the column. fit-content
+     rather than max-content: this line still has to be allowed to wrap
+     at 375px. */
+  width: fit-content;
+}
+.claim__line--built::before,
+.claim__line--built::after {
+  opacity: 0;
+  pointer-events: none;
+}
+/* The frame, and its four handles in one layer: four 7px gradient squares
+   sitting on the corners, which is cheaper and steadier than four
+   absolutely positioned elements that each have to be kept in the corner
+   as the type reflows. */
+.claim__line--built::before {
+  content: "";
+  position: absolute;
+  /* The box is the selection PLUS 4px of margin on every side, because a
+     background cannot paint outside the box that owns it and the handles
+     straddle the corners. Drawing the frame with `border` and the handles
+     with `background` clipped every handle to the 1.5px border box, which
+     is a lot of CSS for four invisible squares.
+
+     So the whole selection is one background: four edges and four
+     handles, eight layers, painted 4px inside this box. The edges land
+     flush to the line box vertically and clear of the side bearings
+     horizontally, which is the bounding box a design tool would draw.
+
+     Handles come first in the list, so they sit above the edges where
+     they meet. Solid, not outlined: Figma fills them white against blue,
+     and the equivalent here is the accent against the page. */
+  inset: -4px calc(-0.08em - 4px);
+  background-image:
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent));
+  background-size:
+    8px 8px, 8px 8px, 8px 8px, 8px 8px,
+    calc(100% - 8px) 1.5px, calc(100% - 8px) 1.5px,
+    1.5px calc(100% - 8px), 1.5px calc(100% - 8px);
+  background-repeat: no-repeat;
+  background-position:
+    left 0 top 0, right 0 top 0, left 0 bottom 0, right 0 bottom 0,
+    left 4px top 4px, left 4px bottom 4px,
+    left 4px top 4px, right 4px top 4px;
+}
+.claim__line--built::after {
+  opacity: 0;
+  pointer-events: none;
+}
+/* The frame, and its four handles in one layer: four 7px gradient squares
+   sitting on the corners, which is cheaper and steadier than four
+   absolutely positioned elements that each have to be kept in the corner
+   as the type reflows. */
+.claim__line--built::before {
+  content: "";
+  position: absolute;
+  /* Flush to the line box vertically, because that IS the bounding box a
+     selection draws. The earlier -0.1em pushed the top edge up through
+     the descenders of the line above. Horizontally it clears the glyphs'
+     side bearings so the frame does not sit on the's stem. */
+  inset: 0 -0.08em;
+  /* Solid, not dashed. A 1px dash of accent on near-black is legible in
+     principle -- 6.44:1 -- and unreadable in practice at this size in the
+     second it is on screen. Solid is also what the tool draws: dashed is
+     a hint, solid is a selection, and this is a selection. */
+  border: 1.5px solid var(--color-accent);
+  border-radius: 1px;
+  background-image:
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent)),
+    linear-gradient(var(--color-accent), var(--color-accent));
+  background-size: 8px 8px;
+  background-repeat: no-repeat;
+  background-position:
+    left -4.75px top -4.75px,    right -4.75px top -4.75px,
+    left -4.75px bottom -4.75px, right -4.75px bottom -4.75px;
+}
+.claim__line--built::after {
+  content: "h1";
+  position: absolute;
+  left: -0.14em;
+  top: calc(100% + 10px);
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  font: 600 11px/1.4 var(--font-mono);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Delayed past the hero cascade (.38s on the last of it) so the frame
+     reads as a beat after the page settles, not as part of its arrival. */
+  .claim__line--built::before { animation: claim-frame 1.9s var(--ease-out) .45s both; }
+  .claim__line--built::after  { animation: claim-tag   1.7s var(--ease-out) .62s both; }
+}
+@keyframes claim-frame {
+  0%   { opacity: 0; transform: scale(0.985); }
+  9%   { opacity: 1; transform: scale(1); }
+  66%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.006); }
+}
+@keyframes claim-tag {
+  0%   { opacity: 0; transform: translateY(3px); }
+  11%  { opacity: 1; transform: translateY(0); }
+  63%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-2px); }
+}
+
 /* ── the claim: the page's h1 ── */
 .opening__claim {
   margin: 0;

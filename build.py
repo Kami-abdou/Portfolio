@@ -1163,12 +1163,23 @@ def build_index(projects):
                      e(c.get("href", "#work")), e(c.get("cta", "Have a look")))
         for c in cards)
 
-    # A newline in heroClaim is an author's line break, rendered as <br>.
-    # The alternative is letting the measure wrap it, which moves the break
-    # every time the viewport changes -- and the break is the joke here:
-    # the greeting on one line, the job on the next.
+    # A newline in heroClaim is an author's line break. The alternative is
+    # letting the measure wrap it, which moves the break every time the
+    # viewport changes -- and the break is the joke here: the greeting on
+    # one line, the job on the next.
+    #
+    # Each line is a span rather than text separated by <br>, because the
+    # LAST one is framed on load (see .claim__line--built) and a frame
+    # needs a box to draw around. .claim__line is display:block, so there
+    # is no <br> between them: a <br> between two blocks renders a phantom
+    # empty line box, which is the bug that made the about heading measure
+    # 370px for two lines of 181.
     claim = SITE.get("heroClaim") or SITE["title"]
-    claim_html = "<br>".join(e(line) for line in claim.split("\n"))
+    claim_lines = claim.split("\n")
+    claim_html = "".join(
+        '<span class="claim__line%s">%s</span>'
+        % (" claim__line--built" if i == len(claim_lines) - 1 else "", e(line))
+        for i, line in enumerate(claim_lines))
 
     out.append(f"""
     <div class="shell hero-band">
