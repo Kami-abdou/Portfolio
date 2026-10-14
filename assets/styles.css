@@ -2806,22 +2806,34 @@ html { scroll-snap-type: y proximity; }
 .site-head nav a.site-nav__cta:hover { transform: translateY(-2px); }
 
 @media (max-width: 639px) {
-  /* The pill and the button together overflow a 375px gutter once the
-     wordmark has taken its half, so the button drops its label to its
-     own line rather than squeezing both. */
+  /* Three rows was the old answer and it cost 249px of a 720px phone --
+     a third of the screen spent on a header before anything it is a
+     header FOR. The wordmark took row one, the pill and the toggle row
+     two, and the call to action was left stranded on row three.
+
+     Two rows now: the wordmark, then everything else across one line.
+     The nav stops wrapping and spreads instead, and the two padded
+     elements give up horizontal padding -- not vertical, because the
+     44px touch targets are not negotiable and the padding is what makes
+     them 44px. Measured at 320, 360, 375 and 414: no overflow at any of
+     them, which is the whole reason the paddings are what they are. */
   .site-head__inner { flex-wrap: wrap; row-gap: var(--space-3); }
+  .site-head nav {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+  .site-head nav a { padding-inline: var(--space-2); }
+  .site-head nav a.site-nav__cta { padding-inline: var(--space-3); }
 }
 
-/* ── the wordmark needs its own backdrop ──────────────────
+/* ── the wordmark, and the backdrop it used to have ──────────────────
    The header used to be a full-bleed bar with a blurred background, so
    everything in it had something behind it. Moving that backdrop onto
    the nav pill left the wordmark bare, and because the header is still
-   sticky, prose scrolled straight under the name -- two sets of ink on
-   top of each other with nothing between them. Caught on a case study,
-   where the summary runs the full width and passes directly behind it.
-
-   The same pill the nav links sit in, so the header reads as two
-   floating objects rather than one floating and one stranded. */
+   sticky, prose scrolled straight under the name. The answer then was to
+   give the wordmark the same pill. */
 /* No pill. The wordmark is already a shape -- two stacked lines with a
    rule holding the indent -- and wrapping a shape in a second shape was
    what made the old mark look cramped: the descender-free caps sat 8px
