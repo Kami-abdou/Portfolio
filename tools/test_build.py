@@ -3233,7 +3233,7 @@ class TestContainerTints(BuildCase):
     keeps it from being invisible.
     """
 
-    TINTS = ("sand", "teal", "sky")
+    TINTS = ("sand", "clay", "ash")
 
     def test_every_live_project_declares_a_known_tint(self):
         for folder, data in self.live_projects():
@@ -3346,7 +3346,7 @@ class TestContainerTints(BuildCase):
             self.assertTrue(covers, "%s renders no covers" % name)
             for attrs in covers:
                 with self.subTest(page=name, attrs=attrs):
-                    self.assertRegex(attrs, r'data-tint="(sand|teal|sky)"')
+                    self.assertRegex(attrs, r'data-tint="(sand|clay|ash)"')
 
     def test_the_image_is_inset_so_the_tint_is_actually_visible(self):
         """A tint behind an edge-to-edge image is a tint nobody ever sees.
@@ -3469,12 +3469,12 @@ class TestMaskedHeadingsHaveNoPhantomLine(BuildCase):
 
 
 class TestAboutIntroIsACard(BuildCase):
-    """The about page opens on a surface, and in the display teal."""
+    """The about page opens on a surface, and in the deep display accent."""
 
     def test_the_intro_is_wrapped_in_a_card(self):
         self.assertIn('<div class="about__card">', self.html("about.html"))
 
-    def test_the_statement_uses_the_deep_display_teal(self):
+    def test_the_statement_uses_the_deep_display_accent(self):
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
         block = re.search(r"\.about__statement\s*\{([^}]*)\}", css)
         self.assertIsNotNone(block)
@@ -3494,7 +3494,7 @@ class TestAboutIntroIsACard(BuildCase):
             int(cap.group(1)), 20,
             "a cap this tight re-wraps 'Building is how I prove it.'")
 
-    def test_the_display_teal_clears_AA_on_every_surface_it_lands_on(self):
+    def test_the_deep_accent_clears_AA_on_every_surface_it_lands_on(self):
         tokens = json.loads(
             (ROOT / "tokens.json").read_text(encoding="utf-8"))["color"]
         ink = tokens["accentDeep"]

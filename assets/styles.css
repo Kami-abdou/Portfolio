@@ -108,28 +108,33 @@ a { color: inherit; }
    tint, tint to image -- instead of one long one.
 
    The tint is NOT the matching hero-card colour, and that was the first
-   attempt. cardSky sits 17.4 from paper while the InstaDeep cover sits
-   19.3 -- the tint was as foreign as the image it was meant to reconcile,
-   and the frame still read as a cool panel dropped on warm paper.
+   attempt. The cool tint sat as far from paper as the cover it was meant
+   to reconcile, so the frame still read as a cool panel dropped on warm
+   paper.
 
    What actually governs this is direction, not distance. A tone that is
    FARTHER from paper but warmer reads as the same paper under more ink;
    the identical distance travelled cool reads as a different material. So
-   every media tint keeps warmth (R-B) at or above zero and simply leans:
+   every media tint keeps warmth (R-B) above zero and simply leans:
 
-       mediaSand  #EFE6D6  warmth +25   luma 230.9
-       mediaTeal  #E6EADD  warmth  +9   luma 231.3
-       mediaSky   #E5E8E5  warmth  +0   luma 230.8   (paper: +12, luma 240.9)
+       mediaSand  #EDE9E1  warmth +12   luma 233.3
+       mediaClay  #EEE8E8  warmth  +6   luma 233.8
+       mediaAsh   #EAE9E7  warmth  +3   luma 233.1   (paper: +1, luma 250.9)
 
-   Luma is held flat across the family on purpose -- 0.5 of spread -- so
+   The family was sand/teal/sky until the accent moved from teal to ember.
+   A cool tint under a warm accent is precisely the failure described
+   above, so teal became clay and sky became ash: the same three slots at
+   the same luma, with the hues re-solved into the warm half of the wheel.
+
+   Luma is held flat across the family on purpose -- 0.7 of spread -- so
    hue is the only thing that changes between two projects and the work
    page does not visibly brighten and dim as you scroll it.
 
    The hero cards keep the saturated card* tokens: those are meant to read
    as distinct objects, which is the opposite of what a frame has to do. */
 [data-tint="sand"] { --tint: var(--color-media-sand); }
-[data-tint="teal"] { --tint: var(--color-media-teal); }
-[data-tint="sky"]  { --tint: var(--color-media-sky);  }
+[data-tint="clay"] { --tint: var(--color-media-clay); }
+[data-tint="ash"]  { --tint: var(--color-media-ash);  }
 
 /* The inline insets are not optional once viewport-fit=cover is set: in
    landscape the notch eats into the content column, and .shell is the one
@@ -2269,8 +2274,8 @@ html { scroll-snap-type: y proximity; }
   transition: transform .45s var(--ease-out), box-shadow .45s var(--ease-out);
 }
 .fan__card--sand { background: var(--color-card-sand); }
-.fan__card--teal { background: var(--color-card-teal); }
-.fan__card--sky  { background: var(--color-card-sky); }
+.fan__card--clay { background: var(--color-card-clay); }
+.fan__card--ash  { background: var(--color-card-ash); }
 
 .fan__label {
   margin: 0;
@@ -2964,8 +2969,9 @@ html { scroll-snap-type: y proximity; }
      scales with the clamped font size. */
   max-width: 21ch;
   text-wrap: balance;
-  /* Deep teal rather than the near-black ink. At 7.19:1 on paper this is
-     AAA, and it beats --color-accent (4.39 on a tinted card) because the
-     accent is tuned for small UI text, not for 87px of display type. */
+  /* The deep accent rather than the near-black ink. At 7.49:1 on paper
+     this is AAA, and it beats --color-accent (4.73 on a tinted card)
+     because the accent is tuned for small UI text, not for 87px of
+     display type. */
   color: var(--color-accent-deep);
 }

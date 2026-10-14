@@ -152,14 +152,14 @@
       "body": "Open to conversations about product work and collaborations.",
       "cta": "Get in touch",
       "href": "contact",
-      "tone": "teal"
+      "tone": "clay"
     },
     {
       "label": "I build them too",
       "body": "This site is the proof: my Figma, my code, and a test suite that checks its own claims.",
       "cta": "How I think",
       "href": "about",
-      "tone": "sky"
+      "tone": "ash"
     }
   ],
   "values": {

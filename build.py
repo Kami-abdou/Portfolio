@@ -436,7 +436,7 @@ def write_tokens_css():
     that emits light in :root flashes white on every load for the majority
     of visitors, which is the one thing a dark site must not do.
 
-    The canvas is a teal-cast black rather than a neutral one, so the page
+    The canvas is a warm-cast black rather than a neutral one, so the page
     carries the brand hue instead of borrowing a reference's. The structure
     is borrowed; the colour is not.
 
@@ -937,7 +937,7 @@ def screen_count(images):
             % (n, "" if n == 1 else "s"))
 
 
-TINTS = ("sand", "teal", "sky")
+TINTS = ("sand", "clay", "ash")
 
 
 def project_tint(project):
