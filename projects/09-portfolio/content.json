@@ -52,7 +52,7 @@
     {
       "id": "the-site",
       "heading": "The site",
-      "body": "Dark-only and declared as such, so the browser paints scrollbars and form controls to match rather than guessing. Every colour, type step and spacing value comes from a single tokens file; the stylesheet contains no literals, so changing the accent is a one-line edit.\n\nIt is built progressive-enhancement first. The marquee, the lightbox and the scroll reveals are all additions — with JavaScript switched off the site still renders completely, which is also how these screenshots were taken.",
+      "body": "It ships both themes and declares both, so the browser paints scrollbars and form controls to match rather than guessing: dark by default, light when the system asks for it, and a toggle in the header to override either. Every colour, type step and spacing value comes from a single tokens file; the stylesheet contains no literals, so changing the accent is a one-line edit.\n\nIt is built progressive-enhancement first. The marquee, the lightbox and the scroll reveals are all additions — with JavaScript switched off the site still renders completely, which is also how these screenshots were taken.",
       "images": [
         {
           "src": "assets/n1-mobile.jpg",
