@@ -52,3 +52,4 @@ notes/
 
 # Build bookkeeping
 .image-renames.json
+_proto/

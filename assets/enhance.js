@@ -485,8 +485,8 @@
     if (!pill.contains(ev.relatedTarget)) rest();
   });
 
-  // The pill is laid out before the fonts land, and Anton and Gabarito
-  // both change the links' widths when they arrive. Measure after.
+  // The pill is laid out before the fonts land, and Gabarito changes the
+  // links' widths when it arrives. Measure after.
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(rest);
   }

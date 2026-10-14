@@ -20,13 +20,9 @@
                 which is the same role Roobert plays on the site this was
                 briefed against. Also variable, one file, 29KB.
 
-     Anton  — the wordmark, and nothing else. It went when the marquee did,
-                and came back because the mark it makes is the one the live
-                site has had for two years: two stacked lines of condensed
-                caps, the surname indented. An ultra-condensed grotesk would
-                be wrong for the layout and is exactly right for a logo --
-                the contrast against rounded Gabarito is what makes it read
-                as a mark rather than as a line of text.
+   Anton was here as a third face, for the wordmark and nothing else. The
+   mark is now set in Gabarito, so the file went with it: 12KB and one
+   preload on every page, for one element.
 
    Both are preloaded in <head> (see build.py `head`): `font-display: swap`
    without a preload is a layout shift by construction.
@@ -48,10 +44,3 @@
   src: url('fonts/geist-variable.woff2') format('woff2');
 }
 
-@font-face {
-  font-family: 'Anton';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('fonts/anton-400.woff2') format('woff2');
-}

@@ -689,7 +689,6 @@ def head(title, description, *, depth=0, image=None, page_url="",
        downloaded twice and the preload buys nothing. -->
   <link rel="preload" href="{up}assets/fonts/geist-variable.woff2{asset_v('assets/fonts/geist-variable.woff2')}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{up}assets/fonts/gabarito-variable.woff2{asset_v('assets/fonts/gabarito-variable.woff2')}" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="{up}assets/fonts/anton-400.woff2{asset_v('assets/fonts/anton-400.woff2')}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{up}assets/fonts.css{asset_v("assets/fonts.css")}">
   <link rel="stylesheet" href="{up}assets/tokens.css{asset_v("assets/tokens.css")}">
   <link rel="stylesheet" href="{up}assets/styles.css{asset_v("assets/styles.css")}">

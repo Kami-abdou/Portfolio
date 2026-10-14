@@ -1176,22 +1176,43 @@ body::after {
    display face at 600 reads as a mark at this size without fighting it. */
 .site-head__name {
   display: block;
-  /* The poster face, and the only place on the site that uses it. This is
-     the mark the live site has carried for two years and it should not
-     change just because the page around it did -- the condensed caps
-     against rounded Gabarito are what make it read as a logo rather than
-     as the first line of the page. */
-  font-family: var(--font-poster);
-  font-weight: 400;
-  font-size: clamp(1.05rem, 1.9vw, 1.5rem);
-  line-height: 0.82;
-  letter-spacing: 0.005em;
+  /* Set in the display face, not the poster face. For two years this was
+     Anton: ultra-condensed caps, and the argument for it was that the
+     contrast against rounded Gabarito is what made it read as a mark
+     rather than as the first line of the page.
+
+     The contrast was real and so was the cost. Anton at 24px over 0.82
+     leading puts nine condensed caps and five more directly above them
+     into 159x57, and the result is a dark blob -- the surname is the part
+     that loses, which is the half of the name that matters. The stacking,
+     the indent, the caps and the rule below do the work the condensed
+     face was being asked to do, and they do it legibly.
+
+     Deleting it also deletes a font: Anton was 12KB on every page for
+     this one element, and the display face was already downloaded. */
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(0.95rem, 1.65vw, 1.3125rem);
+  line-height: 1.02;
+  letter-spacing: -0.012em;
   text-transform: uppercase;
   color: var(--color-text);
 }
 .wordmark__line { display: block; }
-/* the indent is the whole idea; scale it with the type */
-.wordmark__line--in { padding-left: 1.15em; }
+/* The indent is the whole idea, and now something sits in it. The rule is
+   what the indent was always implying -- a line carrying the second line
+   in -- and it is the one place in the header that takes the accent.
+   Sized in em so it scales with the clamp above. */
+.wordmark__line--in { padding-left: 1.35em; position: relative; }
+.wordmark__line--in::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 1em;
+  height: 2px;
+  background: var(--color-accent);
+}
 
 /* the header sits directly on the hero now, so give the row some air */
 .site-head__inner { align-items: start; padding-block: var(--space-6); }
@@ -2656,13 +2677,12 @@ html { scroll-snap-type: y proximity; }
 
    The same pill the nav links sit in, so the header reads as two
    floating objects rather than one floating and one stranded. */
-.site-head__name {
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-bg-raised) 72%, transparent);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border);
-}
+/* No pill. The wordmark is already a shape -- two stacked lines with a
+   rule holding the indent -- and wrapping a shape in a second shape was
+   what made the old mark look cramped: the descender-free caps sat 8px
+   from a border on all four sides and the surname ran to the edge. The
+   nav pills stay; they are buttons and need a hit area. A logo is not a
+   button. */
 
 /* ── the case-study sidebar, as a card ────────────────────
    Contents and facts were loose text in a column, which is what they
