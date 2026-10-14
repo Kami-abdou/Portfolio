@@ -5,7 +5,7 @@
   "meta": "2024-now · AI · Senior product designer",
   "tint": "sky",
   "tagline": "Three product surfaces and the design system they all run on.",
-  "summary": "Senior product designer at InstaDeep, an AI research company acquired by BioNTech. I work across DeepPCB, their cloud-native PCB routing software, InstaNovo, their protein-sequencing model, and the design system every InstaDeep product surface and demo is built from.",
+  "summary": "Senior product designer at InstaDeep, an AI research company acquired by BioNTech. I work across DeepPCB, their cloud-native PCB routing software, InstaNovo, their protein-sequencing model, and the design system behind both. More than ten demo applications for prospective clients, partners and BioNTech have been built on that system, and engineering has implemented its core components in code.",
   "description": "Design highlights from InstaDeep: DeepPCB, InstaNovo, and the design system behind every product surface.",
   "role": "Senior Product Designer",
   "client": "InstaDeep",
@@ -40,7 +40,20 @@
       "url": "https://instanovo.ai"
     }
   ],
-  "metrics": [],
+  "metrics": [
+    {
+      "value": "10+",
+      "label": "Demo apps for clients, partners and BioNTech"
+    },
+    {
+      "value": "3",
+      "label": "Product surfaces running on one system"
+    },
+    {
+      "value": "In code",
+      "label": "Core components implemented by engineering"
+    }
+  ],
   "cover": "assets/cover-brand.jpg",
   "shareCard": true,
   "sections": [
@@ -116,7 +129,7 @@
       "id": "design-system",
       "phase": "System",
       "heading": "Design system",
-      "body": "Every InstaDeep product surface and research demo is built from one system. It exists because the alternative was each team inventing its own buttons, and it had to survive being used by engineers with no designer in the room.\n\nBrowse the components below.",
+      "body": "Every InstaDeep product surface and research demo is built from one system. It exists because the alternative was each team inventing its own buttons, and it had to survive being used by engineers with no designer in the room.\n\nMore than ten demo applications have been built on it since, for prospective clients, for partners and for BioNTech. Engineering has implemented its core components in code, so a new demo starts from assembled parts instead of a blank file. That is where the time goes back: the system pays for itself every time the next one is needed.\n\nBrowse the components below.",
       "viewer": false,
       "autoImages": "components"
     },
