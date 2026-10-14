@@ -4020,6 +4020,41 @@ class TestTheClaimAssembles(BuildCase):
             self.assertIn("opacity: 0", end.group(1),
                           "%s ends with something still on screen" % name)
 
+    def test_the_frame_can_be_brought_back(self):
+        """The one-shot problem, and the one-word cause of it.
+
+        As first written the beat played once per page load and could
+        never be seen again: arrive, look at the nav for a second, and
+        the only motion on the site has already happened to you.
+
+        Hovering the sentence selects it again. The subtle part is the
+        fill mode. An animation beats a normal declaration in the
+        cascade, so while `both` or `forwards` holds the end state the
+        :hover rule cannot win and hover is silently dead -- the CSS
+        looks right and does nothing. `backwards` fills the delay only
+        and then lets go, which is what hands control back.
+        """
+        css = self.css()
+        for name in ("claim-frame", "claim-tag"):
+            decl = re.search(r"animation:\s*%s\b[^;]*;" % name, css).group(0)
+            self.assertIn("backwards", decl,
+                          "%s must fill backwards only" % name)
+            self.assertNotIn("forwards", decl)
+            self.assertNotRegex(decl, r"\bboth\b",
+                                "%s holds its end state, which kills the "
+                                "hover rule silently" % name)
+        hover = re.search(
+            r"\.claim__line--built:hover::before,\s*\n\s*"
+            r"\.claim__line--built:hover::after\s*\{([^}]*)\}", css)
+        self.assertIsNotNone(hover, "nothing brings the frame back")
+        self.assertIn("opacity: 1", hover.group(1))
+        # and the way back has to be a transition, since the animation
+        # has finished by then and will not run again
+        rest = re.search(
+            r"\.claim__line--built::before,\s*\n\s*"
+            r"\.claim__line--built::after\s*\{([^}]*)\}", css).group(1)
+        self.assertIn("transition: opacity", rest)
+
     def test_the_frame_adds_nothing_to_the_heading_text(self):
         """Decoration on pseudo-elements, so the h1 still reads as a sentence."""
         page = self.html("index.html")

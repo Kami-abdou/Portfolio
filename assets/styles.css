@@ -1806,6 +1806,7 @@ html:not(.js) .viewer__tabs { display: none; }
 .claim__line--built::after {
   opacity: 0;
   pointer-events: none;
+  transition: opacity 0.22s var(--ease-out);
 }
 /* The frame, and its four handles in one layer: four 7px gradient squares
    sitting on the corners, which is cheaper and steadier than four
@@ -1896,20 +1897,41 @@ html:not(.js) .viewer__tabs { display: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
   /* Delayed past the hero cascade (.38s on the last of it) so the frame
-     reads as a beat after the page settles, not as part of its arrival. */
-  .claim__line--built::before { animation: claim-frame 1.9s var(--ease-out) .45s both; }
-  .claim__line--built::after  { animation: claim-tag   1.7s var(--ease-out) .62s both; }
+     reads as a beat after the page settles, not as part of its arrival.
+
+     `backwards`, NOT `both`. This is the fix for the thing that made the
+     first version feel broken: a filled animation keeps its end state and
+     an animation beats a normal declaration in the cascade, so with
+     `both` the :hover rule below could never win and the frame was gone
+     for good the moment the beat ended. `backwards` holds the first
+     keyframe through the delay and then lets go, which returns the
+     decorations to their resting opacity: 0 and puts hover back in
+     charge. */
+  .claim__line--built::before { animation: claim-frame 2.6s var(--ease-out) .55s backwards; }
+  .claim__line--built::after  { animation: claim-tag   2.4s var(--ease-out) .72s backwards; }
+}
+
+/* And it comes back. A one-shot that plays once per page load is a thing
+   a visitor can miss permanently -- arrive, look at the nav, and the only
+   piece of motion on the site has already happened. Pointing at the
+   sentence selects it again, for as long as you keep pointing.
+
+   Hover only, because the hover query is what tells a touch device not to
+   emulate this on tap. A phone gets the load beat and nothing sticky. */
+@media (hover: hover) {
+  .claim__line--built:hover::before,
+  .claim__line--built:hover::after { opacity: 1; }
 }
 @keyframes claim-frame {
   0%   { opacity: 0; transform: scale(0.985); }
-  9%   { opacity: 1; transform: scale(1); }
-  66%  { opacity: 1; transform: scale(1); }
+  7%   { opacity: 1; transform: scale(1); }
+  76%  { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.006); }
 }
 @keyframes claim-tag {
   0%   { opacity: 0; transform: translateY(3px); }
-  11%  { opacity: 1; transform: translateY(0); }
-  63%  { opacity: 1; transform: translateY(0); }
+  8%   { opacity: 1; transform: translateY(0); }
+  74%  { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-2px); }
 }
 
