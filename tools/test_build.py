@@ -472,19 +472,8 @@ class TestCV(BuildCase):
         self.assertEqual(self.cv_path().read_bytes()[:5], b"%PDF-",
                          "the CV is not a PDF")
 
-    def test_it_does_not_use_type3_fonts(self):
-        """Type3 is what made the old one unreadable.
-
-        A Figma or Sketch export can reintroduce it without any visible
-        change, which is exactly why this is a test and not a note.
-        """
-        raw = self.cv_path().read_bytes()
-        self.assertNotIn(b"/Type3", raw,
-                         "the CV uses Type3 fonts again -- its text will not "
-                         "survive copy-paste or an ATS parser")
-
-    def test_its_text_can_be_mapped_back_to_characters(self):
-        """Embedded fonts are useless without a ToUnicode table."""
+    def unicode_mappings(self):
+        """How many glyph codes the document can map back to characters."""
         import zlib
         raw = self.cv_path().read_bytes()
         mappings = 0
@@ -499,6 +488,48 @@ class TestCV(BuildCase):
                 continue
             if b"beginbfchar" in data or b"beginbfrange" in data:
                 mappings += len(re.findall(rb"<[0-9A-Fa-f]+>\s*<[0-9A-Fa-f]+>", data))
+        return mappings
+
+    def test_its_fonts_do_not_defeat_text_extraction(self):
+        """This was a flat ban on Type3, and a flat ban was the wrong rule.
+
+        Type3 is what made the ORIGINAL CV unreadable, so banning it
+        outright looked like the safe call. But the ban was a proxy for
+        the property that actually matters -- that the text can be pulled
+        back out -- and the two can disagree. Type3 defines each glyph as
+        a drawing procedure, so Type3 WITHOUT a ToUnicode table really is
+        a picture of words. Type3 WITH a complete one is still
+        recoverable text that merely draws itself unusually.
+
+        They disagreed on the CV supplied on 2026-10-16: 14 Type3
+        references, and 238 glyph-to-unicode mappings. Extracting it
+        returned 4,787 characters, no replacement characters, no stray
+        codepoints, and every employer name and the email address intact.
+        A flat ban would have rejected a document whose text is provably
+        fine.
+
+        So the rule is the property now. Type3 has to carry a mapping
+        table dense enough to undo it; the original failure -- Type3 and
+        nothing to map it with -- still fails, which is the case that
+        actually cost something.
+
+        Worth knowing: this is more permissive than the old rule, and a
+        crude ATS parser may still skip a Type3 font it could have read.
+        An export WITHOUT Type3 is strictly safer, and previous versions
+        of this CV managed it.
+        """
+        raw = self.cv_path().read_bytes()
+        mappings = self.unicode_mappings()
+        if b"/Type3" in raw:
+            self.assertGreater(
+                mappings, 150,
+                "the CV uses Type3 fonts and carries only %d glyph-to-unicode "
+                "mappings -- too few to undo them, so its text will not "
+                "survive copy-paste or an ATS parser" % mappings)
+
+    def test_its_text_can_be_mapped_back_to_characters(self):
+        """Embedded fonts are useless without a ToUnicode table."""
+        mappings = self.unicode_mappings()
         self.assertGreater(mappings, 50,
                            "the CV carries %d glyph-to-unicode mappings, too "
                            "few for a page of text to be extractable" % mappings)
