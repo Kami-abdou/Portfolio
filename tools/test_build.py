@@ -541,6 +541,47 @@ class TestCV(BuildCase):
                         "the CV is %d bytes; a CV should not be the heaviest "
                         "thing a visitor downloads" % size)
 
+    def test_every_cv_link_opens_in_a_new_tab(self):
+        """Clicking the CV used to replace the portfolio with a PDF.
+
+        The tab navigated to the document, so the visitor got a browser PDF
+        viewer where the site had been, with the back button as the only
+        way back to it. A recruiter who opens the CV is the one visitor you
+        least want to have left the page.
+
+        Announced as well as opened. A new tab is a change of context, and
+        one that happens without warning is disorienting if you cannot see
+        that a tab appeared -- the back button simply stops going back
+        (WCAG 3.2.5). The note rides in the accessible name and nowhere on
+        screen, because for everyone else the new tab IS the cue.
+
+        Checked on every page that links it, not just the obvious three:
+        the footer carries the CV on all nine, and the footer is generated
+        once, so one missed branch there is eight broken links.
+        """
+        base = re.escape(self.site["cv"].split("/")[-1])
+        pattern = re.compile(r"<a\b([^>]*%s[^>]*)>(.*?)</a>" % base, re.S)
+        pages = ["index.html", "about.html", "contact.html", "work.html"]
+        pages += ["projects/%s.html" % d["slug"] for _, d in self.live_projects()]
+        found = 0
+        for name in pages:
+            links = pattern.findall(self.html(name))
+            self.assertTrue(links, "%s links no CV at all" % name)
+            for attrs, body in links:
+                found += 1
+                with self.subTest(page=name, attrs=attrs.strip()[:60]):
+                    self.assertIn('target="_blank"', attrs,
+                                  "%s has a CV link that replaces the page" % name)
+                    self.assertIn('rel="noopener"', attrs,
+                                  "%s opens the CV in a new tab without "
+                                  "rel=noopener" % name)
+                    self.assertIn("opens in a new tab", body,
+                                  "%s opens a new tab without telling anyone "
+                                  "who cannot see it happen" % name)
+        self.assertGreaterEqual(found, len(pages),
+                                "expected at least one CV link per page, "
+                                "found %d across %d pages" % (found, len(pages)))
+
     def test_every_cv_link_is_versioned(self):
         """The CV is replaced under the same name, so caches serve the old one.
 

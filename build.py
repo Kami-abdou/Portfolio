@@ -335,10 +335,29 @@ def link_icon(label, depth=0, *, slug=None):
             % (cls, "../" * depth, rel, asset_v(rel), dims))
 
 
-def link_btn(label, href, depth=0, *, slug=None, rel_attr=""):
+#: Attributes for a link that leaves the page for a new tab.
+#:
+#: `noopener` is belt and braces on a same-origin PDF -- every current
+#: browser implies it for target="_blank" -- but it is one attribute and it
+#: is what the rest of the file already does for outbound links.
+NEW_TAB = ' target="_blank" rel="noopener"'
+
+#: ...and the part a sighted visitor gets for free.
+#:
+#: A new tab is a change of context, and a link that changes context without
+#: saying so is the surprise WCAG 3.2.5 is about: the back button no longer
+#: goes back, which is disorienting if you cannot see that a tab appeared.
+#: The note is in the accessible name and nowhere on screen, because the
+#: visual cue is the tab itself.
+NEW_TAB_NOTE = '<span class="visually-hidden"> (opens in a new tab)</span>'
+
+
+def link_btn(label, href, depth=0, *, slug=None, rel_attr="", new_tab=False):
     """A .btn carrying its mark, so the four sites cannot drift apart."""
-    return ('<a class="btn" href="%s"%s>%s<span>%s</span></a>'
-            % (e(href), rel_attr, link_icon(label, depth, slug=slug), e(label)))
+    attrs = rel_attr + (NEW_TAB if new_tab else "")
+    note = NEW_TAB_NOTE if new_tab else ""
+    return ('<a class="btn" href="%s"%s>%s<span>%s</span>%s</a>'
+            % (e(href), attrs, link_icon(label, depth, slug=slug), e(label), note))
 
 
 def is_phone(size):
@@ -731,7 +750,7 @@ def foot(depth=0):
       <p class="site-foot__note">© {iso[:4]} {e(SITE['name'])} · Last updated <time datetime="{iso}">{e(pretty)}</time></p>
       <nav class="site-foot__links" aria-label="Elsewhere">
         {links}
-        <a href="{up}{e(SITE['cv'])}{asset_v(SITE['cv'])}">CV</a>
+        <a href="{up}{e(SITE['cv'])}{asset_v(SITE['cv'])}"{NEW_TAB}>CV{NEW_TAB_NOTE}</a>
       </nav>
     </div>
   </footer>
@@ -1343,7 +1362,7 @@ def contact_band(*, depth=0, level="h2"):
     # last week -- keeps downloading the previous document. This project has
     # lost time to exactly that failure four times on other assets.
     cv_btn = ('\n        ' + link_btn("CV (PDF)", up + SITE["cv"] + asset_v(SITE["cv"]),
-                                      depth, slug="cv")
+                                      depth, slug="cv", new_tab=True)
               if SITE.get("cv") else "")
     # And the address itself never appeared as selectable text anywhere on the
     # site -- only ever inside href="mailto:". A recruiter who wants to paste
@@ -1567,7 +1586,7 @@ def build_about(index):
           {intro_body}
           {body}
           <p class="about__cta">
-            <a class="btn btn--solid" href="{e(SITE['cv'])}{asset_v(SITE['cv'])}">Download CV (PDF)</a>
+            <a class="btn btn--solid" href="{e(SITE['cv'])}{asset_v(SITE['cv'])}"{NEW_TAB}>Download CV (PDF){NEW_TAB_NOTE}</a>
           </p>
           <div class="btn-row">
         {links}
