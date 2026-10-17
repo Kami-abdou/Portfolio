@@ -1178,7 +1178,7 @@ body::after {
   display: block;
   /* Set in the display face, not the poster face. For two years this was
      Anton: ultra-condensed caps, and the argument for it was that the
-     contrast against rounded Gabarito is what made it read as a mark
+     contrast against the rounded display face made it read as a mark
      rather than as the first line of the page.
 
      The contrast was real and so was the cost. Anton at 24px over 0.82

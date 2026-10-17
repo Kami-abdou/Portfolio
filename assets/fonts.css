@@ -2,45 +2,50 @@
 
    Two faces, both SIL Open Font License 1.1:
 
-     Gabarito — the display face. Rounded geometric, which is the register
-                this redesign is built in. Variable 100-900 in one 34KB
-                file.
+     Bricolage Grotesque — the display face. A grotesque with deliberate
+                irregularity: the shapes are not smoothed into a system,
+                which is the point. Variable, and crucially it carries an
+                OPTICAL SIZE axis (12-96), so the 88px hero is drawn with
+                a cut meant for 88px rather than a 16px letterform scaled
+                up. `font-optical-sizing` is `auto` by default, so this
+                needs no declaration -- the browser reads font-size and
+                picks. 77KB, which is 43KB more than the face it replaced;
+                the opsz axis is what costs, and it is what it is for.
 
-                WARNING for whoever probes this next: Gabarito is
-                DUPLEXED. Every weight occupies the same advance width, so
-                the usual "render a string at 400 and 800 and compare
-                widths" test reports a dead axis on a font whose axis is
-                perfectly alive. Measured: "Handgloves 500" at 64px is
-                1008px wide at 400, 500, 600 AND 800, while the rendered
-                pixels are visibly four different weights. Check the
-                pixels, not the metrics. (The upside of duplexing is that
-                a weight change never reflows a line.)
+     Instrument Sans — the body face. A workhorse grotesk that holds at
+                15-18px, variable 400-700, 30KB.
 
-     Geist    — the body face, kept from the previous design. A neo-grotesk,
-                which is the same role Roobert plays on the site this was
-                briefed against. Also variable, one file, 29KB.
+   What they replaced, and why: Gabarito and Geist, both free, both fine,
+   and both wearing the uniform. Geist is Vercel's typeface and has been
+   on roughly every AI product and developer tool shipped since 2023 --
+   at this point it reads as a default rather than a decision. Gabarito
+   is a rounded geometric that says friendly startup. The owner asked for
+   type that does not look machine-chosen, and the fix is not a better
+   free grotesk, it is a face with a hand in it.
 
-   Anton was here as a third face, for the wordmark and nothing else. The
-   mark is now set in Gabarito, so the file went with it: 12KB and one
-   preload on every page, for one element.
+   The duplexing warning that lived here was about Gabarito: every weight
+   shared one advance width, so a width-comparison test reported a dead
+   axis on a live one. Bricolage is NOT duplexed -- weights change width
+   normally -- so that trap is gone, and so is the free lunch where a
+   weight change never reflowed a line.
 
    Both are preloaded in <head> (see build.py `head`): `font-display: swap`
    without a preload is a layout shift by construction.
 */
 
 @font-face {
-  font-family: 'Gabarito';
+  font-family: 'Bricolage Grotesque';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 200 800;
   font-display: swap;
-  src: url('fonts/gabarito-variable.woff2') format('woff2');
+  src: url('fonts/bricolage-variable.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: 'Geist';
+  font-family: 'Instrument Sans';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400 700;
   font-display: swap;
-  src: url('fonts/geist-variable.woff2') format('woff2');
+  src: url('fonts/instrument-variable.woff2') format('woff2');
 }
 

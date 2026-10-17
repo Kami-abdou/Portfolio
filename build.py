@@ -782,15 +782,15 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <link rel="apple-touch-icon" href="{up}assets/apple-touch-icon.png{asset_v('assets/apple-touch-icon.png')}">
   <!-- The two faces, preloaded. `font-display: swap` without this pair is a
        layout shift by construction: first paint uses a fallback whose metrics
-       differ from Geist's, then the page reflows when the real face arrives.
+       differ from the body face's, then the page reflows when it arrives.
        Measured on this site before the preload existed, that cost 0.389 CLS.
 
        `crossorigin` is required even though these are same-origin. Fonts are
        always fetched in CORS mode, so a preload without it is a SEPARATE
        cache entry from the one @font-face goes on to request -- the file gets
        downloaded twice and the preload buys nothing. -->
-  <link rel="preload" href="{up}assets/fonts/geist-variable.woff2{asset_v('assets/fonts/geist-variable.woff2')}" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="{up}assets/fonts/gabarito-variable.woff2{asset_v('assets/fonts/gabarito-variable.woff2')}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{up}assets/fonts/instrument-variable.woff2{asset_v('assets/fonts/instrument-variable.woff2')}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{up}assets/fonts/bricolage-variable.woff2{asset_v('assets/fonts/bricolage-variable.woff2')}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{up}assets/fonts.css{asset_v("assets/fonts.css")}">
   <link rel="stylesheet" href="{up}assets/tokens.css{asset_v("assets/tokens.css")}">
   <link rel="stylesheet" href="{up}assets/styles.css{asset_v("assets/styles.css")}">
