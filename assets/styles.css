@@ -3266,78 +3266,149 @@ html { scroll-snap-type: y proximity; }
   font-size: var(--font-size-sm);
 }
 
-/* ── selected work ────────────────────────────────────────── */
+/* ── selected work, as an index ───────────────────────────
+   Three 1152x720 cover cards filled two and a half screens and said
+   four words each. Five rows fit in one screen and each says what the
+   project was, which is the trade every reference the owner sent makes:
+   none of the four shows large cover cards, and the two that show work
+   on the homepage at all show a dated list.
+
+   The cover is not gone. It follows the cursor -- see .peek below --
+   which is the only place an image here earns its weight, because it
+   appears when someone has already shown interest in a particular row. */
 .band__title {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-text-faint);
-  margin: 0 0 var(--space-8);
+  margin: 0 0 var(--space-6);
 }
-.cards {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.index { list-style: none; margin: 0; padding: 0; }
+.index__row { border-top: 1px solid var(--color-border); }
+.index__row:last-child { border-bottom: 1px solid var(--color-border); }
+.index__link {
   display: grid;
-  gap: var(--space-12);
-}
-.card__link {
-  display: block;
+  /* num | name | line | domain | year | arrow. The line takes the slack,
+     so the three right-hand columns stay in a true vertical rule down
+     the page -- which is what makes a list of five read as an index
+     rather than as five paragraphs. */
+  grid-template-columns:
+    2rem minmax(7rem, auto) minmax(0, 1fr) minmax(0, 11rem) 5rem 1rem;
+  align-items: baseline;
+  gap: var(--space-6);
+  padding-block: var(--space-6);
   text-decoration: none;
   color: inherit;
+  transition: background .25s var(--ease-out);
 }
-.card__media {
-  margin: 0;
-  overflow: hidden;
-  border-radius: var(--radius-lg);
-  background: var(--tint, var(--color-bg-alt));
-}
-/* One ratio for every cover, which is the only way three
-   screenshots of 900x450, 900x640 and 900x2229 can sit in a column
-   without the page lurching. Anchored to the top because a tall
-   product screenshot keeps its header and loses its footer, which
-   is the half worth seeing. */
-.card__media img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  object-position: center top;
-  transition: transform .5s var(--ease-out);
-}
-.card__link:hover .card__media img { transform: scale(1.02); }
-.card__row {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-  margin-top: var(--space-4);
-}
-.card__name {
-  font-family: var(--font-display);
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-xl);
-  letter-spacing: var(--tracking-heading);
-}
-.card__tag { color: var(--color-text-muted); font-size: var(--font-size-sm); }
-.card__years {
-  margin-left: auto;
+.index__num {
+  font-size: var(--font-size-xs);
   color: var(--color-text-faint);
-  font-size: var(--font-size-sm);
   font-variant-numeric: tabular-nums;
 }
-.card__link:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 6px;
-  border-radius: var(--radius-sm);
+.index__name {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-heading);
+  transition: transform .3s var(--ease-out);
 }
-.more-work {
-  margin: var(--space-8) 0 0;
+.index__line,
+.index__domain,
+.index__year {
   font-size: var(--font-size-sm);
-  color: var(--color-text-faint);
+  color: var(--color-text-muted);
 }
-.more-work a { color: var(--color-text-muted); }
+.index__domain, .index__year { color: var(--color-text-faint); }
+.index__year { font-variant-numeric: tabular-nums; }
+.index__arrow {
+  color: var(--color-text-faint);
+  transition: transform .3s var(--ease-out), color .25s var(--ease-out);
+}
+/* Hover and keyboard focus get the SAME treatment. A row that only
+   responds to a pointer is a row a keyboard cannot tell it has landed
+   on. */
+.index__link:hover,
+.index__link:focus-visible {
+  background: var(--color-bg-alt);
+  outline: none;
+}
+.index__link:hover .index__name,
+.index__link:focus-visible .index__name { transform: translateX(6px); }
+.index__link:hover .index__arrow,
+.index__link:focus-visible .index__arrow {
+  transform: translate(3px, -3px);
+  color: var(--color-accent);
+}
+/* Focus still has to be VISIBLE, not just tinted: a background change
+   alone is the kind of focus style that disappears against a busy
+   screenshot or for anyone who cannot distinguish the two surfaces. */
+.index__link:focus-visible {
+  box-shadow: inset 2px 0 0 0 var(--color-accent);
+}
+
+/* Below this, the six columns stop being a table and start being six
+   words stacked in a 40px gutter: at 375px the tagline rendered one
+   word per line and the row stood 322px tall. Two lines instead --
+   number, name and year across the top, the line underneath.
+
+   The domain goes. It is the one fact of the five that the tagline
+   already implies ("One of the first digital wallets in Tunisia" is
+   not going to be mistaken for anything but fintech), and it is on the
+   case study either way. The arrow goes too: there is no hover on a
+   phone, so it was pointing at nothing. */
+@media (max-width: 760px) {
+  .index__link {
+    grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "num  name line-end"
+      "line line line";
+    gap: var(--space-2) var(--space-3);
+    padding-block: var(--space-4);
+    align-items: baseline;
+  }
+  .index__num  { grid-area: num; }
+  .index__name { grid-area: name; }
+  .index__year { grid-area: line-end; }
+  .index__line { grid-area: line; }
+  .index__domain,
+  .index__arrow { display: none; }
+  .index__link:hover .index__name,
+  .index__link:focus-visible .index__name { transform: none; }
+}
+
+/* ── the cover, following the cursor ──────────────────────
+   Built, positioned and animated by enhance.js. It rests off-screen
+   rather than display:none so the first hover does not have to decode
+   the image before it can show it. */
+.peek {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  width: 300px;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-40vw, -40vh, 0);
+  transition: opacity .2s var(--ease-out);
+  box-shadow: 0 24px 60px var(--color-shadow-lift);
+  background: var(--color-bg-alt);
+}
+.peek.is-on { opacity: 1; }
+.peek img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  display: block;
+}
+/* No pointer, no hover: a touch device would only ever see this flash
+   on tap, on its way to the page it is a preview of. */
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .peek { display: none; }
+}
 
 /* ── the closing ask, on three pages ──────────────────────── */
 .band--close { padding-block: var(--space-16); }

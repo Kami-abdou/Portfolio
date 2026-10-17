@@ -56,27 +56,22 @@
   "sections": {
     "selected": {
       "heading": "Selected work",
-      "moreLabel": "More work:",
       "items": [
         {
-          "slug": "instadeep",
-          "tag": "AI · Design system",
-          "years": "2024-now"
+          "slug": "instadeep"
         },
         {
-          "slug": "konnect",
-          "tag": "Fintech · MVP",
-          "years": "2020-21"
+          "slug": "konnect"
         },
         {
-          "slug": "steer",
-          "tag": "Automotive · Marketplace",
-          "years": "2021-23"
+          "slug": "steer"
+        },
+        {
+          "slug": "groupado"
+        },
+        {
+          "slug": "fissa3"
         }
-      ],
-      "more": [
-        "groupado",
-        "fissa3"
       ]
     }
   },
@@ -107,7 +102,7 @@
       "I'm a product designer based in Tunis. I care most about interaction: how a product responds, what it does while it waits, and how it recovers when something breaks. I map the system first, then prototype in code to check it actually feels right."
     ]
   },
-  "heroMeta": "Currently at InstaDeep · Tunis, UTC+1",
+  "heroMeta": "Senior Product Designer at InstaDeep · Six years · Tunis, UTC+1",
   "closingLine": "Have something in mind?",
   "experienceHeading": "Experience",
   "toolsHeading": "Tools",

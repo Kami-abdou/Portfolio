@@ -1084,48 +1084,55 @@ def project_year(project):
 
 # ─────────────────────────────────────────── pages
 
-def work_card(project, item, depth=0):
-    """One project, as a card that is entirely a link.
+def project_domain(project):
+    """The middle segment of `meta`: "2024-now \u00b7 AI \u00b7 Senior product
+    designer" -> "AI".
 
-    The row this replaces carried category chips, a tagline, a summary
-    paragraph and a "Read the case study" cue. All of it is gone. What is
-    left is what a visitor actually decides on: the cover, the name, one
-    tag and the years.
+    Returns "" when meta has no middle, which is the same rule the rest of
+    this build follows: a fact that does not exist renders nothing rather
+    than an empty cell.
+    """
+    meta = project.get("meta")
+    if not usable(meta):
+        return ""
+    parts = [x.strip() for x in meta.split("\u00b7") if x.strip()]
+    return parts[1] if len(parts) > 2 else ""
 
-    The whole card is the <a>, rather than the old pattern of a linked
-    title with an ::after stretched over the row. That pattern existed to
-    keep paragraphs OUT of the link's accessible name; with no paragraphs
-    left there is nothing to keep out, so the simpler markup is also the
-    more accessible one.
 
-    The cover takes alt="" on purpose. It sits inside a link already named
-    by the project, and giving it alt text would make a screen reader
-    announce the same project twice for one control.
+def index_row(project, n, depth=0):
+    """One line of the work index.
+
+    This replaces a 1152x720 cover card. Three of those filled two and a
+    half screens and said four words each; five of these fit in one
+    screen and each says what the project WAS.
+
+    Nothing here is authored twice. The line is the project's own
+    tagline, the domain and the year are segments of its meta, and the
+    cover is the one the case study already uses -- the homepage had
+    been carrying its own copy of all of it.
+
+    The cover has not gone away, it moved: it is on `data-peek`, and
+    enhance.js shows it following the cursor. A row that cannot show an
+    image on hover still reads perfectly, which is why the image is an
+    attribute rather than markup.
     """
     up = "../" * depth
     d = project["_dir"]
     cover = "projects/%s/%s" % (d, project["cover"])
-    size = png_size(ROOT / "projects" / d / project["cover"])
-    dims = ' width="%d" height="%d"' % size if size else ""
-    # No data-tint here. The tint exists so an inset screenshot can sit on
-    # a surface close to its own hue; a card's cover is full-bleed, so the
-    # tint would be a colour nobody ever sees. It still does its job on the
-    # case-study pages, where the images ARE inset.
-    return """        <li class="card">
-          <a class="card__link" href="{up}projects/{slug}">
-            <figure class="card__media">
-              <img src="{up}{cover}{v}" alt=""{dims} loading="lazy" decoding="async">
-            </figure>
-            <span class="card__row">
-              <span class="card__name">{title}</span>
-              <span class="card__tag">{tag}</span>
-              <span class="card__years">{years}</span>
-            </span>
+    line = project.get("tagline") if usable(project.get("tagline")) else ""
+    return """        <li class="index__row">
+          <a class="index__link" href="{up}projects/{slug}" data-peek="{up}{cover}{v}">
+            <span class="index__num" aria-hidden="true">{n:02d}</span>
+            <span class="index__name">{title}</span>
+            <span class="index__line">{line}</span>
+            <span class="index__domain">{domain}</span>
+            <span class="index__year">{year}</span>
+            <span class="index__arrow" aria-hidden="true">&#8599;</span>
           </a>
         </li>""".format(
-        up=up, slug=e(project["slug"]), cover=e(cover), v=asset_v(cover),
-        dims=dims, title=e(project["title"]),
-        tag=e(item.get("tag", "")), years=e(item.get("years", "")))
+        up=up, slug=e(project["slug"]), cover=e(cover), v=asset_v(cover), n=n,
+        title=e(project["title"]), line=e(line),
+        domain=e(project_domain(project)), year=e(project_year(project)))
 
 
 def build_index(projects):
@@ -1185,27 +1192,21 @@ def build_index(projects):
 """)
 
     # ── Selected work ────────────────────────────────────────────────
+    # Every live project, in one index. The split into "three cards and a
+    # More work line" existed because a cover card is expensive: three was
+    # all that fit. A row costs a line, so the two tiers collapse into one
+    # list and nothing is relegated to a footnote.
     sel = SITE.get("sections", {}).get("selected") or {}
-    items = [i for i in sel.get("items", []) if i.get("slug") in slugs]
+    items = [i["slug"] for i in sel.get("items", []) if i.get("slug") in slugs]
     if items:
-        cards = "\n".join(work_card(slugs[i["slug"]], i) for i in items)
-        more = [slugs[x] for x in sel.get("more", []) if x in slugs]
-        more_html = ""
-        if more:
-            # The class is not decoration: the brief's word budget excludes
-            # project names, and body_words() drops them by class, so the
-            # names have to be nameable.
-            names = ", ".join(
-                '<a class="more-work__name" href="projects/%s">%s</a>'
-                % (e(x["slug"]), e(x["title"])) for x in more)
-            more_html = ('\n      <p class="more-work">%s %s</p>'
-                         % (e(sel.get("moreLabel", "More work:")), names))
+        rows = "\n".join(index_row(slugs[sl], n)
+                         for n, sl in enumerate(items, 1))
         out.append(f"""
     <section class="band shell band--work" id="work">
       <h2 class="band__title">{e(sel.get("heading", "Selected work"))}</h2>
-      <ol class="cards">
-{cards}
-      </ol>{more_html}
+      <ol class="index">
+{rows}
+      </ol>
     </section>
 """)
 
@@ -1933,8 +1934,8 @@ def main():
                 imgs += len(auto_images(p["_dir"], s["autoImages"]))
     print("tokens.css   %d custom properties" % n_vars)
     sel = SITE.get("sections", {}).get("selected", {})
-    print("index.html   %d cards, %d more, %d words of body copy"
-          % (len(sel.get("items", [])), len(sel.get("more", [])),
+    print("index.html   %d rows, %d words of body copy"
+          % (len(sel.get("items", [])),
              body_words(ROOT / "index.html", drop=HOME_NOT_COPY)))
     print("about.html   %d jobs, %d values, %d words"
           % (len(SITE.get("experience", [])),

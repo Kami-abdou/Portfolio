@@ -90,15 +90,42 @@ class TestSelectedWork(BuildCase):
         self.assertEqual(slugs[0], "instadeep",
                          "the first card is %s, not InstaDeep" % slugs[0])
 
-    def test_the_three_cards_are_the_three_asked_for(self):
-        slugs = [i["slug"] for i in self.selected()["items"]]
-        self.assertEqual(slugs, ["instadeep", "konnect", "steer"])
+    def test_the_index_lists_every_live_project(self):
+        """Three cards and a "More work" footnote became one list.
 
-    def test_every_card_carries_a_tag_and_a_span_of_years(self):
-        for item in self.selected()["items"]:
-            with self.subTest(slug=item["slug"]):
-                self.assertTrue(item.get("tag"), "%s has no tag" % item["slug"])
-                self.assertTrue(item.get("years"), "%s has no years" % item["slug"])
+        The split existed because a 1152x720 cover card is expensive and
+        three was all that fit. A row costs a line, so nothing has to be
+        relegated any more -- and a project that is good enough to have a
+        case study is good enough to appear in the index.
+        """
+        listed = [i["slug"] for i in self.selected()["items"]]
+        live = sorted(d["slug"] for _, d in self.live_projects())
+        self.assertEqual(sorted(listed), live,
+                         "the index and the published projects disagree")
+
+
+    def test_a_row_says_what_the_project_was(self):
+        """Each row carries a line, a domain and a year -- and takes all
+        three from the project itself.
+
+        The homepage used to author its own tag and years per project,
+        which is the same fact written in two files. The row reads the
+        tagline and the meta the case study already has, so the two
+        cannot drift.
+        """
+        page = self.html("index.html")
+        for _, data in self.live_projects():
+            with self.subTest(slug=data["slug"]):
+                row = re.search(
+                    r'<li class="index__row">.*?projects/%s".*?</li>'
+                    % re.escape(data["slug"]), page, re.S)
+                self.assertIsNotNone(row, "%s has no row" % data["slug"])
+                body = row.group(0)
+                self.assertIn(html.escape(data["tagline"], quote=True), body,
+                              "%s's row does not carry its tagline" % data["slug"])
+                for cls in ("index__domain", "index__year", "index__num"):
+                    self.assertIn(cls, body)
+
 
     def test_no_project_is_both_a_card_and_a_footnote(self):
         sel = self.selected()
@@ -2357,55 +2384,76 @@ class TestWorkCards(BuildCase):
     cropped to a single ratio so the column does not lurch.
     """
 
-    def cards(self):
-        html_ = self.html("index.html")
-        return re.findall(r'<li class="card">(.*?)</li>', html_, re.S)
+    def rows(self):
+        return re.findall(r'<li class="index__row">(.*?)</li>',
+                          self.html("index.html"), re.S)
 
-    def test_the_page_renders_one_card_per_selected_project(self):
+    def test_the_page_renders_one_row_per_project(self):
         expected = len(self.site["sections"]["selected"]["items"])
-        self.assertEqual(len(self.cards()), expected)
+        self.assertEqual(len(self.rows()), expected)
 
-    def test_the_whole_card_is_one_link(self):
-        """One control per card, named by the project.
 
-        The rail needed a linked title plus an ::after stretched over the
-        row to keep its paragraphs out of the link's accessible name.
-        With the paragraphs gone the link can simply wrap everything,
-        and a card with two links in it would be the regression.
+    def test_the_whole_row_is_one_link(self):
+        """One control per row, named by the project.
+
+        The old rail needed a linked title plus an ::after stretched over
+        the row, to keep its paragraphs out of the link's accessible
+        name. A row's line is short enough to belong IN the name -- "01
+        InstaDeep Three product surfaces and the design system they all
+        run on. AI 2024-now" is a fair description of where the link
+        goes -- so the link simply wraps it, and two links in one row
+        would be the regression.
         """
-        for i, card in enumerate(self.cards()):
-            with self.subTest(card=i):
-                self.assertEqual(card.count("<a "), 1,
-                                 "card %d has %d links; it should be one"
-                                 % (i, card.count("<a ")))
-                self.assertIn('class="card__link"', card)
+        for i, row in enumerate(self.rows()):
+            with self.subTest(row=i):
+                self.assertEqual(row.count("<a "), 1,
+                                 "row %d has %d links; it should be one"
+                                 % (i, row.count("<a ")))
+                self.assertIn('class="index__link"', row)
 
-    def test_every_card_says_name_tag_and_years(self):
-        for i, card in enumerate(self.cards()):
-            with self.subTest(card=i):
-                for cls in ("card__name", "card__tag", "card__years"):
-                    self.assertIn(cls, card, "card %d has no %s" % (i, cls))
 
-    def test_the_cover_is_decorative(self):
-        """The link already says the project's name; alt text would say it
-        twice for one control."""
-        for i, card in enumerate(self.cards()):
-            with self.subTest(card=i):
-                self.assertRegex(card, r'<img[^>]*alt=""',
-                                 "card %d's cover needs an empty alt" % i)
+    def test_every_row_says_name_line_domain_and_year(self):
+        for i, row in enumerate(self.rows()):
+            with self.subTest(row=i):
+                for cls in ("index__num", "index__name", "index__line",
+                            "index__domain", "index__year", "index__arrow"):
+                    self.assertIn(cls, row, "row %d has no %s" % (i, cls))
 
-    def test_one_ratio_crops_every_cover(self):
-        """The three covers are 900x450, 900x640 and 900x2229 on disk.
 
-        Without a single ratio and object-fit, the column's rhythm is
-        whatever shape each screenshot happens to be -- the tall one is
-        five times the height of the wide one.
+    def test_a_row_ships_no_image_of_its_own(self):
+        """The covers are previews, not content.
+
+        Five rows each carrying a cover <img> would be the card layout
+        again with smaller pictures -- five requests for images most
+        visitors never look at. The cover rides on an attribute and is
+        fetched by the preview when a row is actually hovered.
         """
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        rule = re.search(r"\.card__media img \{([^}]*)\}", css)
-        self.assertIsNotNone(rule, "no rule sizes the card covers")
-        self.assertIn("aspect-ratio", rule.group(1))
-        self.assertIn("object-fit: cover", rule.group(1))
+        for i, row in enumerate(self.rows()):
+            with self.subTest(row=i):
+                self.assertNotIn("<img", row,
+                                 "row %d ships a cover image inline" % i)
+
+
+    def test_the_cover_follows_the_cursor_instead_of_filling_the_page(self):
+        """The covers were three stacked cards; they are one preview now.
+
+        An image on a homepage earns its bytes at the moment someone has
+        shown interest in a particular project, not before. The row holds
+        its cover on an attribute and enhance.js draws it chasing the
+        pointer, so a browser that never runs that script loses nothing
+        it could read.
+        """
+        page = self.html("index.html")
+        for row in self.rows():
+            self.assertRegex(row, r'data-peek="[^"]+\.(jpg|png|webp)\?v=',
+                             "a row carries no cover for the preview")
+        self.assertNotIn('class="card__media"', page, "the cover cards are back")
+        js = (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+        self.assertIn("data-peek", js, "nothing reads the preview covers")
+        # pointer-gated: a tap would only flash it on the way to the page
+        self.assertIn("(hover: hover) and (pointer: fine)", js)
+        self.assertIn("prefers-reduced-motion", js)
+
 
 class TestAssetVersions(unittest.TestCase):
     """Every ?v= hash in the COMMITTED html must match the committed asset.
@@ -3772,11 +3820,24 @@ class TestCopyBudget(BuildCase):
         from build import body_words
         return body_words(ROOT / page, drop=drop)
 
-    def test_the_homepage_is_under_sixty_words(self):
+    def test_the_homepage_stays_lean(self):
+        """The cap was 60 and is 130, deliberately.
+
+        60 was right for a page whose three cards said "AI . Design
+        system . 2024-now" and relegated two projects to a footnote. The
+        index replaced them with five rows that each say what the
+        project WAS, which is the whole content argument of the
+        redesign, and that is worth about 60 words on its own.
+
+        It is still a cap and still measured. 130 leaves room for one
+        more project and nothing else; prose creeping back into this
+        page fails here.
+        """
         sys.path.insert(0, str(ROOT))
         from build import HOME_NOT_COPY
         n = self.words("index.html", HOME_NOT_COPY)
-        self.assertLess(n, 60, "the homepage body copy is %d words" % n)
+        self.assertLess(n, 130, "the homepage body copy is %d words" % n)
+
 
     def test_the_about_page_is_under_a_hundred_and_sixty_words(self):
         n = self.words("about.html", {"js-copy-fallback"})

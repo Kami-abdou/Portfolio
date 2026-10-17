@@ -521,6 +521,80 @@
   window.addEventListener('resize', rest, { passive: true });
   rest();
 
+  /* ── the work index's cover, following the cursor ────
+     The covers used to be 1152x720 cards stacked down the page. They are
+     one floating preview now: the image appears only once someone has
+     shown interest in a particular row, which is the only point at which
+     a screenshot is worth its bytes on a homepage.
+
+     Chases the pointer rather than tracking it exactly. A preview locked
+     to the cursor reads as a tooltip; one that lags slightly reads as a
+     physical thing being dragged along, and the lag is what makes the
+     difference. One rAF loop for every row, started on enter and stopped
+     on leave -- nothing runs while nobody is hovering.
+
+     Gated three ways: a fine pointer (no tap-flash on phones), no
+     reduced-motion preference, and rows actually existing. The CSS hides
+     .peek for the first two as well, so a failure here is invisible
+     rather than a stuck image.
+  */
+  var rows = document.querySelectorAll(".index__link[data-peek]");
+  /* Both queries are read here rather than borrowed from the module that
+     set up the reveals: that one lives in a different IIFE, and reaching
+     for its `calm` threw a ReferenceError that killed every statement
+     after it in THIS one -- which included the copy-email button. */
+  var fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (rows.length && fine && !still) {
+    var peek = document.createElement("div");
+    peek.className = "peek";
+    var peekImg = document.createElement("img");
+    peekImg.alt = "";
+    peekImg.decoding = "async";
+    peek.appendChild(peekImg);
+    document.body.appendChild(peek);
+
+    var tx = 0, ty = 0, cx = 0, cy = 0, raf = null, live = false;
+
+    function frame() {
+      /* 0.14 is the chase: low enough to read as weight, high enough
+         that the image is never far behind on a fast cross-screen
+         sweep. */
+      cx += (tx - cx) * 0.14;
+      cy += (ty - cy) * 0.14;
+      peek.style.transform = "translate3d(" + Math.round(cx) + "px," +
+                             Math.round(cy) + "px,0)";
+      raf = live ? window.requestAnimationFrame(frame) : null;
+    }
+
+    function point(ev) {
+      /* Offset up and right of the pointer, and clamped so the preview
+         never hangs off the viewport on a row near the edge. */
+      var w = peek.offsetWidth, h = peek.offsetHeight;
+      tx = Math.min(Math.max(ev.clientX + 24, 8), window.innerWidth - w - 8);
+      ty = Math.min(Math.max(ev.clientY - h / 2, 8), window.innerHeight - h - 8);
+    }
+
+    Array.prototype.forEach.call(rows, function (row) {
+      row.addEventListener("mouseenter", function (ev) {
+        var src = row.getAttribute("data-peek");
+        if (peekImg.getAttribute("src") !== src) peekImg.setAttribute("src", src);
+        point(ev);
+        /* Jump to the pointer on the first frame instead of flying in
+           from wherever the last row left it. */
+        cx = tx; cy = ty;
+        peek.classList.add("is-on");
+        if (!live) { live = true; frame(); }
+      });
+      row.addEventListener("mousemove", point);
+      row.addEventListener("mouseleave", function () {
+        peek.classList.remove("is-on");
+        live = false;
+        if (raf) { window.cancelAnimationFrame(raf); raf = null; }
+      });
+    });
+  }
+
   /* ── copy the address instead of launching a mail client ────
      The page ships BOTH controls: a <button> that copies, and a mailto
      <a> hidden next to it. This module owns which one is shown.
