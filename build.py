@@ -361,16 +361,22 @@ def link_icon(label, depth=0, *, slug=None):
 #: `noopener` is belt and braces on a same-origin PDF -- every current
 #: browser implies it for target="_blank" -- but it is one attribute and it
 #: is what the rest of the file already does for outbound links.
-#: The one place the booking URL lives. Swap this string and everything
-#: follows: the embed on /contact, the fallback link under it, and the
-#: slug and namespace the embed script is initialised with.
+#: The one place the booking URL lives, and now the only thing the site
+#: knows about Cal: three "Book a call" links point straight at it.
+#:
+#: It used to be an inline embed at /contact. Cal's free plan renders an
+#: attribution bar under the booker that no plan-less setting removes --
+#: it is cross-origin, so nothing here can reach it, and hiding it would
+#: be dodging the attribution the free tier is paid for with. Worse, the
+#: bar renders WHITE in both themes (proven: cssVarsPerTheme reaches the
+#: iframe and recolours the slots, and the bar ignores it), so on this
+#: page it was a bright slab across a near-black page.
+#:
+#: Linking out puts the logo on Cal's own page, where it belongs, and
+#: takes this site to ZERO third-party requests and zero third-party
+#: script -- which is a claim the portfolio case study makes about
+#: itself. The cost is one context switch before booking.
 CAL_LINK = "https://cal.com/abdou-yaackoubi-lpkcep/30min"
-
-#: What Cal's embed wants instead of a URL: "user/event", and the event on
-#: its own as a namespace. Both are derived rather than typed, so the link
-#: above stays the single source it claims to be.
-CAL_SLUG = CAL_LINK.split("cal.com/", 1)[1]
-CAL_NS = CAL_SLUG.rsplit("/", 1)[-1]
 
 NEW_TAB = ' target="_blank" rel="noopener"'
 
@@ -415,7 +421,6 @@ def ask_row(depth=0):
     floating over the headline, where it reads as a state rather than a
     plea.
     """
-    up = "../" * depth
     addr = SITE.get("email", "")
     label = SITE.get("availability", "")
     # The dot is decoration -- "Open to new projects" already says it --
@@ -425,7 +430,8 @@ def ask_row(depth=0):
     badge = ('<span class="ask__badge">'
              '<span class="ask__dot" aria-hidden="true"></span>%s</span>'
              % e(label)) if usable(label) else ""
-    book = '<a class="ask__act" href="%scontact">Book a call</a>' % e(up)
+    book = ('<a class="ask__act" href="%s"%s>Book a call%s</a>'
+            % (e(CAL_LINK), NEW_TAB, NEW_TAB_NOTE))
     if not usable(addr):
         return '<p class="ask">%s%s</p>' % (book, badge)
     # With JavaScript off the button hides and the mailto shows, and
@@ -472,22 +478,22 @@ def reach_line():
     return '<p class="reach">%s</p>' % sep.join(bits)
 
 
-def actions_row(depth=0, *, cls="actions", book_btn=True):
+def actions_row(depth=0, *, cls="actions"):
     """"Book a call" and "Copy email", the site's only two asks.
 
-    Three places use this -- the homepage's closing line, /contact and
-    /about -- and the brief for all three is "the same component", so it
-    is a function rather than three copies of the same markup. The hero
-    is the fourth ask and the one exception; see ask_row for why.
+    Two places use this -- the homepage's closing line and /about -- and
+    the brief for both is "the same component", so it is a function
+    rather than two copies of the same markup. The hero is the third ask
+    and the one exception; see ask_row for why.
 
     Book a call is an <a>, not a <button>. It navigates, and a button that
     navigates loses the middle-click, the context menu and the status bar
     for no gain. Copy email is a real <button>, because it acts on the page
     instead of going anywhere.
 
-    `book_btn=False` drops the booking button, which is what /contact
-    passes: that page IS the booker, and a button linking to the page you
-    are already reading is furniture.
+    It opens a new tab, and says so in its accessible name. Booking is a
+    detour, not a destination: sending someone off-site in the tab they
+    were reading in means the way back to the work is the back button.
 
     THREE controls are emitted, not two. The button is the enhanced path;
     the mailto next to it is the fallback, hidden by default and revealed
@@ -504,13 +510,9 @@ def actions_row(depth=0, *, cls="actions", book_btn=True):
     "Copied") and the announcement are separate: changing a button's label
     while it is focused is not reliably announced on its own.
     """
-    up = "../" * depth
     addr = SITE.get("email", "")
-    # /contact, not cal.com. The booker is embedded there, so this keeps the
-    # visitor on the site and keeps Cal's script off every other page. It is
-    # an ordinary internal link: same tab, no "opens in a new tab" note.
-    book = ('<a class="btn btn--solid" href="%scontact">Book a call</a>' % e(up)
-            if book_btn else "")
+    book = ('<a class="btn btn--solid" href="%s"%s>Book a call%s</a>'
+            % (e(CAL_LINK), NEW_TAB, NEW_TAB_NOTE))
     if not usable(addr):
         return '<div class="%s">%s</div>' % (cls, book)
     return (
@@ -792,10 +794,6 @@ def primary_nav(up, current=None):
     for key, href, label in items:
         mark = ' aria-current="page"' if key == current else ""
         out.append('<a href="%s"%s>%s</a>' % (e(href), mark, e(label)))
-    # "Say hello" became "Book a call", and it points at /contact because
-    # that is where the Cal booker is embedded. Marked aria-current when
-    # you are on it, like the other two -- it is a page link again.
-    contact_mark = ' aria-current="page"' if current == "contact" else ""
     # The theme control. The page follows the system by default; this is for
     # the visitor whose machine says dark but who wants to see the paper,
     # which is most of what this site's identity IS. aria-pressed rather than
@@ -814,17 +812,14 @@ def primary_nav(up, current=None):
         '          <span class="site-nav__marker" aria-hidden="true"></span>\n'
         '          %s\n        </span>\n'
         '        %s\n'
-        '        <a class="site-nav__cta" href="%scontact"%s>Book a call</a>\n'
-        '      </nav>' % ("\n          ".join(out), toggle, e(up), contact_mark))
+        '        <a class="site-nav__cta" href="%s"%s>Book a call%s</a>\n'
+        '      </nav>' % ("\n          ".join(out), toggle,
+                          e(CAL_LINK), NEW_TAB, NEW_TAB_NOTE))
 
 
 def head(title, description, *, depth=0, image=None, page_url="",
-         og_type="website", image_alt=None, nav_current=None, preconnect=()):
+         og_type="website", image_alt=None, nav_current=None):
     up = "../" * depth
-    pre = "".join(
-        '\n  <link rel="preconnect" href="%s" crossorigin>'
-        '\n  <link rel="dns-prefetch" href="%s">' % (e(u), e(u))
-        for u in preconnect)
     img = image or SITE.get("shareImage") or SITE.get("profileImage")
     og_image = ""
     if img:
@@ -854,7 +849,7 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{e(title)}</title>
   <meta name="description" content="{e(description)}">
-  <meta name="author" content="{e(SITE['name'])}">{canonical}{pre}
+  <meta name="author" content="{e(SITE['name'])}">{canonical}
   <meta property="og:type" content="{e(og_type)}">
   <meta property="og:site_name" content="{e(SITE['name'])}">
   <meta property="og:title" content="{e(title)}">
@@ -1366,133 +1361,6 @@ def build_index(projects):
     (ROOT / "work.html").write_text(page, encoding="utf-8")
 
 
-def cal_embed():
-    """Cal.com's inline booker, and the two things their snippet leaves out.
-
-    This is the ONLY third-party script on the site, and it is on exactly
-    one page. That is the whole reason the booker is embedded at /contact
-    rather than popped over every page that carries a button: the
-    homepage and the five case studies stay at zero third-party requests,
-    which is not a small thing on a site whose own JavaScript is 8.8KB.
-
-    Two changes to the snippet Cal hands you:
-
-    1. `theme` is not "auto". Auto follows the SYSTEM, and this site has
-       its own toggle -- so a visitor who switched the page to light got
-       a dark booker sitting inside it. The theme is read from the same
-       <html data-theme> the rest of the page uses, and enhance.js tells
-       Cal about it again whenever the toggle is pressed.
-
-    2. The loader is given the slug from CAL_LINK rather than a second
-       copy of it, so there is still one place to change the booking URL.
-
-    The container is NOT given a fixed height. Cal's iframe reports its
-    own and resizes; a hardcoded height is either a scrollbar inside a
-    scrollbar or a slab of empty page under the calendar.
-    """
-    return """
-      <div class="cal" id="cal-booker"></div>
-      <script>
-        /* Cal's loader, verbatim apart from the slug and the theme. */
-        (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-
-        Cal("init", "%(ns)s", { origin: "https://app.cal.com" });
-
-        /* Cal paints its own page behind the booker card, and that page is
-           white unless it is told otherwise -- which showed as a pale strip
-           down the left of the embed and a band under it. Declared once and
-           passed to BOTH the inline config and the ui call, because the two
-           are merged and supplying it to only one left the body unthemed.
-           Every value is a token, so the booker cannot drift from the page
-           it sits in. */
-        var CAL_VARS = {
-          dark:  { "cal-bg": "%(bgDark)s", "cal-bg-emphasis": "%(raisedDark)s",
-                   "cal-bg-subtle": "%(raisedDark)s", "cal-bg-muted": "%(bgDark)s" },
-          light: { "cal-bg": "%(bgLight)s", "cal-bg-emphasis": "%(raisedLight)s",
-                   "cal-bg-subtle": "%(raisedLight)s", "cal-bg-muted": "%(bgLight)s" }
-        };
-        Cal.config = Cal.config || {};
-        Cal.config.forwardQueryParams = true;
-
-        /* The page's theme, not the system's. The no-flash script in the
-           head has already set data-theme by the time this runs. */
-        var calTheme = document.documentElement.dataset.theme
-          || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-
-        Cal.ns["%(ns)s"]("inline", {
-          elementOrSelector: "#cal-booker",
-          config: {
-            layout: "month_view",
-            useSlotsViewOnSmallScreen: "true",
-            theme: calTheme,
-            cssVarsPerTheme: CAL_VARS
-          },
-          calLink: "%(slug)s"
-        });
-        /* Cal's own page background, set to this site's. Without it the
-           iframe paints white behind their panel and the embed shows a
-           pale strip down the left and along the bottom -- the booker
-           looks pasted onto the page rather than part of it. Both themes
-           are supplied because the toggle can switch after load, and the
-           values come from tokens.json like every other colour here. */
-        Cal.ns["%(ns)s"]("ui", {
-          hideEventTypeDetails: false,
-          layout: "month_view",
-          theme: calTheme,
-          cssVarsPerTheme: CAL_VARS
-        });
-      </script>
-      <p class="cal__fallback">
-        Calendar not loading? <a href="%(link)s"%(tab)s>Open it on cal.com%(note)s</a>
-      </p>""" % {"ns": CAL_NS, "slug": CAL_SLUG, "link": e(CAL_LINK),
-                 "tab": NEW_TAB, "note": NEW_TAB_NOTE,
-                 "bgDark": TOKENS["color"]["bg"],
-                 "raisedDark": TOKENS["color"]["bgRaised"],
-                 "bgLight": TOKENS["colorLight"]["bg"],
-                 "raisedLight": TOKENS["colorLight"]["bgRaised"]}
-
-
-def build_contact():
-    """/contact, which is the booking page now.
-
-    It was two buttons and a hidden heading -- a route kept alive for old
-    links. Embedding the booker gives it a job, and gives every "Book a
-    call" on the site somewhere on this domain to land.
-
-    The booking button is dropped from the actions here, because it would
-    link to the page being read. The email stays: it is the other way in,
-    and some people will always prefer it.
-
-    The fallback link under the embed is permanent, not JavaScript-gated.
-    A third-party iframe can fail for reasons this site will never see --
-    a blocker, a corporate proxy, an outage at Cal -- and the failure
-    looks like an empty box. One quiet line means that is never a dead
-    end, and it costs four words.
-    """
-    out = [head(
-        "Book a call - %s" % SITE["name"],
-        page_description("contact"),
-        page_url="contact",
-        nav_current="contact",
-        # The booker is an iframe from another origin, so the browser
-        # cannot start its DNS, TCP and TLS work until the embed script
-        # has loaded and asked for it. This starts it during parse. Only
-        # this page declares it -- a preconnect on pages that never
-        # reach cal.com is a handshake opened for nothing.
-        preconnect=["https://app.cal.com"],
-    )]
-    out.append("""
-    <section class="band shell band--book">
-      <h1 class="band__close">Book a call</h1>
-%s
-      <p class="cal__or">Or send an email.</p>
-      %s
-    </section>
-""" % (cal_embed(), actions_row(book_btn=False, cls="actions actions--single")))
-    out.append(foot())
-    (ROOT / "contact.html").write_text("\n".join(out), encoding="utf-8")
-
-
 def experience_list(index):
     """Company, role, years. Nothing else.
 
@@ -1981,7 +1849,7 @@ def write_sitemap(projects):
     # deliberately absent: it is the same bytes as /work, which is the
     # canonical of the pair, and listing both would ask a crawler to decide
     # something the canonical already decided.
-    pages = ["work", "about", "contact"] + [
+    pages = ["work", "about"] + [
         "projects/%s" % p["slug"] for p in projects]
     urls = "\n".join(
         "  <url><loc>%s/%s</loc><lastmod>%s</lastmod></url>"
@@ -2055,7 +1923,6 @@ def main():
     n_vars = write_tokens_css()
     build_index(projects)
     build_about(by_slug(projects))
-    build_contact()
     for i, p in enumerate(projects):
         build_project(p, projects[i - 1] if i else None,
                       projects[i + 1] if i + 1 < len(projects) else None)

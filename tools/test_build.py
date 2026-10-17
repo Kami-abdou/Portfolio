@@ -151,7 +151,7 @@ class TestSelectedWork(BuildCase):
         is where a stale link would actually hurt.
         """
         names = ["pharmadrive", "undrive"]
-        pages = ["index.html", "work.html", "about.html", "contact.html"]
+        pages = ["index.html", "work.html", "about.html"]
         pages += ["projects/%s.html" % d["slug"] for _, d in self.live_projects()]
         for name in names:
             for page in pages:
@@ -438,7 +438,7 @@ class TestCV(BuildCase):
         """
         base = re.escape(self.site["cv"].split("/")[-1])
         pattern = re.compile(r"<a\b([^>]*%s[^>]*)>(.*?)</a>" % base, re.S)
-        pages = ["index.html", "about.html", "contact.html", "work.html"]
+        pages = ["index.html", "about.html", "work.html"]
         pages += ["projects/%s.html" % d["slug"] for _, d in self.live_projects()]
         found = 0
         for name in pages:
@@ -467,7 +467,7 @@ class TestCV(BuildCase):
         recruiter who opened the page last week -- to get the new document.
         """
         rel = re.escape(self.site["cv"])
-        for page in ("index.html", "about.html", "contact.html"):
+        for page in ("index.html", "about.html"):
             markup = self.html(page)
             self.assertIn(self.site["cv"], markup,
                           "%s does not link the CV at all" % page)
@@ -601,7 +601,7 @@ class TestFavicon(BuildCase):
         previous mark in most browsers while every file on disk said the
         icon had been replaced. Silent, and only visible in a tab strip.
         """
-        for page in ("index.html", "about.html", "contact.html",
+        for page in ("index.html", "about.html",
                      "projects/steer.html"):
             markup = self.html(page)
             self.assertNotIn("favicon.svg", markup,
@@ -642,7 +642,7 @@ class TestFavicon(BuildCase):
 
     def test_every_page_declares_them_at_the_right_depth(self):
         for page, up in (("index.html", ""), ("about.html", ""),
-                         ("contact.html", ""), ("projects/steer.html", "../")):
+                         ("projects/steer.html", "../")):
             markup = self.html(page)
             for name in ("favicon-32.png", "favicon-192.png",
                          "apple-touch-icon.png"):
@@ -703,7 +703,7 @@ class TestFavicon(BuildCase):
 
 
 class TestCleanUrls(BuildCase):
-    """/work, /about and /contact, not index.html#contact.
+    """/work and /about, not index.html#work.
 
     GitHub Pages serves any foo.html at /foo, which was already true and
     unused: /about returned the about page while every link on the site
@@ -725,7 +725,7 @@ class TestCleanUrls(BuildCase):
     that rather than keep claiming the whole site works from a filesystem.
     """
 
-    PAGES = ("index.html", "work.html", "about.html", "contact.html")
+    PAGES = ("index.html", "work.html", "about.html")
 
     def test_the_homepage_is_byte_identical_at_both_urls(self):
         """If they drift, / and /work start showing different sites."""
@@ -789,40 +789,36 @@ class TestCleanUrls(BuildCase):
                 self.assertIn('href="../%s"' % target, head,
                               "projects/%s.html cannot reach /%s" % (slug, target))
 
-    def test_contact_is_the_booking_page(self):
-        """It was a route kept alive for old links -- two buttons and a
-        hidden heading. It carries the Cal booker now, which is what
-        every "Book a call" on the site points at."""
-        contact = self.html("contact.html")
-        self.assertIn('id="cal-booker"', contact, "/contact has no booker")
-        self.assertIn("mailto:%s" % self.site["email"], contact,
-                      "/contact offers no way to reach the address")
-        self.assertIn('class="actions', contact)
+    def test_the_homepage_keeps_the_contact_anchor(self):
+        """/contact is gone and #contact is what replaced it.
+
+        The page existed to host the Cal embed. The embed is gone --
+        see CAL_LINK in build.py -- and with it the only reason for a
+        route whose whole content was a third-party iframe. The closing
+        band carries the id, so every old #contact link still lands.
+        """
         self.assertIn('id="contact"', self.html("index.html"),
                       "the homepage lost the #contact anchor old links use")
+        self.assertFalse((ROOT / "contact.html").exists(),
+                         "contact.html is back; the booker page was removed")
 
 
     def test_the_two_actions_have_one_source(self):
-        """The ask appears on three pages and is emitted once.
+        """The loud ask appears on two pages and is emitted once.
 
-        /contact carries the row WITHOUT its booking button, because a
-        button linking to the page you are reading is furniture. That is
-        a documented argument to actions_row, not a second copy of the
-        markup, so the comparison strips the booking link and the rest
-        still has to match byte for byte.
+        It was three: /contact carried the row without its booking
+        button, because a button linking to the page you are reading is
+        furniture. /contact has gone with the Cal embed it existed to
+        hold, so the two that remain have to match byte for byte with
+        nothing stripped.
         """
         def actions(page):
             m = re.search(r'<div class="actions[^"]*">(.*?)</div>',
                           self.html(page), re.S)
             self.assertIsNotNone(m, "%s has no actions row" % page)
-            return re.sub(r'<a class="btn btn--solid"[^>]*>.*?</a>', "",
-                          m.group(1), flags=re.S)
-        home = actions("index.html")
-        for page in ("contact.html", "about.html"):
-            with self.subTest(page=page):
-                self.assertEqual(actions(page), home,
-                                 "%s's actions differ from the homepage's "
-                                 "by more than the booking button" % page)
+            return m.group(1)
+        self.assertEqual(actions("about.html"), actions("index.html"),
+                         "/about's actions differ from the homepage's")
 
 
     def test_every_page_with_the_actions_has_exactly_one_h1(self):
@@ -835,7 +831,7 @@ class TestCleanUrls(BuildCase):
         else. What still matters is that no page starts its heading order
         at h2.
         """
-        for page in ("index.html", "about.html", "contact.html"):
+        for page in ("index.html", "about.html"):
             with self.subTest(page=page):
                 self.assertEqual(len(re.findall(r"<h1[ >]", self.html(page))), 1,
                                  "%s does not have exactly one h1" % page)
@@ -869,7 +865,7 @@ class TestCleanUrls(BuildCase):
     def test_the_sitemap_lists_clean_urls_only(self):
         sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
         base = self.site["url"].rstrip("/")
-        for target in ("work", "about", "contact"):
+        for target in ("work", "about"):
             self.assertIn("<loc>%s/%s</loc>" % (base, target), sitemap)
         self.assertNotIn("<loc>%s/index.html</loc>" % base, sitemap,
                          "the sitemap lists both / and /work, which asks a "
@@ -1292,7 +1288,7 @@ class TestNoDeadAnchors(BuildCase):
     """
 
     def pages(self):
-        pages = ["index.html", "work.html", "about.html", "contact.html"]
+        pages = ["index.html", "work.html", "about.html"]
         for path in sorted((ROOT / "projects").glob("*/content.json")):
             data = json.loads(path.read_text(encoding="utf-8"))
             if data.get("published") is not False:
@@ -1600,7 +1596,7 @@ class TestHeadingOutline(BuildCase):
     counting raw matches reports two h1s on all eight project pages.
     """
 
-    PAGES = ("index.html", "work.html", "about.html", "contact.html")
+    PAGES = ("index.html", "work.html", "about.html")
 
     def outline(self, page):
         html_src = re.sub(r"<!--.*?-->", "", self.html(page), flags=re.S)
@@ -1889,10 +1885,11 @@ class TestConsolidation(BuildCase):
     def test_eight_project_pages_and_ten_sitemap_urls(self):
         """UnDrive then PharmaDrive were removed; `portfolio` was added.
 
-        The sitemap total is the eight project pages plus /work, /about and
-        /contact. index.html is deliberately not listed: it is the same
-        bytes as /work, which is the canonical of the pair, so listing both
-        would ask a crawler to decide what the canonical already decided.
+        The sitemap total is the project pages plus /work and /about.
+        /contact left with the Cal embed it existed to hold. index.html
+        is deliberately not listed: it is the same bytes as /work, which
+        is the canonical of the pair, so listing both would ask a crawler
+        to decide what the canonical already decided.
         """
         # Derived, because retiring a project legitimately changes both and
         # a literal here just means editing a test to record what happened.
@@ -1900,8 +1897,8 @@ class TestConsolidation(BuildCase):
         self.assertIn("%d pages" % live, self.stdout,
                       "the build wrote a different number of project pages "
                       "than there are published projects")
-        # pages + index, work, about, contact + the homepage's second URL
-        self.assertIn("%d URLs" % (live + 3), self.stdout)
+        # the project pages, plus /work and /about
+        self.assertIn("%d URLs" % (live + 2), self.stdout)
 
 
 class TestHighlightsFormat(BuildCase):
@@ -2136,10 +2133,9 @@ class TestPrimaryNav(BuildCase):
 
         In a nav that is a surprise -- it opens a mail client, or on a
         machine with none configured it appears to do nothing at all.
-        It became /contact, then "Book a call" pointing straight at
-        cal.com, and now "Book a call" pointing at /contact again,
-        because that is where the booker is embedded. The mailto lives
-        on the page, inside the actions, where a visitor expects one.
+        It became /contact, then a booker page, and now a direct link
+        to cal.com in a new tab. The mailto lives on the page, inside
+        the actions, where a visitor expects one.
         """
         import glob, pathlib as pl
         for path in glob.glob(str(ROOT / "*.html")) + glob.glob(str(ROOT / "projects" / "*.html")):
@@ -2151,8 +2147,8 @@ class TestPrimaryNav(BuildCase):
             with self.subTest(page=str(rel)):
                 self.assertNotIn("mailto:", nav.group(1),
                                  "%s still fires a mail client from the nav" % rel)
-                self.assertIn('href="%scontact"' % up, nav.group(1),
-                              "%s has no route to the booking page" % rel)
+                self.assertIn('href="https://cal.com/', nav.group(1),
+                              "%s has no route to the booker" % rel)
 
 
     def test_nav_links_have_a_real_hit_area(self):
@@ -2173,7 +2169,8 @@ class TestPrimaryNav(BuildCase):
         bottom can get in touch without scrolling back.
         """
         close = self.html("index.html").split('id="contact"', 1)[1].split("</section>", 1)[0]
-        self.assertIn('href="contact"', close, "no way to reach the booker at the foot")
+        self.assertIn('href="https://cal.com/', close,
+                      "no way to reach the booker at the foot")
         self.assertIn("mailto:", close, "no way to reach the address at the foot")
 
 
@@ -3140,7 +3137,7 @@ class TestMaskedHeadingsHaveNoPhantomLine(BuildCase):
     """
 
     def pages(self):
-        names = ["index.html", "work.html", "about.html", "contact.html"]
+        names = ["index.html", "work.html", "about.html"]
         for folder, data in self.live_projects():
             names.append("projects/%s.html" % data["slug"])
         return names
@@ -3289,7 +3286,7 @@ class TestNoEmDashes(BuildCase):
     DASHES = ("—", "–")
 
     def pages(self):
-        names = ["index.html", "work.html", "about.html", "contact.html"]
+        names = ["index.html", "work.html", "about.html"]
         for _, data in self.live_projects():
             names.append("projects/%s.html" % data["slug"])
         return names
@@ -3436,7 +3433,7 @@ class TestThemeToggle(BuildCase):
     """
 
     def test_it_is_on_every_page(self):
-        for page in ("index.html", "work.html", "about.html", "contact.html"):
+        for page in ("index.html", "work.html", "about.html"):
             with self.subTest(page=page):
                 self.assertIn('class="theme-toggle"', self.html(page))
 
@@ -3736,16 +3733,20 @@ class TestTheAsk(BuildCase):
         self.assertRegex(row, r'<button[^>]*class="[^"]*js-copy[^"]*"[^>]*type="button"',
                          "Copy email is not a real <button type=button>")
 
-    def test_book_a_call_goes_to_the_booker_in_the_same_tab(self):
-        """It used to open cal.com in a new tab. The booker is embedded
-        at /contact now, so this is an ordinary internal link: same tab,
-        same site, and no "opens in a new tab" note to announce."""
+    def test_book_a_call_goes_straight_to_cal_in_a_new_tab(self):
+        """It pointed at /contact while the booker was embedded there.
+
+        The embed is gone -- see CAL_LINK in build.py -- so this is an
+        outbound link again, and an outbound link that replaces the tab
+        makes the back button the only way back to the work.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import CAL_LINK
         row = self.actions("index.html")
-        self.assertRegex(row, r'<a class="btn btn--solid" href="contact">Book a call</a>')
         book = re.search(r'<a class="btn btn--solid"[^>]*>', row).group(0)
-        self.assertNotIn("target=", book,
-                         "the booking link leaves the tab for a page on "
-                         "this same site")
+        self.assertIn('href="%s"' % CAL_LINK, book)
+        self.assertIn('target="_blank"', book)
+        self.assertIn('rel="noopener"', book)
 
 
     def test_the_address_travels_with_the_button(self):
@@ -3829,12 +3830,14 @@ class TestTheAsk(BuildCase):
                          "it should be CAL_LINK and nothing else" % len(literals))
         self.assertRegex(src, re.compile(r"^CAL_LINK = ", re.M))
 
-    def test_the_booking_button_is_dropped_only_on_the_booking_page(self):
+    def test_every_page_carrying_the_actions_offers_both(self):
+        """There is no page left that is the booker, so there is no page
+        left that should drop the booking button."""
         for page in ("index.html", "about.html"):
             with self.subTest(page=page):
-                self.assertIn("Book a call", self.actions(page))
-        self.assertNotIn("Book a call", self.actions("contact.html"),
-                         "/contact offers a button to the page it is")
+                row = self.actions(page)
+                self.assertIn("Book a call", row)
+                self.assertIn("Copy email", row)
 
 
 class TestCopyBudget(BuildCase):
@@ -3932,8 +3935,7 @@ class TestTheRecruiterPass(BuildCase):
     what this class is for.
     """
 
-    PAGES = {"index.html": "home", "about.html": "about",
-             "contact.html": "contact"}
+    PAGES = {"index.html": "home", "about.html": "about"}
 
     def test_every_page_carries_its_own_description(self):
         """Three pages shared one forty-character string.
@@ -3998,7 +4000,7 @@ class TestTheRecruiterPass(BuildCase):
         self.assertLess(home.index('<p class="ask">'),
                         home.index('<div class="actions'),
                         "the loud ask comes before the quiet one")
-        for page in ("about.html", "contact.html"):
+        for page in ("about.html",):
             with self.subTest(page=page):
                 self.assertNotIn('<p class="ask">', self.html(page),
                                  "%s uses the hero's ask" % page)
@@ -4013,7 +4015,9 @@ class TestTheRecruiterPass(BuildCase):
         m = re.search(r'<p class="ask">(.*?)</p>', self.html("index.html"), re.S)
         self.assertIsNotNone(m, "the homepage has no hero ask")
         row = m.group(1)
-        self.assertIn('href="contact">Book a call</a>', row)
+        sys.path.insert(0, str(ROOT))
+        from build import CAL_LINK
+        self.assertIn('href="%s"' % CAL_LINK, row)
         self.assertRegex(row, r'<button[^>]*class="[^"]*js-copy[^"]*"[^>]*type="button"')
         self.assertIn("js-copy-fallback", row, "no mailto fallback")
         self.assertIn('role="status"', row, "no live region")
@@ -4107,98 +4111,108 @@ class TestTheRecruiterPass(BuildCase):
 
 
 class TestTheBooker(BuildCase):
-    """Cal.com's inline embed: where it is, and what it must not cost.
+    """"Book a call", which is a link now and not an embed.
 
-    This is the only third-party script on the site. Embedding it at
-    /contact rather than popping it over every page is the whole reason
-    the homepage and the five case studies still make zero third-party
-    requests, so "it is on exactly one page" is the invariant worth
-    guarding -- a popup embed added later would quietly undo it.
+    Cal's inline booker lived at /contact. Their free plan renders an
+    attribution bar under it that no setting removes, and the bar is
+    WHITE in both themes -- which on a near-black page was a bright slab
+    with a logo on it, the least crafted thing on the site. The bar is
+    cross-origin, so nothing here can style it (contentDocument is
+    null), and clipping it would be dodging the attribution the free
+    tier is paid for with. Measured first: cssVarsPerTheme DOES reach
+    the iframe -- pushing cal-bg magenta recoloured the slots -- and the
+    bar ignored it.
+
+    So the booker moved to where it was always unremarkable: Cal's own
+    page. That removed the last third-party script, and with it the last
+    third-party request on the whole site.
     """
 
-    THIRD_PARTY = "app.cal.com/embed/embed.js"
+    PAGES = ("index.html", "work.html", "about.html")
 
-    def test_the_booker_is_on_the_contact_page(self):
-        contact = self.html("contact.html")
-        self.assertIn('id="cal-booker"', contact)
-        self.assertIn(self.THIRD_PARTY, contact)
+    def pages(self):
+        return list(self.PAGES) + ["projects/%s.html" % d["slug"]
+                                   for _, d in self.live_projects()]
 
-    def test_no_other_page_loads_a_third_party_script(self):
-        """The reason the booker is a page and not a popup."""
-        pages = ["index.html", "work.html", "about.html"]
-        pages += ["projects/%s.html" % d["slug"] for _, d in self.live_projects()]
-        for page in pages:
-            with self.subTest(page=page):
-                self.assertNotIn("cal.com", self.html(page),
-                                 "%s reaches cal.com; the booker was supposed "
-                                 "to stay on /contact" % page)
-                self.assertNotIn("//app.", self.html(page))
+    def test_nothing_anywhere_loads_a_third_party_script(self):
+        """The invariant the embed used to make expensive.
 
-    def test_the_slug_and_namespace_come_from_the_link(self):
-        """One source for the booking URL, still.
-
-        The embed wants "user/event" and an event namespace, which is
-        three ways to write the same booking down. They are derived from
-        CAL_LINK in build.py; typing any of them again is how the button
-        and the booker end up pointing at different events.
+        It was "zero third-party requests on every page except one".
+        There is no except now, and this is the test that keeps it: any
+        embed, font, analytics tag or widget added later fails here
+        before it reaches the page.
         """
-        sys.path.insert(0, str(ROOT))
-        from build import CAL_LINK, CAL_SLUG, CAL_NS
-        self.assertTrue(CAL_LINK.startswith("https://cal.com/"))
-        self.assertEqual(CAL_SLUG, CAL_LINK.split("cal.com/", 1)[1])
-        self.assertEqual(CAL_NS, CAL_SLUG.rsplit("/", 1)[-1])
-        contact = self.html("contact.html")
-        self.assertIn('calLink: "%s"' % CAL_SLUG, contact)
-        self.assertIn('Cal("init", "%s"' % CAL_NS, contact)
-        self.assertNotIn("REPLACE-ME", contact, "the placeholder link shipped")
+        for page in self.pages():
+            with self.subTest(page=page):
+                html = self.html(page)
+                for src in re.findall(r'<script[^>]*\bsrc="([^"]+)"', html):
+                    self.assertFalse(
+                        src.startswith("http") or src.startswith("//"),
+                        "%s loads %s from another origin" % (page, src))
+                self.assertNotIn("<iframe", html,
+                                 "%s embeds a third-party frame" % page)
 
-    def test_the_booker_follows_the_page_theme_not_the_system(self):
-        """`theme: "auto"` follows the SYSTEM, and this site has its own
-        toggle -- so a visitor who switched the page to light got a dark
-        calendar sitting inside it."""
-        contact = self.html("contact.html")
-        self.assertNotIn('theme: "auto"', contact)
-        self.assertIn("document.documentElement.dataset.theme", contact,
-                      "the embed does not read the page's own theme")
-        js = (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
-        self.assertIn("syncCal", js, "nothing tells Cal when the toggle moves")
-        # Cal bakes the theme into the iframe URL at mount and ignores a
-        # later ("ui", {theme}) call on an inline embed -- measured. The
-        # only thing that re-themes a mounted booker is reloading it, so
-        # the sync has to rewrite that parameter.
-        self.assertIn("theme=", js,
-                      "the toggle does not rewrite the embed's theme "
-                      "parameter, so the booker keeps the theme it mounted "
-                      "with and sits in a page of the other one")
+    def test_book_a_call_goes_straight_to_cal(self):
+        """Three asks, one destination, one string in the source.
 
-    def test_a_failed_embed_is_not_a_dead_end(self):
-        """An iframe that never loads looks exactly like an empty box.
-
-        The fallback is deliberately NOT behind a script: the failures
-        worth covering -- a blocker, a proxy, an outage at Cal -- are
-        the ones where the page's own JavaScript may be fine and the
-        embed still never appears.
+        The nav CTA, the hero's quiet ask and the closing band's loud
+        one. They used to point at /contact and that page pointed at
+        Cal, so the booking URL could rot in one place and look fine in
+        the other two.
         """
         sys.path.insert(0, str(ROOT))
         from build import CAL_LINK
-        contact = self.html("contact.html")
-        self.assertIn("cal__fallback", contact)
-        fallback = re.search(r'<p class="cal__fallback">(.*?)</p>', contact, re.S)
-        self.assertIsNotNone(fallback)
-        self.assertIn(CAL_LINK, fallback.group(1))
-        self.assertNotIn("js-", fallback.group(1),
-                         "the fallback is gated on JavaScript running")
+        self.assertTrue(CAL_LINK.startswith("https://cal.com/"))
+        home = self.html("index.html")
+        self.assertEqual(home.count('href="%s"' % CAL_LINK), 3,
+                         "the homepage does not have exactly three routes "
+                         "to the booker")
+        self.assertNotIn("REPLACE-ME", home, "the placeholder link shipped")
 
-    def test_the_container_is_not_given_a_fixed_height(self):
-        """Cal's iframe reports its own height and resizes. A hardcoded
-        one is either a scrollbar inside a scrollbar or a slab of empty
-        page under a short month view."""
+    def test_the_booking_link_opens_in_its_own_tab(self):
+        """Booking is a detour, not a destination.
+
+        Sent off-site in the tab they were reading in, a visitor's way
+        back to the work is the back button. Every one of the three says
+        so in its accessible name too, because a new tab that announces
+        itself only by appearing is WCAG 3.2.5.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import CAL_LINK
+        for page in self.pages():
+            with self.subTest(page=page):
+                html = self.html(page)
+                for m in re.finditer(
+                        r'<a[^>]*href="%s"[^>]*>(.*?)</a>' % re.escape(CAL_LINK),
+                        html, re.S):
+                    tag = m.group(0)[:m.group(0).index(">") + 1]
+                    self.assertIn('target="_blank"', tag)
+                    self.assertIn('rel="noopener"', tag)
+                    self.assertIn("opens in a new tab", m.group(1),
+                                  "a booking link changes context silently")
+
+    def test_the_contact_route_is_gone_and_nothing_still_points_at_it(self):
+        """A dead internal link is worse than no link.
+
+        /contact was never published -- the live site has no such URL --
+        so there is nothing to redirect and no inbound link to keep
+        alive. What matters is that no page still offers the route.
+        """
+        self.assertFalse((ROOT / "contact.html").exists())
+        for page in self.pages():
+            with self.subTest(page=page):
+                html = self.html(page)
+                self.assertNotRegex(html, r'href="(\.\./)*contact"',
+                                    "%s links to a page that no longer "
+                                    "exists" % page)
+
+    def test_no_booker_styles_outlived_the_booker(self):
+        """Dead CSS is how a stylesheet stops describing the site."""
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        rule = re.search(r"\.cal \{([^}]*)\}", css)
-        self.assertIsNotNone(rule, ".cal has no rule")
-        self.assertIn("min-height", rule.group(1))
-        self.assertNotRegex(rule.group(1), r"[^-]height:\s*\d",
-                            "a fixed height will fight the iframe's own")
+        for sel in (".cal ", ".cal{", ".cal {", ".cal__", ".band--book",
+                    ".actions--single"):
+            with self.subTest(selector=sel):
+                self.assertNotIn(sel, css)
 
 
 # ── the runner ───────────────────────────────────────────────────────────
