@@ -218,11 +218,40 @@
     }
     sync();
 
+    /* The Cal booker is an iframe and does not inherit the page's theme,
+       so it has to be told. Without this, switching the page to light on
+       /contact left a dark calendar sitting inside a light page.
+
+       Guarded on every hop: Cal only exists on /contact, and only once
+       its script has loaded. On every other page this is a no-op. */
+    /* Cal bakes the theme into the embed's iframe URL when it mounts, and
+       ignores a later ("ui", {theme}) call on an inline embed -- measured:
+       the call is accepted, and the iframe keeps theme=dark and the class
+       cal-element-embed-dark. So the only thing that actually re-themes a
+       mounted booker is reloading it with the other value.
+
+       That costs an iframe reload, which is why it happens on an explicit
+       toggle and nowhere else. The page's stored preference is already
+       passed at mount, so the common case -- someone who chose light
+       earlier and comes back -- never reaches this. The alternative was a
+       dark calendar sitting in a light page, permanently. */
+    function syncCal(theme) {
+      try {
+        var el = document.getElementById("cal-booker");
+        var frame = el && el.querySelector("iframe");
+        var src = frame && frame.getAttribute("src");
+        if (!src || !/[?&]theme=/.test(src)) return;
+        var next = src.replace(/([?&]theme=)[^&]*/, "$1" + theme);
+        if (next !== src) frame.setAttribute("src", next);
+      } catch (e) {}
+    }
+
     themeBtn.addEventListener("click", function () {
       var next = activeTheme() === "dark" ? "light" : "dark";
       root.dataset.theme = next;
       try { localStorage.setItem("theme", next); } catch (e) {}
       sync();
+      syncCal(next);
     });
 
     /* Follow the system while the visitor has not chosen. addEventListener
@@ -230,7 +259,7 @@
        Safari. */
     if (sysDark.addEventListener) {
       sysDark.addEventListener("change", function () {
-        if (!root.dataset.theme) sync();
+        if (!root.dataset.theme) { sync(); syncCal(activeTheme()); }
       });
     }
   }

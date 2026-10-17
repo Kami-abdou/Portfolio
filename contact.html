@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Contact - Abdou Yaackoubi</title>
+  <title>Book a call - Abdou Yaackoubi</title>
   <meta name="description" content="Product designer. I build what I design.">
   <meta name="author" content="Abdou Yaackoubi">
   <link rel="canonical" href="https://abdouyaackoubi.com/contact">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Abdou Yaackoubi">
-  <meta property="og:title" content="Contact - Abdou Yaackoubi">
+  <meta property="og:title" content="Book a call - Abdou Yaackoubi">
   <meta property="og:description" content="Product designer. I build what I design.">
   <meta property="og:url" content="https://abdouyaackoubi.com/contact">
   <meta property="og:image" content="https://abdouyaackoubi.com/site/share-card.png">
@@ -17,7 +17,7 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Contact - Abdou Yaackoubi">
+  <meta name="twitter:title" content="Book a call - Abdou Yaackoubi">
   <meta name="twitter:description" content="Product designer. I build what I design.">
   <!-- With JavaScript off the copy button cannot copy anything, so it is
        swapped for the mailto beside it. That is why actions_row emits
@@ -41,7 +41,7 @@
   <link rel="preload" href="assets/fonts/gabarito-variable.woff2?v=bab69a2a" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/fonts.css?v=72fe68d4">
   <link rel="stylesheet" href="assets/tokens.css?v=4b21d4db">
-  <link rel="stylesheet" href="assets/styles.css?v=8de9cfed">
+  <link rel="stylesheet" href="assets/styles.css?v=e2ad9ea9">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
   <script>
     /* Before first paint, or the page renders in the system theme and then
@@ -67,15 +67,71 @@
           <a href="about">About</a>
         </span>
         <button class="theme-toggle" type="button" aria-label="Switch between light and dark" aria-pressed="false"><span class="theme-toggle__dial" aria-hidden="true"></span></button>
-        <a class="site-nav__cta" href="https://cal.com/REPLACE-ME/30min" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a>
+        <a class="site-nav__cta" href="contact" aria-current="page">Book a call</a>
       </nav>
     </div>
   </header>
   <main id="main" tabindex="-1">
 
-    <section class="band shell band--close">
-      <h1 class="visually-hidden">Contact</h1>
-      <div class="actions"><a class="btn btn--solid" href="https://cal.com/REPLACE-ME/30min" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a><button class="btn js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="btn js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></div>
+    <section class="band shell band--book">
+      <h1 class="band__close">Book a call</h1>
+
+      <div class="cal" id="cal-booker"></div>
+      <script>
+        /* Cal's loader, verbatim apart from the slug and the theme. */
+        (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+
+        Cal("init", "30min", { origin: "https://app.cal.com" });
+
+        /* Cal paints its own page behind the booker card, and that page is
+           white unless it is told otherwise -- which showed as a pale strip
+           down the left of the embed and a band under it. Declared once and
+           passed to BOTH the inline config and the ui call, because the two
+           are merged and supplying it to only one left the body unthemed.
+           Every value is a token, so the booker cannot drift from the page
+           it sits in. */
+        var CAL_VARS = {
+          dark:  { "cal-bg": "#0E0A07", "cal-bg-emphasis": "#1D1713",
+                   "cal-bg-subtle": "#1D1713", "cal-bg-muted": "#0E0A07" },
+          light: { "cal-bg": "#FBFBFA", "cal-bg-emphasis": "#EDEBEB",
+                   "cal-bg-subtle": "#EDEBEB", "cal-bg-muted": "#FBFBFA" }
+        };
+        Cal.config = Cal.config || {};
+        Cal.config.forwardQueryParams = true;
+
+        /* The page's theme, not the system's. The no-flash script in the
+           head has already set data-theme by the time this runs. */
+        var calTheme = document.documentElement.dataset.theme
+          || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+
+        Cal.ns["30min"]("inline", {
+          elementOrSelector: "#cal-booker",
+          config: {
+            layout: "month_view",
+            useSlotsViewOnSmallScreen: "true",
+            theme: calTheme,
+            cssVarsPerTheme: CAL_VARS
+          },
+          calLink: "abdou-yaackoubi-lpkcep/30min"
+        });
+        /* Cal's own page background, set to this site's. Without it the
+           iframe paints white behind their panel and the embed shows a
+           pale strip down the left and along the bottom -- the booker
+           looks pasted onto the page rather than part of it. Both themes
+           are supplied because the toggle can switch after load, and the
+           values come from tokens.json like every other colour here. */
+        Cal.ns["30min"]("ui", {
+          hideEventTypeDetails: false,
+          layout: "month_view",
+          theme: calTheme,
+          cssVarsPerTheme: CAL_VARS
+        });
+      </script>
+      <p class="cal__fallback">
+        Calendar not loading? <a href="https://cal.com/abdou-yaackoubi-lpkcep/30min" target="_blank" rel="noopener">Open it on cal.com<span class="visually-hidden"> (opens in a new tab)</span></a>
+      </p>
+      <p class="cal__or">Or send an email.</p>
+      <div class="actions actions--single"><button class="btn js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="btn js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></div>
     </section>
 
   </main>
@@ -85,6 +141,6 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=652506b0" defer></script>
-  <script src="assets/enhance.js?v=effb161c" defer></script>
+  <script src="assets/enhance.js?v=6f51b7a6" defer></script>
 </body>
 </html>

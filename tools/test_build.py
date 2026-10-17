@@ -772,46 +772,41 @@ class TestCleanUrls(BuildCase):
                 self.assertIn('href="../%s"' % target, head,
                               "projects/%s.html cannot reach /%s" % (slug, target))
 
-    def test_contact_survives_as_a_route(self):
-        """The nav stopped pointing here; the URL did not stop existing.
-
-        "Book a call" goes straight to the calendar now, so nothing in
-        the nav sends anyone to /contact. It has been shared and linked
-        from outside the site, so it stays and offers the same two
-        actions rather than 404ing.
-        """
+    def test_contact_is_the_booking_page(self):
+        """It was a route kept alive for old links -- two buttons and a
+        hidden heading. It carries the Cal booker now, which is what
+        every "Book a call" on the site points at."""
         contact = self.html("contact.html")
+        self.assertIn('id="cal-booker"', contact, "/contact has no booker")
         self.assertIn("mailto:%s" % self.site["email"], contact,
                       "/contact offers no way to reach the address")
-        self.assertIn('class="actions"', contact)
+        self.assertIn('class="actions', contact)
         self.assertIn('id="contact"', self.html("index.html"),
                       "the homepage lost the #contact anchor old links use")
 
+
     def test_the_two_actions_have_one_source(self):
-        """"Book a call" and "Copy email" appear on three pages.
+        """The ask appears on three pages and is emitted once.
 
-        This replaces a test that asserted the same thing about the
-        "Let's talk" band, which carried the email, the CV and every
-        link. The band is gone; the pair of buttons took its job, and the
-        reason for the test did not change -- three copies of the ask is
-        three places for it to fall out of date, on the one block where
-        being wrong costs an actual opportunity.
-
-        build.py emits all of them from actions_row(), so the markup must
-        be identical byte for byte.
+        /contact carries the row WITHOUT its booking button, because a
+        button linking to the page you are reading is furniture. That is
+        a documented argument to actions_row, not a second copy of the
+        markup, so the comparison strips the booking link and the rest
+        still has to match byte for byte.
         """
         def actions(page):
-            raw = self.html(page)
-            m = re.search(r'<div class="actions">.*?</div>', raw, re.S)
+            m = re.search(r'<div class="actions[^"]*">(.*?)</div>',
+                          self.html(page), re.S)
             self.assertIsNotNone(m, "%s has no actions row" % page)
-            return m.group(0)
+            return re.sub(r'<a class="btn btn--solid"[^>]*>.*?</a>', "",
+                          m.group(1), flags=re.S)
         home = actions("index.html")
         for page in ("contact.html", "about.html"):
             with self.subTest(page=page):
                 self.assertEqual(actions(page), home,
-                                 "%s's actions row differs from the "
-                                 "homepage's, so they are no longer one "
-                                 "component" % page)
+                                 "%s's actions differ from the homepage's "
+                                 "by more than the booking button" % page)
+
 
     def test_every_page_with_the_actions_has_exactly_one_h1(self):
         """The rank question the old contact band raised, asked properly.
@@ -2104,32 +2099,25 @@ class TestPrimaryNav(BuildCase):
         """Contact was a mailto: sitting between two page links.
 
         In a nav that is a surprise -- it opens a mail client, or on a
-        machine with none configured it appears to do nothing at all. It
-        became /contact, and is now "Book a call" pointing at the
-        calendar. The mailto is still on the page, inside the actions,
-        where a visitor expects to find one.
-
-        The route to /contact is no longer asserted here because the nav
-        no longer holds one; TestCleanUrls checks the page still exists.
-
-        Depth is taken from the path, not the filename: an earlier version
-        checked `"/" in name` against a bare basename, which is never
-        true, so every project page was silently tested against the
-        root-relative href.
+        machine with none configured it appears to do nothing at all.
+        It became /contact, then "Book a call" pointing straight at
+        cal.com, and now "Book a call" pointing at /contact again,
+        because that is where the booker is embedded. The mailto lives
+        on the page, inside the actions, where a visitor expects one.
         """
         import glob, pathlib as pl
         for path in glob.glob(str(ROOT / "*.html")) + glob.glob(str(ROOT / "projects" / "*.html")):
             rel = pl.Path(path).relative_to(ROOT)
+            up = "../" * (len(rel.parts) - 1)
             page = pl.Path(path).read_text(encoding="utf-8")
             nav = re.search(r'<nav class="site-nav" aria-label="Primary">(.*?)</nav>', page, re.S)
             self.assertIsNotNone(nav, "%s lost its primary nav" % rel)
             with self.subTest(page=str(rel)):
                 self.assertNotIn("mailto:", nav.group(1),
                                  "%s still fires a mail client from the nav" % rel)
-                self.assertIn("cal.com", nav.group(1),
-                              "%s has no Book a call in its nav" % rel)
-        self.assertTrue((ROOT / "contact.html").is_file(),
-                        "/contact stopped being written")
+                self.assertIn('href="%scontact"' % up, nav.group(1),
+                              "%s has no route to the booking page" % rel)
+
 
     def test_nav_links_have_a_real_hit_area(self):
         """They had zero padding, so the target was the text box: 24px tall,
@@ -2146,12 +2134,12 @@ class TestPrimaryNav(BuildCase):
         It used to be a band carrying the email as selectable text, the
         CV and a row of link buttons. It is the two actions now, and the
         thing worth asserting is unchanged: a visitor who reads to the
-        bottom can still get in touch without scrolling back.
+        bottom can get in touch without scrolling back.
         """
-        index = self.html("index.html")
-        close = index.split('id="contact"', 1)[1].split("</section>", 1)[0]
-        self.assertIn("cal.com", close, "no way to book a call at the foot")
+        close = self.html("index.html").split('id="contact"', 1)[1].split("</section>", 1)[0]
+        self.assertIn('href="contact"', close, "no way to reach the booker at the foot")
         self.assertIn("mailto:", close, "no way to reach the address at the foot")
+
 
 class TestToolIcons(BuildCase):
     """Tool chips: a real mark when one exists, a monogram when it does not.
@@ -3674,7 +3662,9 @@ class TestTheAsk(BuildCase):
     """
 
     def actions(self, page):
-        m = re.search(r'<div class="actions">(.*?)</div>', self.html(page), re.S)
+        # class="actions" OR "actions actions--single" -- /contact drops the
+        # booking button and takes a modifier with it.
+        m = re.search(r'<div class="actions[^"]*">(.*?)</div>', self.html(page), re.S)
         self.assertIsNotNone(m, "%s has no actions row" % page)
         return m.group(1)
 
@@ -3689,19 +3679,17 @@ class TestTheAsk(BuildCase):
         self.assertRegex(row, r'<button[^>]*class="[^"]*js-copy[^"]*"[^>]*type="button"',
                          "Copy email is not a real <button type=button>")
 
-    def test_book_a_call_is_a_link_and_leaves_the_tab(self):
-        """And it is a link, for the same reason in reverse: it navigates.
-
-        A <button> that navigates loses middle-click, the context menu and
-        the status-bar preview, and gains nothing.
-        """
+    def test_book_a_call_goes_to_the_booker_in_the_same_tab(self):
+        """It used to open cal.com in a new tab. The booker is embedded
+        at /contact now, so this is an ordinary internal link: same tab,
+        same site, and no "opens in a new tab" note to announce."""
         row = self.actions("index.html")
-        self.assertRegex(row, r'<a class="btn btn--solid" href="https://cal\.com/[^"]+"')
-        self.assertIn('target="_blank"', row)
-        self.assertIn('rel="noopener"', row)
-        self.assertIn("opens in a new tab", row,
-                      "the calendar opens a tab without telling anyone who "
-                      "cannot see it happen")
+        self.assertRegex(row, r'<a class="btn btn--solid" href="contact">Book a call</a>')
+        book = re.search(r'<a class="btn btn--solid"[^>]*>', row).group(0)
+        self.assertNotIn("target=", book,
+                         "the booking link leaves the tab for a page on "
+                         "this same site")
+
 
     def test_the_address_travels_with_the_button(self):
         row = self.actions("index.html")
@@ -3757,11 +3745,12 @@ class TestTheAsk(BuildCase):
                          "it should be CAL_LINK and nothing else" % len(literals))
         self.assertRegex(src, re.compile(r"^CAL_LINK = ", re.M))
 
-    def test_every_page_that_asks_uses_the_same_component(self):
-        home = self.actions("index.html")
-        for page in ("contact.html", "about.html"):
+    def test_the_booking_button_is_dropped_only_on_the_booking_page(self):
+        for page in ("index.html", "about.html"):
             with self.subTest(page=page):
-                self.assertEqual(self.actions(page), home)
+                self.assertIn("Book a call", self.actions(page))
+        self.assertNotIn("Book a call", self.actions("contact.html"),
+                         "/contact offers a button to the page it is")
 
 
 class TestCopyBudget(BuildCase):
@@ -3816,6 +3805,101 @@ class TestCopyBudget(BuildCase):
                            "the counter is not dropping the nav and footer: "
                            "it reports %d words of %d visible" % (budget, raw))
 
+
+
+class TestTheBooker(BuildCase):
+    """Cal.com's inline embed: where it is, and what it must not cost.
+
+    This is the only third-party script on the site. Embedding it at
+    /contact rather than popping it over every page is the whole reason
+    the homepage and the five case studies still make zero third-party
+    requests, so "it is on exactly one page" is the invariant worth
+    guarding -- a popup embed added later would quietly undo it.
+    """
+
+    THIRD_PARTY = "app.cal.com/embed/embed.js"
+
+    def test_the_booker_is_on_the_contact_page(self):
+        contact = self.html("contact.html")
+        self.assertIn('id="cal-booker"', contact)
+        self.assertIn(self.THIRD_PARTY, contact)
+
+    def test_no_other_page_loads_a_third_party_script(self):
+        """The reason the booker is a page and not a popup."""
+        pages = ["index.html", "work.html", "about.html"]
+        pages += ["projects/%s.html" % d["slug"] for _, d in self.live_projects()]
+        for page in pages:
+            with self.subTest(page=page):
+                self.assertNotIn("cal.com", self.html(page),
+                                 "%s reaches cal.com; the booker was supposed "
+                                 "to stay on /contact" % page)
+                self.assertNotIn("//app.", self.html(page))
+
+    def test_the_slug_and_namespace_come_from_the_link(self):
+        """One source for the booking URL, still.
+
+        The embed wants "user/event" and an event namespace, which is
+        three ways to write the same booking down. They are derived from
+        CAL_LINK in build.py; typing any of them again is how the button
+        and the booker end up pointing at different events.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import CAL_LINK, CAL_SLUG, CAL_NS
+        self.assertTrue(CAL_LINK.startswith("https://cal.com/"))
+        self.assertEqual(CAL_SLUG, CAL_LINK.split("cal.com/", 1)[1])
+        self.assertEqual(CAL_NS, CAL_SLUG.rsplit("/", 1)[-1])
+        contact = self.html("contact.html")
+        self.assertIn('calLink: "%s"' % CAL_SLUG, contact)
+        self.assertIn('Cal("init", "%s"' % CAL_NS, contact)
+        self.assertNotIn("REPLACE-ME", contact, "the placeholder link shipped")
+
+    def test_the_booker_follows_the_page_theme_not_the_system(self):
+        """`theme: "auto"` follows the SYSTEM, and this site has its own
+        toggle -- so a visitor who switched the page to light got a dark
+        calendar sitting inside it."""
+        contact = self.html("contact.html")
+        self.assertNotIn('theme: "auto"', contact)
+        self.assertIn("document.documentElement.dataset.theme", contact,
+                      "the embed does not read the page's own theme")
+        js = (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+        self.assertIn("syncCal", js, "nothing tells Cal when the toggle moves")
+        # Cal bakes the theme into the iframe URL at mount and ignores a
+        # later ("ui", {theme}) call on an inline embed -- measured. The
+        # only thing that re-themes a mounted booker is reloading it, so
+        # the sync has to rewrite that parameter.
+        self.assertIn("theme=", js,
+                      "the toggle does not rewrite the embed's theme "
+                      "parameter, so the booker keeps the theme it mounted "
+                      "with and sits in a page of the other one")
+
+    def test_a_failed_embed_is_not_a_dead_end(self):
+        """An iframe that never loads looks exactly like an empty box.
+
+        The fallback is deliberately NOT behind a script: the failures
+        worth covering -- a blocker, a proxy, an outage at Cal -- are
+        the ones where the page's own JavaScript may be fine and the
+        embed still never appears.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import CAL_LINK
+        contact = self.html("contact.html")
+        self.assertIn("cal__fallback", contact)
+        fallback = re.search(r'<p class="cal__fallback">(.*?)</p>', contact, re.S)
+        self.assertIsNotNone(fallback)
+        self.assertIn(CAL_LINK, fallback.group(1))
+        self.assertNotIn("js-", fallback.group(1),
+                         "the fallback is gated on JavaScript running")
+
+    def test_the_container_is_not_given_a_fixed_height(self):
+        """Cal's iframe reports its own height and resizes. A hardcoded
+        one is either a scrollbar inside a scrollbar or a slab of empty
+        page under a short month view."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        rule = re.search(r"\.cal \{([^}]*)\}", css)
+        self.assertIsNotNone(rule, ".cal has no rule")
+        self.assertIn("min-height", rule.group(1))
+        self.assertNotRegex(rule.group(1), r"[^-]height:\s*\d",
+                            "a fixed height will fight the iframe's own")
 
 
 # ── the runner ───────────────────────────────────────────────────────────

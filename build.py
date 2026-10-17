@@ -340,9 +340,16 @@ def link_icon(label, depth=0, *, slug=None):
 #: `noopener` is belt and braces on a same-origin PDF -- every current
 #: browser implies it for target="_blank" -- but it is one attribute and it
 #: is what the rest of the file already does for outbound links.
-#: The one place the booking URL lives. Swap this string and every button
-#: on the site follows: the nav, both homepage pairs, /contact and /about.
-CAL_LINK = "https://cal.com/REPLACE-ME/30min"
+#: The one place the booking URL lives. Swap this string and everything
+#: follows: the embed on /contact, the fallback link under it, and the
+#: slug and namespace the embed script is initialised with.
+CAL_LINK = "https://cal.com/abdou-yaackoubi-lpkcep/30min"
+
+#: What Cal's embed wants instead of a URL: "user/event", and the event on
+#: its own as a namespace. Both are derived rather than typed, so the link
+#: above stays the single source it claims to be.
+CAL_SLUG = CAL_LINK.split("cal.com/", 1)[1]
+CAL_NS = CAL_SLUG.rsplit("/", 1)[-1]
 
 NEW_TAB = ' target="_blank" rel="noopener"'
 
@@ -364,7 +371,7 @@ def link_btn(label, href, depth=0, *, slug=None, rel_attr="", new_tab=False):
             % (e(href), attrs, link_icon(label, depth, slug=slug), e(label), note))
 
 
-def actions_row(depth=0, *, cls="actions"):
+def actions_row(depth=0, *, cls="actions", book_btn=True):
     """"Book a call" and "Copy email", the site's only two asks.
 
     Four places use this -- the hero, the homepage's closing line, /contact
@@ -375,6 +382,10 @@ def actions_row(depth=0, *, cls="actions"):
     navigates loses the middle-click, the context menu and the status bar
     for no gain. Copy email is a real <button>, because it acts on the page
     instead of going anywhere.
+
+    `book_btn=False` drops the booking button, which is what /contact
+    passes: that page IS the booker, and a button linking to the page you
+    are already reading is furniture.
 
     THREE controls are emitted, not two. The button is the enhanced path;
     the mailto next to it is the fallback, hidden by default and revealed
@@ -393,8 +404,11 @@ def actions_row(depth=0, *, cls="actions"):
     """
     up = "../" * depth
     addr = SITE.get("email", "")
-    book = ('<a class="btn btn--solid" href="%s"%s>Book a call%s</a>'
-            % (e(CAL_LINK), NEW_TAB, NEW_TAB_NOTE))
+    # /contact, not cal.com. The booker is embedded there, so this keeps the
+    # visitor on the site and keeps Cal's script off every other page. It is
+    # an ordinary internal link: same tab, no "opens in a new tab" note.
+    book = ('<a class="btn btn--solid" href="%scontact">Book a call</a>' % e(up)
+            if book_btn else "")
     if not usable(addr):
         return '<div class="%s">%s</div>' % (cls, book)
     return (
@@ -676,10 +690,10 @@ def primary_nav(up, current=None):
     for key, href, label in items:
         mark = ' aria-current="page"' if key == current else ""
         out.append('<a href="%s"%s>%s</a>' % (e(href), mark, e(label)))
-    # "Say hello" pointed at /contact. The ask is now explicit and goes
-    # straight to the calendar, so the nav's one button is the same control
-    # as the two on the page. /contact survives as a route for old links
-    # rather than as somewhere the nav sends anyone.
+    # "Say hello" became "Book a call", and it points at /contact because
+    # that is where the Cal booker is embedded. Marked aria-current when
+    # you are on it, like the other two -- it is a page link again.
+    contact_mark = ' aria-current="page"' if current == "contact" else ""
     # The theme control. The page follows the system by default; this is for
     # the visitor whose machine says dark but who wants to see the paper,
     # which is most of what this site's identity IS. aria-pressed rather than
@@ -698,9 +712,8 @@ def primary_nav(up, current=None):
         '          <span class="site-nav__marker" aria-hidden="true"></span>\n'
         '          %s\n        </span>\n'
         '        %s\n'
-        '        <a class="site-nav__cta" href="%s"%s>Book a call%s</a>\n'
-        '      </nav>' % ("\n          ".join(out), toggle, e(CAL_LINK),
-                          NEW_TAB, NEW_TAB_NOTE))
+        '        <a class="site-nav__cta" href="%scontact"%s>Book a call</a>\n'
+        '      </nav>' % ("\n          ".join(out), toggle, e(up), contact_mark))
 
 
 def head(title, description, *, depth=0, image=None, page_url="",
@@ -1219,30 +1232,123 @@ def build_index(projects):
     (ROOT / "work.html").write_text(page, encoding="utf-8")
 
 
+def cal_embed():
+    """Cal.com's inline booker, and the two things their snippet leaves out.
+
+    This is the ONLY third-party script on the site, and it is on exactly
+    one page. That is the whole reason the booker is embedded at /contact
+    rather than popped over every page that carries a button: the
+    homepage and the five case studies stay at zero third-party requests,
+    which is not a small thing on a site whose own JavaScript is 8.8KB.
+
+    Two changes to the snippet Cal hands you:
+
+    1. `theme` is not "auto". Auto follows the SYSTEM, and this site has
+       its own toggle -- so a visitor who switched the page to light got
+       a dark booker sitting inside it. The theme is read from the same
+       <html data-theme> the rest of the page uses, and enhance.js tells
+       Cal about it again whenever the toggle is pressed.
+
+    2. The loader is given the slug from CAL_LINK rather than a second
+       copy of it, so there is still one place to change the booking URL.
+
+    The container is NOT given a fixed height. Cal's iframe reports its
+    own and resizes; a hardcoded height is either a scrollbar inside a
+    scrollbar or a slab of empty page under the calendar.
+    """
+    return """
+      <div class="cal" id="cal-booker"></div>
+      <script>
+        /* Cal's loader, verbatim apart from the slug and the theme. */
+        (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+
+        Cal("init", "%(ns)s", { origin: "https://app.cal.com" });
+
+        /* Cal paints its own page behind the booker card, and that page is
+           white unless it is told otherwise -- which showed as a pale strip
+           down the left of the embed and a band under it. Declared once and
+           passed to BOTH the inline config and the ui call, because the two
+           are merged and supplying it to only one left the body unthemed.
+           Every value is a token, so the booker cannot drift from the page
+           it sits in. */
+        var CAL_VARS = {
+          dark:  { "cal-bg": "%(bgDark)s", "cal-bg-emphasis": "%(raisedDark)s",
+                   "cal-bg-subtle": "%(raisedDark)s", "cal-bg-muted": "%(bgDark)s" },
+          light: { "cal-bg": "%(bgLight)s", "cal-bg-emphasis": "%(raisedLight)s",
+                   "cal-bg-subtle": "%(raisedLight)s", "cal-bg-muted": "%(bgLight)s" }
+        };
+        Cal.config = Cal.config || {};
+        Cal.config.forwardQueryParams = true;
+
+        /* The page's theme, not the system's. The no-flash script in the
+           head has already set data-theme by the time this runs. */
+        var calTheme = document.documentElement.dataset.theme
+          || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+
+        Cal.ns["%(ns)s"]("inline", {
+          elementOrSelector: "#cal-booker",
+          config: {
+            layout: "month_view",
+            useSlotsViewOnSmallScreen: "true",
+            theme: calTheme,
+            cssVarsPerTheme: CAL_VARS
+          },
+          calLink: "%(slug)s"
+        });
+        /* Cal's own page background, set to this site's. Without it the
+           iframe paints white behind their panel and the embed shows a
+           pale strip down the left and along the bottom -- the booker
+           looks pasted onto the page rather than part of it. Both themes
+           are supplied because the toggle can switch after load, and the
+           values come from tokens.json like every other colour here. */
+        Cal.ns["%(ns)s"]("ui", {
+          hideEventTypeDetails: false,
+          layout: "month_view",
+          theme: calTheme,
+          cssVarsPerTheme: CAL_VARS
+        });
+      </script>
+      <p class="cal__fallback">
+        Calendar not loading? <a href="%(link)s"%(tab)s>Open it on cal.com%(note)s</a>
+      </p>""" % {"ns": CAL_NS, "slug": CAL_SLUG, "link": e(CAL_LINK),
+                 "tab": NEW_TAB, "note": NEW_TAB_NOTE,
+                 "bgDark": TOKENS["color"]["bg"],
+                 "raisedDark": TOKENS["color"]["bgRaised"],
+                 "bgLight": TOKENS["colorLight"]["bg"],
+                 "raisedLight": TOKENS["colorLight"]["bgRaised"]}
+
+
 def build_contact():
-    """/contact, kept as a route rather than as a page with anything on it.
+    """/contact, which is the booking page now.
 
-    The nav no longer points here: the ask is "Book a call" and it goes
-    straight to the calendar. But the URL has been shared and linked from
-    outside the site, so it stays, and it offers the same two actions as
-    everywhere else rather than a dead end.
+    It was two buttons and a hidden heading -- a route kept alive for old
+    links. Embedding the booker gives it a job, and gives every "Book a
+    call" on the site somewhere on this domain to land.
 
-    The h1 is visually hidden. The brief for this page is the two actions
-    and nothing else, and a page whose heading order starts at nothing is
-    worse for a screen reader than one with a name it does not draw.
+    The booking button is dropped from the actions here, because it would
+    link to the page being read. The email stays: it is the other way in,
+    and some people will always prefer it.
+
+    The fallback link under the embed is permanent, not JavaScript-gated.
+    A third-party iframe can fail for reasons this site will never see --
+    a blocker, a corporate proxy, an outage at Cal -- and the failure
+    looks like an empty box. One quiet line means that is never a dead
+    end, and it costs four words.
     """
     out = [head(
-        "Contact - %s" % SITE["name"],
+        "Book a call - %s" % SITE["name"],
         SITE.get("metaDescription") or SITE["title"],
         page_url="contact",
         nav_current="contact",
     )]
     out.append("""
-    <section class="band shell band--close">
-      <h1 class="visually-hidden">Contact</h1>
+    <section class="band shell band--book">
+      <h1 class="band__close">Book a call</h1>
+%s
+      <p class="cal__or">Or send an email.</p>
       %s
     </section>
-""" % actions_row())
+""" % (cal_embed(), actions_row(book_btn=False, cls="actions actions--single")))
     out.append(foot())
     (ROOT / "contact.html").write_text("\n".join(out), encoding="utf-8")
 
