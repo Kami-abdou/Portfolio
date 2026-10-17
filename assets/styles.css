@@ -3306,9 +3306,17 @@ html { scroll-snap-type: y proximity; }
 .site-foot a { touch-action: manipulation; }
 
 .index { list-style: none; margin: 0; padding: 0; }
-.index__row { border-top: 1px solid var(--color-border); }
+.index__row {
+  border-top: 1px solid var(--color-border);
+  transition: border-color .25s var(--ease-out);
+}
 .index__row:last-child { border-bottom: 1px solid var(--color-border); }
+/* The hovered row's own hairline takes the accent. The page is made of
+   hairlines, so part of the feedback is the page's own material getting
+   brighter, under the wash set up below. */
+.index__row:hover { border-top-color: var(--color-accent); }
 .index__link {
+  position: relative;
   display: grid;
   /* num | name | line | domain | year | arrow. The line takes the slack,
      so the three right-hand columns stay in a true vertical rule down
@@ -3321,7 +3329,6 @@ html { scroll-snap-type: y proximity; }
   padding-block: var(--space-6);
   text-decoration: none;
   color: inherit;
-  transition: background .25s var(--ease-out);
 }
 .index__num {
   font-size: var(--font-size-xs);
@@ -3341,22 +3348,66 @@ html { scroll-snap-type: y proximity; }
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 }
+.index__line { transition: color .25s var(--ease-out); }
 .index__domain, .index__year { color: var(--color-text-faint); }
 .index__year { font-variant-numeric: tabular-nums; }
 .index__arrow {
   color: var(--color-text-faint);
   transition: transform .3s var(--ease-out), color .25s var(--ease-out);
 }
-/* Hover and keyboard focus get the SAME treatment. A row that only
-   responds to a pointer is a row a keyboard cannot tell it has landed
-   on. */
-.index__link:hover,
-.index__link:focus-visible {
-  background: var(--color-bg-alt);
-  outline: none;
+/* Everything below is paired :hover / :focus-visible on purpose. A row
+   that only responds to a pointer is a row a keyboard cannot tell it
+   has landed on. */
+
+/* The highlight, rebuilt so it is not a box.
+
+   The first version was `background: var(--color-bg-alt)` across the
+   whole row: a hard-edged grey rectangle, the only filled shape
+   anywhere near a section built from hairlines and page colour. It read
+   as a selection box in a file manager following the cursor down the
+   list.
+
+   Three things fix that while keeping a real highlight:
+
+     warm, not grey   -- the accent at 7%, so it reads as the row being
+                         lit rather than a different surface appearing.
+     rounded          -- radius-md corners, so it is a shape the rest of
+                         this layout already uses.
+     wider than the text -- it bleeds a space-4 past the content on both
+                         sides, so the fill belongs to the ROW rather
+                         than being clipped to where the words stop,
+                         which is what made the edges read as a border.
+
+   The spans are lifted to z-index 1 rather than the fill pushed to -1:
+   a negative z-index escapes behind the page background the moment any
+   ancestor makes a stacking context, and the band above this one has a
+   scroll-driven animation that would do exactly that. */
+.index__link::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(var(--space-4) * -1);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+  opacity: 0;
+  transition: opacity .22s var(--ease-out);
 }
+.index__link:hover::before,
+.index__link:focus-visible::before { opacity: 1; }
+.index__link > span { position: relative; z-index: 1; }
+
+/* The wash never travels alone. Three small movements ride with it, all
+   made of things already on the page: the row's own hairline takes the
+   accent, the line of description comes up from muted to full strength,
+   and the name steps right as the arrow leaves. The fill is then the
+   quietest part of the response rather than the whole of it, which is
+   what keeps it from reading as a slab.
+
+   The focus ring goes because focus-visible already gets all of it. */
+.index__link:focus-visible { outline: none; }
 .index__link:hover .index__name,
 .index__link:focus-visible .index__name { transform: translateX(6px); }
+.index__link:hover .index__line,
+.index__link:focus-visible .index__line { color: var(--color-text); }
 .index__link:hover .index__arrow,
 .index__link:focus-visible .index__arrow {
   transform: translate(3px, -3px);
