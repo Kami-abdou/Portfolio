@@ -2038,10 +2038,29 @@ class TestHeroPortrait(BuildCase):
         self.assertTrue(path.is_file(), "portrait missing: %s" % src)
         head = path.read_bytes()[:2]
         self.assertEqual(head, b"\xff\xd8", "%s is not a JPEG" % src)
-        # A black or empty encode compresses to almost nothing. The real file
-        # is ~265 KB; anything under 20 KB at these dimensions is a red flag.
-        self.assertGreater(path.stat().st_size, 20_000,
-                           "%s is suspiciously small -- is it blank?" % src)
+        # A black or empty encode compresses to almost nothing. The check
+        # used to be "over 20 KB", which was a fact about a 1702x2062
+        # photograph and not about the picture being real -- the portrait
+        # is cropped to 280x280 on the way in now, and a perfectly good
+        # one weighs 19.8 KB. Bytes PER PIXEL survives a change of
+        # dimensions: this file is 0.25, a black JPEG is under 0.02.
+        size = path.stat().st_size
+        import struct as _s
+        w = h = None
+        raw = path.read_bytes()
+        i = 2
+        while i < len(raw) - 9:
+            if raw[i] != 0xFF:
+                i += 1; continue
+            m = raw[i + 1]
+            if m in (0xC0, 0xC1, 0xC2):
+                h, w = _s.unpack(">HH", raw[i + 5:i + 9]); break
+            i += 2 + _s.unpack(">H", raw[i + 2:i + 4])[0]
+        self.assertTrue(w and h, "could not read the portrait's dimensions")
+        self.assertGreater(size / (w * h), 0.05,
+                           "%s is %d bytes for %dx%d (%.3f per pixel) -- that "
+                           "is about what a black or empty encode weighs"
+                           % (src, size, w, h, size / (w * h)))
 
     def test_hero_portrait_is_cropped_to_include_the_subject(self):
         """object-position must stay biased down.

@@ -3250,33 +3250,24 @@ html { scroll-snap-type: y proximity; }
 /* Small and round. It was a 340px square filling a third of the
    first screen; at 72px it says "a person made this" without
    taking the room the headline needs to fit above the fold. */
-/* object-fit: cover cannot zoom, and this source needs zooming.
-   site/portrait.jpg is not a head shot: it is a 1702x2062 street scene
-   with the head occupying about 230x260px of it, centred on (422, 633). A
-   cover-fit circle of it is a dark alley with a small person in it.
+/* A plain cover fit, which is all a square head-and-shoulders needs.
 
-   So the image is scaled up inside an overflow-hidden circle instead,
-   positioned to put a 560px box around the face. Percentage margins
-   resolve against the frame's WIDTH, which is what makes the three
-   numbers below one consistent scale:
+   What was here instead: a 472.8% width with -67.2% / -125.8% margins,
+   because the old portrait was a 1702x2062 street scene with the face
+   occupying about a tenth of the frame -- a cover-fit circle of it was
+   a dark alley with a small person in it, so the image had to be scaled
+   up inside the circle and dragged into place by hand. Three magic
+   numbers that had to be re-measured together if the photograph ever
+   changed.
 
-       360 source px -> the frame      width = 1702/360 = 473%
-       crop starts at x 242            left  = -242/360 = -67.2%
-       crop starts at y 453            top   = -453/360 = -125.8%
-
-   Swap the photograph and these three numbers have to be re-measured
-   together, which is why they are derived here rather than eyeballed. */
+   The photograph changed. It is cropped to 280x280 on the way in now
+   (sips --cropOffset, see site/_src for the original), so the framing
+   lives in the file where it belongs and the CSS has nothing to say. */
 .opening__portrait img {
   display: block;
-  /* The global `img { max-width: 100% }` caps this at the frame width and
-     silently turns the whole crop into background, which is exactly what
-     it did: the image rendered 76x92 and the negative margins moved the
-     visible window off it entirely. */
-  max-width: none;
-  width: 472.8%;
-  height: auto;
-  margin-left: -67.2%;
-  margin-top: -125.8%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .opening__claim { margin: 0; }
 .opening__meta {
