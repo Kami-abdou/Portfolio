@@ -44,20 +44,26 @@ import tempfile
 import zlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SOURCE = ROOT / "site" / "_src" / "favicon-portrait.webp"
+SOURCE = ROOT / "site" / "_src" / "portrait-desk-2026.jpg"
 
-#: Square crop box on the 1376x1505 original, as (left, top, side).
-#: Not a centred crop: the face sits above the middle of the frame and the
-#: subject's hand enters from the right, so centring clips the chin and
-#: spends a third of the width on a wall. The box is placed on the face
-#: and then widened about that point.
+#: Square crop box on the 400x400 original, as (left, top, side).
 #:
-#: 860 was a head-and-cap crop, tight to the jaw. This is the owner's
-#: asked-for step out: head, shoulders and watch, with the face still the
-#: largest thing in frame. There is not much further to go -- at 1200 the
-#: face stops carrying the icon at 32px, and the widest square available
-#: about this centre is ~1360 before it runs off the original.
-CROP = (160, 240, 1040)
+#: A 32x32 tab icon has 256 pixels to say something with, so the crop has
+#: to be tight: head only, no desk, no plant, no laptop. Measured off a
+#: percentage grid rather than guessed -- the head spans x 42-78% and
+#: y 17-56%, centred on (69%, 36%), which on a 400px frame is (276, 145).
+#: A 160px box about that point keeps the cap and the glasses, which are
+#: the two things still legible at 32px.
+#:
+#: Measured twice. The first reading put the head at 60% across and the
+#: generated disc came out half wall, because the subject sits further
+#: right in the frame than it looks when the plant is drawing your eye.
+#:
+#: The previous source was a different photograph entirely
+#: (favicon-portrait.webp, 1376x1505). It stays in _src; this just stops
+#: pointing at it, so the tab icon and the hero are the same person on
+#: the same day.
+CROP = (196, 65, 160)
 
 #: (filename, pixels, disc?) -- see "Two shapes, on purpose" above.
 OUTPUTS = [
