@@ -3174,3 +3174,245 @@ html { scroll-snap-type: y proximity; }
      display type. */
   color: var(--color-accent-deep);
 }
+
+/* ══════════════════════════════════════════════════════════
+   THE SIMPLE PAGES
+   The homepage said 557 words before its footer: an availability
+   badge, a supporting paragraph, four stat blocks, a fanned card
+   stack, an "A bit about me" band duplicating /about, two project
+   rails carrying chips and summaries, and a "Let's talk" band
+   repeating the links the footer repeated again. It says 38 now.
+
+   What follows styles what replaced all of it. Rules above this
+   banner that target .fan, .aboutblock, .opening__facts, .entry
+   or .band--contact no longer match anything on any page; they are
+   left in place rather than cut blind, because several are shared
+   with the case studies.
+   ══════════════════════════════════════════════════════════ */
+
+/* ── the two actions, the site's only ask ─────────────────── */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+/* The mailto twin of the copy button. Hidden here, shown by the
+   <noscript> rule in head() or by enhance.js when the Clipboard
+   API is missing -- see actions_row() in build.py. */
+.js-copy-fallback { display: none; }
+
+/* ── the hero ─────────────────────────────────────────────── */
+.hero-band { padding-block: var(--space-16) var(--space-12); }
+.opening {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* The hero's older rule is still in the file above and still applies:
+     it set `display: grid`, a 32px `gap` and its own padding-block. The
+     display is overridden by being later, but gap and padding are not
+     mentioned here unless they are reset, and they were adding 32px of
+     padding plus 32px between every child -- which is why the margins
+     below appeared to do nothing. */
+  padding: 0;
+  gap: 0;
+}
+/* Explicit margins rather than one flex `gap`, because the four things
+   in here do not want equal spacing: the meta line belongs to the
+   headline above it and the buttons are a separate beat. */
+.opening__portrait {
+  margin: 0 0 var(--space-6);
+  width: clamp(56px, 7vw, 76px);
+  aspect-ratio: 1;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--color-bg-alt);
+}
+/* Small and round. It was a 340px square filling a third of the
+   first screen; at 72px it says "a person made this" without
+   taking the room the headline needs to fit above the fold. */
+/* object-fit: cover cannot zoom, and this source needs zooming.
+   site/portrait.jpg is not a head shot: it is a 1702x2062 street scene
+   with the head occupying about 230x260px of it, centred on (422, 633). A
+   cover-fit circle of it is a dark alley with a small person in it.
+
+   So the image is scaled up inside an overflow-hidden circle instead,
+   positioned to put a 560px box around the face. Percentage margins
+   resolve against the frame's WIDTH, which is what makes the three
+   numbers below one consistent scale:
+
+       360 source px -> the frame      width = 1702/360 = 473%
+       crop starts at x 242            left  = -242/360 = -67.2%
+       crop starts at y 453            top   = -453/360 = -125.8%
+
+   Swap the photograph and these three numbers have to be re-measured
+   together, which is why they are derived here rather than eyeballed. */
+.opening__portrait img {
+  display: block;
+  /* The global `img { max-width: 100% }` caps this at the frame width and
+     silently turns the whole crop into background, which is exactly what
+     it did: the image rendered 76x92 and the negative margins moved the
+     visible window off it entirely. */
+  max-width: none;
+  width: 472.8%;
+  height: auto;
+  margin-left: -67.2%;
+  margin-top: -125.8%;
+}
+.opening__claim { margin: 0; }
+.opening__meta {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* ── selected work ────────────────────────────────────────── */
+.band__title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  margin: 0 0 var(--space-8);
+}
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-12);
+}
+.card__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.card__media {
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--tint, var(--color-bg-alt));
+}
+/* One ratio for every cover, which is the only way three
+   screenshots of 900x450, 900x640 and 900x2229 can sit in a column
+   without the page lurching. Anchored to the top because a tall
+   product screenshot keeps its header and loses its footer, which
+   is the half worth seeing. */
+.card__media img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform .5s var(--ease-out);
+}
+.card__link:hover .card__media img { transform: scale(1.02); }
+.card__row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-4);
+}
+.card__name {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xl);
+  letter-spacing: var(--tracking-heading);
+}
+.card__tag { color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.card__years {
+  margin-left: auto;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+.card__link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 6px;
+  border-radius: var(--radius-sm);
+}
+.more-work {
+  margin: var(--space-8) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-faint);
+}
+.more-work a { color: var(--color-text-muted); }
+
+/* ── the closing ask, on three pages ──────────────────────── */
+.band--close { padding-block: var(--space-16); }
+.band__close {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-heading);
+}
+.band--close .actions { margin-top: var(--space-6); }
+
+/* ── about: jobs, tools, how I work ───────────────────────── */
+.about { padding-block: var(--space-16) var(--space-4); }
+.about__intro { margin-top: var(--space-8); max-width: 58ch; }
+.band--jobs h2, .band--tools h2, .band--values h2 {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  margin: 0 0 var(--space-6);
+}
+.jobs, .values { list-style: none; margin: 0; padding: 0; }
+.job {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-6);
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+.job:last-child { border-bottom: 1px solid var(--color-border); }
+.job__company { font-weight: var(--font-weight-medium); }
+.job__role { grid-column: 1; color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.job__years {
+  grid-column: 2; grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+.tools-line { margin: 0; color: var(--color-text-muted); }
+.values li { padding-block: var(--space-3); max-width: 62ch; }
+.value__label { font-weight: var(--font-weight-bold); }
+.value__body { color: var(--color-text-muted); }
+.about__small { margin: var(--space-6) 0 0; font-size: var(--font-size-sm); }
+.about__small a { color: var(--color-text-muted); margin-right: var(--space-4); }
+
+.site-foot__sep { color: var(--color-text-faint); }
+
+/* ── phones ───────────────────────────────────────────────── */
+@media (max-width: 559px) {
+  /* Full-width and stacked, because two pill buttons side by side at
+     375px leaves each about 150px wide with the label compromising.
+
+     `width: 100%` on the row itself is the part that actually does it:
+     .actions sits in a flex column with align-items: flex-start, so it
+     is shrink-to-fit, and stretching its CHILDREN to a shrink-wrapped
+     parent just gave two 126px buttons in a column. */
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-top: var(--space-6);
+  }
+  .actions .btn { width: 100%; justify-content: center; }
+
+  /* The hero has to fit the first screen here too, and at 375x760 it
+     cleared the fold by three pixels -- which is to say it did not fit
+     on any phone shorter than this one. The header already takes 177px
+     of a phone, so the room comes out of the hero's own spacing. */
+  .hero-band { padding-block: var(--space-6) var(--space-8); }
+  .opening__portrait { margin-bottom: var(--space-4); }
+  .opening__meta { margin-top: var(--space-4); }
+
+  .card__row { gap: var(--space-1) var(--space-3); }
+  .card__years { margin-left: 0; flex-basis: 100%; }
+}

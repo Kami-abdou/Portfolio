@@ -115,7 +115,7 @@
 
      So: nothing at rest, and a label only over the two things on this site
      that are clickable without looking it -- a screenshot, which opens
-     full-screen, and a row in the work rail, which opens a case study.
+     full-screen, and a card on the homepage, which opens a case study.
      Buttons and nav links are skipped on purpose; the native pointer
      already says those are pressable and a second hint is noise.
 
@@ -128,8 +128,7 @@
   if (window.matchMedia('(pointer: fine)').matches) {
     var LABELS = [
       ['.shot__btn', 'Open'],
-      ['.entry__media', 'Read'],
-      ['.entry__title a', 'Read']
+      ['.card__link', 'Read']
     ];
 
     var pill = document.createElement('div');
@@ -492,4 +491,66 @@
   }
   window.addEventListener('resize', rest, { passive: true });
   rest();
+
+  /* ── copy the address instead of launching a mail client ────
+     The page ships BOTH controls: a <button> that copies, and a mailto
+     <a> hidden next to it. This module owns which one is shown.
+
+     Three cases, and only the first is the happy one:
+
+       clipboard available  -> the button stays, the mailto stays hidden
+       no Clipboard API     -> swap them, so the visitor gets a mail link
+       JS never runs        -> the <noscript> rule in head() swaps them
+
+     navigator.clipboard is undefined on a page served over plain http
+     from anything but localhost, which is not an edge case here: it is
+     how this site is previewed. Checking for it rather than assuming it
+     is the difference between a fallback and a dead button.
+
+     The label swap and the announcement are deliberately separate. A
+     screen reader does not reliably announce the accessible name of a
+     button changing under the user's own focus, so the word "Copied" is
+     written into a role=status sibling, which is announced because it is
+     a live region. The visible label changes for everyone else.
+  */
+  var copyables = document.querySelectorAll('.js-copy');
+  if (copyables.length) {
+    var canCopy = !!(navigator.clipboard && navigator.clipboard.writeText);
+    Array.prototype.forEach.call(copyables, function (btn) {
+      var row = btn.parentNode;
+      var fallback = row.querySelector('.js-copy-fallback');
+      if (!canCopy) {
+        btn.style.display = 'none';
+        if (fallback) fallback.style.display = 'inline-flex';
+        return;
+      }
+      var status = row.querySelector('[data-copy-status]');
+      var original = btn.textContent;
+      var timer = null;
+      btn.addEventListener('click', function () {
+        navigator.clipboard.writeText(btn.getAttribute('data-copy')).then(
+          function () {
+            btn.textContent = 'Copied';
+            if (status) status.textContent = 'Email address copied';
+            window.clearTimeout(timer);
+            /* Two seconds, per the brief. Cleared first, so a second
+               click does not let the earlier timer cut the new one
+               short. */
+            timer = window.setTimeout(function () {
+              btn.textContent = original;
+              if (status) status.textContent = '';
+            }, 2000);
+          },
+          function () {
+            /* Permission denied or a document that is not focused. The
+               address is still reachable, so say so rather than
+               failing silently. */
+            btn.style.display = 'none';
+            if (fallback) fallback.style.display = 'inline-flex';
+            if (status) status.textContent = 'Copying is blocked; use the email link';
+          }
+        );
+      });
+    });
+  }
 })();

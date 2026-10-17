@@ -65,185 +65,76 @@ class BuildCase(unittest.TestCase):
         return out
 
 
-class TestHomepageTiers(BuildCase):
+class TestSelectedWork(BuildCase):
+    """Three cards, in a stated order, and nothing retired among them.
 
-    def test_the_bands_split_by_employment(self):
-        """The homepage bands are "full-time jobs" and "everything else".
+    This replaces TestHomepageTiers, which asserted a two-band system --
+    "full-time jobs" above "everything else", each band a different tier
+    of the same component. The homepage shows three cards and a line of
+    two more now, so the tiers, the bands and the interleaving rules they
+    protected have no subject left.
 
-        They used to split by case-study depth -- four with a written
-        narrative, four without -- and the counts were asserted literally.
-        The split is employment now: a band a recruiter can reconcile
-        against the CV sitting open in the next tab, which the depth split
-        never let them do.
+    What survives is the part that was never about tiers: the order is
+    deliberate, a project appears once, and a retired project appears
+    nowhere.
+    """
 
-        So the assertion is the RULE, not the counts. Every project whose
-        employer appears in `experience` belongs to the first band; every
-        project that is freelance, self-initiated or this site belongs to
-        the second. The counts follow from the data and are free to move.
-        """
-        bands = self.site["sections"]
-        employed = set()
-        for job in self.site.get("experience", []):
-            employed.update(job.get("projects", []))
-
-        first = set(bands["highlights"]["slugs"])
-        self.assertEqual(
-            first, employed,
-            "the first band is not the full-time work. In the band but not "
-            "in any job: %s. In a job but not in the band: %s"
-            % (sorted(first - employed), sorted(employed - first)))
-
-        # The freelance band is gone. While it exists the rule still holds:
-        # nothing from a full-time job may sit in it.
-        second = set(bands.get("selectedWork", {}).get("slugs", []))
-        self.assertEqual(
-            second & employed, set(),
-            "%s came out of a full-time job and is in the 'other things' "
-            "band" % sorted(second & employed))
-
-    def test_every_project_appears_exactly_once(self):
-        """A project in both bands, or in neither, is a content bug."""
-        bands = self.site["sections"]
-        listed = [s for b in bands.values() for s in b["slugs"]]
-        self.assertEqual(len(listed), len(set(listed)),
-                         "a project is listed twice: %s" % listed)
-        live = {c["slug"] for _, c in self.live_projects()}
-        self.assertEqual(
-            set(listed), live,
-            "bands and published projects disagree. Listed but not "
-            "published: %s. Published but unlisted: %s"
-            % (sorted(set(listed) - live), sorted(live - set(listed))))
-
-    def test_each_band_reads_in_order(self):
-        """`order` must ascend down each band, or the numbering jumps.
-
-        It is rendered as the visible %02d card number and it drives the
-        prev/next pager, while the band's slug array decides what sits
-        where on the homepage. They are two separate files saying the same
-        thing, so they can disagree: reorder the array alone and the band
-        counts 03, 01, 04, 02 down the page while Next walks a different
-        route entirely.
-
-        Nothing checked this before -- the class docstring warned about it
-        in prose and no assertion backed it up, which is how a warning
-        survives a reorder.
-        """
-        orders = {}
-        for folder in sorted((ROOT / "projects").iterdir()):
-            f = folder / "content.json"
-            if f.is_file():
-                d = json.loads(f.read_text(encoding="utf-8"))
-                orders[d["slug"]] = d["order"]
-
-        for band, spec in self.site["sections"].items():
-            got = [orders[s] for s in spec["slugs"]]
-            self.assertEqual(
-                got, sorted(got),
-                "%s is displayed as %s but their order values are %s -- the "
-                "card numbers and the pager would disagree with the page"
-                % (band, spec["slugs"], got))
-
-    def test_the_two_bands_do_not_interleave(self):
-        """Every case study outranks every gallery piece.
-
-        The bands render one after the other, so if their order values
-        interleave the page counts 01, 03, 02, 04 across the boundary even
-        though each band is internally sorted.
-        """
-        orders = {}
-        for folder in sorted((ROOT / "projects").iterdir()):
-            f = folder / "content.json"
-            if f.is_file():
-                d = json.loads(f.read_text(encoding="utf-8"))
-                orders[d["slug"]] = d["order"]
-        bands = self.site["sections"]
-        if len(bands) < 2:
-            self.skipTest("one band left; nothing to interleave with")
-        top = [orders[s] for s in bands["highlights"]["slugs"]]
-        rest = [orders[s] for s in bands["selectedWork"]["slugs"]]
-        self.assertLess(
-            max(top), min(rest),
-            "the bands interleave: case studies are %s, gallery is %s" % (top, rest))
-
-    def test_pharmadrive_is_gone_everywhere(self):
-        """Removed on the design director's recommendation: lorem ipsum, a
-        logo reading "PharmasDrive", "ordonnoce" misspelled, a cart totalling
-        300 EUR for two 12 EUR items, and TND currency inside a euro product.
-        Its six _src originals were checksum-verified into
-        ../_archive/pharmadrive/ before deletion. The T+ informatique
-        employment row stays -- that job happened; only the project chip went,
-        because build.py exits on an unknown slug."""
-        for band, spec in self.site["sections"].items():
-            self.assertNotIn("pharmadrive", spec["slugs"])
-        self.assertFalse((ROOT / "projects" / "05-pharmadrive").exists())
-        self.assertFalse((ROOT / "projects" / "pharmadrive.html").exists())
-        self.assertNotIn("pharmadrive", (ROOT / "sitemap.xml").read_text(encoding="utf-8"))
-        for page in ("index.html", "about.html"):
-            self.assertNotIn("pharmadrive", self.html(page).lower())
-
-    def test_undrive_is_gone_everywhere(self):
-        """One assertion per surface it could survive on: the band, the
-        filesystem, the sitemap, and any card or link in the built HTML."""
-        for band, spec in self.site["sections"].items():
-            self.assertNotIn("undrive", spec["slugs"])
-        self.assertFalse((ROOT / "projects" / "07-undrive").exists())
-        self.assertFalse((ROOT / "projects" / "undrive.html").exists())
-        self.assertNotIn("undrive", (ROOT / "sitemap.xml").read_text(encoding="utf-8"))
-        for page in ("index.html", "about.html"):
-            self.assertNotIn("undrive", self.html(page).lower())
-
-    def test_old_section_keys_are_gone(self):
-        for stale in ("caseStudies", "otherProjects"):
-            self.assertNotIn(stale, self.site["sections"])
-
-    def test_the_two_bands_are_one_component(self):
-        """Both bands render the rail. That is the point of the rail.
-
-        They used to be a horizontal scroller and a grid, and this test
-        used to assert that their COLUMN COUNTS differed -- which was the
-        mechanism that made Tier 1 cards bigger. There are no columns now;
-        the tiers differ by what each row says, which TestWorkRail asserts.
-        What is left here is that neither band quietly reverts to its own
-        component.
-        """
-        index = self.html("index.html")
-        self.assertEqual(index.count('<ol class="rail-years'),
-                         len(self.site["sections"]),
-                         "every work band renders the year rail")
-        for stale in ('class="rail"', 'class="grid grid--', 'class="card'):
-            self.assertNotIn(stale, index,
-                             "a band is back on the old %s component" % stale)
-    def test_each_band_renders_its_own_tier(self):
-        """The class carries the tier, so a miscounted band is visible."""
-        index = self.html("index.html")
-        bands = self.site["sections"]
-        self.assertEqual(index.count('class="entry entry--lg"'),
-                         len(bands["highlights"]["slugs"]))
-        self.assertEqual(index.count('class="entry entry--sm"'),
-                         len(bands.get("selectedWork", {}).get("slugs", [])))
+    def selected(self):
+        sel = self.site.get("sections", {}).get("selected") or {}
+        self.assertTrue(sel.get("items"), "site.json lists no selected work")
+        return sel
 
     def test_instadeep_is_the_first_card(self):
-        """The owner's call, replacing an earlier review recommendation.
+        """The current job leads. A visitor reads the first one."""
+        slugs = [i["slug"] for i in self.selected()["items"]]
+        self.assertEqual(slugs[0], "instadeep",
+                         "the first card is %s, not InstaDeep" % slugs[0])
 
-        This test used to assert the opposite -- Steer first, on the
-        reasoning that leading with the non-AI role showed breadth rather
-        than letting the site read as AI-only. That was a reviewer's
-        recommendation, not a fact, and the owner has since put InstaDeep
-        first: it is the current role, at an AI company acquired by
-        BioNTech, and the about bio now leads on the same footing.
+    def test_the_three_cards_are_the_three_asked_for(self):
+        slugs = [i["slug"] for i in self.selected()["items"]]
+        self.assertEqual(slugs, ["instadeep", "konnect", "steer"])
 
-        The breadth concern it was protecting has its own test --
-        test_hero_statement_names_more_than_one_domain -- which checks the
-        copy rather than the running order, so nothing is lost by changing
-        this.
+    def test_every_card_carries_a_tag_and_a_span_of_years(self):
+        for item in self.selected()["items"]:
+            with self.subTest(slug=item["slug"]):
+                self.assertTrue(item.get("tag"), "%s has no tag" % item["slug"])
+                self.assertTrue(item.get("years"), "%s has no years" % item["slug"])
+
+    def test_no_project_is_both_a_card_and_a_footnote(self):
+        sel = self.selected()
+        cards = {i["slug"] for i in sel["items"]}
+        more = set(sel.get("more", []))
+        self.assertFalse(cards & more,
+                         "%s is both a card and in the More work line"
+                         % ", ".join(sorted(cards & more)))
+
+    def test_every_linked_project_is_live(self):
+        """A card pointing at a retired project is a 404 on the homepage."""
+        live = {d["slug"] for _, d in self.live_projects()}
+        sel = self.selected()
+        for slug in [i["slug"] for i in sel["items"]] + list(sel.get("more", [])):
+            with self.subTest(slug=slug):
+                self.assertIn(slug, live, "%s is linked but not published" % slug)
+
+    def test_retired_work_is_gone_from_every_page(self):
+        """Kept from the class this replaces, and widened.
+
+        It used to check two names against the band lists in site.json.
+        It now checks them against the rendered HTML of every page, which
+        is where a stale link would actually hurt.
         """
-        index = self.html("index.html")
-        self.assertLess(index.index('href="projects/instadeep"'),
-                        index.index('href="projects/steer"'))
+        names = ["pharmadrive", "undrive"]
+        pages = ["index.html", "work.html", "about.html", "contact.html"]
+        pages += ["projects/%s.html" % d["slug"] for _, d in self.live_projects()]
+        for name in names:
+            for page in pages:
+                with self.subTest(name=name, page=page):
+                    self.assertNotIn(name, self.html(page).lower(),
+                                     "%s still mentions %s" % (page, name))
 
-    def test_work_anchor_survives_the_rename(self):
+    def test_the_work_anchor_survives(self):
+        """#work is linked from outside the site and from old posts."""
         self.assertIn('id="work"', self.html("index.html"))
-
 
 class TestHeroPositioning(BuildCase):
     """The hero must not claim AI is the whole practice.
@@ -254,29 +145,7 @@ class TestHeroPositioning(BuildCase):
     copy without breaking the test.
     """
 
-    def test_hero_statement_names_more_than_one_domain(self):
-        statement = self.site["heroStatement"].lower()
-        domains = ["fintech", "automotive", "delivery", "retail"]
-        hits = [d for d in domains if d in statement]
-        self.assertTrue(
-            hits, "heroStatement names no non-AI domain: %r" % self.site["heroStatement"])
 
-    def test_hero_support_is_rendered_on_the_homepage(self):
-        """Compared against the ESCAPED form, which is what build.py writes.
-
-        build.py runs every string through html.escape(..., quote=True) (its
-        e() helper). Asserting the raw site.json value appears verbatim would
-        pass only for copy that happens to contain no apostrophe, ampersand
-        or quote -- so it would fail spuriously the moment the owner exercised
-        the rewrite freedom this class's docstring promises them.
-
-        This asserts heroSupport, not heroStatement. The two swapped jobs in
-        the redesign: heroStatement is now the <meta> and share-card string
-        and is never painted, while heroSupport is the sentence under the h1.
-        Asserting the invisible one would have let the visible one go blank.
-        """
-        rendered = html.escape(self.site["heroSupport"], quote=True)
-        self.assertIn(rendered, self.html("index.html"))
 
     def test_the_visible_claim_is_a_real_h1(self):
         """The regression this redesign exists to prevent coming back.
@@ -339,20 +208,19 @@ class TestContentColumnAlignment(BuildCase):
     everything else, and this class is what caught it.
     """
 
-    def test_statement_wrapper_carries_shell(self):
-        """.opening no longer carries .shell itself -- it sits in one.
+    def test_the_opening_sits_in_one_gutter_not_two(self):
+        """.hero-card is gone; .shell is still the only gutter.
 
-        The greeting and the fan share a panel now, so the chain is
-        .shell > .hero-card > .opening. What matters is unchanged: the
-        column still comes from a .shell ancestor and never from .opening,
-        which is the thing that broke last time.
+        The hero used to be a card inside the shell, and the failure this
+        guards against survived that change: if .opening carried .shell
+        itself while sitting inside one, the gutter applied twice and the
+        hero indented further than everything below it.
         """
         page = self.html("index.html")
         self.assertRegex(
             page,
-            r'<div class="shell[^"]*">\s*<div class="hero-card">\s*'
-            r'<section class="opening">',
-            "the opening is no longer inside a .shell > .hero-card wrapper")
+            r'<div class="shell hero-band">\s*<section class="opening">',
+            "the opening is no longer directly inside its .shell wrapper")
         self.assertNotIn('<section class="opening shell">', page,
                          "the opening carries .shell AND sits in one, so the "
                          "gutter is applied twice")
@@ -384,22 +252,14 @@ class TestContentColumnAlignment(BuildCase):
 
     def test_measure_lives_on_the_inner_element(self):
         page = self.html("index.html")
-        # Both of them: the claim and the line under it each need their own
-        # measure, and each is a separate chance to put it on the wrapper.
+        # The claim and the line under it each need their own measure, and
+        # each is a separate chance to put it on the wrapper instead.
+        # .opening__support was the third; the brief removed it.
         self.assertIn('class="opening__claim"', page)
-        self.assertIn('class="opening__support"', page)
+        self.assertIn('class="opening__meta"', page)
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        for sel in (".opening__claim {", ".opening__support {"):
-            # A selector may legitimately appear in more than one rule -- the
-            # layout rule and, separately, an animation rule. Taking only the
-            # first match made this test depend on source order, so it checks
-            # the union of every block for the selector.
-            blocks = "".join(part.split("}", 1)[0]
-                             for part in css.split(sel)[1:])
-            self.assertTrue(blocks, "%s has no rule at all" % sel)
-            self.assertIn("max-width:", blocks,
-                          "%s has no measure of its own, so its line length "
-                          "is the full 1200px column" % sel)
+        for sel in (".opening__claim {", ".opening__meta {"):
+            self.assertIn(sel, css, "%s has no rule of its own" % sel)
 
     def test_statement_does_not_reintroduce_margin_or_max_width(self):
         """The regression is specifically these two properties coming back."""
@@ -825,170 +685,6 @@ class TestFavicon(BuildCase):
                         "visit" % size)
 
 
-class TestLinkIcons(BuildCase):
-    """LinkedIn, GitHub, Email and the CV carry their marks.
-
-    Same contract as the toolkit chips, deliberately: the icon appears only
-    if the file was supplied, and whether it needs a light plate behind it
-    is MEASURED rather than decided by eye, because that failure is silent.
-
-    Measured against this page's #02050C: cv 13.70:1, email 12.79:1,
-    github 9.05:1, linkedin 8.61:1 -- so none takes a plate today. GitHub
-    is worth understanding rather than just accepting: its black disc does
-    vanish into the page, and what survives is the white Octocat, which is
-    still the mark. Averaging over opaque pixels gives the right answer
-    there for a counter-intuitive reason, so it was checked on screen at
-    3x as well as computed.
-    """
-
-    @property
-
-    def SLUGS(self):
-
-        """The link slugs this site actually ships, from site.json.
-
-
-        Hardcoded, this listed github, and it failed the moment the
-
-        owner removed that link -- reporting "the github button has no
-
-        mark" for a button that is deliberately not there any more.
-
-        The property worth testing is that every link which IS shipped
-
-        carries its mark, not that one particular brand appears.
-
-        """
-
-        import json as _j
-
-        site = _j.loads((ROOT / "site.json").read_text(encoding="utf-8"))
-
-        known = ("linkedin", "github", "email", "cv")
-
-        out = []
-
-        for link in site.get("links", []):
-
-            label = link.get("label", "").lower()
-
-            for k in known:
-
-                if k in label and k not in out:
-
-                    out.append(k)
-
-        if site.get("cvFile") or site.get("cv"):
-
-            out.append("cv")
-
-        return out
-
-    def test_every_mark_is_on_disk(self):
-        for slug in self.SLUGS:
-            self.assertTrue((ROOT / "assets" / "links" / ("%s.png" % slug)).is_file(),
-                            "assets/links/%s.png is missing, so that button "
-                            "silently loses its mark" % slug)
-
-    def test_the_contact_buttons_all_carry_one(self):
-        """Homepage band and /contact are the same block, so both or neither."""
-        for page in ("index.html", "contact.html"):
-            row = self.html(page).split('class="btn-row"', 1)[1].split("</div>", 1)[0]
-            for slug in self.SLUGS:
-                self.assertIn("assets/links/%s.png" % slug, row,
-                              "%s: the %s button has no mark" % (page, slug))
-
-    def test_the_about_page_carries_them_too(self):
-        about = self.html("about.html")
-        #: /about shows the profile links but not the CV button, which has
-        #: its own call to action above the row.
-        for slug in [s for s in self.SLUGS if s != "cv"]:
-            self.assertIn("assets/links/%s.png" % slug, about,
-                          "about page: the %s button has no mark" % slug)
-
-    def test_the_label_match_does_not_overreach(self):
-        """"Source on GitHub" is GitHub. "Groupado today" is not anything.
-
-        The match is a keyword inside an owner-authored label, so the risk
-        is a false positive putting a brand mark on an unrelated link.
-        """
-        # Tested against the matcher, not against a page. The true-positive
-        # half used to assert that projects/portfolio.html carried the mark,
-        # which tied it to one owner-authored link -- and it failed the
-        # moment that link was removed, for a reason that said nothing about
-        # whether the matching logic still worked.
-        sys.path.insert(0, str(ROOT))
-        from build import link_icon
-        self.assertIn("assets/links/github.png", link_icon("Source on GitHub"),
-                      "the matcher no longer recognises GitHub in a label")
-        self.assertEqual(link_icon("Groupado today"), "",
-                         "the matcher put a brand mark on a label that "
-                         "names no brand")
-        for _, data in self.live_projects():
-            slug = data["slug"]
-            page = self.html("projects/%s.html" % slug)
-            row = re.search(r'<div class="btn-row">(.*?)</div>', page, re.S)
-            if not row:
-                continue
-            self.assertNotIn("assets/links/", row.group(1),
-                             "%s has a product link wearing a brand mark it "
-                             "should not have matched" % slug)
-
-    def test_the_marks_are_decorative(self):
-        """Every button says what it is in words, so alt must be empty.
-
-        A filled alt would make a screen reader announce the brand twice.
-        """
-        for page in ("index.html", "contact.html", "about.html"):
-            for img in re.findall(r'<img class="btn__icon[^>]*>', self.html(page)):
-                self.assertIn('alt=""', img,
-                              "%s has a non-decorative button mark: %s" % (page, img))
-
-    def test_dimensions_come_from_the_file(self):
-        """The CV mark is a portrait sheet, not a square.
-
-        Hardcoding 36x36 would squash it and reserve the wrong box, so the
-        row would shift as it loaded. This asserts the non-square case
-        specifically, because the three square marks would pass either way.
-        """
-        # class="btn__icon[^"]*" rather than class="btn__icon": whether a
-        # mark gets a plate depends on the page background, and this test
-        # is about DIMENSIONS. Pinning the bare class made it fail the
-        # moment the palette went from near-black to paper and cv.png
-        # started needing a plate -- for a reason that has nothing to do
-        # with what it asserts.
-        img = re.search(r'<img class="btn__icon[^"]*"[^>]*links/cv\.png[^>]*>',
-                        self.html("contact.html"))
-        self.assertIsNotNone(img, "the CV button lost its mark")
-        w = re.search(r'width="(\d+)"', img.group(0))
-        h = re.search(r'height="(\d+)"', img.group(0))
-        self.assertIsNotNone(w, "the CV mark declares no width")
-        self.assertNotEqual(w.group(1), h.group(1),
-                            "the CV mark is declared square; it is a portrait "
-                            "sheet and would be squashed")
-
-    def test_the_plate_is_measured_not_hardcoded(self):
-        """The one rule that keeps a future dark mark from disappearing."""
-        src = (ROOT / "build.py").read_text(encoding="utf-8")
-        fn = src.split("def link_icon(", 1)[1].split("\ndef ", 1)[0]
-        self.assertIn("icon_needs_plate", fn,
-                      "link_icon stopped measuring contrast, so a dark mark "
-                      "dropped in later would silently vanish")
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        self.assertIn(".btn__icon--plate", css,
-                      "the plate class has no styling, so measuring for it "
-                      "would do nothing")
-
-    def test_buttons_align_the_mark_with_the_label(self):
-        """inline-block would drop the mark onto the text baseline."""
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split("\n.btn {", 1)[1].split("}", 1)[0]
-        self.assertIn("inline-flex", block,
-                      "the buttons are not flex, so the mark sits on the "
-                      "baseline with a descender gap under it")
-        self.assertIn("align-items: center", block)
-
-
 class TestCleanUrls(BuildCase):
     """/work, /about and /contact, not index.html#contact.
 
@@ -1064,50 +760,73 @@ class TestCleanUrls(BuildCase):
                          % ", ".join(offenders))
 
     def test_nested_pages_reach_the_clean_urls(self):
-        """A project page is one level down, so every href needs ../."""
+        """A project page is one level down, so every href needs ../.
+
+        Contact dropped out of this list when the nav's button became
+        "Book a call": the nav holds two page links now, and the third
+        href goes to an absolute calendar URL that needs no prefix.
+        """
         for slug in ("steer", "instadeep"):
             head = self.html("projects/%s.html" % slug).split("</header>", 1)[0]
-            for target in ("work", "about", "contact"):
+            for target in ("work", "about"):
                 self.assertIn('href="../%s"' % target, head,
                               "projects/%s.html cannot reach /%s" % (slug, target))
 
-    def test_contact_is_a_page_and_the_band_is_still_on_the_homepage(self):
-        """Both, deliberately: the nav gets a page, the scroller gets a band."""
-        contact = self.html("contact.html")
-        self.assertIn('id="contact"', contact)
-        self.assertIn("mailto:%s" % self.site["email"], contact)
-        self.assertIn('id="contact"', self.html("index.html"),
-                      "the homepage lost its contact band")
+    def test_contact_survives_as_a_route(self):
+        """The nav stopped pointing here; the URL did not stop existing.
 
-    def test_the_contact_band_has_one_source(self):
-        """It carries the email, the CV and every link.
-
-        Copied, it would have two places to fall out of date on the one
-        block where being wrong costs an actual opportunity. So the band is
-        asserted identical on both pages -- except for its heading RANK,
-        which cannot be the same in both and is the single reason
-        contact_band takes a `level`. On the homepage the block is a
-        section under the page's h1; on /contact it is the page, and
-        hardcoding h2 there left that page with no h1 at all.
-
-        Normalising the tag rather than skipping the comparison: every
-        other byte still has to match, which is what makes it one source.
+        "Book a call" goes straight to the calendar now, so nothing in
+        the nav sends anyone to /contact. It has been shared and linked
+        from outside the site, so it stays and offers the same two
+        actions rather than 404ing.
         """
-        def band(page):
-            raw = self.html(page).split('class="band band--contact', 1)[1] \
-                                 .split("</section>", 1)[0]
-            return re.sub(r"</?h[12]>", "<HEADING>", raw)
-        self.assertEqual(band("index.html"), band("contact.html"),
-                         "the contact band differs between the homepage and "
-                         "/contact by more than its heading rank, so one of "
-                         "them is stale")
+        contact = self.html("contact.html")
+        self.assertIn("mailto:%s" % self.site["email"], contact,
+                      "/contact offers no way to reach the address")
+        self.assertIn('class="actions"', contact)
+        self.assertIn('id="contact"', self.html("index.html"),
+                      "the homepage lost the #contact anchor old links use")
 
-    def test_the_contact_page_heading_outranks_the_homepage_one(self):
-        """The rank itself, asserted in both directions."""
-        self.assertIn("<h1>", self.html("contact.html").split(
-            'class="band band--contact', 1)[1].split("</section>", 1)[0])
-        self.assertIn("<h2>", self.html("index.html").split(
-            'class="band band--contact', 1)[1].split("</section>", 1)[0])
+    def test_the_two_actions_have_one_source(self):
+        """"Book a call" and "Copy email" appear on three pages.
+
+        This replaces a test that asserted the same thing about the
+        "Let's talk" band, which carried the email, the CV and every
+        link. The band is gone; the pair of buttons took its job, and the
+        reason for the test did not change -- three copies of the ask is
+        three places for it to fall out of date, on the one block where
+        being wrong costs an actual opportunity.
+
+        build.py emits all of them from actions_row(), so the markup must
+        be identical byte for byte.
+        """
+        def actions(page):
+            raw = self.html(page)
+            m = re.search(r'<div class="actions">.*?</div>', raw, re.S)
+            self.assertIsNotNone(m, "%s has no actions row" % page)
+            return m.group(0)
+        home = actions("index.html")
+        for page in ("contact.html", "about.html"):
+            with self.subTest(page=page):
+                self.assertEqual(actions(page), home,
+                                 "%s's actions row differs from the "
+                                 "homepage's, so they are no longer one "
+                                 "component" % page)
+
+    def test_every_page_with_the_actions_has_exactly_one_h1(self):
+        """The rank question the old contact band raised, asked properly.
+
+        contact_band took a `level` argument because the same block was an
+        h2 under the homepage's h1 and the h1 on /contact. There is no
+        shared heading any more -- /contact's h1 is its own, and hidden,
+        because the brief for that page is the two actions and nothing
+        else. What still matters is that no page starts its heading order
+        at h2.
+        """
+        for page in ("index.html", "about.html", "contact.html"):
+            with self.subTest(page=page):
+                self.assertEqual(len(re.findall(r"<h1[ >]", self.html(page))), 1,
+                                 "%s does not have exactly one h1" % page)
 
     def test_the_preview_server_matches_the_host(self):
         """Local preview has to resolve URLs the way GitHub Pages does.
@@ -1621,12 +1340,13 @@ class TestRetiredProjects(BuildCase):
                 "crawler to a page that is not there" % data["slug"])
 
     def test_a_retired_project_is_in_no_band(self):
-        listed = [s for b in self.site["sections"].values() for s in b["slugs"]]
+        sel = self.site["sections"].get("selected") or {}
+        listed = [i["slug"] for i in sel.get("items", [])] + list(sel.get("more", []))
         for folder, data in self.retired():
             self.assertNotIn(
                 data["slug"], listed,
-                "%s is retired but still listed in a band, so the homepage "
-                "links to a page the build no longer writes" % data["slug"])
+                "%s is retired but still listed on the homepage, so the page "
+                "links somewhere the build no longer writes" % data["slug"])
 
     def test_retiring_deletes_nothing(self):
         """The whole point. The content and the originals stay."""
@@ -2280,7 +2000,7 @@ class TestHeroPortrait(BuildCase):
     def test_hero_references_no_avif(self):
         import re
         index = self.html("index.html")
-        hero = re.search(r'<figure class="aboutblock__portrait">.*?</figure>',
+        hero = re.search(r'<figure class="opening__portrait">.*?</figure>',
                          index, re.S)
         self.assertIsNotNone(hero, "the portrait figure is gone from the page")
         self.assertNotIn(".avif", hero.group(0),
@@ -2290,7 +2010,7 @@ class TestHeroPortrait(BuildCase):
     def test_hero_image_exists_and_is_a_real_jpeg(self):
         import re, struct
         index = self.html("index.html")
-        src = re.search(r'<figure class="aboutblock__portrait">.*?<img src="([^"?]+)',
+        src = re.search(r'<figure class="opening__portrait">.*?<img src="([^"?]+)',
                         index, re.S).group(1)
         path = ROOT / src
         self.assertTrue(path.is_file(), "portrait missing: %s" % src)
@@ -2332,13 +2052,16 @@ class TestPrimaryNav(BuildCase):
 
         A visitor on /about saw a nav identical to the homepage's. The only
         is-current rule in the stylesheet was for the project-page TOC.
+
+        Contact is not in this list any more. The nav's third control is a
+        link to an external calendar, and marking it aria-current on
+        /contact would tell a screen reader that an off-site URL is the
+        page being read.
         """
         self.assertIn('href="work" aria-current="page"',
                       self.html("index.html"))
         self.assertIn('href="about" aria-current="page"',
                       self.html("about.html"))
-        self.assertIn('href="contact" aria-current="page"',
-                      self.html("contact.html"))
 
     def test_work_goes_to_the_top_of_the_homepage(self):
         """Work used to jump to #work, landing past the hero.
@@ -2377,41 +2100,36 @@ class TestPrimaryNav(BuildCase):
             self.assertNotIn("aria-current", nav,
                              "%s marks a nav item as the current page" % slug)
 
-    def test_contact_navigates_rather_than_firing_a_mail_client(self):
+    def test_the_nav_never_fires_a_mail_client(self):
         """Contact was a mailto: sitting between two page links.
 
         In a nav that is a surprise -- it opens a mail client, or on a
         machine with none configured it appears to do nothing at all. It
-        then became index.html#contact, and is now its own page at
-        /contact, which is what the other two nav items are. The homepage
-        keeps its band, so anyone who reads to the end still finds a way
-        to get in touch. The mailto lives inside both, where a visitor
-        expects one.
+        became /contact, and is now "Book a call" pointing at the
+        calendar. The mailto is still on the page, inside the actions,
+        where a visitor expects to find one.
+
+        The route to /contact is no longer asserted here because the nav
+        no longer holds one; TestCleanUrls checks the page still exists.
 
         Depth is taken from the path, not the filename: an earlier version
-        of this checked `"/" in name` against a bare basename, which is
-        never true, so every project page was silently tested against the
-        root-relative href and the assertion failed for the wrong reason.
+        checked `"/" in name` against a bare basename, which is never
+        true, so every project page was silently tested against the
+        root-relative href.
         """
-        import re, glob, pathlib as pl
-        roots = glob.glob(str(ROOT / "*.html"))
-        nested = glob.glob(str(ROOT / "projects" / "*.html"))
-        for path in roots + nested:
+        import glob, pathlib as pl
+        for path in glob.glob(str(ROOT / "*.html")) + glob.glob(str(ROOT / "projects" / "*.html")):
             rel = pl.Path(path).relative_to(ROOT)
-            up = "../" * (len(rel.parts) - 1)
             page = pl.Path(path).read_text(encoding="utf-8")
             nav = re.search(r'<nav class="site-nav" aria-label="Primary">(.*?)</nav>', page, re.S)
             self.assertIsNotNone(nav, "%s lost its primary nav" % rel)
-            self.assertNotIn("mailto:", nav.group(1),
-                             "%s still fires a mail client from the nav" % rel)
-            self.assertIn('href="%scontact"' % up, nav.group(1),
-                          "%s has no route to the contact page" % rel)
+            with self.subTest(page=str(rel)):
+                self.assertNotIn("mailto:", nav.group(1),
+                                 "%s still fires a mail client from the nav" % rel)
+                self.assertIn("cal.com", nav.group(1),
+                              "%s has no Book a call in its nav" % rel)
         self.assertTrue((ROOT / "contact.html").is_file(),
-                        "the nav points at /contact but the page is gone")
-        self.assertIn('id="contact"', self.html("index.html"),
-                      "the homepage lost its contact band")
-        self.assertIn("mailto:", self.html("contact.html"),
-                      "the contact page has no address on it")
+                        "/contact stopped being written")
 
     def test_nav_links_have_a_real_hit_area(self):
         """They had zero padding, so the target was the text box: 24px tall,
@@ -2422,14 +2140,18 @@ class TestPrimaryNav(BuildCase):
         block = css.split(".site-head nav a {", 1)[1].split("}", 1)[0]
         self.assertIn("padding", block, "nav links lost their hit area")
 
-    def test_contact_band_still_holds_the_address_and_cv(self):
-        """The nav now sends people here, so this is load-bearing."""
-        index = self.html("index.html")
-        band = index.split('id="contact"', 1)[1].split("</section>", 1)[0]
-        self.assertIn("contact__addr", band, "the visible email address is gone")
-        self.assertIn("mailto:", band)
-        self.assertIn(".pdf", band.lower(), "the CV is no longer at the point of intent")
+    def test_the_closing_ask_offers_both_ways_in(self):
+        """The homepage's last section is the same ask as its first.
 
+        It used to be a band carrying the email as selectable text, the
+        CV and a row of link buttons. It is the two actions now, and the
+        thing worth asserting is unchanged: a visitor who reads to the
+        bottom can still get in touch without scrolling back.
+        """
+        index = self.html("index.html")
+        close = index.split('id="contact"', 1)[1].split("</section>", 1)[0]
+        self.assertIn("cal.com", close, "no way to book a call at the foot")
+        self.assertIn("mailto:", close, "no way to reach the address at the foot")
 
 class TestToolIcons(BuildCase):
     """Tool chips: a real mark when one exists, a monogram when it does not.
@@ -2449,32 +2171,41 @@ class TestToolIcons(BuildCase):
             out.append((name, icon.group(1).split("/")[-1] if icon else None))
         return out
 
-    def test_supplied_marks_render_as_images(self):
-        """Every supplied mark, on the page that actually uses it.
+    def chips_everywhere(self):
+        """Every tool chip the site renders, across the pages that have any."""
+        out = []
+        for _, data in self.live_projects():
+            out += self._chips("projects/%s.html" % data["slug"])
+        return out
 
-        An earlier version of this asserted only against portfolio.html,
-        which lists Figma and Claude Code. Framer appears on instadeep.html
-        only -- so deleting framer.png left the whole suite green. Assert
-        each mark where it is used, or the test is decoration.
+    def test_supplied_marks_render_as_images(self):
+        """A tool with a mark on disk renders that mark, not a monogram.
+
+        This used to read the about page, which rendered the entire
+        toolkit, and it asserted the stronger thing: that every mark on
+        disk is referenced by some chip, so deleting a file failed the
+        suite. The about page's toolkit is one line of plain text now, so
+        the only chips left are the per-project ones, and six marks
+        (claude-code, creative-cloud, git, mcp, notion, vwo) are
+        referenced by nothing.
+
+        Orphans are therefore no longer a failure -- they are a fact
+        about an asset folder, recorded here so the next person does not
+        read this test as proof that every file is in use. What is still
+        asserted is the direction that can actually break a page: a chip
+        that names a mark must name one that exists.
         """
-        # Asserted against the about page, which renders the whole toolkit,
-        # and from the FILES rather than from a hand-written list: every
-        # mark on disk has to be referenced by some chip. That is the only
-        # version that fails when a file is deleted, which is the point --
-        # an earlier one checked two project pages and went green when
-        # framer.png was removed, because neither page used it.
-        chips = dict(self._chips("about.html"))
-        used = set(chips.values())
+        chips = self.chips_everywhere()
+        self.assertTrue(chips, "no page renders a tool chip any more")
         on_disk = {f.name for f in (ROOT / "assets" / "tools").glob("*.png")}
-        self.assertEqual(
-            on_disk - used, set(),
-            "mark(s) on disk that no chip references: %s"
-            % sorted(on_disk - used))
-        for name, filename in chips.items():
+        referenced = {f for _, f in chips if f}
+        self.assertTrue(referenced, "no chip renders a supplied mark")
+        for name, filename in chips:
             if filename:
-                self.assertIn(filename, on_disk,
-                              "%s references a mark that is not on disk: %s"
-                              % (name, filename))
+                with self.subTest(tool=name):
+                    self.assertIn(filename, on_disk,
+                                  "%s references a mark that is not on disk: %s"
+                                  % (name, filename))
 
     def test_tools_without_a_file_fall_back_to_a_monogram(self):
         """A tool with no mark on disk still renders, as its initial.
@@ -2502,20 +2233,6 @@ class TestToolIcons(BuildCase):
         self.assertIn(">K<", unknown,
                       "a tool with no mark renders no monogram, so its chip "
                       "is a bare word where every neighbour has a glyph")
-    def test_the_about_page_toolkit_uses_chips_too(self):
-        """It was the one place the toolkit rendered as "A · B · C" text.
-
-        tool_chips() had always been wired to project pages only, so the
-        page where someone actually goes looking for the stack was the page
-        showing it as a plain string. Depth matters here: about.html is at
-        the root, so its icon paths carry no ../ prefix.
-        """
-        about = self.html("about.html")
-        self.assertIn('<ul class="tools">', about,
-                      "the about toolkit went back to plain text")
-        self.assertIn('src="assets/tools/figma.png', about)
-        self.assertNotIn('src="../assets/tools/', about,
-                         "about.html is at the root; ../ would 404")
 
     def test_every_referenced_icon_exists_on_disk(self):
         """A missing file would render a broken image inside a chip.
@@ -2579,10 +2296,15 @@ class TestToolIcons(BuildCase):
         src = (ROOT / "build.py").read_text(encoding="utf-8")
         threshold = float(re.search(r"def icon_needs_plate\([^)]*threshold=([\d.]+)",
                                     src).group(1))
-        about = self.html("about.html")
+        # Every page that still renders chips, concatenated. This read the
+        # about page, which used to carry the whole toolkit; that section
+        # is a line of plain text now, so the per-project chips are the
+        # only ones left and they are spread across five pages.
+        pages = "".join(self.html("projects/%s.html" % data["slug"])
+                        for _, data in self.live_projects())
 
         plated = bare = 0
-        for chip in re.findall(r'<li class="tool">(.*?)</li>', about, re.S):
+        for chip in re.findall(r'<li class="tool">(.*?)</li>', pages, re.S):
             src = re.search(r'tool__icon[^"]*"\s+src="([^"?]+)', chip)
             if not src:
                 continue
@@ -2634,178 +2356,68 @@ class TestToolIcons(BuildCase):
         self.assertIn("background", block)
 
 
-class TestWorkRail(BuildCase):
-    """The dated rail that both work bands render, and what each tier says.
+class TestWorkCards(BuildCase):
+    """What a card is allowed to say, and how it is clicked.
 
-    This replaced TestCardMeta when the bands stopped being two different
-    components -- a horizontal scroller for the case studies and a stack of
-    covers for the gallery -- and became one year rail at two densities.
-    The invariants that survived the change are here; the ones that were
-    about the old mechanism (column counts, the two-column row's shared
-    edges, the cover's column width) went with it.
+    This replaces TestWorkRail. The rail carried category chips, a
+    tagline, a summary paragraph and a "Read the case study" cue, and had
+    two tiers that were asserted not to converge. The brief removed all
+    of it: cover, name, tag, years.
+
+    Three things from the old class are worth keeping and are kept: the
+    whole thing is one control, the years are there, and every cover is
+    cropped to a single ratio so the column does not lurch.
     """
 
-    def rows(self):
-        """(tier, slug, markup) per entry, in page order."""
-        # Split on the entry boundary rather than matching up to the next
-        # </li>: a row's chips are themselves <li> elements, so a non-greedy
-        # match ends inside the first chip and every row comes back empty.
-        page = self.html("index.html")
-        out = []
-        chunks = re.split(r'(?=<li class="entry entry--)', page)
-        for chunk in chunks[1:]:
-            tier = re.match(r'<li class="entry entry--(lg|sm)">', chunk)
-            if not tier:
-                continue
-            body = chunk.split("</ol>", 1)[0]
-            href = re.search(r'entry__title"><a href="projects/([^"]+)"', body)
-            if href:
-                out.append((tier.group(1), href.group(1), body))
-        self.assertTrue(out, "the homepage renders no work rows at all")
-        return out
+    def cards(self):
+        html_ = self.html("index.html")
+        return re.findall(r'<li class="card">(.*?)</li>', html_, re.S)
 
-    def test_every_project_has_a_short_meta_line(self):
-        for path in sorted((ROOT / "projects").glob("*/content.json")):
-            project = json.loads(path.read_text(encoding="utf-8"))
-            meta = project.get("meta")
-            self.assertTrue(meta, "%s has no meta line" % project["slug"])
-            self.assertLessEqual(
-                len(meta), 44,
-                "%s meta is %d chars, too long for a row"
-                % (project["slug"], len(meta)))
+    def test_the_page_renders_one_card_per_selected_project(self):
+        expected = len(self.site["sections"]["selected"]["items"])
+        self.assertEqual(len(self.cards()), expected)
 
-    def test_the_two_tiers_have_not_converged(self):
-        """The thing the old feedback was about, on the new component.
+    def test_the_whole_card_is_one_link(self):
+        """One control per card, named by the project.
 
-        A tier is defined by what it ADDS, not by what it is denied: a
-        case-study row carries category chips and a summary paragraph, a
-        gallery row carries neither. The failure mode is the two bands
-        quietly becoming the same thing again, which is what prompted
-        "simplifier les projets secondaires" in the first place.
+        The rail needed a linked title plus an ::after stretched over the
+        row to keep its paragraphs out of the link's accessible name.
+        With the paragraphs gone the link can simply wrap everything,
+        and a card with two links in it would be the regression.
         """
-        for tier, slug, body in self.rows():
-            has_tags = 'class="entry__tags"' in body
-            has_note = 'class="entry__note"' in body
-            if tier == "lg":
-                self.assertTrue(has_tags, "%s is a case study with no chips" % slug)
-                self.assertTrue(has_note, "%s is a case study with no summary" % slug)
-            else:
-                self.assertFalse(
-                    has_tags or has_note,
-                    "%s is a gallery row using %s, which belongs to the "
-                    "case-study tier -- the two bands read as equals again"
-                    % (slug, "chips" if has_tags else "a summary"))
+        for i, card in enumerate(self.cards()):
+            with self.subTest(card=i):
+                self.assertEqual(card.count("<a "), 1,
+                                 "card %d has %d links; it should be one"
+                                 % (i, card.count("<a ")))
+                self.assertIn('class="card__link"', card)
 
-    def test_every_row_carries_its_year(self):
-        """The spine only works if every dot has a date beside it.
+    def test_every_card_says_name_tag_and_years(self):
+        for i, card in enumerate(self.cards()):
+            with self.subTest(card=i):
+                for cls in ("card__name", "card__tag", "card__years"):
+                    self.assertIn(cls, card, "card %d has no %s" % (i, cls))
 
-        Smarthub is the exception the rule is written for: its meta is
-        "Design and brand studio · Founder" and carries no year at all, so
-        it renders none rather than printing the first segment -- which is
-        how "Design and brand studio" once appeared where a date belonged.
-        """
-        sys.path.insert(0, str(ROOT))
-        from build import project_year
-        for tier, slug, body in self.rows():
-            folder = next(p.parent.name for p in (ROOT / "projects").glob("*/content.json")
-                          if json.loads(p.read_text(encoding="utf-8"))["slug"] == slug)
-            project = json.loads(
-                (ROOT / "projects" / folder / "content.json").read_text(encoding="utf-8"))
-            expected = project_year(project)
-            rendered = re.search(r'class="entry__year">([^<]*)<', body)
-            if expected:
-                self.assertIsNotNone(rendered, "%s renders no year" % slug)
-                self.assertEqual(rendered.group(1), expected)
-                self.assertRegex(expected, r"(19|20)\d{2}",
-                                 "%s's year column is %r, which is not a date"
-                                 % (slug, expected))
-            else:
-                self.assertIsNone(
-                    rendered,
-                    "%s has no year in its meta but rendered one anyway" % slug)
+    def test_the_cover_is_decorative(self):
+        """The link already says the project's name; alt text would say it
+        twice for one control."""
+        for i, card in enumerate(self.cards()):
+            with self.subTest(card=i):
+                self.assertRegex(card, r'<img[^>]*alt=""',
+                                 "card %d's cover needs an empty alt" % i)
 
-    def test_a_row_is_named_by_its_title_not_by_a_paragraph(self):
-        """One control per row, named by the project.
+    def test_one_ratio_crops_every_cover(self):
+        """The three covers are 900x450, 900x640 and 900x2229 on disk.
 
-        Measured against an earlier build where the whole row was one <a>:
-        a row's accessible name ran 11 to 475 characters depending on which
-        band it sat in, so a screen reader announced one project as a
-        475-character paragraph and another as "07 Smarthub".
-        """
-        for tier, slug, body in self.rows():
-            links = re.findall(r"<a [^>]*href=\"projects/[^\"]+\"[^>]*>(.*?)</a>",
-                               body, re.S)
-            self.assertEqual(
-                len(links), 1,
-                "%s has %d links to itself; the row is one control"
-                % (slug, len(links)))
-            name = re.sub(r"<[^>]+>", "", links[0]).strip()
-            self.assertLess(
-                len(name), 40,
-                "%s's link is named by %d characters -- that is prose, not a "
-                "title" % (slug, len(name)))
-
-    def test_the_whole_row_is_still_clickable(self):
-        """The ::after that turns one title link into a block link."""
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split(".entry__title a::after {", 1)[1].split("}", 1)[0]
-        self.assertIn("position: absolute", block)
-        self.assertIn("inset: 0", block)
-        entry = css.split("\n.entry {", 1)[1].split("}", 1)[0]
-        self.assertIn(
-            "position: relative", entry,
-            "the row is not a containing block, so its link overlay would "
-            "resolve against the page and cover everything")
-
-    def test_keyboard_focus_lands_on_the_row_not_the_words(self):
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = css.split(".entry__title a:focus-visible::after {", 1)[1].split("}", 1)[0]
-        self.assertIn("outline", block,
-                      "the focus ring is no longer drawn on the row overlay")
-
-    def test_the_row_shows_the_same_description_as_the_case_study(self):
-        """One source. Two hand-written descriptions drift apart."""
-        for tier, slug, body in self.rows():
-            if tier != "lg":
-                continue
-            folder = next(p.parent.name for p in (ROOT / "projects").glob("*/content.json")
-                          if json.loads(p.read_text(encoding="utf-8"))["slug"] == slug)
-            project = json.loads(
-                (ROOT / "projects" / folder / "content.json").read_text(encoding="utf-8"))
-            note = re.search(r'class="entry__note">([^<]*)<', body)
-            self.assertIsNotNone(note, "%s lost its summary" % slug)
-            self.assertEqual(
-                note.group(1), html.escape(project["summary"], quote=True),
-                "%s's row text has drifted from its case study's summary" % slug)
-
-    def test_both_bands_share_one_cover_ratio(self):
-        """The two tiers have to read as the same system.
-
-        The ratio has moved four times as the brief did -- 16/9, then 12/5,
-        then 5/4, now 16/10 -- and what has to hold across all of them is
-        that the bands agree. A gallery thumbnail is allowed its own ratio
-        ONLY because it is a different shape of row, so that one is named
-        explicitly rather than falling out of a wildcard.
+        Without a single ratio and object-fit, the column's rhythm is
+        whatever shape each screenshot happens to be -- the tall one is
+        five times the height of the wide one.
         """
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        base = css.split(".entry__media img {", 1)[1].split("}", 1)[0]
-        ratio = re.search(r"aspect-ratio:\s*([^;]+);", base)
-        self.assertIsNotNone(ratio, "the rail's media declares no ratio")
-        shared = ratio.group(1).strip()
-        overrides = re.findall(r"\.entry--\w+ \.entry__media img \{[^}]*"
-                               r"aspect-ratio:\s*([^;]+);", css)
-        for other in overrides:
-            self.assertNotEqual(
-                other.strip(), shared,
-                "a tier re-declares the shared ratio %r, which is dead "
-                "weight" % shared)
-        self.assertLessEqual(
-            len(overrides), 1,
-            "more than one tier overrides the cover ratio, so there is no "
-            "shared ratio left: %r" % overrides)
-
-    def test_instadeep_is_the_first_row(self):
-        self.assertEqual(self.rows()[0][1], "instadeep")
+        rule = re.search(r"\.card__media img \{([^}]*)\}", css)
+        self.assertIsNotNone(rule, "no rule sizes the card covers")
+        self.assertIn("aspect-ratio", rule.group(1))
+        self.assertIn("object-fit: cover", rule.group(1))
 
 class TestAssetVersions(unittest.TestCase):
     """Every ?v= hash in the COMMITTED html must match the committed asset.
@@ -3298,8 +2910,6 @@ class TestShareCards(BuildCase):
                              % (card.name, png_size(card)))
 
 
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
 
 
 class TestContainerTints(BuildCase):
@@ -3423,94 +3033,51 @@ class TestContainerTints(BuildCase):
                     '<article class="project" data-tint="%s">' % data["tint"],
                     page)
 
-    def test_the_tint_reaches_every_cover_on_the_work_page(self):
-        for name in ("index.html", "work.html"):
-            html = self.html(name)
-            covers = re.findall(r'<figure class="entry__media"([^>]*)>', html)
-            self.assertTrue(covers, "%s renders no covers" % name)
-            for attrs in covers:
-                with self.subTest(page=name, attrs=attrs):
-                    self.assertRegex(attrs, r'data-tint="(sand|clay|ash)"')
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def test_every_case_study_declares_a_tint(self):
+        """The tint moved off the homepage, because its covers did.
+
+        It used to be asserted on every cover in the work rail, where the
+        image sat inset inside a tinted frame. The homepage renders cards
+        with full-bleed covers now, so a tint there would be a colour
+        nobody ever sees and the attribute was removed from them.
+
+        Where it still earns its place is the case studies: the article
+        declares the tint and every inset screenshot inside it sits on it.
+        """
+        for _, data in self.live_projects():
+            page = "projects/%s.html" % data["slug"]
+            with self.subTest(page=page):
+                m = re.search(r'<article class="project"([^>]*)>', self.html(page))
+                self.assertIsNotNone(m, "%s has no project article" % page)
+                self.assertRegex(m.group(1), r'data-tint="(sand|clay|ash)"',
+                                 "%s declares no tint" % page)
+
 
     def test_the_image_is_inset_so_the_tint_is_actually_visible(self):
-        """A tint behind an edge-to-edge image is a tint nobody ever sees.
+        """A tint behind a full-bleed image is a colour nobody sees.
 
-        Both containers are asserted because they failed differently: the
-        cover had no background at all, the shot had a white one that the
-        image completely covered.
+        .shot__btn is the frame that holds an inset screenshot on a case
+        study. Remove its padding and the image covers the tint exactly,
+        which is the state this replaced: warm paper, a hard rule, then a
+        cool screenshot with nothing between them.
         """
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        for selector in (r"\.entry__media\s*\{", r"\.shot__btn\s*\{"):
-            # Union of every block for the selector: these elements now carry
-            # a layout rule AND a scroll-driven animation rule, and which one
-            # comes first in the file is not something this test should care
-            # about.
-            bodies = "".join(m.group(1) for m in
-                             re.finditer(selector + r"([^}]*)\}", css))
-            self.assertTrue(bodies, "no rule matching %s" % selector)
-            with self.subTest(selector=selector):
-                self.assertIn("var(--tint", bodies,
-                              "container does not paint the tint")
-                self.assertRegex(bodies, r"padding:\s*var\(--space-\d+\)",
-                                 "container has no inset, so no tint shows")
+        rule = re.search(r"\.shot__btn\s*\{([^}]*)\}", self.css())
+        self.assertIsNotNone(rule, "no inset frame in the stylesheet")
+        self.assertRegex(rule.group(1), r"padding:\s*var\(--space-\d+\)",
+                         "the frame has no inset, so no tint shows")
+
 
     def test_no_container_still_paints_itself_white(self):
         """bg-raised is #FFFFFF -- the one value that cannot merge with paper."""
         css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        for selector in (r"\.entry__media\s*\{", r"\.shot__btn\s*\{"):
+        for selector in (r"\.card__media\s*\{", r"\.shot__btn\s*\{"):
             bodies = "".join(m.group(1) for m in
                              re.finditer(selector + r"([^}]*)\}", css))
             with self.subTest(selector=selector):
                 self.assertNotIn("--color-bg-raised", bodies)
-
-
-class TestAboutBlockIsACard(BuildCase):
-    """The about block is an object, not loose content on bare paper.
-
-    It sits directly under .fan -- three tinted cards with --radius-xl,
-    --space-8 and a tinted shadow -- and used to be unwrapped text beside a
-    photo. That is what made it read as inconsistent rather than merely
-    quiet: the page goes from three strong card objects to nothing.
-
-    The card also gives the leftover space a job. Measured before the fix:
-    the text column held 279px of content inside a 375px row and was
-    CENTRED, so 96px of it was void split above and below, and the
-    statement's 20ch cap left 212px empty to its right.
-    """
-
-    def test_the_block_is_wrapped_in_a_card(self):
-        self.assertIn('<div class="aboutblock__card">', self.html("index.html"))
-
-    def test_the_card_carries_the_fan_card_geometry(self):
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = re.search(r"\.aboutblock__card\s*\{([^}]*)\}", css)
-        self.assertIsNotNone(block, "no .aboutblock__card rule")
-        body = block.group(1)
-        self.assertRegex(body, r"padding:\s*var\(--space-\d+\)")
-        self.assertRegex(body, r"border-radius:\s*var\(--radius-\w+\)")
-        self.assertRegex(body, r"background:\s*var\(--color-[\w-]+\)")
-
-    def test_the_portrait_is_not_pinned_to_a_ratio(self):
-        """aspect-ratio: 4/5 forced 375px of height whatever sat beside it.
-
-        The text only ever needed 279, and the difference became the void.
-        Height has to follow the row instead, with a floor so that a short
-        paragraph cannot squash a portrait into a letterbox.
-        """
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = re.search(r"\.aboutblock__portrait img\s*\{([^}]*)\}", css)
-        self.assertIsNotNone(block)
-        body = block.group(1)
-        self.assertNotIn("aspect-ratio", body,
-                         "a fixed ratio reintroduces the vertical void")
-        self.assertRegex(body, r"min-height:\s*\d+px")
-
-    def test_the_columns_stretch_rather_than_centre(self):
-        """align-items: center is the declaration that made the void."""
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = re.search(r"\.aboutblock__grid\s*\{([^}]*)\}", css)
-        self.assertIsNotNone(block)
-        self.assertIn("align-items: stretch", block.group(1))
 
 
 class TestMaskedHeadingsHaveNoPhantomLine(BuildCase):
@@ -3550,54 +3117,6 @@ class TestMaskedHeadingsHaveNoPhantomLine(BuildCase):
         inner = statement.group(1)
         self.assertEqual(inner.count('<span class="mask">'), 2)
         self.assertNotIn("<br>", inner)
-
-
-class TestAboutIntroIsACard(BuildCase):
-    """The about page opens on a surface, and in the deep display accent."""
-
-    def test_the_intro_is_wrapped_in_a_card(self):
-        self.assertIn('<div class="about__card">', self.html("about.html"))
-
-    def test_the_statement_uses_the_deep_display_accent(self):
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = re.search(r"\.about__statement\s*\{([^}]*)\}", css)
-        self.assertIsNotNone(block)
-        self.assertIn("var(--color-accent-deep)", block.group(1))
-
-    def test_the_statement_cap_clears_its_longest_line(self):
-        """18ch was 846px; the longest sentence needs 880 and had 1024.
-
-        The cap, not the type size, was breaking the heading over three
-        lines. Anything at or below 18ch puts it straight back.
-        """
-        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
-        block = re.search(r"\.about__statement\s*\{([^}]*)\}", css)
-        cap = re.search(r"max-width:\s*(\d+)ch", block.group(1))
-        self.assertIsNotNone(cap, "no ch cap on the statement")
-        self.assertGreaterEqual(
-            int(cap.group(1)), 20,
-            "a cap this tight re-wraps 'Building is how I prove it.'")
-
-    def test_the_deep_accent_clears_AA_on_every_surface_it_lands_on(self):
-        tokens = json.loads(
-            (ROOT / "tokens.json").read_text(encoding="utf-8"))["color"]
-        ink = tokens["accentDeep"]
-
-        def lum(h):
-            def ch(c):
-                c /= 255
-                return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
-            r, g, b = (int(h[i:i + 2], 16) for i in (1, 3, 5))
-            return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
-
-        for ground in ("bg", "bgAlt"):
-            hexv = tokens[ground]
-            a, b = sorted((lum(ink), lum(hexv)), reverse=True)
-            ratio = (a + 0.05) / (b + 0.05)
-            with self.subTest(ground=ground):
-                self.assertGreaterEqual(
-                    ratio, 4.5,
-                    "%s on %s is %.2f:1" % (ink, hexv, ratio))
 
 
 class TestCursorLabel(BuildCase):
@@ -3697,7 +3216,7 @@ class TestCursorLabel(BuildCase):
         """
         block = self.block()
         self.assertIn(".shot__btn", block)
-        self.assertIn(".entry__media", block)
+        self.assertIn(".card__link", block)
         for noise in ("'.btn'", '".btn"', ".site-nav", ".fan__card"):
             self.assertNotIn(
                 noise, block,
@@ -3802,7 +3321,14 @@ class TestDarkMode(BuildCase):
         css = self.css()
         # Dark is the DEFAULT, so :root carries it and light is the override.
         # Emitting light in :root would flash white on every cold load.
-        self.assertIn("--color-bg: #060C0B", css.split("@media", 1)[0],
+        # Read from tokens.json, not typed. This asserted "#060C0B" -- the
+        # near-black of the teal palette -- and went on asserting it after
+        # the palette moved to ember, because this class sat below
+        # unittest.main() and was never collected. A literal here is a
+        # second copy of a value that has exactly one source.
+        expected = json.loads(
+            (ROOT / "tokens.json").read_text(encoding="utf-8"))["color"]["bg"]
+        self.assertIn("--color-bg: %s" % expected, css.split("@media", 1)[0],
                       "the dark palette is not the :root default")
         self.assertIn("@media (prefers-color-scheme: light)", css)
         self.assertIn(':root:not([data-theme="dark"])', css)
@@ -3974,7 +3500,7 @@ class TestScrollDrivenMotion(BuildCase):
         outside = re.sub(
             r"@supports \(animation-timeline: view\(\)\)\s*\{.*?\n\}",
             "", css, flags=re.S)
-        for sel in (r"\.entry__media", r"\.shot\b"):
+        for sel in (r"\.card__media", r"\.shot\b"):
             blocks = "".join(m.group(1) for m in
                              re.finditer(sel + r"\s*\{([^}]*)\}", outside))
             with self.subTest(selector=sel):
@@ -4136,3 +3662,170 @@ class TestTheClaimAssembles(BuildCase):
                                            quote=True),
                          "the h1 carries something other than the claim")
         self.assertNotIn("aria-", h1, "the frame should need no aria patching")
+
+
+class TestTheAsk(BuildCase):
+    """"Book a call" and "Copy email" -- the site's only two controls.
+
+    They replaced a contact band, a nav link, three fanned cards and a
+    row of link buttons, so between them they now carry every ask on the
+    site. That concentration is the point and it is also the risk: one
+    broken control is no way to get in touch at all.
+    """
+
+    def actions(self, page):
+        m = re.search(r'<div class="actions">(.*?)</div>', self.html(page), re.S)
+        self.assertIsNotNone(m, "%s has no actions row" % page)
+        return m.group(1)
+
+    def test_copy_email_is_a_real_button(self):
+        """Not a link, not a div.
+
+        It acts on the page instead of going anywhere, so it is a
+        <button>: that is what gives it the Space key, the right role and
+        a form of focus the browser draws for free.
+        """
+        row = self.actions("index.html")
+        self.assertRegex(row, r'<button[^>]*class="[^"]*js-copy[^"]*"[^>]*type="button"',
+                         "Copy email is not a real <button type=button>")
+
+    def test_book_a_call_is_a_link_and_leaves_the_tab(self):
+        """And it is a link, for the same reason in reverse: it navigates.
+
+        A <button> that navigates loses middle-click, the context menu and
+        the status-bar preview, and gains nothing.
+        """
+        row = self.actions("index.html")
+        self.assertRegex(row, r'<a class="btn btn--solid" href="https://cal\.com/[^"]+"')
+        self.assertIn('target="_blank"', row)
+        self.assertIn('rel="noopener"', row)
+        self.assertIn("opens in a new tab", row,
+                      "the calendar opens a tab without telling anyone who "
+                      "cannot see it happen")
+
+    def test_the_address_travels_with_the_button(self):
+        row = self.actions("index.html")
+        self.assertIn('data-copy="%s"' % self.site["email"], row,
+                      "the copy button does not know what to copy")
+
+    def test_the_result_is_announced(self):
+        """A button's label changing under its own focus is not reliably
+        announced, so the word "Copied" is written into a live region
+        instead and the visible label changes for everyone else."""
+        row = self.actions("index.html")
+        self.assertIn('role="status"', row)
+        self.assertIn('aria-live="polite"', row)
+        self.assertIn("data-copy-status", row)
+
+    def test_there_is_a_mailto_for_when_copying_is_not_possible(self):
+        row = self.actions("index.html")
+        self.assertIn('href="mailto:%s"' % self.site["email"], row,
+                      "nothing to fall back to when the Clipboard API is absent")
+        self.assertIn("js-copy-fallback", row)
+
+    def test_the_fallback_is_hidden_until_it_is_needed(self):
+        """Hidden in CSS, revealed by <noscript> or by the script.
+
+        Without the noscript rule a visitor with JavaScript off gets a
+        button that cannot copy and no link at all, which is strictly
+        worse than the mailto this site shipped before.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        self.assertRegex(css, r"\.js-copy-fallback\s*\{\s*display:\s*none")
+        page = self.html("index.html")
+        noscript = re.search(r"<noscript>(.*?)</noscript>", page, re.S)
+        self.assertIsNotNone(noscript, "no <noscript> rule swaps the control")
+        self.assertIn(".js-copy{display:none}", noscript.group(1))
+        self.assertIn(".js-copy-fallback{display:inline-flex}", noscript.group(1))
+
+    def test_the_script_checks_for_the_api_before_using_it(self):
+        js = (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+        self.assertIn("navigator.clipboard", js)
+        self.assertRegex(js, r"navigator\.clipboard\s*&&\s*navigator\.clipboard\.writeText",
+                         "the script uses the Clipboard API without checking "
+                         "for it; it is undefined on plain http, which is how "
+                         "this site is previewed")
+        self.assertIn("2000", js, "the label never returns to normal")
+
+    def test_the_calendar_url_has_exactly_one_source(self):
+        """Swapping it must be a one-line edit, which it is not if the
+        string is written out at each of the five places it appears."""
+        src = (ROOT / "build.py").read_text(encoding="utf-8")
+        literals = re.findall(r'"https://cal\.com/[^"]*"', src)
+        self.assertEqual(len(literals), 1,
+                         "the calendar URL is written %d times in build.py; "
+                         "it should be CAL_LINK and nothing else" % len(literals))
+        self.assertRegex(src, re.compile(r"^CAL_LINK = ", re.M))
+
+    def test_every_page_that_asks_uses_the_same_component(self):
+        home = self.actions("index.html")
+        for page in ("contact.html", "about.html"):
+            with self.subTest(page=page):
+                self.assertEqual(self.actions(page), home)
+
+
+class TestCopyBudget(BuildCase):
+    """The word budgets from the brief, measured rather than estimated.
+
+    The homepage said 557 words before this redesign and the about page
+    said 478. A budget nobody measures is a budget nobody keeps, so the
+    counter lives in build.py, runs on every build, and is asserted here
+    against the numbers the brief set.
+
+    Counted: everything a visitor can see except the nav and the footer.
+    Not counted on the homepage: project names, which the brief excludes,
+    and the mailto fallback, which is display:none for anyone whose
+    browser can copy.
+    """
+
+    def words(self, page, drop):
+        sys.path.insert(0, str(ROOT))
+        from build import body_words
+        return body_words(ROOT / page, drop=drop)
+
+    def test_the_homepage_is_under_sixty_words(self):
+        sys.path.insert(0, str(ROOT))
+        from build import HOME_NOT_COPY
+        n = self.words("index.html", HOME_NOT_COPY)
+        self.assertLess(n, 60, "the homepage body copy is %d words" % n)
+
+    def test_the_about_page_is_under_a_hundred_and_sixty_words(self):
+        n = self.words("about.html", {"js-copy-fallback"})
+        self.assertLess(n, 160, "the about page is %d words" % n)
+
+    def test_the_counter_excludes_the_chrome_it_claims_to(self):
+        """Guards the measurement itself.
+
+        A counter that stopped dropping the footer would report a bigger
+        number and the budgets would fail for a reason that has nothing
+        to do with the copy. One that stopped dropping the nav would
+        quietly make the budget easier to blow.
+
+        Counted twice: once as the budget counts it, and once with the
+        chrome allowed back in. The second has to be larger, or nothing
+        is being dropped at all.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import body_words
+        budget = body_words(ROOT / "index.html")
+        visible = re.sub(r"<(script|style|head)\b.*?</\1>", " ",
+                         self.html("index.html"), flags=re.S)
+        visible = re.sub(r"<[^>]+>", " ", visible)
+        raw = len(re.findall(r"[A-Za-z0-9][A-Za-z0-9'\u2019@./+-]*", visible))
+        self.assertGreater(raw, budget,
+                           "the counter is not dropping the nav and footer: "
+                           "it reports %d words of %d visible" % (budget, raw))
+
+
+
+# ── the runner ───────────────────────────────────────────────────────────
+# This block MUST stay at the bottom of the file. It spent a long time in
+# the middle of it, and unittest.main() runs at the point it is reached:
+# every class defined below it was never collected. That was 13 classes
+# and 66 test methods, among them the em-dash ban, the dark-mode set, the
+# theme toggle, the scroll-driven motion guards and the hero animation --
+# all reported green by a runner that had never seen them.
+#
+# It is also why this file counted 207 tests while the runner said 141.
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

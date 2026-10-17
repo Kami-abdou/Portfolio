@@ -19,6 +19,10 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Groupado - Abdou Yaackoubi">
   <meta name="twitter:description" content="A marketplace for turning what you know into experiences others can join, with an SEO-led homepage structure rather than one retrofitted after.">
+  <!-- With JavaScript off the copy button cannot copy anything, so it is
+       swapped for the mailto beside it. That is why actions_row emits
+       both: a control that silently does nothing is worse than a link. -->
+  <noscript><style>.js-copy{display:none}.js-copy-fallback{display:inline-flex}</style></noscript>
   <meta name="theme-color" content="#0E0A07">
   <meta name="color-scheme" content="light">
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png?v=2aadc8c2">
@@ -37,8 +41,8 @@
   <link rel="preload" href="../assets/fonts/gabarito-variable.woff2?v=bab69a2a" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/fonts.css?v=72fe68d4">
   <link rel="stylesheet" href="../assets/tokens.css?v=4b21d4db">
-  <link rel="stylesheet" href="../assets/styles.css?v=4c141b0d">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Senior product designer. Six years across fintech, automotive retail and AI: designing products and building them.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
+  <link rel="stylesheet" href="../assets/styles.css?v=8de9cfed">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
   <script>
     /* Before first paint, or the page renders in the system theme and then
        snaps to the stored one. Inline and synchronous on purpose: a deferred
@@ -63,7 +67,7 @@
           <a href="../about">About</a>
         </span>
         <button class="theme-toggle" type="button" aria-label="Switch between light and dark" aria-pressed="false"><span class="theme-toggle__dial" aria-hidden="true"></span></button>
-        <a class="site-nav__cta" href="../contact">Say hello</a>
+        <a class="site-nav__cta" href="https://cal.com/REPLACE-ME/30min" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a>
       </nav>
     </div>
   </header>
@@ -156,15 +160,10 @@
   </main>
   <footer class="site-foot">
     <div class="shell site-foot__inner">
-      <p class="site-foot__note">© 2026 Abdou Yaackoubi · Last updated <time datetime="2026-10-16">October 2026</time></p>
-      <nav class="site-foot__links" aria-label="Elsewhere">
-        <a href="https://www.linkedin.com/in/abdou-yaackoubi/">LinkedIn</a>
-        <a href="mailto:abdouyaackoubi@gmail.com">Email</a>
-        <a href="../site/CV-Abdou-Yaackoubi.pdf?v=205f4b2d" target="_blank" rel="noopener">CV<span class="visually-hidden"> (opens in a new tab)</span></a>
-      </nav>
+      <p class="site-foot__note">© 2026 Abdou Yaackoubi<span class="site-foot__sep" aria-hidden="true"> · </span><a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener">LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a><span class="site-foot__sep" aria-hidden="true"> · </span><a href="../site/CV-Abdou-Yaackoubi.pdf?v=205f4b2d" target="_blank" rel="noopener">CV (PDF)<span class="visually-hidden"> (opens in a new tab)</span></a></p>
     </div>
   </footer>
   <script src="../assets/lightbox.js?v=652506b0" defer></script>
-  <script src="../assets/enhance.js?v=c6b43c51" defer></script>
+  <script src="../assets/enhance.js?v=effb161c" defer></script>
 </body>
 </html>

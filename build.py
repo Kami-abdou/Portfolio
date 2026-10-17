@@ -340,6 +340,10 @@ def link_icon(label, depth=0, *, slug=None):
 #: `noopener` is belt and braces on a same-origin PDF -- every current
 #: browser implies it for target="_blank" -- but it is one attribute and it
 #: is what the rest of the file already does for outbound links.
+#: The one place the booking URL lives. Swap this string and every button
+#: on the site follows: the nav, both homepage pairs, /contact and /about.
+CAL_LINK = "https://cal.com/REPLACE-ME/30min"
+
 NEW_TAB = ' target="_blank" rel="noopener"'
 
 #: ...and the part a sighted visitor gets for free.
@@ -358,6 +362,49 @@ def link_btn(label, href, depth=0, *, slug=None, rel_attr="", new_tab=False):
     note = NEW_TAB_NOTE if new_tab else ""
     return ('<a class="btn" href="%s"%s>%s<span>%s</span>%s</a>'
             % (e(href), attrs, link_icon(label, depth, slug=slug), e(label), note))
+
+
+def actions_row(depth=0, *, cls="actions"):
+    """"Book a call" and "Copy email", the site's only two asks.
+
+    Four places use this -- the hero, the homepage's closing line, /contact
+    and /about -- and the brief for all four is "the same component", so it
+    is a function rather than four copies of the same markup.
+
+    Book a call is an <a>, not a <button>. It navigates, and a button that
+    navigates loses the middle-click, the context menu and the status bar
+    for no gain. Copy email is a real <button>, because it acts on the page
+    instead of going anywhere.
+
+    THREE controls are emitted, not two. The button is the enhanced path;
+    the mailto next to it is the fallback, hidden by default and revealed
+    in exactly two situations:
+
+      * JavaScript is off      -- the <noscript> rule in head() shows it
+      * the Clipboard API is missing -- enhance.js shows it
+
+    Without that, a visitor with no clipboard gets a button that silently
+    does nothing, which is worse than the mailto this site shipped before.
+
+    The status span is the aria-live region. It is a sibling rather than
+    the button's own text so that the label change ("Copy email" ->
+    "Copied") and the announcement are separate: changing a button's label
+    while it is focused is not reliably announced on its own.
+    """
+    up = "../" * depth
+    addr = SITE.get("email", "")
+    book = ('<a class="btn btn--solid" href="%s"%s>Book a call%s</a>'
+            % (e(CAL_LINK), NEW_TAB, NEW_TAB_NOTE))
+    if not usable(addr):
+        return '<div class="%s">%s</div>' % (cls, book)
+    return (
+        '<div class="%s">'
+        '%s'
+        '<button class="btn js-copy" type="button" data-copy="%s">'
+        'Copy email</button>'
+        '<a class="btn js-copy-fallback" href="mailto:%s">Email me</a>'
+        '<span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span>'
+        '</div>' % (cls, book, e(addr), e(addr)))
 
 
 def is_phone(size):
@@ -629,7 +676,10 @@ def primary_nav(up, current=None):
     for key, href, label in items:
         mark = ' aria-current="page"' if key == current else ""
         out.append('<a href="%s"%s>%s</a>' % (e(href), mark, e(label)))
-    contact_mark = ' aria-current="page"' if current == "contact" else ""
+    # "Say hello" pointed at /contact. The ask is now explicit and goes
+    # straight to the calendar, so the nav's one button is the same control
+    # as the two on the page. /contact survives as a route for old links
+    # rather than as somewhere the nav sends anyone.
     # The theme control. The page follows the system by default; this is for
     # the visitor whose machine says dark but who wants to see the paper,
     # which is most of what this site's identity IS. aria-pressed rather than
@@ -648,8 +698,9 @@ def primary_nav(up, current=None):
         '          <span class="site-nav__marker" aria-hidden="true"></span>\n'
         '          %s\n        </span>\n'
         '        %s\n'
-        '        <a class="site-nav__cta" href="%scontact"%s>Say hello</a>\n'
-        '      </nav>' % ("\n          ".join(out), toggle, e(up), contact_mark))
+        '        <a class="site-nav__cta" href="%s"%s>Book a call%s</a>\n'
+        '      </nav>' % ("\n          ".join(out), toggle, e(CAL_LINK),
+                          NEW_TAB, NEW_TAB_NOTE))
 
 
 def head(title, description, *, depth=0, image=None, page_url="",
@@ -692,6 +743,10 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{e(title)}">
   <meta name="twitter:description" content="{e(description)}">
+  <!-- With JavaScript off the copy button cannot copy anything, so it is
+       swapped for the mailto beside it. That is why actions_row emits
+       both: a control that silently does nothing is worse than a link. -->
+  <noscript><style>.js-copy{{display:none}}.js-copy-fallback{{display:inline-flex}}</style></noscript>
   <meta name="theme-color" content="{e(TOKENS['color']['bg'])}">
   <meta name="color-scheme" content="light">
   <link rel="icon" type="image/png" sizes="32x32" href="{up}assets/favicon-32.png{asset_v('assets/favicon-32.png')}">
@@ -735,23 +790,33 @@ def head(title, description, *, depth=0, image=None, page_url="",
 
 
 def foot(depth=0):
+    """One line, which is all a footer on this site has to be now.
+
+    It carried the copyright, a "Last updated" stamp and a row of link
+    buttons repeating the email, LinkedIn and CV that were already in the
+    contact band directly above it. The band is gone and the repetition
+    went with it: LinkedIn and the CV live here, once.
+
+    The year is still derived rather than typed, because a hardcoded one
+    starts lying on 1 January.
+    """
     up = "../" * depth
-    links = "\n        ".join(
-        '<a href="%s">%s</a>' % (e(l["url"]), e(l["label"])) for l in SITE.get("links", [])
-    )
-    # The year was hardcoded and would have started lying on 1 January.
-    # Both values are derived: the notice from the stamp's year, the stamp
-    # from when the JSON last changed. Saying when the site was last touched
-    # is the cheapest possible signal that it is still maintained.
-    iso, pretty = content_updated()
+    iso, _ = content_updated()
+    linkedin = next((l for l in SITE.get("links", [])
+                     if "linkedin" in l.get("label", "").lower()), None)
+    bits = []
+    if linkedin:
+        bits.append('<a href="%s"%s>%s%s</a>'
+                    % (e(linkedin["url"]), NEW_TAB, e(linkedin["label"]), NEW_TAB_NOTE))
+    if SITE.get("cv"):
+        bits.append('<a href="%s%s%s"%s>CV (PDF)%s</a>'
+                    % (up, e(SITE["cv"]), asset_v(SITE["cv"]), NEW_TAB, NEW_TAB_NOTE))
+    sep = '<span class="site-foot__sep" aria-hidden="true"> · </span>'
+    tail = "".join(sep + b for b in bits)
     return f"""  </main>
   <footer class="site-foot">
     <div class="shell site-foot__inner">
-      <p class="site-foot__note">© {iso[:4]} {e(SITE['name'])} · Last updated <time datetime="{iso}">{e(pretty)}</time></p>
-      <nav class="site-foot__links" aria-label="Elsewhere">
-        {links}
-        <a href="{up}{e(SITE['cv'])}{asset_v(SITE['cv'])}"{NEW_TAB}>CV{NEW_TAB_NOTE}</a>
-      </nav>
+      <p class="site-foot__note">© {iso[:4]} {e(SITE['name'])}{tail}</p>
     </div>
   </footer>
   <script src="{up}assets/lightbox.js{asset_v("assets/lightbox.js")}" defer></script>
@@ -1004,195 +1069,83 @@ def project_year(project):
     return ""
 
 
-def work_entry(project, *, large):
-    """One row of the year rail.
+# ─────────────────────────────────────────── pages
 
-    The rail is a dated spine: a dot and a year on the left, the project on
-    the right, oldest at the bottom. It replaced a horizontal scroller for
-    the case studies and a stack of covers for the gallery, so both bands
-    now read as one system and the tiers differ by how much each row says
-    rather than by being different components.
+def work_card(project, item, depth=0):
+    """One project, as a card that is entirely a link.
 
-    Tier 1 carries category chips, a summary and a full-width cover.
-    Tier 2 carries a line and a thumbnail. That difference is asserted.
+    The row this replaces carried category chips, a tagline, a summary
+    paragraph and a "Read the case study" cue. All of it is gone. What is
+    left is what a visitor actually decides on: the cover, the name, one
+    tag and the years.
 
-    The link wraps the TITLE and an ::after covers the row, which is the
-    block-link pattern this site has used since the cards: one control per
-    row, named by the project, with the prose read as its siblings rather
-    than crammed into its accessible name.
+    The whole card is the <a>, rather than the old pattern of a linked
+    title with an ::after stretched over the row. That pattern existed to
+    keep paragraphs OUT of the link's accessible name; with no paragraphs
+    left there is nothing to keep out, so the simpler markup is also the
+    more accessible one.
+
+    The cover takes alt="" on purpose. It sits inside a link already named
+    by the project, and giving it alt text would make a screen reader
+    announce the same project twice for one control.
     """
+    up = "../" * depth
     d = project["_dir"]
     cover = "projects/%s/%s" % (d, project["cover"])
     size = png_size(ROOT / "projects" / d / project["cover"])
     dims = ' width="%d" height="%d"' % size if size else ""
-
-    year = project_year(project)
-    year_html = ('<span class="entry__year">%s</span>' % e(year)) if year else ""
-
-    tagline = project["tagline"] if usable(project.get("tagline")) else ""
-    lede = ('<p class="entry__lede">%s</p>' % e(tagline)) if tagline else ""
-
-    tags_html = note_html = ""
-    if large:
-        tags = [x for x in (project.get("tags") or []) if usable(x)][:3]
-        if tags:
-            tags_html = ('<ul class="entry__tags">%s</ul>'
-                         % "".join("<li>%s</li>" % e(x) for x in tags))
-        if usable(project.get("summary")):
-            note_html = '<p class="entry__note">%s</p>' % e(project["summary"])
-
-    cta = "Read the case study" if large else "See the screens"
-
-    return """        <li class="entry entry--{tier}">
-          <p class="entry__when">
-            <span class="entry__dot" aria-hidden="true"></span>{year}
-          </p>
-          <div class="entry__body">
-            <div class="entry__text">
-              {tags}
-              <h3 class="entry__title"><a href="projects/{slug}">{title}</a></h3>
-              {lede}
-              {note}
-              <span class="entry__cta" aria-hidden="true">{cta} &rarr;</span>
-            </div>
-            <figure class="entry__media"{tint}>
-              <img src="{cover}" alt="" {dims} loading="lazy" decoding="async">
+    # No data-tint here. The tint exists so an inset screenshot can sit on
+    # a surface close to its own hue; a card's cover is full-bleed, so the
+    # tint would be a colour nobody ever sees. It still does its job on the
+    # case-study pages, where the images ARE inset.
+    return """        <li class="card">
+          <a class="card__link" href="{up}projects/{slug}">
+            <figure class="card__media">
+              <img src="{up}{cover}{v}" alt=""{dims} loading="lazy" decoding="async">
             </figure>
-          </div>
+            <span class="card__row">
+              <span class="card__name">{title}</span>
+              <span class="card__tag">{tag}</span>
+              <span class="card__years">{years}</span>
+            </span>
+          </a>
         </li>""".format(
-        tier="lg" if large else "sm",
-        year=year_html, tags=tags_html, lede=lede, note=note_html, cta=e(cta),
-        slug=e(project["slug"]), title=e(project["title"]),
-        tint=(' data-tint="%s"' % project_tint(project)) if project_tint(project) else "",
-        cover=e(cover), dims=dims)
+        up=up, slug=e(project["slug"]), cover=e(cover), v=asset_v(cover),
+        dims=dims, title=e(project["title"]),
+        tag=e(item.get("tag", "")), years=e(item.get("years", "")))
 
-
-# ─────────────────────────────────────────── pages
 
 def build_index(projects):
+    """The homepage: a hero, the work, and one way to get in touch.
+
+    It used to say 557 words before the footer. It carried an availability
+    badge, a portfolio-year label, a supporting paragraph, four stat
+    blocks, a fanned stack of three cards, an "A bit about me" section
+    duplicating /about, two bands of projects each with chips and a
+    summary, and a "Let's talk" band repeating the email, LinkedIn and CV
+    that the footer repeated again.
+
+    Every one of those was defensible on its own and the sum was noise: a
+    visitor arriving to see the work had to scroll past four asks and two
+    biographies to reach it. What is left is a greeting, the work, and the
+    same two buttons twice.
+    """
     slugs = by_slug(projects)
     out = [head(
         "%s - %s" % (SITE["name"], SITE["title"]),
-        # heroStatement is the visible claim on the page and is written to be
-        # short. metaDescription is the search snippet. One string cannot be
-        # both: 150 keyword-bearing chars reads as a resume line on screen.
-        SITE.get("metaDescription") or SITE.get("heroStatement")
-            or (SITE["tagline"] + " " + SITE["intro"]),
+        SITE.get("metaDescription") or SITE["title"],
         page_url="work",
         nav_current="work",
     )]
 
-    # Cycling role line. Every role is in the DOM so it survives with JS off
-    # and is indexable; JS reveals one at a time. The live list is aria-hidden
-    # and a static label carries the accessible name, so assistive tech reads
-    # the role once instead of announcing every swap.
-    roles = [r for r in SITE.get("roles", []) if r] or [SITE["title"]]
     hero_img = SITE.get("heroImage") or SITE["profileImage"]
     psize = png_size(ROOT / hero_img)
     pdims = ' width="%d" height="%d"' % psize if psize else ""
-    # No AVIF source here, deliberately. DO NOT ADD ONE WITH sips.
-    #
-    # The portrait is the homepage's LCP element, so an AVIF alternative is
-    # the obvious win and it was tried. `sips -s format avif` produces a file
-    # that passes every cheap check -- correct `ftyp avif` magic, correct
-    # dimensions reported back by sips, `file` calls it "ISO Media, AVIF
-    # Image", 60% smaller than the JPEG -- and which Chrome decodes to PURE
-    # BLACK. Measured by drawing it to a canvas: max luminance 0 across the
-    # frame, against 238 for the JPEG. The hero portrait silently vanished
-    # and the only symptom was a dark rectangle behind dark type.
-    #
-    # site/profile.avif on the about page is fine, which is what made this
-    # confusing: it was encoded by something else, not by sips.
-    #
-    # There is no avifenc, ImageMagick, cavif or vips on this machine and the
-    # project takes no new dependencies, so there is no way to produce a
-    # trustworthy AVIF here. The JPEG is instead sized to what the frame
-    # actually needs -- clamp(190px, 26vw, 340px), so 700px covers 2x -- which
-    # took it from 419 KB to 265 KB with no format risk.
-    #
-    # If you do add an AVIF later: verify the PIXELS, not the bytes. Load it
-    # in a browser and sample it. Every metadata check passed on the broken one.
-    hero_avif = ""
-    # The marquee is gone. It was three rows of ultra-condensed poster type
-    # scrolling behind the portrait, and it was the site's signature for two
-    # years -- but it belonged to a near-black page, and this one is warm
-    # paper built out of soft cards. Anton went with it; see assets/fonts.css.
-    #
-    # What replaces it is the fanned card stack below: three cards at slight
-    # opposing rotations, which is a friendlier way to say "here are the
-    # three kinds of thing I do" than a wall of moving type.
 
-    # ── The opening ───────────────────────────────────────────────────
-    # The clarity block, and the page's h1.
-    #
-    # This section is why the redesign exists. The marquee below it used to
-    # BE the hero: the only h1 was `visually-hidden`, the rows are
-    # aria-hidden by construction, and the first readable sentence on the
-    # site sat 760px down the page. A visitor's first screen was a condensed
-    # poster face clipped mid-word and a photograph -- striking, and silent
-    # about what the man does.
-    #
-    # Measured against the four sites this redesign was briefed on: all four
-    # put a specific, readable claim in the first screen, and the two
-    # homepages (petradesigns.io, sandeep.design) both spend their h1 on the
-    # value proposition rather than on a name. The wordmark in the header
-    # already carries the name, and so do <title> and the JSON-LD.
-    #
-    # The marquee is NOT deleted -- it is the site's signature and the one
-    # thing its owner said still felt like his. It moves one section down,
-    # where being arresting costs nothing.
-    facts = [f for f in SITE.get("heroFacts", [])
-             if usable(f.get("label")) and usable(f.get("value"))]
-    facts_html = "\n        ".join(
-        '<div class="opening__fact"><dt>%s</dt><dd>%s</dd></div>'
-        % (e(f["label"]), e(f["value"])) for f in facts)
-    avail = SITE.get("availability", "")
-    avail_note = SITE.get("availabilityNote", "")
-    portfolio_label = SITE.get("portfolioLabel", "")
-    email = SITE.get("email", "")
-
-    # Every one of these is gated, same as the rest of the build: a field
-    # that is missing or still TODO renders nothing rather than an empty
-    # chip, a dangling separator or a mailto: with no address.
-    status_bits = []
-    if usable(avail):
-        status_bits.append(
-            '<span class="opening__avail">'
-            '<span class="opening__dot" aria-hidden="true"></span>%s</span>' % e(avail))
-    if usable(portfolio_label):
-        status_bits.append('<span class="opening__portfolio">%s</span>' % e(portfolio_label))
-    status_html = ('<p class="opening__status">%s</p>'
-                   % '<span class="opening__sep" aria-hidden="true"></span>'.join(status_bits)
-                   ) if status_bits else ""
-
-    actions = ['<a class="btn btn--solid" href="#work">See the work</a>']
-    if usable(email):
-        actions.append('<a class="btn" href="mailto:%s">Email me</a>' % e(email))
-    if usable(avail_note):
-        actions.append('<span class="opening__note">%s</span>' % e(avail_note))
-
-    cards = [c for c in SITE.get("heroCards", [])
-             if usable(c.get("label")) and usable(c.get("body"))]
-    fan_cards = "\n".join(
-        '''        <li class="fan__card fan__card--%s">
-          <h2 class="fan__label">%s</h2>
-          <p class="fan__body">%s</p>
-          <a class="fan__cta" href="%s">%s<span aria-hidden="true"> &rarr;</span></a>
-        </li>''' % (e(c.get("tone", "sand")), e(c["label"]), e(c["body"]),
-                     e(c.get("href", "#work")), e(c.get("cta", "Have a look")))
-        for c in cards)
-
-    # A newline in heroClaim is an author's line break. The alternative is
-    # letting the measure wrap it, which moves the break every time the
-    # viewport changes -- and the break is the joke here: the greeting on
-    # one line, the job on the next.
-    #
-    # Each line is a span rather than text separated by <br>, because the
-    # LAST one is framed on load (see .claim__line--built) and a frame
-    # needs a box to draw around. .claim__line is display:block, so there
-    # is no <br> between them: a <br> between two blocks renders a phantom
-    # empty line box, which is the bug that made the about heading measure
-    # 370px for two lines of 181.
+    # Authored line breaks, same mechanism as before: the break is the
+    # joke, and letting the measure decide it moves the break on every
+    # viewport. Each line is its own block, so there is no <br> between
+    # them -- a <br> between two blocks renders a phantom empty line.
     claim = SITE.get("heroClaim") or SITE["title"]
     claim_lines = claim.split("\n")
     claim_html = "".join(
@@ -1200,127 +1153,59 @@ def build_index(projects):
         % (" claim__line--built" if i == len(claim_lines) - 1 else "", e(line))
         for i, line in enumerate(claim_lines))
 
+    meta_line = SITE.get("heroMeta", "")
+    meta_html = ('\n      <p class="opening__meta">%s</p>' % e(meta_line)
+                 ) if usable(meta_line) else ""
+
     out.append(f"""
     <div class="shell hero-band">
-      <div class="hero-card">
     <section class="opening">
-      {status_html}
+      <figure class="opening__portrait">
+        <img src="{e(hero_img)}{asset_v(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
+      </figure>
 
-      <h1 class="opening__claim">{claim_html}</h1>
+      <h1 class="opening__claim">{claim_html}</h1>{meta_html}
 
-      <p class="opening__support">{e(SITE.get('heroSupport') or SITE.get('heroStatement', ''))}</p>
-
-      <div class="opening__actions">
-        {"".join(actions)}
-      </div>
-
-      <dl class="opening__facts">
-        {facts_html}
-      </dl>
+      {actions_row()}
     </section>
-
-    <!-- The fanned stack. Three cards at opposing rotations, which is the
-         whole device: a hand of cards rather than a row of tiles. Each one
-         is a real link to a section further down, so the stack is also the
-         page's own table of contents.
-
-         No pause control here and none needed: nothing moves on its own.
-         The rotation is static and the only motion is on hover, which is
-         WCAG 2.2.2 not applying rather than being satisfied. -->
-    <section class="fan" aria-label="What's here">
-      <ul class="fan__stack">
-{fan_cards}
-      </ul>
-    </section>
-      </div><!-- /.hero-card -->
     </div>
 """)
 
-    # Two tiers: 3 across for the headline band, 4 for the rest.
-    #
-    # The column counts MUST differ, because they are what makes the headline
-    # cards bigger. Both bands ran at 3 briefly, to avoid the orphan that 6
-    # cards at 4-up leaves on the second row -- and that inverted the whole
-    # hierarchy. grid--lg carries a 48px gap against grid--sm's 32px, so at
-    # equal column counts the "large" cards came out NARROWER (352px vs 363px)
-    # and shorter (a 3/2 media against 4/3 is 235px tall against 272px). Only
-    # the title was bigger. Tier 2 visually outweighed Tier 1, which is the
-    # exact opposite of the point.
-    #
-    # A short last row is a much smaller cost than an inverted hierarchy.
-    # ── A bit about me ─────────────────────────────────────────────
-    # Statement, portrait, a paragraph and a door to the about page. It
-    # replaced a "How I work" band of three craft principles, whose
-    # content moved to the about page where it sits next to the journey
-    # and the values instead of competing with the work for the
-    # homepage's attention.
-    #
-    # The statement is the sentence that used to be the h1. It was always
-    # the best line on the site, and the hero opens with a greeting now,
-    # so it was free.
-    ab = SITE.get("aboutBlock") or {}
-    if usable(ab.get("statement")):
-        cta = ab.get("cta")
-        cta_html = ('<a class="aboutblock__cta" href="about">%s'
-                    '<span aria-hidden="true"> &rarr;</span></a>'
-                    % e(cta)) if usable(cta) else ""
-        body_html = ('<p class="aboutblock__body">%s</p>' % e(ab["body"])
-                     if usable(ab.get("body")) else "")
+    # ── Selected work ────────────────────────────────────────────────
+    sel = SITE.get("sections", {}).get("selected") or {}
+    items = [i for i in sel.get("items", []) if i.get("slug") in slugs]
+    if items:
+        cards = "\n".join(work_card(slugs[i["slug"]], i) for i in items)
+        more = [slugs[x] for x in sel.get("more", []) if x in slugs]
+        more_html = ""
+        if more:
+            # The class is not decoration: the brief's word budget excludes
+            # project names, and body_words() drops them by class, so the
+            # names have to be nameable.
+            names = ", ".join(
+                '<a class="more-work__name" href="projects/%s">%s</a>'
+                % (e(x["slug"]), e(x["title"])) for x in more)
+            more_html = ('\n      <p class="more-work">%s %s</p>'
+                         % (e(sel.get("moreLabel", "More work:")), names))
         out.append(f"""
-    <section class="band shell band--aboutblock" id="about-me">
-      <div class="aboutblock__card">
-      <p class="aboutblock__label">{e(ab.get("label", "A bit about me"))}</p>
-      <div class="aboutblock__grid">
-        <figure class="aboutblock__portrait">
-          <img src="{e(hero_img)}{asset_v(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} loading="lazy" decoding="async">
-        </figure>
-        <div class="aboutblock__text">
-          <h2 class="aboutblock__statement">{masked(ab["statement"])}</h2>
-          {body_html}
-          {cta_html}
-        </div>
-      </div>
-      </div><!-- /.aboutblock__card -->
+    <section class="band shell band--work" id="work">
+      <h2 class="band__title">{e(sel.get("heading", "Selected work"))}</h2>
+      <ol class="cards">
+{cards}
+      </ol>{more_html}
     </section>
 """)
 
-    # ── The work, as one dated rail ────────────────────────────────
-    # Both bands render the same component now. They used to be two
-    # different ones -- a horizontal scroller for the case studies and a
-    # stack of covers for the gallery -- which meant the page had two
-    # unrelated ways of showing a project and the only thing connecting
-    # them was that they sat under similar headings.
-    #
-    # The tiers still differ, and by more than size: a case study row
-    # carries category chips, a summary paragraph and a full-width cover;
-    # a gallery row carries one line and a thumbnail. That difference is
-    # the hierarchy, and it is asserted.
-    # Both keys are optional, and a band with nothing live in it renders
-    # nothing at all. Retiring the last project in a band used to leave its
-    # heading and an empty <ol> on the page, and removing the band from
-    # site.json used to raise a KeyError here instead.
-    for key, large in (("highlights", True), ("selectedWork", False)):
-        meta = SITE.get("sections", {}).get(key)
-        if not meta:
-            continue
-        anchor = "work" if key == "highlights" else "gallery"
-        live = [s for s in meta["slugs"] if s in slugs]
-        if not live:
-            continue
-        rows = "\n".join(work_entry(slugs[s], large=large) for s in live)
-        out.append(f"""
-    <section class="band shell band--work" id="{anchor}">
-      <div class="band__head">
-        <h2>{masked(meta['heading'])}</h2>
-        <p>{e(meta['description'])}</p>
-      </div>
-      <ol class="rail-years rail-years--{'lg' if large else 'sm'}">
-{rows}
-      </ol>
+    # ── The closing ask ──────────────────────────────────────────────
+    # The same component as the hero, which is the point: one ask, said
+    # twice, rather than four different ones.
+    out.append(f"""
+    <section class="band shell band--close" id="contact">
+      <h2 class="band__close">{e(SITE.get("closingLine", "Have something in mind?"))}</h2>
+      {actions_row()}
     </section>
 """)
 
-    out.append(contact_band())
     out.append(foot())
 
     # The homepage is served at two URLs on purpose. /work is what the nav
@@ -1334,173 +1219,90 @@ def build_index(projects):
     (ROOT / "work.html").write_text(page, encoding="utf-8")
 
 
-def contact_band(*, depth=0, level="h2"):
-    """The "Let's talk" block, shared by the homepage and /contact.
-
-    It was inline in build_index until /contact became a real page. Copying
-    it would have meant the email, the CV link and the link list each had two
-    places to fall out of date, on the one block where being wrong costs an
-    actual opportunity.
-
-    `level` exists because one block cannot be the same rank in both places.
-    On the homepage it is a section under the page's h1, so it is an h2. On
-    /contact it is the only heading on the page, and hardcoding h2 left that
-    page with NO h1 and a hierarchy that started at level two -- measured on
-    the built file, which had exactly one heading element on it.
-    """
-    up = "../" * depth
-    links = "\n        ".join(
-        link_btn(l["label"], l["url"], depth) for l in SITE["links"]
-    )
-    # The CV was footer-only on the homepage, so the highest-intent element on
-    # the site -- "Let's talk" -- offered no way to get the document a
-    # recruiter actually needs. It is the last thing they look for and it was
-    # the one thing not here.
-    # Versioned like every other asset. The CV is the one file on the site
-    # that gets REPLACED under the same name rather than added, so without a
-    # content hash a returning visitor -- or a recruiter who opened the page
-    # last week -- keeps downloading the previous document. This project has
-    # lost time to exactly that failure four times on other assets.
-    cv_btn = ('\n        ' + link_btn("CV (PDF)", up + SITE["cv"] + asset_v(SITE["cv"]),
-                                      depth, slug="cv", new_tab=True)
-              if SITE.get("cv") else "")
-    # And the address itself never appeared as selectable text anywhere on the
-    # site -- only ever inside href="mailto:". A recruiter who wants to paste
-    # it into their own system had to open a mail client to read it.
-    addr = SITE.get("email")
-    addr_line = ('\n      <p class="contact__addr"><a href="mailto:%s">%s</a></p>'
-                 % (e(addr), e(addr))) if addr else ""
-    return f"""
-    <section class="band band--contact shell" id="contact">
-      <{level}>{masked("Let's talk")}</{level}>
-      <p class="lede">{e(SITE.get("contactLede", ""))}</p>{addr_line}
-      <div class="btn-row">
-        {links}{cv_btn}
-      </div>
-    </section>
-"""
-
-
 def build_contact():
-    """/contact, carrying the same band the homepage ends on.
+    """/contact, kept as a route rather than as a page with anything on it.
 
-    Contact used to be index.html#contact in the nav -- a fragment jump that
-    dropped a visitor at the foot of a long page. It is now a page, which is
-    what the other two nav items are, and the homepage keeps its band so
-    anyone who scrolls to the end still finds a way to get in touch.
+    The nav no longer points here: the ask is "Book a call" and it goes
+    straight to the calendar. But the URL has been shared and linked from
+    outside the site, so it stays, and it offers the same two actions as
+    everywhere else rather than a dead end.
+
+    The h1 is visually hidden. The brief for this page is the two actions
+    and nothing else, and a page whose heading order starts at nothing is
+    worse for a screen reader than one with a name it does not draw.
     """
     out = [head(
         "Contact - %s" % SITE["name"],
-        SITE.get("contactLede") or SITE.get("metaDescription", ""),
+        SITE.get("metaDescription") or SITE["title"],
         page_url="contact",
         nav_current="contact",
     )]
-    out.append(contact_band(level="h1"))
+    out.append("""
+    <section class="band shell band--close">
+      <h1 class="visually-hidden">Contact</h1>
+      %s
+    </section>
+""" % actions_row())
     out.append(foot())
     (ROOT / "contact.html").write_text("\n".join(out), encoding="utf-8")
 
 
-def cv_block(index):
-    """Reverse-chronological employment history, linked into the case studies.
+def experience_list(index):
+    """Company, role, years. Nothing else.
 
-    Why this exists: every fact in it was already in the JSON — `client`,
-    `year` and `role` on each project — but no page assembled it, so a
-    visitor could not see eight companies in six years without opening nine
-    case studies. A recruiter skims for thirty seconds and leaves; this is
-    the thirty-second version.
+    This was a reverse-chronological history with a note under every job,
+    a place, and a row of linked case studies -- the longest block on the
+    page. The notes said in prose what the case studies say properly one
+    click away, so they went and the link stayed.
 
-    `experience` is authored as its own list rather than derived from the
-    projects, because employment and projects are not the same shape: two
-    projects can sit inside one role (InstaDeep, T-ledger), and freelance
-    work overlaps full-time work rather than following it. Array order is
-    display order — no date parsing, so "October 2021 — November 2023" can
-    stay human-readable.
+    A company whose name IS a case study links straight to it. A company
+    that ran more than one, and whose own name has no page, carries them
+    in parentheses instead: "T-ledger (Konnect, Fissa3)". That rule is
+    what produces the four rows without a special case for any of them.
 
-    The `projects` slugs are the join back to the depth, which is the part a
-    plain CV page cannot do: each row is a door into the reasoning.
+    Years are hyphenated, not en-dashed. The brief wrote "2024-now" with
+    an en dash; every year on the site is a hyphen, and TestNoEmDashes
+    bans en dashes in anything a visitor can see.
     """
     roles = SITE.get("experience") or []
     if not roles:
         return ""
-
     rows = []
     for job in roles:
-        # Company, then role, then place. Place used to sit between the first
-        # two, which put "France" in the gap between "T+ informatique" and
-        # "UI Designer" and broke the one pairing every reader is scanning for.
-        place = ('<p class="cv__place">%s</p>' % e(job["place"])
-                 if usable(job.get("place")) else "")
-
-        # A TODO year renders as no year at all, matching how the facts tables
-        # treat unfilled fields — an absent cell rather than the word TODO.
-        years = ('<p class="cv__years"><time>%s</time></p>' % e(job["years"])
-                 if usable(job.get("years")) else '<p class="cv__years"></p>')
-
-        note = ('<p class="cv__note">%s</p>' % e(job["note"])
-                if usable(job.get("note")) else "")
-
-        links = []
-        for slug in job.get("projects", []):
-            p = index.get(slug)
-            if p is None:
-                raise SystemExit(
-                    'site.json experience: "%s" lists unknown project "%s"'
-                    % (job["company"], slug))
-            links.append('<a href="projects/%s">%s</a>'
-                         % (e(p["slug"]), e(p["title"])))
-        work = ('<p class="cv__work">%s</p>' % "\n            ".join(links)
-                if links else "")
-
-        # Compact line always; place, note and project links in a panel
-        # that opens on hover. The detail is NOT hidden from assistive tech
-        # -- it collapses with max-height and opacity rather than display
-        # or visibility, so it stays in the accessibility tree and is read
-        # in order whether or not anyone can hover.
-        head = ['<h3 class="cv__company">%s</h3>' % e(job["company"]),
-                '<p class="cv__role">%s</p>' % e(job["role"])]
-        detail = [b for b in (place, note, work) if b]
-        detail_html = ('\n            <div class="cv__detail">\n              %s\n'
-                       '            </div>' % "\n              ".join(detail)
-                       ) if detail else ""
-        rows.append('        <li class="cv__row">\n          %s\n'
-                    '          <div class="cv__body">\n            %s%s\n'
-                    '          </div>\n        </li>'
-                    % (years, "\n            ".join(head), detail_html))
-
-    kit = ""
-    if SITE.get("toolkit"):
-        # Chips, not a "A · B · C" string. The project pages have rendered
-        # tool_chips() all along, so the about page was the one place the
-        # toolkit appeared as plain text -- and it is the page where someone
-        # actually goes looking for the stack. depth=0: about.html sits at
-        # the root, so the icon paths need no ../ prefix.
-        groups = "\n          ".join(
-            "<dt>%s</dt>\n          <dd>%s</dd>"
-            % (e(g["label"]), tool_chips(g["items"]))
-            for g in SITE["toolkit"])
-        kit = f"""
-      <h2 class="cv__head" id="toolkit">Toolkit</h2>
-      <dl class="cv__kit">
-          {groups}
-      </dl>"""
-
-    return f"""
-    <section class="shell cv" aria-labelledby="experience">
-      <h2 class="cv__head" id="experience">Experience</h2>
-      <ol class="cv__list">
-{chr(10).join(rows)}
-      </ol>{kit}
+        company = job.get("company", "")
+        linked = [index[s] for s in job.get("projects", []) if s in index]
+        own = next((x for x in linked if x["title"] == company), None)
+        if own:
+            name = '<a href="projects/%s">%s</a>' % (e(own["slug"]), e(company))
+        elif linked:
+            inner = ", ".join('<a href="projects/%s">%s</a>'
+                              % (e(x["slug"]), e(x["title"])) for x in linked)
+            name = "%s (%s)" % (e(company), inner)
+        else:
+            name = e(company)
+        rows.append(
+            '        <li class="job">'
+            '<span class="job__company">%s</span>'
+            '<span class="job__role">%s</span>'
+            '<span class="job__years">%s</span>'
+            '</li>' % (name, e(job.get("role", "")), e(job.get("years", ""))))
+    return """
+    <section class="band shell band--jobs" aria-labelledby="experience">
+      <h2 id="experience">%s</h2>
+      <ul class="jobs">
+%s
+      </ul>
     </section>
-"""
+""" % (e(SITE.get("experienceHeading", "Experience")), "\n".join(rows))
 
 
 def values_block():
-    """The values section: how he works, as against what he designs.
+    """How I work: three lines, each a claim and its consequence.
 
-    Separate from the homepage's `principles`, which are about craft. This
-    is the part a hiring manager is actually trying to find out, and every
-    item is drawn from a sentence already in a case study -- a value with
-    nothing behind it is decoration.
+    It was "Values I believe in": an intro paragraph, numbered counters
+    and a longer body under each. The numbers implied a ranking that was
+    never meant, and the intro explained what the three items already
+    say.
     """
     block = SITE.get("values") or {}
     items = [i for i in block.get("items", [])
@@ -1508,95 +1310,82 @@ def values_block():
     if not items:
         return ""
     rows = "\n".join(
-        '''        <li class="value">
-          <span class="value__num" aria-hidden="true">%02d</span>
-          <h3 class="value__label">%s</h3>
-          <p class="value__body">%s</p>
-        </li>''' % (n, e(i["label"]), e(i["body"]))
-        for n, i in enumerate(items, 1))
-    desc = block.get("description", "")
-    desc_html = ("\n        <p>%s</p>" % e(desc)) if usable(desc) else ""
-    return f"""
-    <section class="shell band band--values" aria-labelledby="values">
-      <div class="band__head">
-        <h2 id="values">{masked(block.get("heading", "Values I believe in"))}</h2>{desc_html}
-      </div>
-      <ol class="values">
-{rows}
-      </ol>
+        '        <li class="value">'
+        '<strong class="value__label">%s</strong> '
+        '<span class="value__body">%s</span></li>'
+        % (e(i["label"]), e(i["body"])) for i in items)
+    return """
+    <section class="band shell band--values" aria-labelledby="values">
+      <h2 id="values">%s</h2>
+      <ul class="values">
+%s
+      </ul>
     </section>
-"""
+""" % (e(block.get("heading", "How I work")), rows)
 
 
 def build_about(index):
-    body = "\n      ".join("<p>%s</p>" % e(p) for p in SITE["about"])
-    links = "\n        ".join(
-        link_btn(l["label"], l["url"]) for l in SITE["links"]
-    )
-    size = png_size(ROOT / SITE["profileImage"])
-    dims = ' width="%d" height="%d"' % size if size else ""
+    """About: the headline, one paragraph, the jobs, the tools, how I work.
 
-    # The portrait PNG is 741 KB — on its own more than the rest of this page
-    # put together. An AVIF at 640px (twice the 320px column, so it still
-    # holds up on a 2x screen) is 34 KB for the same picture, alpha included.
-    # The PNG stays as the fallback source; a browser that understands AVIF
-    # never downloads it, and one that doesn't is unchanged.
-    avif = ROOT / "site" / "profile.avif"
-    avif_src = ('<source srcset="site/profile.avif%s" type="image/avif">\n          '
-                % asset_v("site/profile.avif")) if avif.is_file() else ""
-    # intro is a voice line, not a search snippet — it ran 223 chars and Google
-    # cuts at ~155. aboutDescription is written for the slot.
+    478 words before this. Four paragraphs of intro, a "Six years and four
+    companies" line, a note under every job, three grouped tool lists and
+    a numbered values section with its own introduction.
+
+    The portrait went with them. It is the same photograph the homepage
+    hero now opens with, one click away, and this page is a page of words.
+    """
     out = [head("About - %s" % SITE["name"],
-                SITE.get("aboutDescription") or SITE["intro"],
-                # The designed 1200x630 card, not the portrait. profileImage is
-                # square, and a scraper crops a preview to about 1.91:1 — from
-                # an 800x800 portrait that is a horizontal band across the
-                # face, which can arrive cropped at the eyes.
+                SITE.get("metaDescription") or SITE["title"],
                 image=SITE.get("shareImage") or SITE["profileImage"],
                 page_url="about",
                 nav_current="about",
                 og_type="profile",
                 image_alt="%s - %s, %s" % (SITE["name"], SITE["title"],
                                            SITE.get("location", "")))]
-    # The page opens on the statement rather than on the word "About",
-    # which is a label for a nav item and not a thing to say to someone
-    # who has just arrived. Two authored lines, same break mechanism as
-    # the homepage h1.
     intro = SITE.get("aboutIntro") or {}
     heading = intro.get("heading") or "About"
-    # No <br> between the lines. .mask and .mask__in are both display:block,
-    # so the masked lines already stack -- and a <br> between two blocks
-    # renders an EMPTY line box between them. That phantom line is why this
-    # heading measured 370px tall when two lines of it come to 181.
+    # No <br> between the lines: .mask and .mask__in are both display:block,
+    # so a <br> between two of them renders a phantom empty line box.
     intro_heading = "".join(masked(line) for line in heading.split("\n"))
-    intro_body = "\n          ".join(
+    intro_body = "\n        ".join(
         "<p>%s</p>" % e(x) for x in intro.get("paragraphs", []) if usable(x))
+
+    tools = SITE.get("toolsLine", "")
+    tools_html = ""
+    if usable(tools):
+        tools_html = """
+    <section class="band shell band--tools" aria-labelledby="tools">
+      <h2 id="tools">%s</h2>
+      <p class="tools-line">%s</p>
+    </section>
+""" % (e(SITE.get("toolsHeading", "Tools")), e(tools))
+
+    # The same two actions as everywhere else, with the two documents a
+    # reader of this page actually goes looking for underneath them.
+    cv_link = ('<a href="%s%s"%s>CV (PDF)%s</a>'
+               % (e(SITE["cv"]), asset_v(SITE["cv"]), NEW_TAB, NEW_TAB_NOTE)
+               ) if SITE.get("cv") else ""
+    linkedin = next((l for l in SITE.get("links", [])
+                     if "linkedin" in l.get("label", "").lower()), None)
+    li_link = ('<a href="%s"%s>%s%s</a>'
+               % (e(linkedin["url"]), NEW_TAB, e(linkedin["label"]), NEW_TAB_NOTE)
+               ) if linkedin else ""
+    small = " ".join(x for x in (cv_link, li_link) if x)
+    small_html = ('\n      <p class="about__small">%s</p>' % small) if small else ""
 
     out.append(f"""
     <article class="shell about">
-      <div class="about__card">
       <h1 class="about__statement">{intro_heading}</h1>
-      <div class="about__grid">
-        <figure class="about__portrait">
-          <picture>
-          {avif_src}<img src="{e(SITE['profileImage'])}{asset_v(SITE['profileImage'])}" alt="Portrait of {e(SITE['name'])}"{dims} decoding="async">
-          </picture>
-        </figure>
-        <div class="prose">
-          {intro_body}
-          {body}
-          <p class="about__cta">
-            <a class="btn btn--solid" href="{e(SITE['cv'])}{asset_v(SITE['cv'])}"{NEW_TAB}>Download CV (PDF){NEW_TAB_NOTE}</a>
-          </p>
-          <div class="btn-row">
-        {links}
-          </div>
-        </div>
+      <div class="about__intro prose">
+        {intro_body}
       </div>
-      </div><!-- /.about__card -->
     </article>
-{cv_block(index)}
-{values_block()}""")
+{experience_list(index)}{tools_html}{values_block()}
+    <section class="band shell band--close">
+      <h2 class="band__close">{e(SITE.get("closingLine", "Have something in mind?"))}</h2>
+      {actions_row()}{small_html}
+    </section>
+""")
     out.append(foot())
     (ROOT / "about.html").write_text("\n".join(out), encoding="utf-8")
 
@@ -1960,6 +1749,61 @@ def write_sitemap(projects):
     return len(pages)
 
 
+#: What the homepage word budget does NOT count, beyond the nav and footer.
+#:
+#: The brief excludes project names. It does not excuse tags or years, so
+#: those are counted. js-copy-fallback is the mailto twin of the copy
+#: button: it is in the DOM for a visitor with no Clipboard API and is
+#: display:none for everyone else, so counting it would charge the page
+#: for words almost nobody sees.
+HOME_NOT_COPY = frozenset({"card__name", "more-work__name", "js-copy-fallback"})
+
+
+def body_words(path, drop=frozenset()):
+    """Visible words on a built page, excluding the chrome.
+
+    The brief caps the homepage at 60 words of body copy and the about
+    page at 160, so the build counts them and the test asserts them --
+    a budget nobody measures is a budget nobody keeps.
+
+    Dropped: the nav, the footer, anything hidden from sight, and any
+    class named by the caller. The homepage passes its project names,
+    which the brief excludes from the count.
+    """
+    from html.parser import HTMLParser
+
+    class Counter(HTMLParser):
+        SKIP = {"script", "style", "nav", "footer", "header", "head"}
+
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.stack, self.depth, self.words = [], 0, []
+
+        def handle_starttag(self, tag, attrs):
+            if tag in ("br", "img", "input", "meta", "link", "hr", "source"):
+                return
+            cls = (dict(attrs).get("class") or "").split()
+            hide = tag in self.SKIP or "visually-hidden" in cls or any(c in drop for c in cls)
+            self.stack.append((tag, hide))
+            if hide:
+                self.depth += 1
+
+        def handle_endtag(self, tag):
+            for i in range(len(self.stack) - 1, -1, -1):
+                if self.stack[i][0] == tag:
+                    self.depth -= sum(1 for _, h in self.stack[i:] if h)
+                    del self.stack[i:]
+                    return
+
+        def handle_data(self, data):
+            if self.depth == 0:
+                self.words += re.findall(r"[A-Za-z0-9][A-Za-z0-9'\u2019@./+-]*", data)
+
+    c = Counter()
+    c.feed(Path(path).read_text(encoding="utf-8"))
+    return len(c.words)
+
+
 def main():
     projects = load_projects()
     n_vars = write_tokens_css()
@@ -1982,14 +1826,14 @@ def main():
             if s.get("autoImages"):
                 imgs += len(auto_images(p["_dir"], s["autoImages"]))
     print("tokens.css   %d custom properties" % n_vars)
-    bands = SITE.get("sections", {})
-    print("index.html   %s"
-          % ", ".join("%d %s" % (len(v["slugs"]), k) for k, v in bands.items()))
-    print("about.html   %d paragraphs, %d roles, %d toolkit groups"
-          % (len(SITE["about"]), len(SITE.get("experience", [])),
-             len(SITE.get("toolkit", []))))
-    print("contact.html %d links, CV %s"
-          % (len(SITE.get("links", [])), "yes" if SITE.get("cv") else "no"))
+    sel = SITE.get("sections", {}).get("selected", {})
+    print("index.html   %d cards, %d more, %d words of body copy"
+          % (len(sel.get("items", [])), len(sel.get("more", [])),
+             body_words(ROOT / "index.html", drop=HOME_NOT_COPY)))
+    print("about.html   %d jobs, %d values, %d words"
+          % (len(SITE.get("experience", [])),
+             len((SITE.get("values") or {}).get("items", [])),
+             body_words(ROOT / "about.html", drop={"js-copy-fallback"})))
     print("projects/    %d pages, %d figures" % (len(projects), imgs))
     if n_urls:
         print("sitemap.xml  %d URLs, robots.txt written" % n_urls)
