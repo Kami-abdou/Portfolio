@@ -534,7 +534,29 @@ a { color: inherit; }
 /* inline-flex, not inline-block: the buttons carry a mark beside the label
    now, and inline-block would sit the image on the text baseline with a
    descender gap under it rather than centred against the word. */
+/* The first six declarations undo the browser, not the design.
+   .btn dresses an <a> and a <button> as the same control, and only the
+   <a> was ever getting dressed: a <button> with no reset keeps the UA's
+   own chrome, so "Copy email" was shipping as a SYSTEM button -- Arial
+   instead of Instrument Sans, a flat #6B6B6B fill from the dark
+   color-scheme, appearance:auto and the arrow cursor -- sitting next to
+   an ember pill that shared none of it.
+
+   It is invisible in a screenshot of the light theme, where the system
+   grey is close enough to a designed grey to pass, which is how it
+   survived this long. `font: inherit` is spelled out property by
+   property because the shorthand would reset the font-size set below
+   it. */
 .btn {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-align: center;
+  cursor: pointer;
   display: inline-flex; align-items: center; gap: var(--space-2);
   padding: var(--space-3) var(--space-6);
   border: 1px solid var(--color-border);
@@ -3221,6 +3243,102 @@ html { scroll-snap-type: y proximity; }
    API is missing -- see actions_row() in build.py. */
 .js-copy-fallback { display: none; }
 
+/* ── the hero's ask, as a sentence ─────────────────────────── */
+/* Two solid pills above the fold ask for the meeting before the
+   visitor has seen anything. Set as text, the same two controls read
+   as an offer rather than a demand, and the loud pair still waits in
+   the closing band where the work has argued for them.
+
+   Both controls are .ask__act, one an <a> and one a <button>, so the
+   button has to have its chrome taken off (appearance, background,
+   border, padding, font) before the two can look like one sentence. */
+.ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: var(--space-8) 0 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+}
+.ask__act {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--color-text);
+  cursor: pointer;
+  touch-action: manipulation;
+  /* Dotted, not solid: a solid underline on a word this size reads as
+     a link in body copy, and these are controls. The offset keeps it
+     clear of the descenders in "Copy" and "a call". */
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+  text-decoration-color: var(--color-text-faint);
+  transition: color .2s var(--ease-out),
+              text-decoration-color .2s var(--ease-out);
+}
+.ask__act:hover,
+.ask__act:focus-visible {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+}
+/* The focus ring is drawn properly rather than left to the underline
+   colour: a colour change alone is not a focus indicator. */
+.ask__act:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+.ask__or {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-regular);
+}
+
+/* The availability badge. It replaced an "OPEN TO WORK" eyebrow over
+   the h1 -- same fact, but sitting with the action it qualifies.
+
+   accent-soft is the existing 12%/10% wash, so the pill is the accent
+   at low strength rather than a grey chip: measured 5.7:1 on dark and
+   4.6:1 on light, both clear of AA. */
+.ask__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.2rem 0.625rem;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.ask__dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  flex: none;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+/* A slow, shallow breath -- the universal "this is live" cue. Kept to
+   2.6s and a 0.5 floor so it registers in peripheral vision without
+   becoming something the eye has to keep rejecting. */
+@media (prefers-reduced-motion: no-preference) {
+  .ask__dot { animation: ask-pulse 2.6s var(--ease-out) infinite; }
+}
+@keyframes ask-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .5; }
+}
+
 /* ── the hero ─────────────────────────────────────────────── */
 .hero-band { padding-block: var(--space-16) var(--space-12); }
 .opening {
@@ -3492,6 +3610,31 @@ html { scroll-snap-type: y proximity; }
   letter-spacing: var(--tracking-heading);
 }
 .band--close .actions { margin-top: var(--space-6); }
+/* The sentence that cashes the h1's claim. Held to a readable measure
+   rather than the band's full width -- it is prose, and the only prose
+   on this page. */
+.close__proof {
+  margin: var(--space-4) 0 0;
+  max-width: 54ch;
+  color: var(--color-text-muted);
+}
+/* The address in plain sight, under the button that copies it. Muted,
+   because it is here to be read and relayed rather than clicked -- the
+   control above is the click. */
+.reach {
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+.reach__addr {
+  color: inherit;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-text-faint);
+  transition: color .2s var(--ease-out);
+}
+.reach__addr:hover,
+.reach__addr:focus-visible { color: var(--color-accent); }
+.reach__sep { color: var(--color-text-faint); }
 
 /* ── about: jobs, tools, how I work ───────────────────────── */
 .about { padding-block: var(--space-16) var(--space-4); }

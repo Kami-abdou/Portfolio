@@ -3783,6 +3783,33 @@ class TestTheAsk(BuildCase):
         self.assertIn(".js-copy{display:none}", noscript.group(1))
         self.assertIn(".js-copy-fallback{display:inline-flex}", noscript.group(1))
 
+    def test_copy_email_is_not_a_system_button(self):
+        """.btn dresses an <a> and a <button> as the same control.
+
+        Only the <a> was getting dressed. A <button> with no reset keeps
+        the user agent's own chrome, so "Copy email" shipped for months
+        as a SYSTEM button: Arial instead of Instrument Sans, a flat
+        #6B6B6B fill handed down by `color-scheme: dark`, appearance
+        auto, and the arrow cursor -- sitting beside an ember pill that
+        shared none of it.
+
+        It survived because in the light theme the system grey passes
+        for a designed grey, and because nothing here was looking. The
+        reset is four properties and this is the test that keeps them.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        m = re.search(r"\n\.btn \{(.*?)\n\}", css, re.S)
+        self.assertIsNotNone(m, "there is no .btn rule")
+        block = m.group(1)
+        for prop in ("appearance", "background", "font-family", "cursor"):
+            with self.subTest(property=prop):
+                self.assertRegex(block, r"\b%s:" % prop,
+                                 ".btn does not reset %s, so a <button> "
+                                 "keeps the browser's own" % prop)
+        # The shorthand would wipe the font-size set two lines later.
+        self.assertNotRegex(block, r"\bfont:\s",
+                            "`font: inherit` resets font-size too")
+
     def test_the_script_checks_for_the_api_before_using_it(self):
         js = (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
         self.assertIn("navigator.clipboard", js)
@@ -3830,22 +3857,38 @@ class TestCopyBudget(BuildCase):
         return body_words(ROOT / page, drop=drop)
 
     def test_the_homepage_stays_lean(self):
-        """The cap was 60 and is 130, deliberately.
+        """The cap was 60, then 130, and is 150. Each step is argued.
 
         60 was right for a page whose three cards said "AI . Design
         system . 2024-now" and relegated two projects to a footnote. The
         index replaced them with five rows that each say what the
         project WAS, which is the whole content argument of the
-        redesign, and that is worth about 60 words on its own.
+        redesign, and that is worth about 60 words on its own. That
+        bought 130.
 
-        It is still a cap and still measured. 130 leaves room for one
-        more project and nothing else; prose creeping back into this
-        page fails here.
+        150 is what the recruiter pass cost, and the list is short
+        enough to audit:
+
+          +3   "acquired by BioNTech" in the hero meta line -- the one
+               name on this site a hiring manager outside Tunisia
+               recognises, and it was only in a case study
+          +5   the availability badge
+          +1   the "or" joining the hero's two controls
+          +16  the proof line in the closing band: the h1 claims "I
+               build what I design" and until now the page asserted it
+               and changed the subject
+          +8   the address in plain text and the reply time
+
+        Every one of those is a thing somebody looking to hire or brief
+        you came here to find out. That is the bar for spending from
+        this budget, and it is still a cap: 150 leaves room for one
+        more project row and nothing else. Prose creeping back onto
+        this page fails here.
         """
         sys.path.insert(0, str(ROOT))
         from build import HOME_NOT_COPY
         n = self.words("index.html", HOME_NOT_COPY)
-        self.assertLess(n, 130, "the homepage body copy is %d words" % n)
+        self.assertLess(n, 150, "the homepage body copy is %d words" % n)
 
 
     def test_the_about_page_is_under_a_hundred_and_sixty_words(self):
@@ -3875,6 +3918,192 @@ class TestCopyBudget(BuildCase):
                            "the counter is not dropping the nav and footer: "
                            "it reports %d words of %d visible" % (budget, raw))
 
+
+
+
+class TestTheRecruiterPass(BuildCase):
+    """What a visitor who is deciding whether to contact you must find.
+
+    The redesign cut the homepage from 601 words to 105 and the craft
+    improved for it, but seven things went out with the prose that were
+    not prose: they were the plumbing that turns a visitor into a
+    message. Each one is cheap, none of them costs the design anything,
+    and all seven are easy to drop again in the next tidy-up -- which is
+    what this class is for.
+    """
+
+    PAGES = {"index.html": "home", "about.html": "about",
+             "contact.html": "contact"}
+
+    def test_every_page_carries_its_own_description(self):
+        """Three pages shared one forty-character string.
+
+        It was "Product designer. I build what I design." -- the h1
+        again. That is the line Google prints under the result and the
+        line Slack and LinkedIn print on the card when the URL is pasted
+        into a hiring thread, so three pages were spending their one
+        sentence saying nothing searchable.
+        """
+        seen = {}
+        for page in self.PAGES:
+            with self.subTest(page=page):
+                m = re.search(r'<meta name="description" content="([^"]*)"',
+                              self.html(page))
+                self.assertIsNotNone(m, "%s has no description" % page)
+                desc = m.group(1)
+                self.assertNotIn(desc, seen,
+                                 "%s repeats %s's description verbatim"
+                                 % (page, seen.get(desc)))
+                seen[desc] = page
+                # Google truncates around 155. Under 40 is the old stub.
+                self.assertGreater(len(desc), 60,
+                                   "%s's description is %d chars, which is "
+                                   "the stub again" % (page, len(desc)))
+                self.assertLess(len(desc), 158,
+                                "%s's description is %d chars and will be cut"
+                                % (page, len(desc)))
+
+    def test_the_description_is_not_the_h1_again(self):
+        """A description that repeats the headline wastes the slot."""
+        for page in self.PAGES:
+            with self.subTest(page=page):
+                html = self.html(page)
+                desc = re.search(r'<meta name="description" content="([^"]*)"',
+                                 html).group(1)
+                self.assertNotIn("I build what I design.", desc)
+
+    def test_the_homepage_names_biontech(self):
+        """The one name on this site that travels.
+
+        "Senior Product Designer at InstaDeep" means a great deal in
+        Tunis and very little to a hiring manager in Berlin. "Acquired
+        by BioNTech" is the fact that makes the same sentence legible
+        anywhere, and the redesign left it in a case study two clicks
+        down.
+        """
+        self.assertIn("BioNTech", self.html("index.html"),
+                      "the homepage never says what InstaDeep is")
+
+    def test_the_hero_asks_quietly_and_the_close_asks_loudly(self):
+        """One .ask on the homepage, above its one .actions.
+
+        The rule is deliberate -- a filled pill above the fold asks for
+        the meeting before the visitor has seen anything -- and it is
+        the kind of rule that reads later as two components that
+        drifted. So it is asserted: the quiet one is first, the loud one
+        is last, and no other page gets the quiet one.
+        """
+        home = self.html("index.html")
+        self.assertEqual(home.count('<p class="ask">'), 1)
+        self.assertLess(home.index('<p class="ask">'),
+                        home.index('<div class="actions'),
+                        "the loud ask comes before the quiet one")
+        for page in ("about.html", "contact.html"):
+            with self.subTest(page=page):
+                self.assertNotIn('<p class="ask">', self.html(page),
+                                 "%s uses the hero's ask" % page)
+
+    def test_the_quiet_ask_keeps_all_four_parts(self):
+        """Dressing the controls as text must not cost them anything.
+
+        enhance.js finds the fallback and the live region through
+        btn.parentNode, so all four have to be siblings inside the <p>
+        or the copy button degrades into a button that does nothing.
+        """
+        m = re.search(r'<p class="ask">(.*?)</p>', self.html("index.html"), re.S)
+        self.assertIsNotNone(m, "the homepage has no hero ask")
+        row = m.group(1)
+        self.assertIn('href="contact">Book a call</a>', row)
+        self.assertRegex(row, r'<button[^>]*class="[^"]*js-copy[^"]*"[^>]*type="button"')
+        self.assertIn("js-copy-fallback", row, "no mailto fallback")
+        self.assertIn('role="status"', row, "no live region")
+
+    def test_the_fallback_follows_the_or(self):
+        """With JavaScript off the sentence still has to read.
+
+        The button hides and the mailto shows. Source order decides what
+        is left: book, "or", [hidden button], mailto -- which reads
+        "Book a call or Email me". Put the fallback before the "or" and
+        it reads "Book a call Email me or".
+        """
+        row = re.search(r'<p class="ask">(.*?)</p>',
+                        self.html("index.html"), re.S).group(1)
+        self.assertLess(row.index('class="ask__or"'),
+                        row.index("js-copy-fallback"))
+
+    def test_the_availability_badge_is_in_the_ask_not_over_the_h1(self):
+        """It was an eyebrow above the headline; it is a state now.
+
+        Attached to the action it qualifies, it reads as a fact. Floated
+        over the h1 it reads as a plea, which is the opposite of what it
+        is for.
+        """
+        home = self.html("index.html")
+        self.assertIn("ask__badge", home, "no availability badge")
+        hero = home[:home.index("<h1")]
+        self.assertNotIn("ask__badge", hero,
+                         "the badge is back above the headline")
+
+    def test_the_badge_dot_is_decoration(self):
+        """A screen reader must not announce it twice.
+
+        The label already says the thing. A dot with a role would make
+        availability announce itself every time focus crossed the hero.
+        """
+        self.assertRegex(self.html("index.html"),
+                         r'<span class="ask__dot" aria-hidden="true">')
+
+    def test_the_address_is_readable_not_only_copyable(self):
+        """"Copy email" serves the reader. It fails the relayer.
+
+        The recruiter pasting an address into an applicant tracker, or
+        forwarding you to the person who actually decides, needs the
+        string on the page -- selectable, not behind a clipboard call
+        that a webview may refuse.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import SITE
+        addr = SITE["email"]
+        html = self.html("index.html")
+        # Strip the places it hides: the copy payload and every href.
+        hidden = re.sub(r'(data-copy|href)="[^"]*"', "", html)
+        text = re.sub(r"<[^>]+>", " ", hidden)
+        self.assertIn(addr, text,
+                      "the address appears only inside attributes; nobody "
+                      "can read it off the page")
+
+    def test_the_page_says_what_happens_after_you_write(self):
+        self.assertIn("reach__reply", self.html("index.html"),
+                      "nothing on the page says whether you answer")
+
+    def test_the_homepage_cashes_its_own_claim(self):
+        """The h1 ends "I build what I design." and then said no more.
+
+        It is the one sentence on this site that separates it from every
+        other portfolio, and the redesign left it as an assertion with
+        nothing behind it anywhere a visitor would see.
+        """
+        home = self.html("index.html")
+        self.assertIn("close__proof", home, "the claim is never backed")
+        proof = re.search(r'<p class="close__proof">(.*?)</p>', home, re.S).group(1)
+        self.assertIn("test suite", proof)
+
+    def test_the_footer_says_when_this_was_last_true(self):
+        """A portfolio with no date on it is read as abandoned.
+
+        "Is he still looking" is the first question, and the stamp
+        answers it before anyone has to ask. It is derived from the
+        newest mtime across the JSON sources, so it cannot claim a
+        change nobody made.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import content_updated
+        _, stamp = content_updated()
+        for page in self.PAGES:
+            with self.subTest(page=page):
+                foot = re.search(r'<p class="site-foot__note">(.*?)</p>',
+                                 self.html(page), re.S).group(1)
+                self.assertIn("Last updated %s" % stamp, foot)
 
 
 class TestTheBooker(BuildCase):

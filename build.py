@@ -89,6 +89,27 @@ def content_updated():
     return stamp.isoformat(), stamp.strftime("%B %Y")
 
 
+def page_description(key):
+    """The <meta name="description"> for one page.
+
+    This is not decoration. Google prints it under the link, and
+    LinkedIn, Slack and WhatsApp print it on the card when somebody
+    pastes the URL into a hiring thread -- which is how most of the
+    traffic that matters actually arrives.
+
+    All three pages shared one forty-character string, "Product
+    designer. I build what I design.", which is the h1 again and carries
+    none of the words anyone searches for. One per page now, keyed in
+    site.json.
+
+    The old single string stays as the fallback so a page added without
+    an entry still gets something. Project pages never used it: a case
+    study writes its own from the study.
+    """
+    per_page = SITE.get("metaDescriptions") or {}
+    return per_page.get(key) or SITE.get("metaDescription") or SITE["title"]
+
+
 def png_size(path):
     """Intrinsic size of a PNG or JPEG, so <img> can reserve space.
 
@@ -371,12 +392,93 @@ def link_btn(label, href, depth=0, *, slug=None, rel_attr="", new_tab=False):
             % (e(href), attrs, link_icon(label, depth, slug=slug), e(label), note))
 
 
+def ask_row(depth=0):
+    """The hero's ask, set as a sentence instead of two buttons.
+
+        Book a call  or  Copy email   (Open to new projects)
+
+    The same two controls as actions_row, and the same three elements
+    underneath them -- the button, the mailto fallback, the live region
+    -- so enhance.js and the <noscript> rule reach this one without
+    knowing it exists. Only the dress is different.
+
+    WHY THE HERO DIFFERS from the closing band, which keeps the solid
+    buttons: a filled pill above the fold asks for the meeting before
+    the visitor has seen one thing you made. The quiet version offers it
+    without insisting; the loud one waits at the bottom, where the work
+    has already made the argument. Quiet at the top, loud once it is
+    earned. That is the rule, written down so it stays a rule and does
+    not read later as two components that drifted.
+
+    The badge is what replaced the "OPEN TO WORK" eyebrow above the h1.
+    Same fact, but attached to the action it qualifies instead of
+    floating over the headline, where it reads as a state rather than a
+    plea.
+    """
+    up = "../" * depth
+    addr = SITE.get("email", "")
+    label = SITE.get("availability", "")
+    # The dot is decoration -- "Open to new projects" already says it --
+    # so it is aria-hidden and the badge is not given a role. A status
+    # role here would make a screen reader announce availability every
+    # time focus passed through the hero.
+    badge = ('<span class="ask__badge">'
+             '<span class="ask__dot" aria-hidden="true"></span>%s</span>'
+             % e(label)) if usable(label) else ""
+    book = '<a class="ask__act" href="%scontact">Book a call</a>' % e(up)
+    if not usable(addr):
+        return '<p class="ask">%s%s</p>' % (book, badge)
+    # With JavaScript off the button hides and the mailto shows, and
+    # because the fallback follows the "or" in source order the sentence
+    # still reads straight through: "Book a call or Email me".
+    return (
+        '<p class="ask">'
+        '%s'
+        '<span class="ask__or">or</span>'
+        '<button class="ask__act js-copy" type="button" data-copy="%s">'
+        'Copy email</button>'
+        '<a class="ask__act js-copy-fallback" href="mailto:%s">Email me</a>'
+        '%s'
+        '<span class="visually-hidden" role="status" aria-live="polite"'
+        ' data-copy-status></span>'
+        '</p>' % (book, e(addr), e(addr), badge))
+
+
+def reach_line():
+    """The address in plain sight, and what happens after you use it.
+
+    "Copy email" serves the person reading the page. It does nothing for
+    the person RELAYING it: the recruiter pasting an address into an
+    applicant tracker, or forwarding it to the hiring manager who makes
+    the actual call. That person needs the string itself, selectable, on
+    the page. The button stays; this is the address it copies, said out
+    loud next to it.
+
+    The reply time sits beside it because that is the question being
+    asked at this point in the page. Not "can I reach him" -- the three
+    controls above answer that -- but "will he answer".
+    """
+    addr = SITE.get("email", "")
+    reply = SITE.get("replyTime", "")
+    bits = []
+    if usable(addr):
+        bits.append('<a class="reach__addr" href="mailto:%s">%s</a>'
+                    % (e(addr), e(addr)))
+    if usable(reply):
+        bits.append('<span class="reach__reply">%s</span>' % e(reply))
+    if not bits:
+        return ""
+    sep = '<span class="reach__sep" aria-hidden="true"> · </span>'
+    return '<p class="reach">%s</p>' % sep.join(bits)
+
+
 def actions_row(depth=0, *, cls="actions", book_btn=True):
     """"Book a call" and "Copy email", the site's only two asks.
 
-    Four places use this -- the hero, the homepage's closing line, /contact
-    and /about -- and the brief for all four is "the same component", so it
-    is a function rather than four copies of the same markup.
+    Three places use this -- the homepage's closing line, /contact and
+    /about -- and the brief for all three is "the same component", so it
+    is a function rather than three copies of the same markup. The hero
+    is the fourth ask and the one exception; see ask_row for why.
 
     Book a call is an <a>, not a <button>. It navigates, and a button that
     navigates loses the middle-click, the context menu and the status bar
@@ -827,12 +929,17 @@ def foot(depth=0):
 
     The year is still derived rather than typed, because a hardcoded one
     starts lying on 1 January.
+
+    The "Last updated" stamp came back. A portfolio with no date on it
+    is read as abandoned, and "is he still looking" is the first thing
+    a recruiter wants settled. It is stamped from the newest mtime
+    across the JSON sources, so it cannot claim a change nobody made.
     """
     up = "../" * depth
-    iso, _ = content_updated()
+    iso, stamp = content_updated()
     linkedin = next((l for l in SITE.get("links", [])
                      if "linkedin" in l.get("label", "").lower()), None)
-    bits = []
+    bits = ["Last updated %s" % e(stamp)]
     if linkedin:
         bits.append('<a href="%s"%s>%s%s</a>'
                     % (e(linkedin["url"]), NEW_TAB, e(linkedin["label"]), NEW_TAB_NOTE))
@@ -1168,7 +1275,7 @@ def build_index(projects):
     slugs = by_slug(projects)
     out = [head(
         "%s - %s" % (SITE["name"], SITE["title"]),
-        SITE.get("metaDescription") or SITE["title"],
+        page_description("home"),
         page_url="work",
         nav_current="work",
     )]
@@ -1201,7 +1308,7 @@ def build_index(projects):
 
       <h1 class="opening__claim">{claim_html}</h1>{meta_html}
 
-      {actions_row()}
+      {ask_row()}
     </section>
     </div>
 """)
@@ -1226,12 +1333,23 @@ def build_index(projects):
 """)
 
     # ── The closing ask ──────────────────────────────────────────────
-    # The same component as the hero, which is the point: one ask, said
-    # twice, rather than four different ones.
+    # The hero's ask again, in its loud form, plus the two things the
+    # quiet version at the top deliberately leaves out.
+    #
+    # The proof line is here and not in the hero because it answers the
+    # h1 rather than introducing it. "I build what I design" is the
+    # claim the whole site rests on and until now the homepage asserted
+    # it and changed the subject; this is the sentence that cashes it,
+    # placed where a visitor who has just read five projects can check
+    # it against what they saw.
+    proof = SITE.get("buildProof", "")
+    proof_html = ('\n      <p class="close__proof">%s</p>'
+                  % e(proof)) if usable(proof) else ""
     out.append(f"""
     <section class="band shell band--close" id="contact">
-      <h2 class="band__close">{e(SITE.get("closingLine", "Have something in mind?"))}</h2>
+      <h2 class="band__close">{e(SITE.get("closingLine", "Have something in mind?"))}</h2>{proof_html}
       {actions_row()}
+      {reach_line()}
     </section>
 """)
 
@@ -1353,7 +1471,7 @@ def build_contact():
     """
     out = [head(
         "Book a call - %s" % SITE["name"],
-        SITE.get("metaDescription") or SITE["title"],
+        page_description("contact"),
         page_url="contact",
         nav_current="contact",
         # The booker is an iframe from another origin, so the browser
@@ -1463,7 +1581,7 @@ def build_about(index):
     hero now opens with, one click away, and this page is a page of words.
     """
     out = [head("About - %s" % SITE["name"],
-                SITE.get("metaDescription") or SITE["title"],
+                page_description("about"),
                 image=SITE.get("shareImage") or SITE["profileImage"],
                 page_url="about",
                 nav_current="about",
