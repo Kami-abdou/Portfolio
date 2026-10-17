@@ -23,8 +23,19 @@
        swapped for the mailto beside it. That is why actions_row emits
        both: a control that silently does nothing is worse than a link. -->
   <noscript><style>.js-copy{display:none}.js-copy-fallback{display:inline-flex}</style></noscript>
-  <meta name="theme-color" content="#0E0A07">
-  <meta name="color-scheme" content="light">
+  <!-- One theme-color per scheme. A single value painted the browser
+       chrome, the iOS status bar and the Android task-switcher card in
+       the dark canvas even when the page was showing light, which is a
+       seam exactly where the OS meets the page. enhance.js overwrites
+       BOTH when the toggle is used, so an explicit choice beats the
+       system preference there too. -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0E0A07">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBFBFA">
+  <!-- `light` was left here when the site flipped to dark-first. It
+       tells the browser to paint form controls, scrollbars and the
+       default canvas light while the stylesheet says `dark light`, and
+       the browser believes the meta until the CSS lands. -->
+  <meta name="color-scheme" content="dark light">
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png?v=2aadc8c2">
   <link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png?v=0912e2e4">
   <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png?v=29154a39">
@@ -41,7 +52,7 @@
   <link rel="preload" href="../assets/fonts/gabarito-variable.woff2?v=bab69a2a" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/fonts.css?v=72fe68d4">
   <link rel="stylesheet" href="../assets/tokens.css?v=4b21d4db">
-  <link rel="stylesheet" href="../assets/styles.css?v=3bb3a34a">
+  <link rel="stylesheet" href="../assets/styles.css?v=d37ff4ff">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
   <script>
     /* Before first paint, or the page renders in the system theme and then
@@ -109,7 +120,7 @@
           <span class="section__count">3 screens</span>
         </summary>
         <div class="section__body">
-        <div class="prose"><p>DeepPCB is InstaDeep&#x27;s cloud-native PCB routing software: a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product&#x27;s public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.</p>
+        <div class="prose"><p>DeepPCB is InstaDeep’s cloud-native PCB routing software: a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product’s public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.</p>
         <p>These are the marketing and onboarding surfaces rather than the routing canvas itself.</p></div>
       <div class="shots">
         <figure class="shot" data-tall="true">
@@ -143,7 +154,7 @@
         </summary>
         <div class="section__body">
         <div class="prose"><p>DeepPCB sells routing by the hour, so the two screens that carry the product are the one that says whether an hour is still running and the one that spends it.</p>
-        <p>The board list puts each job&#x27;s state on its own card (pending, idle, running), with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.</p></div>
+        <p>The board list puts each job’s state on its own card (pending, idle, running), with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.</p></div>
         <div class="viewer" data-viewer><div class="viewer__frame"><div class="viewer__bar" aria-hidden="true"><span></span><span></span><span></span></div><div class="viewer__stage"><div class="viewer__panel is-on" id="vp-0" role="tabpanel" aria-labelledby="vt-0"><button class="shot__btn viewer__zoom" type="button" data-full="10-instadeep/assets/app1-boards.full.jpg" aria-label="Open full size: DeepPCB board list, each board a card with its job status and file type" style="max-width:900px"><img src="10-instadeep/assets/app1-boards.jpg" alt="DeepPCB board list, each board a card with its job status and file type" width="900" height="506" loading="lazy" decoding="async"></button><p class="viewer__cap">Status lives on the card (pending, idle, running), and the credit balance sits above the nav, so “is my board done, and can I afford the next one” is answered without opening anything.</p></div><div class="viewer__panel" id="vp-1" role="tabpanel" aria-labelledby="vt-1"><button class="shot__btn viewer__zoom" type="button" data-full="10-instadeep/assets/app2-editor.full.jpg" aria-label="Open full size: DeepPCB board editor with layer tree, anomaly counts and the routing assistant" style="max-width:900px"><img src="10-instadeep/assets/app2-editor.jpg" alt="DeepPCB board editor with layer tree, anomaly counts and the routing assistant" width="900" height="506" loading="lazy" decoding="async"></button><p class="viewer__cap">The board is the page. Anomalies and the assistant left, the layer and component tree right, and the run priced at 45 minutes on the button before it is started.</p></div></div></div><div class="viewer__tabs" role="tablist" aria-label="DeepPCB dashboard"><button class="viewer__tab is-on" id="vt-0" role="tab" type="button" aria-controls="vp-0" aria-selected="true" data-i="0">Boards</button><button class="viewer__tab" id="vt-1" role="tab" type="button" aria-controls="vp-1" aria-selected="false" data-i="1">Editor</button></div></div>
         </div>
       </details>
@@ -171,7 +182,7 @@
             <source src="10-instadeep/assets/in4-hero-animation.mp4" type="video/mp4">
             <a href="10-instadeep/assets/in4-hero-animation.mp4">Download the animation (MP4)</a>
           </video>
-          <figcaption>The hero animation. A mass spectrum on the left resolves into predicted sequences on the right: the model&#x27;s actual job, stated once, in motion. Muted, and it does not start until you ask.</figcaption>
+          <figcaption>The hero animation. A mass spectrum on the left resolves into predicted sequences on the right: the model’s actual job, stated once, in motion. Muted, and it does not start until you ask.</figcaption>
         </figure>
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/in3-coming-soon.full.jpg" aria-label="Open full image: InstaNovo pre-launch holding page with COMING SOON set large, the last letters fading out">
@@ -252,13 +263,13 @@
           <span class="section__count">2 screens</span>
         </summary>
         <div class="section__body">
-        <div class="prose"><p>The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows: a routing job that will not converge, a spectrum with no confident call, a link that has gone stale, so the error pages carry each product&#x27;s own grid or sequence motif, say what happened in that product&#x27;s vocabulary, and offer exactly one way back. Two products, one discipline.</p></div>
+        <div class="prose"><p>The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows: a routing job that will not converge, a spectrum with no confident call, a link that has gone stale, so the error pages carry each product’s own grid or sequence motif, say what happened in that product’s vocabulary, and offer exactly one way back. Two products, one discipline.</p></div>
       <div class="shots">
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/p10-404.full.jpg" aria-label="Open full image: DeepPCB 404 page: a monospace 404 label, PAGE NOT FOUND set large, and a single Go to Homepage action">
             <img src="10-instadeep/assets/p10-404.jpg" alt="DeepPCB 404 page: a monospace 404 label, PAGE NOT FOUND set large, and a single Go to Homepage action" width="900" height="506" loading="lazy" decoding="async">
           </button>
-          <figcaption>DeepPCB: one message, one route out. “Off the grid” and “reconnect” are the router&#x27;s own vocabulary, not generic error copy.</figcaption>
+          <figcaption>DeepPCB: one message, one route out. “Off the grid” and “reconnect” are the router’s own vocabulary, not generic error copy.</figcaption>
         </figure>
         <figure class="shot">
           <button class="shot__btn" type="button" data-full="10-instadeep/assets/in2-404.full.jpg" aria-label="Open full image: InstaNovo 404 page: the headline 404 | Page not found beside a peptide-sequence field forming a shape">
@@ -286,6 +297,6 @@
     </div>
   </footer>
   <script src="../assets/lightbox.js?v=652506b0" defer></script>
-  <script src="../assets/enhance.js?v=afa89a18" defer></script>
+  <script src="../assets/enhance.js?v=72f7d23d" defer></script>
 </body>
 </html>

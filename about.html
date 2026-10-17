@@ -23,8 +23,19 @@
        swapped for the mailto beside it. That is why actions_row emits
        both: a control that silently does nothing is worse than a link. -->
   <noscript><style>.js-copy{display:none}.js-copy-fallback{display:inline-flex}</style></noscript>
-  <meta name="theme-color" content="#0E0A07">
-  <meta name="color-scheme" content="light">
+  <!-- One theme-color per scheme. A single value painted the browser
+       chrome, the iOS status bar and the Android task-switcher card in
+       the dark canvas even when the page was showing light, which is a
+       seam exactly where the OS meets the page. enhance.js overwrites
+       BOTH when the toggle is used, so an explicit choice beats the
+       system preference there too. -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0E0A07">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBFBFA">
+  <!-- `light` was left here when the site flipped to dark-first. It
+       tells the browser to paint form controls, scrollbars and the
+       default canvas light while the stylesheet says `dark light`, and
+       the browser believes the meta until the CSS lands. -->
+  <meta name="color-scheme" content="dark light">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=2aadc8c2">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=0912e2e4">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=29154a39">
@@ -41,7 +52,7 @@
   <link rel="preload" href="assets/fonts/gabarito-variable.woff2?v=bab69a2a" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/fonts.css?v=72fe68d4">
   <link rel="stylesheet" href="assets/tokens.css?v=4b21d4db">
-  <link rel="stylesheet" href="assets/styles.css?v=3bb3a34a">
+  <link rel="stylesheet" href="assets/styles.css?v=d37ff4ff">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
   <script>
     /* Before first paint, or the page renders in the system theme and then
@@ -76,7 +87,7 @@
     <article class="shell about">
       <h1 class="about__statement"><span class="mask"><span class="mask__in">Design is how I think.</span></span><span class="mask"><span class="mask__in">Building is how I prove it.</span></span></h1>
       <div class="about__intro prose">
-        <p>I&#x27;m a product designer based in Tunis. I care most about interaction: how a product responds, what it does while it waits, and how it recovers when something breaks. I map the system first, then prototype in code to check it actually feels right.</p>
+        <p>I’m a product designer based in Tunis. I care most about interaction: how a product responds, what it does while it waits, and how it recovers when something breaks. I map the system first, then prototype in code to check it actually feels right.</p>
       </div>
     </article>
 
@@ -99,8 +110,8 @@
       <h2 id="values">How I work</h2>
       <ul class="values">
         <li class="value"><strong class="value__label">Stay next to the build.</strong> <span class="value__body">Design that stops at handoff gets built as something else.</span></li>
-        <li class="value"><strong class="value__label">Design for the room you&#x27;re not in.</strong> <span class="value__body">If a component only works when I&#x27;m there to explain it, it isn&#x27;t finished.</span></li>
-        <li class="value"><strong class="value__label">Ask for criticism early.</strong> <span class="value__body">I&#x27;d rather hear it at the prototype than at launch.</span></li>
+        <li class="value"><strong class="value__label">Design for the room you’re not in.</strong> <span class="value__body">If a component only works when I’m there to explain it, it isn’t finished.</span></li>
+        <li class="value"><strong class="value__label">Ask for criticism early.</strong> <span class="value__body">I’d rather hear it at the prototype than at launch.</span></li>
       </ul>
     </section>
 
@@ -117,6 +128,6 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=652506b0" defer></script>
-  <script src="assets/enhance.js?v=afa89a18" defer></script>
+  <script src="assets/enhance.js?v=72f7d23d" defer></script>
 </body>
 </html>

@@ -246,11 +246,28 @@
       } catch (e) {}
     }
 
+    /* The two theme-color metas are keyed to prefers-color-scheme, which
+       is right until someone overrides it here: a visitor on a dark OS
+       who picks the light theme would keep a near-black status bar above
+       a paper page. Writing the chosen colour into BOTH makes whichever
+       one matches the right answer. */
+    function syncChrome(theme) {
+      var bg = getComputedStyle(root)
+        .getPropertyValue(theme === "dark" ? "--color-bg" : "--color-light-bg")
+        .trim();
+      if (!bg) return;
+      var metas = document.querySelectorAll('meta[name="theme-color"]');
+      Array.prototype.forEach.call(metas, function (m) {
+        m.setAttribute("content", bg);
+      });
+    }
+
     themeBtn.addEventListener("click", function () {
       var next = activeTheme() === "dark" ? "light" : "dark";
       root.dataset.theme = next;
       try { localStorage.setItem("theme", next); } catch (e) {}
       sync();
+      syncChrome(next);
       syncCal(next);
     });
 

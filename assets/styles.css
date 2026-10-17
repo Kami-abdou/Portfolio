@@ -2774,10 +2774,29 @@ html { scroll-snap-type: y proximity; }
    between two page links reads as a third page rather than as the ask.
    ══════════════════════════════════════════════════════════ */
 .site-head {
-  background: none;
-  backdrop-filter: none;
+  /* The backdrop is BACK, and the comment above explains why it left:
+     the blur moved onto the nav pill and the wordmark's own pill, so
+     the bar itself did not need one.
+
+     Then the wordmark's pill was removed, and nothing was left between
+     a sticky header and the page scrolling under it -- the name sat
+     directly on top of the h1, two sets of ink with nothing in between.
+     That is the exact failure the note further down this file warned
+     about, reintroduced by deleting the thing that was fixing it.
+
+     A mask rather than a flat fill: transparent at the top so the bar
+     has no hard edge against the page, opaque enough by the baseline
+     of the nav that text passing underneath is not readable through
+     it. The pills keep their own blur and now sit ON this instead of
+     standing in for it. */
+  background: linear-gradient(
+    to bottom,
+    var(--color-bg) 0%,
+    var(--color-bg) 74%,
+    transparent 100%);
+  backdrop-filter: blur(8px);
   padding-top: calc(var(--inset-top) + var(--space-4));
-  padding-bottom: var(--space-2);
+  padding-bottom: var(--space-6);
 }
 /* The blur moves onto the pill, where it has an edge to belong to. */
 .site-nav {
@@ -3284,6 +3303,17 @@ html { scroll-snap-type: y proximity; }
   color: var(--color-text-faint);
   margin: 0 0 var(--space-6);
 }
+/* Removes the 300ms wait a touch browser spends deciding whether a tap
+   is the start of a double-tap zoom. It applies to the controls, not to
+   the page, so pinch-zoom is untouched -- disabling that is an
+   accessibility failure, this is just the tap delay. */
+.btn,
+.index__link,
+.site-nav a,
+.site-nav button,
+.theme-toggle,
+.site-foot a { touch-action: manipulation; }
+
 .index { list-style: none; margin: 0; padding: 0; }
 .index__row { border-top: 1px solid var(--color-border); }
 .index__row:last-child { border-bottom: 1px solid var(--color-border); }

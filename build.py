@@ -717,8 +717,12 @@ def primary_nav(up, current=None):
 
 
 def head(title, description, *, depth=0, image=None, page_url="",
-         og_type="website", image_alt=None, nav_current=None):
+         og_type="website", image_alt=None, nav_current=None, preconnect=()):
     up = "../" * depth
+    pre = "".join(
+        '\n  <link rel="preconnect" href="%s" crossorigin>'
+        '\n  <link rel="dns-prefetch" href="%s">' % (e(u), e(u))
+        for u in preconnect)
     img = image or SITE.get("shareImage") or SITE.get("profileImage")
     og_image = ""
     if img:
@@ -748,7 +752,7 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{e(title)}</title>
   <meta name="description" content="{e(description)}">
-  <meta name="author" content="{e(SITE['name'])}">{canonical}
+  <meta name="author" content="{e(SITE['name'])}">{canonical}{pre}
   <meta property="og:type" content="{e(og_type)}">
   <meta property="og:site_name" content="{e(SITE['name'])}">
   <meta property="og:title" content="{e(title)}">
@@ -760,8 +764,19 @@ def head(title, description, *, depth=0, image=None, page_url="",
        swapped for the mailto beside it. That is why actions_row emits
        both: a control that silently does nothing is worse than a link. -->
   <noscript><style>.js-copy{{display:none}}.js-copy-fallback{{display:inline-flex}}</style></noscript>
-  <meta name="theme-color" content="{e(TOKENS['color']['bg'])}">
-  <meta name="color-scheme" content="light">
+  <!-- One theme-color per scheme. A single value painted the browser
+       chrome, the iOS status bar and the Android task-switcher card in
+       the dark canvas even when the page was showing light, which is a
+       seam exactly where the OS meets the page. enhance.js overwrites
+       BOTH when the toggle is used, so an explicit choice beats the
+       system preference there too. -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="{e(TOKENS['color']['bg'])}">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="{e(TOKENS['colorLight']['bg'])}">
+  <!-- `light` was left here when the site flipped to dark-first. It
+       tells the browser to paint form controls, scrollbars and the
+       default canvas light while the stylesheet says `dark light`, and
+       the browser believes the meta until the CSS lands. -->
+  <meta name="color-scheme" content="dark light">
   <link rel="icon" type="image/png" sizes="32x32" href="{up}assets/favicon-32.png{asset_v('assets/favicon-32.png')}">
   <link rel="icon" type="image/png" sizes="192x192" href="{up}assets/favicon-192.png{asset_v('assets/favicon-192.png')}">
   <link rel="apple-touch-icon" href="{up}assets/apple-touch-icon.png{asset_v('assets/apple-touch-icon.png')}">
@@ -1341,6 +1356,12 @@ def build_contact():
         SITE.get("metaDescription") or SITE["title"],
         page_url="contact",
         nav_current="contact",
+        # The booker is an iframe from another origin, so the browser
+        # cannot start its DNS, TCP and TLS work until the embed script
+        # has loaded and asked for it. This starts it during parse. Only
+        # this page declares it -- a preconnect on pages that never
+        # reach cal.com is a handshake opened for nothing.
+        preconnect=["https://app.cal.com"],
     )]
     out.append("""
     <section class="band shell band--book">

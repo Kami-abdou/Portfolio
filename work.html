@@ -23,8 +23,19 @@
        swapped for the mailto beside it. That is why actions_row emits
        both: a control that silently does nothing is worse than a link. -->
   <noscript><style>.js-copy{display:none}.js-copy-fallback{display:inline-flex}</style></noscript>
-  <meta name="theme-color" content="#0E0A07">
-  <meta name="color-scheme" content="light">
+  <!-- One theme-color per scheme. A single value painted the browser
+       chrome, the iOS status bar and the Android task-switcher card in
+       the dark canvas even when the page was showing light, which is a
+       seam exactly where the OS meets the page. enhance.js overwrites
+       BOTH when the toggle is used, so an explicit choice beats the
+       system preference there too. -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0E0A07">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBFBFA">
+  <!-- `light` was left here when the site flipped to dark-first. It
+       tells the browser to paint form controls, scrollbars and the
+       default canvas light while the stylesheet says `dark light`, and
+       the browser believes the meta until the CSS lands. -->
+  <meta name="color-scheme" content="dark light">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=2aadc8c2">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=0912e2e4">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=29154a39">
@@ -41,7 +52,7 @@
   <link rel="preload" href="assets/fonts/gabarito-variable.woff2?v=bab69a2a" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/fonts.css?v=72fe68d4">
   <link rel="stylesheet" href="assets/tokens.css?v=4b21d4db">
-  <link rel="stylesheet" href="assets/styles.css?v=3bb3a34a">
+  <link rel="stylesheet" href="assets/styles.css?v=d37ff4ff">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
   <script>
     /* Before first paint, or the page renders in the system theme and then
@@ -79,7 +90,7 @@
         <img src="site/portrait.jpg?v=700dce11" alt="Portrait of Abdou Yaackoubi" width="1702" height="2062" decoding="async">
       </figure>
 
-      <h1 class="opening__claim"><span class="claim__line">Hi, I&#x27;m Abdou.</span><span class="claim__line">Product designer.</span><span class="claim__line claim__line--built">I build what I design.</span></h1>
+      <h1 class="opening__claim"><span class="claim__line">Hi, I’m Abdou.</span><span class="claim__line">Product designer.</span><span class="claim__line claim__line--built">I build what I design.</span></h1>
       <p class="opening__meta">Senior Product Designer at InstaDeep · Six years · Tunis, UTC+1</p>
 
       <div class="actions"><a class="btn btn--solid" href="contact">Book a call</a><button class="btn js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="btn js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></div>
@@ -156,6 +167,6 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=652506b0" defer></script>
-  <script src="assets/enhance.js?v=afa89a18" defer></script>
+  <script src="assets/enhance.js?v=72f7d23d" defer></script>
 </body>
 </html>

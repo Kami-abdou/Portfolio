@@ -128,7 +128,7 @@
         {
           "src": "assets/d01-sp-appointment.png",
           "alt": "Fixerloop provider app — Appointment",
-          "caption": "The provider's side of the same system: today split from upcoming, and the overdue one flagged before anything else on the screen."
+          "caption": "The provider’s side of the same system: today split from upcoming, and the overdue one flagged before anything else on the screen."
         }
       ]
     },
@@ -191,5 +191,5 @@
     }
   ],
   "published": false,
-  "_retired": "The site's only freelance entry, and the only project in the Freelance band. Retired at the owner's request together with the band itself, so the portfolio now shows full-time work only. Nothing is deleted: content.json and its 93 _src originals stay on disk, and flipping `published` back restores the page."
+  "_retired": "The site’s only freelance entry, and the only project in the Freelance band. Retired at the owner’s request together with the band itself, so the portfolio now shows full-time work only. Nothing is deleted: content.json and its 93 _src originals stay on disk, and flipping `published` back restores the page."
 }

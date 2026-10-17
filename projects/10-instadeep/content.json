@@ -61,7 +61,7 @@
       "id": "deeppcb",
       "phase": "Product",
       "heading": "DeepPCB",
-      "body": "DeepPCB is InstaDeep's cloud-native PCB routing software: a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product's public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.\n\nThese are the marketing and onboarding surfaces rather than the routing canvas itself.",
+      "body": "DeepPCB is InstaDeep’s cloud-native PCB routing software: a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product’s public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.\n\nThese are the marketing and onboarding surfaces rather than the routing canvas itself.",
       "images": [
         {
           "src": "assets/p01-home.jpg",
@@ -84,7 +84,7 @@
       "id": "deeppcb-app",
       "phase": "Product",
       "heading": "DeepPCB dashboard",
-      "body": "DeepPCB sells routing by the hour, so the two screens that carry the product are the one that says whether an hour is still running and the one that spends it.\n\nThe board list puts each job's state on its own card (pending, idle, running), with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.",
+      "body": "DeepPCB sells routing by the hour, so the two screens that carry the product are the one that says whether an hour is still running and the one that spends it.\n\nThe board list puts each job’s state on its own card (pending, idle, running), with the remaining balance in the sidebar, so the question a returning user actually arrives with is answered before anything is opened. Inside, the board is the page: layers, planes and components on one side, anomalies and the assistant on the other, and the cost of the next run stated on the button that starts it rather than discovered afterwards.",
       "viewer": true,
       "images": [
         {
@@ -116,7 +116,7 @@
           "video": "assets/in4-hero-animation.mp4",
           "poster": "assets/in4-hero-animation.jpg",
           "alt": "Animated hero graphic: a mass spectrum on the left resolving into clusters of predicted peptide sequences on the right",
-          "caption": "The hero animation. A mass spectrum on the left resolves into predicted sequences on the right: the model's actual job, stated once, in motion. Muted, and it does not start until you ask."
+          "caption": "The hero animation. A mass spectrum on the left resolves into predicted sequences on the right: the model’s actual job, stated once, in motion. Muted, and it does not start until you ask."
         },
         {
           "src": "assets/in3-coming-soon.jpg",
@@ -137,12 +137,12 @@
       "id": "states",
       "phase": "States",
       "heading": "Off the grid, and page not found",
-      "body": "The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows: a routing job that will not converge, a spectrum with no confident call, a link that has gone stale, so the error pages carry each product's own grid or sequence motif, say what happened in that product's vocabulary, and offer exactly one way back. Two products, one discipline.",
+      "body": "The states are the part of a product nobody screenshots and everybody hits. Both products can fail in ways a marketing page never shows: a routing job that will not converge, a spectrum with no confident call, a link that has gone stale, so the error pages carry each product’s own grid or sequence motif, say what happened in that product’s vocabulary, and offer exactly one way back. Two products, one discipline.",
       "images": [
         {
           "src": "assets/p10-404.jpg",
           "alt": "DeepPCB 404 page: a monospace 404 label, PAGE NOT FOUND set large, and a single Go to Homepage action",
-          "caption": "DeepPCB: one message, one route out. “Off the grid” and “reconnect” are the router's own vocabulary, not generic error copy."
+          "caption": "DeepPCB: one message, one route out. “Off the grid” and “reconnect” are the router’s own vocabulary, not generic error copy."
         },
         {
           "src": "assets/in2-404.jpg",

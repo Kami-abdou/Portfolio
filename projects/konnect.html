@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Konnect - Abdou Yaackoubi</title>
-  <meta name="description" content="Tunisia&#x27;s first digital wallet. Sole designer among 15+ engineers, rebuilding the payment application end to end for iOS, Android and web.">
+  <meta name="description" content="Tunisia’s first digital wallet. Sole designer among 15+ engineers, rebuilding the payment application end to end for iOS, Android and web.">
   <meta name="author" content="Abdou Yaackoubi">
   <link rel="canonical" href="https://abdouyaackoubi.com/projects/konnect">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="Abdou Yaackoubi">
   <meta property="og:title" content="Konnect - Abdou Yaackoubi">
-  <meta property="og:description" content="Tunisia&#x27;s first digital wallet. Sole designer among 15+ engineers, rebuilding the payment application end to end for iOS, Android and web.">
+  <meta property="og:description" content="Tunisia’s first digital wallet. Sole designer among 15+ engineers, rebuilding the payment application end to end for iOS, Android and web.">
   <meta property="og:url" content="https://abdouyaackoubi.com/projects/konnect">
   <meta property="og:image" content="https://abdouyaackoubi.com/projects/02-konnect/assets/01-desktop-47.jpg">
   <meta property="og:image:alt" content="Konnect - One of the first digital wallets in Tunisia">
@@ -18,13 +18,24 @@
   <meta property="og:image:height" content="640">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Konnect - Abdou Yaackoubi">
-  <meta name="twitter:description" content="Tunisia&#x27;s first digital wallet. Sole designer among 15+ engineers, rebuilding the payment application end to end for iOS, Android and web.">
+  <meta name="twitter:description" content="Tunisia’s first digital wallet. Sole designer among 15+ engineers, rebuilding the payment application end to end for iOS, Android and web.">
   <!-- With JavaScript off the copy button cannot copy anything, so it is
        swapped for the mailto beside it. That is why actions_row emits
        both: a control that silently does nothing is worse than a link. -->
   <noscript><style>.js-copy{display:none}.js-copy-fallback{display:inline-flex}</style></noscript>
-  <meta name="theme-color" content="#0E0A07">
-  <meta name="color-scheme" content="light">
+  <!-- One theme-color per scheme. A single value painted the browser
+       chrome, the iOS status bar and the Android task-switcher card in
+       the dark canvas even when the page was showing light, which is a
+       seam exactly where the OS meets the page. enhance.js overwrites
+       BOTH when the toggle is used, so an explicit choice beats the
+       system preference there too. -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0E0A07">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBFBFA">
+  <!-- `light` was left here when the site flipped to dark-first. It
+       tells the browser to paint form controls, scrollbars and the
+       default canvas light while the stylesheet says `dark light`, and
+       the browser believes the meta until the CSS lands. -->
+  <meta name="color-scheme" content="dark light">
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png?v=2aadc8c2">
   <link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png?v=0912e2e4">
   <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png?v=29154a39">
@@ -41,7 +52,7 @@
   <link rel="preload" href="../assets/fonts/gabarito-variable.woff2?v=bab69a2a" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/fonts.css?v=72fe68d4">
   <link rel="stylesheet" href="../assets/tokens.css?v=4b21d4db">
-  <link rel="stylesheet" href="../assets/styles.css?v=3bb3a34a">
+  <link rel="stylesheet" href="../assets/styles.css?v=d37ff4ff">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
   <script>
     /* Before first paint, or the page renders in the system theme and then
@@ -187,7 +198,7 @@
         </summary>
         <div class="section__body">
         <div class="prose"><p>The app shipped. Konnect Pay reached the App Store on 29 March 2021, and the design I delivered was the version that launched on iOS and Android.</p>
-        <p>What the company did afterwards is not my work, but it is the context that makes this worth showing. Konnect became the first payment facilitator licensed by the Central Bank of Tunisia, was the only Tunisian company selected for Visa&#x27;s inaugural Africa Fintech Accelerator, and raised roughly $1.5M from Attijariwafa Ventures, Renew Capital, Digital Africa Ventures, Sunny Side Venture Partners, Plug and Play Africa and 54 Collective. It has since reported about 4% of Tunisia&#x27;s online payments market, growing around 20% month on month.</p>
+        <p>What the company did afterwards is not my work, but it is the context that makes this worth showing. Konnect became the first payment facilitator licensed by the Central Bank of Tunisia, was the only Tunisian company selected for Visa’s inaugural Africa Fintech Accelerator, and raised roughly $1.5M from Attijariwafa Ventures, Renew Capital, Digital Africa Ventures, Sunny Side Venture Partners, Plug and Play Africa and 54 Collective. It has since reported about 4% of Tunisia’s online payments market, growing around 20% month on month.</p>
         <p>The product has been fully redesigned since and is now on its seventh major version. What I own is the first one: the release that took the company from a pitch to something people could actually hold.</p></div>
       <div class="shots">
         <figure class="shot">
@@ -217,6 +228,6 @@
     </div>
   </footer>
   <script src="../assets/lightbox.js?v=652506b0" defer></script>
-  <script src="../assets/enhance.js?v=afa89a18" defer></script>
+  <script src="../assets/enhance.js?v=72f7d23d" defer></script>
 </body>
 </html>
