@@ -2619,7 +2619,14 @@ class TestAssetVersions(unittest.TestCase):
         for page in pages:
             html = (self._show(page) or b"").decode("utf-8", "replace")
             for ref, want in re.findall(r'(?:href|src)="([^"?]+)\?v=([0-9a-f]+)"', html):
-                rel = re.sub(r"^(?:\.\./)+", "", ref)
+                # "../../x" from a project page and "/x" from 404.html
+                # both mean the same file: the repo root IS the site root.
+                # The leading-slash case arrived with 404.html, which has
+                # to use absolute paths because it renders at any depth,
+                # and this test could not resolve them -- it reported the
+                # asset "not committed" when it was simply looking for
+                # HEAD:/assets/... with the slash still on.
+                rel = re.sub(r"^(?:\.\./)+|^/", "", ref)
                 blob = self._show(rel)
                 self.assertIsNotNone(
                     blob, "%s references %s?v=%s, which is not committed"
