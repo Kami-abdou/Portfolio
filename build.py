@@ -665,38 +665,18 @@ def write_tokens_css():
 # ─────────────────────────────────────────── page chrome
 
 def wordmark():
-    """The logo as two stacked lines, justified to the same width.
+    """The logo as two stacked lines, the second indented.
 
     Splits on the first space so a middle name would ride with the surname
     rather than creating a third line the layout does not allow for.
-
-    THE FIRST LINE IS DEALT OUT LETTER BY LETTER, which is the whole mark.
-    It used to sit flush left above a longer surname and be indented on
-    top of that, so the left edge was ragged from the indent and the right
-    edge was ragged from the four-letter difference. It never resolved
-    into a shape, and a wordmark's job is to be a silhouette you know
-    before you read it.
-
-    Each letter is its own span so CSS can deal them across a flex row
-    (see .wordmark__line--fit): the block is sized by the longer line and
-    the shorter one is distributed into it, so the two edges line up at
-    any size and stay lined up if the name ever changes. Doing it with a
-    hand-tuned letter-spacing would be a number that is right for exactly
-    this name at exactly one size.
-
-    The spans are never announced: the <a> around this carries an
-    aria-label with the whole name, which replaces its contents for a
-    screen reader. Without that, a letter-per-flex-item mark is read out
-    "A, B, D, O, U".
     """
     parts = SITE["name"].split(" ", 1)
     first = parts[0]
     rest = parts[1] if len(parts) > 1 else ""
-    if not rest:
-        return '<span class="wordmark__line">%s</span>' % e(first)
-    dealt = "".join("<span>%s</span>" % e(c) for c in first)
-    return ('<span class="wordmark__line wordmark__line--fit">%s</span>'
-            '<span class="wordmark__line">%s</span>' % (dealt, e(rest)))
+    lines = '<span class="wordmark__line">%s</span>' % e(first)
+    if rest:
+        lines += '<span class="wordmark__line wordmark__line--in">%s</span>' % e(rest)
+    return lines
 
 
 def asset_v(rel):

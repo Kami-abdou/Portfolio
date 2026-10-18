@@ -1219,32 +1219,21 @@ body::after {
   letter-spacing: -0.012em;
   text-transform: uppercase;
   color: var(--color-text);
-  /* Load-bearing for the justified line below: the block has to shrink
-     to its longest line, not to the header column. */
-  width: fit-content;
 }
 .wordmark__line { display: block; }
-/* Both lines, one width.
-   
-   The shorter line's letters are dealt across a flex row, so they land
-   flush with the longer line at each edge and the mark becomes a
-   rectangle. fit-content on the block above is what makes this work:
-   without it the <a> is as wide as the header column and ABDOU is
-   dealt across a hundred-odd empty pixels.
-   
-   space-between puts the outer letters hard against the box, so the
-   edges align on glyph bounds rather than optically -- correct here,
-   because the thing being matched is the surname's own glyph bounds. */
-.wordmark__line--fit { display: flex; justify-content: space-between; }
-
-/* The accent, promoted. It was a 1em x 2px dash in the indent, which is
-   the exact dimensions of an em dash -- so at this size it read as
-   punctuation inside the name rather than as part of the mark. Run the
-   full width of the block it now has, it reads as a baseline, and it is
-   still the one place in the header that takes the accent. */
-.site-head__name {
-  padding-bottom: 0.34em;
-  border-bottom: 2px solid var(--color-accent);
+/* The indent is the whole idea, and now something sits in it. The rule is
+   what the indent was always implying -- a line carrying the second line
+   in -- and it is the one place in the header that takes the accent.
+   Sized in em so it scales with the clamp above. */
+.wordmark__line--in { padding-left: 1.35em; position: relative; }
+.wordmark__line--in::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 1em;
+  height: 2px;
+  background: var(--color-accent);
 }
 
 /* the header sits directly on the hero now, so give the row some air */
