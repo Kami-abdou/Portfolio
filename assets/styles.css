@@ -3665,7 +3665,6 @@ html { scroll-snap-type: y proximity; }
   font-size: var(--font-size-sm);
   font-variant-numeric: tabular-nums;
 }
-.tools-line { margin: 0; color: var(--color-text-muted); }
 .values li { padding-block: var(--space-3); max-width: 62ch; }
 .value__label { font-weight: var(--font-weight-bold); }
 .value__body { color: var(--color-text-muted); }

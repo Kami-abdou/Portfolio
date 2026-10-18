@@ -1464,15 +1464,28 @@ def build_about(index):
     intro_body = "\n        ".join(
         "<p>%s</p>" % e(x) for x in intro.get("paragraphs", []) if usable(x))
 
-    tools = SITE.get("toolsLine", "")
+    # Chips with the real marks, not a line of names.
+    #
+    # The About rewrite flattened this to "Figma \u00b7 Framer \u00b7 ..." because
+    # the brief capped the page at 160 words and the toolkit was three
+    # labelled groups costing about sixteen. The flattening threw out the
+    # logos with the labels, which was the wrong half to lose: a mark is
+    # an image, so it costs the budget NOTHING, and a row of marks is
+    # read in one glance where a list of names has to be read.
+    #
+    # Same seven tools, same seven words. tool_chips supplies the mark
+    # when assets/tools/<slug> exists and a monogram when it does not,
+    # and it is the same function the case studies use, so the two
+    # cannot drift.
+    tools = SITE.get("tools") or []
     tools_html = ""
-    if usable(tools):
+    if tools:
         tools_html = """
     <section class="band shell band--tools" aria-labelledby="tools">
       <h2 id="tools">%s</h2>
-      <p class="tools-line">%s</p>
+      %s
     </section>
-""" % (e(SITE.get("toolsHeading", "Tools")), e(tools))
+""" % (e(SITE.get("toolsHeading", "Tools")), tool_chips(tools))
 
     # The same two actions as everywhere else, with the two documents a
     # reader of this page actually goes looking for underneath them.
