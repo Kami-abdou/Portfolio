@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Page not found - Abdou Yaackoubi</title>
+  <meta name="description" content="That link points at something this site no longer has.">
+  <meta name="author" content="Abdou Yaackoubi">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Abdou Yaackoubi">
+  <meta property="og:title" content="Page not found - Abdou Yaackoubi">
+  <meta property="og:description" content="That link points at something this site no longer has.">
+  <meta property="og:image" content="https://abdouyaackoubi.com/site/share-card.png">
+  <meta property="og:image:alt" content="Abdou Yaackoubi - Senior Product Designer">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Page not found - Abdou Yaackoubi">
+  <meta name="twitter:description" content="That link points at something this site no longer has.">
+  <!-- With JavaScript off the copy button cannot copy anything, so it is
+       swapped for the mailto beside it. That is why actions_row emits
+       both: a control that silently does nothing is worse than a link. -->
+  <noscript><style>.js-copy{display:none}.js-copy-fallback{display:inline-flex}</style></noscript>
+  <!-- One theme-color per scheme. A single value painted the browser
+       chrome, the iOS status bar and the Android task-switcher card in
+       the dark canvas even when the page was showing light, which is a
+       seam exactly where the OS meets the page. enhance.js overwrites
+       BOTH when the toggle is used, so an explicit choice beats the
+       system preference there too. -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0E0A07">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBFBFA">
+  <!-- `light` was left here when the site flipped to dark-first. It
+       tells the browser to paint form controls, scrollbars and the
+       default canvas light while the stylesheet says `dark light`, and
+       the browser believes the meta until the CSS lands. -->
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=7a5a9596">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png?v=28a58b55">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=68b21c3c">
+  <!-- The two faces, preloaded. `font-display: swap` without this pair is a
+       layout shift by construction: first paint uses a fallback whose metrics
+       differ from the body face's, then the page reflows when it arrives.
+       Measured on this site before the preload existed, that cost 0.389 CLS.
+
+       `crossorigin` is required even though these are same-origin. Fonts are
+       always fetched in CORS mode, so a preload without it is a SEPARATE
+       cache entry from the one @font-face goes on to request -- the file gets
+       downloaded twice and the preload buys nothing. -->
+  <link rel="preload" href="/assets/fonts/instrument-variable.woff2?v=561da854" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/bricolage-variable.woff2?v=e8a27852" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/fonts.css?v=850c1060">
+  <link rel="stylesheet" href="/assets/tokens.css?v=6fa09ed7">
+  <link rel="stylesheet" href="/assets/styles.css?v=23d299ce">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
+  <script>
+    /* Before first paint, or the page renders in the system theme and then
+       snaps to the stored one. Inline and synchronous on purpose: a deferred
+       script runs after the first frame, which IS the flash.
+       Wrapped because Safari throws on localStorage in private browsing, and
+       an exception here would take the rest of the head with it. */
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-head">
+    <div class="shell site-head__inner">
+      <a class="site-head__name" href="/work" aria-label="Abdou Yaackoubi, home"><span class="wordmark__line">Abdou</span><span class="wordmark__line wordmark__line--in">Yaackoubi</span></a>
+      <nav class="site-nav" aria-label="Primary">
+        <span class="site-nav__pill">
+          <span class="site-nav__marker" aria-hidden="true"></span>
+          <a href="/work">Work</a>
+          <a href="/about">About</a>
+        </span>
+        <button class="theme-toggle" type="button" aria-label="Switch between light and dark" aria-pressed="false"><span class="theme-toggle__dial" aria-hidden="true"></span></button>
+        <a class="site-nav__cta" href="https://cal.com/abdou-yaackoubi-lpkcep/30min" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" tabindex="-1">
+
+    <section class="band shell band--close">
+      <h1 class="band__close">That link has nothing behind it.</h1>
+      <p class="close__proof">Either it moved, or it never existed. The work
+         is all still here.</p>
+      <p class="reach">
+        <a class="reach__addr" href="/work">Selected work</a>
+        <span class="reach__sep" aria-hidden="true"> · </span>
+        <a class="reach__addr" href="/about">About</a>
+      </p>
+    </section>
+
+  </main>
+  <footer class="site-foot">
+    <div class="shell site-foot__inner">
+      <p class="site-foot__note">© 2026 Abdou Yaackoubi<span class="site-foot__sep" aria-hidden="true"> · </span>Last updated October 2026<span class="site-foot__sep" aria-hidden="true"> · </span><a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener">LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a><span class="site-foot__sep" aria-hidden="true"> · </span><a href="/site/CV-Abdou-Yaackoubi.pdf?v=86f36456" target="_blank" rel="noopener">CV (PDF)<span class="visually-hidden"> (opens in a new tab)</span></a></p>
+    </div>
+  </footer>
+  <script src="/assets/lightbox.js?v=652506b0" defer></script>
+  <script src="/assets/enhance.js?v=72f7d23d" defer></script>
+</body>
+</html>

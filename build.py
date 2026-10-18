@@ -818,8 +818,14 @@ def primary_nav(up, current=None):
 
 
 def head(title, description, *, depth=0, image=None, page_url="",
-         og_type="website", image_alt=None, nav_current=None):
-    up = "../" * depth
+         og_type="website", image_alt=None, nav_current=None, up=None):
+    # `up` overrides the depth-derived prefix, and exactly one page needs
+    # it: 404.html is served for /anything/at/any/depth, so a relative
+    # "assets/styles.css" resolves against whatever path was missed and
+    # the error page arrives unstyled -- which is the one page that
+    # cannot afford to.
+    if up is None:
+        up = "../" * depth
     img = image or SITE.get("shareImage") or SITE.get("profileImage")
     og_image = ""
     if img:
@@ -914,7 +920,7 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <main id="main" tabindex="-1">"""
 
 
-def foot(depth=0):
+def foot(depth=0, up=None):
     """One line, which is all a footer on this site has to be now.
 
     It carried the copyright, a "Last updated" stamp and a row of link
@@ -930,7 +936,7 @@ def foot(depth=0):
     a recruiter wants settled. It is stamped from the newest mtime
     across the JSON sources, so it cannot claim a change nobody made.
     """
-    up = "../" * depth
+    up = "../" * depth if up is None else up
     iso, stamp = content_updated()
     linkedin = next((l for l in SITE.get("links", [])
                      if "linkedin" in l.get("label", "").lower()), None)
@@ -1948,6 +1954,90 @@ def body_words(path, drop=frozenset()):
     return len(c.words)
 
 
+def build_contact_redirect():
+    """/contact, kept alive as a redirect and nothing else.
+
+    The page is gone -- it existed to hold the Cal embed, and the embed
+    went when it turned out Cal's free plan paints an unremovable white
+    attribution bar across a near-black page.
+
+    The URL is NOT gone, and the commit that removed the page said it
+    was, which was wrong: /contact is live, returns 200, sits in the
+    published sitemap and carries its own canonical. Deleting the file
+    would 404 an indexed page and break every link anyone has to it.
+
+    So: the GitHub Pages pattern for a moved page on a host with no
+    redirect rules -- a refresh and a canonical at the destination, plus
+    a real link for anything that honours neither. No noindex: the
+    canonical is what passes the signal on to /work, and noindex would
+    stop it being read.
+
+    It is deliberately NOT in the sitemap. A sitemap lists destinations.
+
+    Everything this page used to say now sits in the homepage's closing
+    band -- the address as text, the reply time, both actions -- under
+    the id this points at.
+    """
+    target = "/#contact"
+    canonical = "%s/work" % SITE["url"].rstrip("/")
+    (ROOT / "contact.html").write_text("""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact - %s</title>
+<link rel="canonical" href="%s">
+<meta http-equiv="refresh" content="0; url=%s">
+<style>
+  body { margin:0; min-height:100vh; display:grid; place-items:center;
+         background:%s; color:%s; font:400 16px/1.5 system-ui, sans-serif; }
+  a { color:%s; }
+</style>
+</head>
+<body>
+  <p>This page has moved. <a href="%s">Continue to the contact section</a>.</p>
+</body>
+</html>
+""" % (e(SITE["name"]), e(canonical), e(target),
+       e(TOKENS["color"]["bg"]), e(TOKENS["color"]["text"]),
+       e(TOKENS["color"]["accent"]), e(target)), encoding="utf-8")
+
+
+def build_404():
+    """The page a bad link lands on.
+
+    GitHub Pages serves /404.html for any path it cannot find, and
+    without one it serves its own: a bare page with GitHub's branding,
+    no nav, and no route back here. /projects/fixerloop already 404s
+    today, and /contact links are about to start arriving at URLs this
+    build no longer writes, so this is not hypothetical.
+
+    EVERY PATH ON THIS PAGE IS ABSOLUTE. It renders at /anything, and
+    /deep/missing/path would resolve "assets/styles.css" against
+    /deep/missing/ -- an error page with no stylesheet, which is the
+    worst possible page to get wrong. That is what head(up="/") is for.
+
+    Not in the sitemap, for the obvious reason.
+    """
+    out = [head("Page not found - %s" % SITE["name"],
+                "That link points at something this site no longer has.",
+                up="/")]
+    out.append("""
+    <section class="band shell band--close">
+      <h1 class="band__close">That link has nothing behind it.</h1>
+      <p class="close__proof">Either it moved, or it never existed. The work
+         is all still here.</p>
+      <p class="reach">
+        <a class="reach__addr" href="/work">Selected work</a>
+        <span class="reach__sep" aria-hidden="true"> \u00b7 </span>
+        <a class="reach__addr" href="/about">About</a>
+      </p>
+    </section>
+""")
+    out.append(foot(up="/"))
+    (ROOT / "404.html").write_text("\n".join(out), encoding="utf-8")
+
+
 def main():
     projects = load_projects()
     n_vars = write_tokens_css()
@@ -1956,6 +2046,8 @@ def main():
     for i, p in enumerate(projects):
         build_project(p, projects[i - 1] if i else None,
                       projects[i + 1] if i + 1 < len(projects) else None)
+    build_contact_redirect()
+    build_404()
     n_urls = write_sitemap(projects)
 
     # autoImages boards are figures on the page like any other, so they

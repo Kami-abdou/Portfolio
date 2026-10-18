@@ -844,17 +844,15 @@ class TestCleanUrls(BuildCase):
                               "projects/%s.html cannot reach /%s" % (slug, target))
 
     def test_the_homepage_keeps_the_contact_anchor(self):
-        """/contact is gone and #contact is what replaced it.
+        """/contact redirects here, so the anchor has to exist.
 
-        The page existed to host the Cal embed. The embed is gone --
-        see CAL_LINK in build.py -- and with it the only reason for a
-        route whose whole content was a third-party iframe. The closing
-        band carries the id, so every old #contact link still lands.
+        The PAGE existed to host the Cal embed and went with it. The
+        URL is published -- 200 on the deployed site, in its sitemap,
+        with its own canonical -- so contact.html stays as a redirect
+        and this is the target it points at.
         """
         self.assertIn('id="contact"', self.html("index.html"),
                       "the homepage lost the #contact anchor old links use")
-        self.assertFalse((ROOT / "contact.html").exists(),
-                         "contact.html is back; the booker page was removed")
 
 
     def test_the_two_actions_have_one_source(self):
@@ -908,6 +906,10 @@ class TestCleanUrls(BuildCase):
                         "tools/serve.py is missing -- local preview 404s on "
                         "every extensionless URL")
         src = server.read_text(encoding="utf-8")
+        self.assertIn("404.html", src,
+                      "the preview server shows Python's error page where "
+                      "the host shows the site's 404, so the one page you "
+                      "reach only by mistake is the one never previewed")
         self.assertIn('".html"', src,
                       "the preview server no longer resolves extensionless "
                       "paths to .html")
@@ -915,6 +917,60 @@ class TestCleanUrls(BuildCase):
         self.assertNotIn("\nserve.py", ignore,
                          "an unanchored serve.py pattern is back in "
                          ".gitignore and will untrack tools/serve.py")
+
+    def test_the_contact_url_still_resolves(self):
+        """It is live, and the commit that deleted the page said it was not.
+
+        /contact returns 200 on the deployed site, sits in the published
+        sitemap and carries its own canonical. The page behind it went
+        with the Cal embed; the URL cannot, or every link anyone holds
+        to it breaks and an indexed page starts 404ing.
+        """
+        f = ROOT / "contact.html"
+        self.assertTrue(f.is_file(), "/contact would 404; it is a live URL")
+        h = f.read_text(encoding="utf-8")
+        self.assertRegex(h, r'<meta http-equiv="refresh" content="0; url=/#contact">')
+        self.assertRegex(h, r'<link rel="canonical" href="https?://[^"]+/work">')
+        # A visitor whose browser honours neither still needs a way out.
+        self.assertIn('href="/#contact"', h.split("<body", 1)[1])
+        self.assertNotIn("noindex", h,
+                         "noindex stops the canonical passing the signal on")
+        self.assertIn('id="contact"', self.html("index.html"),
+                      "the redirect points at an anchor that does not exist")
+
+    def test_the_redirect_and_the_error_page_are_not_destinations(self):
+        """Neither belongs in a sitemap, which lists places to go."""
+        sm = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
+        for path in ("/contact", "/404"):
+            with self.subTest(path=path):
+                self.assertNotIn("<loc>%s%s<" % (self.site["url"].rstrip("/"), path), sm)
+
+    def test_the_error_page_exists_and_is_whole(self):
+        """GitHub Pages serves /404.html for anything it cannot find.
+
+        Without one it serves its own, which carries GitHub's branding
+        and no route back here. /projects/fixerloop already 404s today.
+        """
+        f = ROOT / "404.html"
+        self.assertTrue(f.is_file(), "a bad link lands on GitHub's page")
+        h = f.read_text(encoding="utf-8")
+        self.assertEqual(len(re.findall(r"<h1[ >]", h)), 1)
+        for route in ('href="/work"', 'href="/about"'):
+            self.assertIn(route, h, "the error page is a dead end")
+
+    def test_every_path_on_the_error_page_is_absolute(self):
+        """It renders at /anything, including /deep/missing/path.
+
+        A relative "assets/styles.css" there resolves against the
+        directory that was missed, so the stylesheet 404s too and the
+        one page that cannot afford to arrive broken arrives unstyled.
+        """
+        h = (ROOT / "404.html").read_text(encoding="utf-8")
+        rel = [u for u in re.findall(r'(?:href|src)="([^"]+)"', h)
+               if not re.match(r"(/|https?:|mailto:|#|data:)", u)]
+        self.assertEqual(rel, [],
+                         "404.html has relative paths that break at depth: %s"
+                         % rel)
 
     def test_the_sitemap_lists_clean_urls_only(self):
         sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
@@ -2192,8 +2248,12 @@ class TestPrimaryNav(BuildCase):
         the actions, where a visitor expects one.
         """
         import glob, pathlib as pl
+        # contact.html is a redirect stub: no nav, nothing to check, and
+        # a visitor is on it for zero frames.
         for path in glob.glob(str(ROOT / "*.html")) + glob.glob(str(ROOT / "projects" / "*.html")):
             rel = pl.Path(path).relative_to(ROOT)
+            if rel.name == "contact.html":
+                continue
             up = "../" * (len(rel.parts) - 1)
             page = pl.Path(path).read_text(encoding="utf-8")
             nav = re.search(r'<nav class="site-nav" aria-label="Primary">(.*?)</nav>', page, re.S)
@@ -4245,20 +4305,24 @@ class TestTheBooker(BuildCase):
                     self.assertIn("opens in a new tab", m.group(1),
                                   "a booking link changes context silently")
 
-    def test_the_contact_route_is_gone_and_nothing_still_points_at_it(self):
-        """A dead internal link is worse than no link.
+    def test_nothing_still_offers_the_contact_route(self):
+        """No page should send anyone through the redirect.
 
-        /contact was never published -- the live site has no such URL --
-        so there is nothing to redirect and no inbound link to keep
-        alive. What matters is that no page still offers the route.
+        An earlier version of this asserted contact.html was absent, on
+        the belief that /contact had never been published. It had: 200
+        on the deployed site, in its sitemap, with its own canonical.
+        The file stays, as a redirect. What matters is that no page
+        here routes a visitor through it when it can link the
+        destination directly.
         """
-        self.assertFalse((ROOT / "contact.html").exists())
+        self.assertTrue((ROOT / "contact.html").exists(),
+                        "a published URL would start 404ing")
         for page in self.pages():
             with self.subTest(page=page):
                 html = self.html(page)
                 self.assertNotRegex(html, r'href="(\.\./)*contact"',
-                                    "%s links to a page that no longer "
-                                    "exists" % page)
+                                    "%s routes through the redirect instead "
+                                    "of linking the destination" % page)
 
     def test_no_booker_styles_outlived_the_booker(self):
         """Dead CSS is how a stylesheet stops describing the site."""
