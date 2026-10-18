@@ -1236,7 +1236,24 @@ def index_row(project, n, depth=0):
     up = "../" * depth
     d = project["_dir"]
     cover = "projects/%s/%s" % (d, project["cover"])
-    line = project.get("tagline") if usable(project.get("tagline")) else ""
+    # indexLine first, tagline second.
+    #
+    # The two want different sentences and used to share one. On the case
+    # study the tagline sits directly above the summary, so it should say
+    # what the PROJECT was -- the paragraph underneath already covers the
+    # role and the outcome. In this index there is no paragraph
+    # underneath, so the one line has to carry both or the row says
+    # nothing a reader could not guess from the company name.
+    #
+    # Sharing one string meant the index inherited descriptions written
+    # for a context that supplies the rest: "End-to-end solutions to
+    # reinvent the automotive retail industry" is fine above a summary
+    # and is agency boilerplate on its own.
+    #
+    # Falling back to tagline keeps a project that has not been given an
+    # indexLine rendering exactly as before.
+    line = (project.get("indexLine") if usable(project.get("indexLine"))
+            else project.get("tagline") if usable(project.get("tagline")) else "")
     return """        <li class="index__row">
           <a class="index__link" href="{up}projects/{slug}" data-peek="{up}{cover}{v}">
             <span class="index__num" aria-hidden="true">{n:02d}</span>

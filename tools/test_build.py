@@ -104,27 +104,81 @@ class TestSelectedWork(BuildCase):
                          "the index and the published projects disagree")
 
 
+    def row(self, slug):
+        m = re.search(r'<li class="index__row">.*?projects/%s".*?</li>'
+                      % re.escape(slug), self.html("index.html"), re.S)
+        self.assertIsNotNone(m, "%s has no row" % slug)
+        return m.group(0)
+
     def test_a_row_says_what_the_project_was(self):
         """Each row carries a line, a domain and a year -- and takes all
         three from the project itself.
 
         The homepage used to author its own tag and years per project,
-        which is the same fact written in two files. The row reads the
-        tagline and the meta the case study already has, so the two
-        cannot drift.
+        which is the same fact written in two files. The row reads what
+        the case study already has, so the two cannot drift. That is the
+        invariant; which key supplies the line is not.
         """
-        page = self.html("index.html")
         for _, data in self.live_projects():
             with self.subTest(slug=data["slug"]):
-                row = re.search(
-                    r'<li class="index__row">.*?projects/%s".*?</li>'
-                    % re.escape(data["slug"]), page, re.S)
-                self.assertIsNotNone(row, "%s has no row" % data["slug"])
-                body = row.group(0)
-                self.assertIn(html.escape(data["tagline"], quote=True), body,
-                              "%s's row does not carry its tagline" % data["slug"])
+                body = self.row(data["slug"])
+                line = data.get("indexLine") or data["tagline"]
+                self.assertIn(html.escape(line, quote=True), body,
+                              "%s's row does not carry its own line"
+                              % data["slug"])
                 for cls in ("index__domain", "index__year", "index__num"):
                     self.assertIn(cls, body)
+
+    def test_the_row_line_and_the_page_subtitle_stay_separate(self):
+        """They shared one string and should not again.
+
+        On a case study the subtitle sits directly above the summary, so
+        it says what the PROJECT was -- the paragraph underneath already
+        covers the role and the outcome. In the index there is no
+        paragraph underneath, so the one line has to carry both.
+
+        Sharing a string meant the index inherited copy written for a
+        context that supplies the rest: "End-to-end solutions to
+        reinvent the automotive retail industry" reads fine above a
+        summary and is agency boilerplate standing alone. If a later
+        tidy-up collapses indexLine back into tagline, this fails.
+        """
+        for _, data in self.live_projects():
+            if not data.get("indexLine"):
+                continue
+            with self.subTest(slug=data["slug"]):
+                page = self.html("projects/%s.html" % data["slug"])
+                sub = re.search(r'<p class="project__tagline">(.*?)</p>',
+                                page, re.S)
+                self.assertIsNotNone(sub, "%s lost its subtitle" % data["slug"])
+                self.assertEqual(sub.group(1), html.escape(data["tagline"]),
+                                 "%s's case study shows the index line "
+                                 "instead of its own subtitle" % data["slug"])
+                self.assertNotIn(html.escape(data["indexLine"]), sub.group(1))
+
+    def test_the_rows_carry_evidence_not_description(self):
+        """The content argument of the index, asserted.
+
+        A row is the only thing most visitors read about a project, and
+        three of the five used to spend it describing the product:
+        "A platform where anyone with a skill can teach it" tells a
+        hiring manager nothing they could not guess from the company
+        name. The rewrite put a figure in most of them -- fifteen
+        engineers, $1.5M, eight months, ten-plus demos.
+
+        Asserted as a majority rather than all five, because a project
+        whose honest answer has no number in it should not be made to
+        invent one.
+        """
+        slugs = [d["slug"] for _, d in self.live_projects()]
+        withnum = [s for s in slugs
+                   if re.search(r"\d", re.search(
+                       r'<span class="index__line">(.*?)</span>',
+                       self.row(s), re.S).group(1))]
+        self.assertGreaterEqual(
+            len(withnum), (len(slugs) // 2) + 1,
+            "only %d of %d rows carry a figure (%s); the index is back to "
+            "describing the products" % (len(withnum), len(slugs), withnum))
 
 
     def test_no_project_is_both_a_card_and_a_footnote(self):
