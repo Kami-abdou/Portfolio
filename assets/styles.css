@@ -2894,6 +2894,35 @@ html { scroll-snap-type: y proximity; }
      them 44px. Measured at 320, 360, 375 and 414: no overflow at any of
      them, which is the whole reason the paddings are what they are. */
   .site-head__inner { flex-wrap: wrap; row-gap: var(--space-3); }
+
+  /* SOLID on a phone. No gradient, no blur.
+     
+     The bar fades out over its last 32px so it has no hard edge against
+     the page, and on a desktop that fade sits in empty space below the
+     nav and is invisible. On a phone it is not invisible, for two
+     reasons that compound:
+     
+       the nav wraps to its own row, so the header is ~250px tall with
+         the safe-area inset -- a much bigger object to see through
+       the page is 375px wide, so whatever is behind the fade is large
+         text rather than the middle of a line
+     
+     Reported twice from a real handset, and reproduced here with the
+     inset forced to 59px: the fade clears the nav by 30px and is STILL
+     legible, because a 32px band of half-transparent page is simply
+     visible at this scale. Moving the stop again would be tuning the
+     wrong variable. The fade is a refinement the phone cannot afford,
+     so the phone does not get it.
+     
+     backdrop-filter goes with it. Behind an opaque fill it draws
+     nothing, and it costs a GPU layer on the device least able to
+     spare one -- on a bar that is sticky, which is where iOS is
+     fussiest about compositing. */
+  .site-head {
+    background: var(--color-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
   .site-head nav {
     width: 100%;
     flex-wrap: nowrap;

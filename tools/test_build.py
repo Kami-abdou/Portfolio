@@ -2221,6 +2221,51 @@ class TestStickyHeaderBackdrop(BuildCase):
                       "the opaque stop should be measured back from the "
                       "bottom edge, where the fade belongs")
 
+    def test_the_phone_header_is_solid(self):
+        """No gradient and no blur below 640px.
+
+        The fade is a refinement a phone cannot afford. Two things
+        compound there: the nav wraps to its own row so the header is
+        ~250px tall once the safe-area inset is in, and the viewport is
+        375px wide so whatever sits behind the fade is large text rather
+        than the middle of a line.
+
+        Reported twice from a real handset. Reproduced with the inset
+        forced to 59px: even with the fade clearing the nav by 30px, a
+        32px band of half-transparent page is simply legible at that
+        scale. Moving the stop again would have been tuning the wrong
+        variable.
+
+        backdrop-filter goes too: behind an opaque fill it draws
+        nothing, and it costs a GPU layer on a sticky bar, which is
+        where iOS is fussiest about compositing.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        # Three separate blocks share this breakpoint, so every one of
+        # them has to be searched -- matching only the first is how the
+        # first version of this test reported the rule missing when it
+        # was sitting in the third.
+        blocks = []
+        for m in re.finditer(r"@media \(max-width: 639px\) \{", css):
+            i, depth = m.end(), 1
+            while i < len(css) and depth:
+                depth += {"{": 1, "}": -1}.get(css[i], 0)
+                i += 1
+            blocks.append(css[m.end():i - 1])
+        self.assertTrue(blocks, "the phone breakpoint is gone")
+        rule = re.search(r"\n  \.site-head \{(.*?)\n  \}",
+                         "\n".join(blocks), re.S)
+        self.assertIsNotNone(
+            rule, "the phone header has no rule of its own, so it inherits "
+                  "the desktop gradient and the page shows through it")
+        body = rule.group(1)
+        self.assertNotIn("gradient", body,
+                         "the phone header is back to a gradient")
+        self.assertRegex(body, r"background:\s*var\(--color-bg\)\s*;",
+                         "the phone header is not a solid fill")
+        self.assertRegex(body, r"backdrop-filter:\s*none",
+                         "an opaque bar is still paying for a blur")
+
     def test_the_backdrop_reaches_the_top_of_the_screen(self):
         """Padding, not margin, so the bar extends behind the status bar
         on a notched phone instead of leaving a strip the page shows
