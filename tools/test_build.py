@@ -2177,6 +2177,60 @@ class TestHeroPortrait(BuildCase):
                       "the portrait lost its downward crop bias")
 
 
+class TestStickyHeaderBackdrop(BuildCase):
+    """The header is sticky, so the page runs underneath it.
+
+    What stops that being readable through the bar is a gradient: opaque
+    down to near the bottom, then a short fade so there is no hard edge
+    against the page.
+    """
+
+    def head_rule(self):
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        blocks = [b for b in re.findall(r"\.site-head \{(.*?)\n\}", css, re.S)
+                  if "linear-gradient" in b]
+        self.assertTrue(blocks, "the header has no backdrop at all")
+        return blocks[-1]
+
+    def test_the_fade_is_a_fixed_length_not_a_percentage(self):
+        """A percentage stop is a distance that grows with the header,
+        and the header is a different height at every breakpoint because
+        the nav wraps to its own row on a phone.
+
+        It was 74%. Measured at 375: header 193px, so the bar began
+        going transparent at 143px -- and the nav's own bottom edge is
+        at 145. It started fading TWO PIXELS ABOVE THE NAV IT BACKS, and
+        50px of page scrolled visibly through the header on every phone,
+        which is how it was reported.
+
+        An absolute length cannot do that. The clearance below the nav
+        measured 16px at both 375 and 1280 after the change -- the same
+        number at both, which is the property a percentage cannot have.
+        """
+        block = self.head_rule()
+        grad = re.search(r"linear-gradient\((.*?)\);", block, re.S).group(1)
+        stops = re.findall(r"var\(--color-bg\)\s+([^,\n]+)", grad)
+        self.assertTrue(stops, "the gradient no longer starts from the page colour")
+        last = stops[-1].strip()
+        self.assertNotRegex(
+            last, r"^\d+(\.\d+)?%$",
+            "the header's opaque stop is %r -- a percentage of a height "
+            "that changes with the breakpoint. On a phone the nav wraps, "
+            "the header grows, and the fade climbs up behind the nav." % last)
+        self.assertIn("calc(100% -", last,
+                      "the opaque stop should be measured back from the "
+                      "bottom edge, where the fade belongs")
+
+    def test_the_backdrop_reaches_the_top_of_the_screen(self):
+        """Padding, not margin, so the bar extends behind the status bar
+        on a notched phone instead of leaving a strip the page shows
+        through above it."""
+        block = self.head_rule()
+        self.assertIn("--inset-top", block,
+                      "the header no longer accounts for the safe-area "
+                      "inset, so content shows above it on a notched phone")
+
+
 class TestPrimaryNav(BuildCase):
     """Work / About / Contact must be findable, markable and hittable.
 
