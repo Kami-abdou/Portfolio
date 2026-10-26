@@ -2177,6 +2177,78 @@ class TestHeroPortrait(BuildCase):
                       "the portrait lost its downward crop bias")
 
 
+class TestAccentOnItsOwnWash(BuildCase):
+    """The pairing the contrast sweep never makes.
+
+    Three components put accent-coloured TEXT on the accent-soft WASH:
+    the nav's current-page pill, the availability badge, and the tool
+    chips. The sweep checks ink against page surfaces; it never thought
+    to check the accent against a tint of itself.
+
+    That gap stayed invisible for as long as the accent was ember, which
+    cleared it at 5.66:1 by luck. Swapping to crimson dropped the same
+    pairing to 4.44 -- under AA -- and the whole suite stayed green. The
+    fix is accent-BRIGHT as the ink, which reads 6.24 dark and 7.47
+    light, and this is the test that would have caught it.
+    """
+
+    FLOOR = 4.5
+
+    @staticmethod
+    def _lum(rgb):
+        c = [v / 255 for v in rgb]
+        c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+
+    @classmethod
+    def _ratio(cls, a, b):
+        x, y = cls._lum(a), cls._lum(b)
+        if x < y:
+            x, y = y, x
+        return (x + 0.05) / (y + 0.05)
+
+    @staticmethod
+    def _hex(h):
+        h = h.lstrip("#")
+        return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+    def _over(self, rgba, bg):
+        m = re.match(r"rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)", rgba)
+        self.assertIsNotNone(m, "accentSoft is not an rgba(): %r" % rgba)
+        r, g, b, a = int(m.group(1)), int(m.group(2)), int(m.group(3)), float(m.group(4))
+        B = self._hex(bg)
+        return tuple(round(c * a + B[i] * (1 - a)) for i, c in enumerate((r, g, b)))
+
+    def test_the_ink_on_the_accent_wash_clears_aa(self):
+        tokens = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
+        for key, label in (("color", "dark"), ("colorLight", "light")):
+            grp = tokens[key]
+            wash = self._over(grp["accentSoft"], grp["bg"])
+            with self.subTest(theme=label):
+                got = self._ratio(self._hex(grp["accentBright"]), wash)
+                self.assertGreaterEqual(
+                    got, self.FLOOR,
+                    "%s: accent-bright on the accent-soft wash is %.2f:1, "
+                    "under AA. The badge and the nav pill are unreadable."
+                    % (label, got))
+
+    def test_no_component_puts_the_plain_accent_on_that_wash(self):
+        """It is the plain accent that fails, so nothing may use it there."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        bad = re.findall(
+            r"background:\s*var\(--color-accent-soft\);"
+            r"(?:(?!\n\s*\})[\s\S]){0,400}?"
+            # (?<![-\w]) so "border-color" does not match: a border on the
+            # wash is non-text and answers to 3:1, not 4.5.
+            r"(?<![-\w])color:\s*var\(--color-accent\)\s*;",
+            css)
+        self.assertEqual(
+            bad, [],
+            "%d rule(s) put the plain accent on the accent-soft wash; it "
+            "measures under AA on the dark theme. Use accent-bright."
+            % len(bad))
+
+
 class TestStickyHeaderBackdrop(BuildCase):
     """The header is sticky, so the page runs underneath it.
 
@@ -4123,8 +4195,8 @@ class TestCopyBudget(BuildCase):
         with what the work is FOR: products where the interface has to
         carry trust, and why AI, blockchain and fintech all land in that
         gap. That sentence was on the old homepage and the redesign
-        dropped it; this puts it back, where an About page should carry
-        it.
+        dropped it; this puts it back, where an About page should
+        carry it.
 
         The counter-pressure is real and stays: this page was 478 words
         before the redesign, four paragraphs of intro and a note under

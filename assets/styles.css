@@ -200,7 +200,12 @@ a { color: inherit; }
    glance instead of on comparison with its neighbour. */
 .site-head nav a[aria-current="page"] {
   background: var(--color-accent-soft);
-  color: var(--color-accent);
+  /* accent-BRIGHT, not accent. Both sit on the accent-soft wash, and on
+     the dark theme the plain accent measures 4.44:1 against it -- under
+     AA, and it passed 227 tests without anyone noticing, because the
+     contrast sweep never pairs the accent with its own wash. The bright
+     variant is 6.24 on dark and 7.47 on light. See the test. */
+  color: var(--color-accent-bright);
   font-weight: var(--font-weight-medium);
 }
 
@@ -1571,7 +1576,7 @@ body::after {
   width: 18px; height: 18px; flex: none;
   border-radius: var(--radius-sm);
   background: var(--color-accent-soft);
-  color: var(--color-accent);
+  color: var(--color-accent-bright);
   font-family: var(--font-mono);
   font-size: 0.68rem; line-height: 1;
 }
@@ -1628,7 +1633,7 @@ body::after {
 .viewer__tab.is-on {
   background: var(--color-accent-soft);
   border-color: var(--color-accent);
-  color: var(--color-accent);
+  color: var(--color-accent-bright);
 }
 /* without JS the tabs cannot do anything, so they are not offered */
 html:not(.js) .viewer__tabs { display: none; }
@@ -3347,8 +3352,9 @@ html { scroll-snap-type: y proximity; }
    the h1 -- same fact, but sitting with the action it qualifies.
 
    accent-soft is the existing 12%/10% wash, so the pill is the accent
-   at low strength rather than a grey chip: measured 5.7:1 on dark and
-   4.6:1 on light, both clear of AA. */
+   at low strength rather than a grey chip. The INK is accent-bright,
+   not accent: the plain accent on its own wash measures 4.44:1 on the
+   dark theme, which is under AA. Bright reads 6.24 dark, 7.47 light. */
 .ask__badge {
   display: inline-flex;
   align-items: center;
@@ -3356,7 +3362,7 @@ html { scroll-snap-type: y proximity; }
   padding: 0.2rem 0.625rem;
   border-radius: var(--radius-full);
   background: var(--color-accent-soft);
-  color: var(--color-accent);
+  color: var(--color-accent-bright);
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
@@ -3708,6 +3714,14 @@ html { scroll-snap-type: y proximity; }
   font-variant-numeric: tabular-nums;
 }
 .values li { padding-block: var(--space-3); max-width: 62ch; }
+/* The prose variant of the same section. Same measure as the list it
+   replaces, and the muted ink the list gave its bodies -- this is the
+   same content, so it should sit at the same weight on the page. */
+.values__prose {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--color-text-muted);
+}
 .value__label { font-weight: var(--font-weight-bold); }
 .value__body { color: var(--color-text-muted); }
 .about__small { margin: var(--space-6) 0 0; font-size: var(--font-size-sm); }
