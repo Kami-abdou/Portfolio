@@ -2012,35 +2012,99 @@ class TestConsolidation(BuildCase):
 
 
 class TestHighlightsFormat(BuildCase):
+    """The short format, and who is still on it.
 
-    TIER2 = [("03-fissa3", "fissa3"), ("04-groupado", "groupado"),
-             ("08-smarthub", "smarthub"), ("09-portfolio", "portfolio")]
+    `format: "highlights"` renders cover, images, metrics and links and
+    hides the section prose, which stays in the JSON. It was applied to
+    four projects as a tiering decision.
 
-    def test_all_four_are_flagged(self):
+    FISSA3 AND GROUPADO CAME OFF IT, because the decision stopped being
+    coherent with the index. It was made when the homepage showed cards
+    reading "Skills marketplace · 2021" -- a card that vague is
+    honestly served by a page of screens. The index now promises "Web
+    and mobile shipped in 8 months, homepage built for search", and a
+    reader who clicks that is owed the story behind it.
+
+    Nothing was written to do it. The prose had been sitting in the
+    JSON the whole time, which is what the format was designed for:
+    reversible by removing one field. Groupado went 155 -> 566 words
+    and Fissa3 223 -> 885.
+
+    The format itself stays, on the two retired projects, because it is
+    the right treatment for work that is listed but not argued for.
+    """
+
+    TIER2 = [("08-smarthub", "smarthub"), ("09-portfolio", "portfolio")]
+    LIVE_CASE_STUDIES = ("01-steer", "02-konnect", "03-fissa3",
+                         "04-groupado", "06-fixerloop", "10-instadeep")
+
+    def test_the_retired_projects_are_flagged(self):
         for folder, _ in self.TIER2:
             self.assertEqual(self.content(folder).get("format"), "highlights",
                              "%s is not flagged" % folder)
 
-    def test_tier_one_is_not_flagged(self):
-        for folder in ("01-steer", "02-konnect", "06-fixerloop", "10-instadeep"):
+    def test_every_live_project_is_a_full_case_study(self):
+        """A row that makes a specific claim must open onto the evidence."""
+        for folder in self.LIVE_CASE_STUDIES:
             self.assertIsNone(self.content(folder).get("format"),
-                              "%s should stay a full case study" % folder)
+                              "%s is back on the short format, so its index "
+                              "row promises more than the page delivers"
+                              % folder)
+
+    def test_the_promoted_pages_actually_carry_their_prose(self):
+        """The point of the promotion, measured rather than assumed.
+
+        Both pages rendered two or three sections while five and six sat
+        written in the JSON. Asserting section COUNT rather than a word
+        total, because the failure mode is prose being dropped at render
+        time, not prose being short.
+        """
+        for folder, slug in (("03-fissa3", "fissa3"), ("04-groupado", "groupado")):
+            with self.subTest(slug=slug):
+                written = len([x for x in self.content(folder)["sections"]
+                               if x.get("body")])
+                rendered = len(re.findall(r"<h2[ >]",
+                                          self.html("projects/%s.html" % slug)))
+                self.assertGreaterEqual(
+                    rendered, written,
+                    "%s has %d written sections and renders %d"
+                    % (slug, written, rendered))
 
     def test_prose_is_not_deleted_only_unrendered(self):
-        """The whole point of the flag: reversible by removing one field."""
-        fissa3 = self.content("03-fissa3")
-        bodies = [s.get("body") for s in fissa3["sections"] if s.get("body")]
-        self.assertGreater(len(bodies), 4,
-                           "Fissa3's narrative was deleted, not just hidden")
+        """The property that made the promotion a one-field edit.
 
-    def test_highlights_pages_render_images_but_not_body_prose(self):
-        page = self.html("projects/fissa3.html")
-        self.assertIn('class="shots', page)
-        body = [s["body"] for s in self.content("03-fissa3")["sections"]
-                if s.get("body") and not s["body"].startswith("TODO")][0]
-        first_sentence = body.split(".")[0]
-        self.assertNotIn(first_sentence, page,
-                         "highlights page still renders section prose")
+        Hiding prose must never mean deleting it, or the decision is not
+        reversible and a tiering call becomes a rewrite. Checked on a
+        project still ON the format.
+        """
+        c = self.content("09-portfolio")
+        bodies = [s.get("body") for s in c.get("sections", []) if s.get("body")]
+        self.assertGreater(len(bodies), 1,
+                           "a highlights page had its narrative deleted "
+                           "rather than hidden; the flag is now one-way")
+
+    def test_the_short_format_still_exists_to_come_back_to(self):
+        """No LIVE page uses it now, which is the risk this guards.
+
+        Both remaining highlights projects are retired, so nothing is
+        built from the format and no rendered page can be asserted
+        against. A capability with no live user is a capability someone
+        deletes as dead code -- and the next project that deserves a
+        page of screens rather than an argument would then need it
+        rebuilt.
+
+        So the branch is asserted in the source instead: build.py must
+        still read the flag and still drop prose because of it.
+        """
+        src = (ROOT / "build.py").read_text(encoding="utf-8")
+        self.assertIn('page_format(project) == "highlights"', src,
+                      "build.py no longer branches on the highlights "
+                      "format; the short treatment was deleted rather "
+                      "than left unused")
+        self.assertFalse(
+            [c["slug"] for _, c in self.live_projects()
+             if c.get("format") == "highlights"],
+            "a live project is back on the short format")
 
     def test_eyebrow_follows_tier_not_category(self):
         """Fissa3 and Groupado are category:case-study but Tier 2."""
@@ -2053,9 +2117,15 @@ class TestHighlightsFormat(BuildCase):
             self.assertIn(">Case study<", self.html("projects/%s.html" % slug),
                           "%s does not read as a case study" % slug)
 
-    def test_highlights_pages_have_no_table_of_contents(self):
-        """A TOC over image blocks with no prose is navigation to nothing."""
-        self.assertNotIn('class="toc"', self.html("projects/fissa3.html"))
+    def test_the_promoted_pages_got_their_table_of_contents(self):
+        """The TOC was suppressed on the short format, correctly: it is
+        navigation to nothing over image blocks with no prose. Now that
+        both pages carry prose again, they should have one."""
+        for slug in ("fissa3", "groupado"):
+            with self.subTest(slug=slug):
+                self.assertIn('class="toc"', self.html("projects/%s.html" % slug),
+                              "%s has prose again but no way to navigate it"
+                              % slug)
 
     def test_no_section_is_numbered(self):
         """Section-number eyebrows are gone, on every page, not just lone ones.
