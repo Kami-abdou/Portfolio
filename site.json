@@ -81,25 +81,13 @@
   "heroClaim": "Hi, I’m Abdou.\nProduct designer.\nI build what I design.",
   "values": {
     "heading": "How I work",
-    "items": [
-      {
-        "label": "Stay next to the build.",
-        "body": "Design that stops at handoff gets built as something else."
-      },
-      {
-        "label": "Design for the room you’re not in.",
-        "body": "If a component only works when I’m there to explain it, it isn’t finished."
-      },
-      {
-        "label": "Ask for criticism early.",
-        "body": "I’d rather hear it at the prototype than at launch."
-      }
-    ]
+    "body": "I learned most of this from watching handoffs go wrong. A design that stops at the handoff gets built as something else, and a component that only works when I’m in the room to explain it isn’t finished. So I stay next to the build, and I’d rather hear what’s wrong at the prototype than at launch."
   },
   "aboutIntro": {
-    "heading": "Design is how I think.\nBuilding is how I prove it.",
+    "heading": "I design products where the interface\nhas to carry trust.",
     "paragraphs": [
-      "I’m a product designer based in Tunis. I care most about interaction: how a product responds, what it does while it waits, and how it recovers when something breaks. I map the system first, then prototype in code to check it actually feels right."
+      "AI, blockchain and fintech all ask someone to act on a system they cannot check for themselves. Six years of my work has been in that gap.",
+      "Day to day that means interaction: how a product responds, what it does while it waits, how it recovers. I map the system before I draw a screen, then prototype in code to check how it feels."
     ]
   },
   "heroMeta": "Senior Product Designer at InstaDeep, acquired by BioNTech · Six years · Tunis, UTC+1",

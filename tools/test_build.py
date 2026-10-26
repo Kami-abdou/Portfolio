@@ -4114,9 +4114,39 @@ class TestCopyBudget(BuildCase):
         self.assertLess(n, 150, "the homepage body copy is %d words" % n)
 
 
-    def test_the_about_page_is_under_a_hundred_and_sixty_words(self):
+    def test_the_about_page_stays_lean(self):
+        """The cap was 160 and is 190, for one addition.
+
+        What it bought: a positioning statement. The page opened with
+        "Design is how I think. / Building is how I prove it." -- a
+        slogan, which says nothing a reader can act on. It now opens
+        with what the work is FOR: products where the interface has to
+        carry trust, and why AI, blockchain and fintech all land in that
+        gap. That sentence was on the old homepage and the redesign
+        dropped it; this puts it back, where an About page should carry
+        it.
+
+        The counter-pressure is real and stays: this page was 478 words
+        before the redesign, four paragraphs of intro and a note under
+        every job. 190 leaves room for the positioning and nothing else.
+        """
         n = self.words("about.html", {"js-copy-fallback"})
-        self.assertLess(n, 160, "the about page is %d words" % n)
+        self.assertLess(n, 190, "the about page is %d words" % n)
+
+    def test_the_about_page_says_what_the_work_is_for(self):
+        """A portfolio that does not position itself gets filtered out.
+
+        The specific failure is an About page that describes a process
+        instead of a market. "Design is how I think" is true of every
+        designer alive; "products where the interface has to carry
+        trust" is a claim only some can make, and it is the one this
+        site can evidence -- fintech, a digital wallet, and AI.
+        """
+        page = self.html("about.html")
+        self.assertIn("carry trust", page,
+                      "the about page lost its positioning statement")
+        self.assertNotIn("Design is how I think", page,
+                         "the slogan is back in place of the position")
 
     def test_the_counter_excludes_the_chrome_it_claims_to(self):
         """Guards the measurement itself.

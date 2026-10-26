@@ -1434,31 +1434,47 @@ def experience_list(index):
 
 
 def values_block():
-    """How I work: three lines, each a claim and its consequence.
+    """How I work, as a paragraph or as a list of claims.
 
     It was "Values I believe in": an intro paragraph, numbered counters
     and a longer body under each. The numbers implied a ranking that was
     never meant, and the intro explained what the three items already
     say.
+
+    Then it was three lines, each an imperative and its consequence --
+    "Stay next to the build." / "Design that stops at handoff gets built
+    as something else." Which is a shape, and the shape is the problem:
+    a parallel triplet of maxims is the single most machine-written
+    thing a person can put on a portfolio. The content was fine. It
+    reads as prose and as a human the moment it stops being a list.
+
+    So `body` renders a paragraph and `items` renders the list, and the
+    data decides which. Both are supported because the list is still the
+    right form for a page that genuinely has three separate claims to
+    make; this page turned out to have one.
     """
     block = SITE.get("values") or {}
-    items = [i for i in block.get("items", [])
-             if usable(i.get("label")) and usable(i.get("body"))]
-    if not items:
-        return ""
-    rows = "\n".join(
-        '        <li class="value">'
-        '<strong class="value__label">%s</strong> '
-        '<span class="value__body">%s</span></li>'
-        % (e(i["label"]), e(i["body"])) for i in items)
+    heading = e(block.get("heading", "How I work"))
+    body = block.get("body", "")
+    if usable(body):
+        inner = '      <p class="values__prose">%s</p>' % e(body)
+    else:
+        items = [i for i in block.get("items", [])
+                 if usable(i.get("label")) and usable(i.get("body"))]
+        if not items:
+            return ""
+        rows = "\n".join(
+            '        <li class="value">'
+            '<strong class="value__label">%s</strong> '
+            '<span class="value__body">%s</span></li>'
+            % (e(i["label"]), e(i["body"])) for i in items)
+        inner = "      <ul class=\"values\">\n%s\n      </ul>" % rows
     return """
     <section class="band shell band--values" aria-labelledby="values">
       <h2 id="values">%s</h2>
-      <ul class="values">
 %s
-      </ul>
     </section>
-""" % (e(block.get("heading", "How I work")), rows)
+""" % (heading, inner)
 
 
 def build_about(index):
