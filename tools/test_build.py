@@ -4383,7 +4383,7 @@ class TestTheRecruiterPass(BuildCase):
     def test_every_page_carries_its_own_description(self):
         """Three pages shared one forty-character string.
 
-        It was "Product designer. I build what I design." -- the h1
+        It was "Product designer." and then the h1
         again. That is the line Google prints under the result and the
         line Slack and LinkedIn print on the card when the URL is pasted
         into a hiring thread, so three pages were spending their one
@@ -4415,7 +4415,10 @@ class TestTheRecruiterPass(BuildCase):
                 html = self.html(page)
                 desc = re.search(r'<meta name="description" content="([^"]*)"',
                                  html).group(1)
-                self.assertNotIn("I build what I design.", desc)
+                last = self.site["heroClaim"].split("\n")[-1]
+                self.assertNotIn(last, desc,
+                                 "%s's description just repeats the h1's "
+                                 "last line" % page)
 
     def test_the_homepage_names_biontech(self):
         """The one name on this site that travels.
@@ -4524,7 +4527,7 @@ class TestTheRecruiterPass(BuildCase):
                       "nothing on the page says whether you answer")
 
     def test_the_homepage_cashes_its_own_claim(self):
-        """The h1 ends "I build what I design." and then said no more.
+        """The h1 ends on the build claim and then said no more.
 
         It is the one sentence on this site that separates it from every
         other portfolio, and the redesign left it as an assertion with
