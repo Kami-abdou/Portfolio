@@ -3435,11 +3435,33 @@ html { scroll-snap-type: y proximity; }
   height: 100%;
   object-fit: cover;
 }
+/* The greeting, above the claim and well under it in weight.
+   It was line one of the h1 and spent a third of the largest type on
+   the site saying hello. Demoted, not deleted: it is the only warm
+   thing above the fold, and at --font-size-sm in muted ink it reads as
+   someone introducing themselves before making the point, which is
+   what it always was. */
+.opening__greeting {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
 .opening__claim { margin: 0; }
 .opening__meta {
   margin: var(--space-4) 0 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
+}
+/* Four names under the ask, set as a quiet sentence.
+   --color-text-faint, not muted: this is corroboration, and it should
+   be legible to a reader who goes looking for it without competing
+   with the two actions directly above it. */
+.opening__worked {
+  margin: var(--space-4) 0 0;
+  max-width: 48ch;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
 }
 
 /* ── selected work, as an index ───────────────────────────
@@ -3629,6 +3651,55 @@ html { scroll-snap-type: y proximity; }
   .index__link:hover .index__name,
   .index__link:focus-visible .index__name { transform: none; }
   .index__cover { grid-area: pic; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   WAYS TO WORK TOGETHER
+   Between the work and the ask, because it answers the question the
+   work raises -- "what would engaging look like" -- and the closing
+   band is where the answer gets acted on.
+
+   Same surface as .about__card and .aboutblock__card: --color-bg-alt
+   on --radius-xl with the one shadow this site uses. Three of them in
+   an auto-fit grid rather than a fixed three columns, so the row
+   degrades to two-up and then one-up without a breakpoint of its own.
+   ══════════════════════════════════════════════════════════ */
+.band--ways { padding-block: 0 var(--space-16); }
+.ways {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.way {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-alt);
+  box-shadow: 0 18px 40px -24px var(--color-shadow-card);
+}
+.way__title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--tracking-display);
+}
+.way__body {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+/* One quiet ask under the cards. The closing band below has the solid
+   pill; two filled buttons a screen apart would read as the page asking
+   twice. Reuses .ask__act, which is the hero's treatment. */
+.ways__ask {
+  margin: var(--space-6) 0 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* ── the cover, following the cursor ──────────────────────

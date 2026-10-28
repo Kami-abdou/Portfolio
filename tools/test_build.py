@@ -2503,8 +2503,19 @@ class TestPrimaryNav(BuildCase):
             with self.subTest(page=str(rel)):
                 self.assertNotIn("mailto:", nav.group(1),
                                  "%s still fires a mail client from the nav" % rel)
-                self.assertIn('href="https://cal.com/', nav.group(1),
-                              "%s has no route to the booker" % rel)
+                cta = re.search(r'<a class="site-nav__cta"[^>]*href="([^"]*)"',
+                                nav.group(1))
+                self.assertIsNotNone(cta, "%s has no route to the booker" % rel)
+                # Depth-agnostic on purpose: "call/", "../call/" and
+                # "/call/" are all correct, one per page depth, and
+                # 404.html is absolute because it renders at any path.
+                self.assertTrue(cta.group(1).endswith("call/"),
+                                "%s nav points at %s, not /call"
+                                % (rel, cta.group(1)))
+                self.assertNotIn("//", cta.group(1),
+                                 "%s nav links the booking host directly; it "
+                                 "should go through /call so the provider is "
+                                 "swappable in one place" % rel)
 
 
     def test_nav_links_have_a_real_hit_area(self):
@@ -2525,7 +2536,7 @@ class TestPrimaryNav(BuildCase):
         bottom can get in touch without scrolling back.
         """
         close = self.html("index.html").split('id="contact"', 1)[1].split("</section>", 1)[0]
-        self.assertIn('href="https://cal.com/', close,
+        self.assertIn('href="call/"', close,
                       "no way to reach the booker at the foot")
         self.assertIn("mailto:", close, "no way to reach the address at the foot")
 
@@ -2820,20 +2831,51 @@ class TestWorkCards(BuildCase):
         cached page asking for a file that was gone and the <picture>
         showed empty. So the AVIF and its JPEG are shipped together and
         both are asserted on disk.
+
+        THIS TEST USED TO ASSERT NOTHING. It gated on data["live"], a
+        key no content.json has ever carried -- the field is
+        "published" -- so the loop hit `continue` on every project and
+        the suite reported it green for as long as it existed. It was
+        found when the derivatives it names were renamed out from under
+        it and it did not fail.
+
+        It now walks the same ladder build.py reads, and it checks
+        every width that exists rather than one fixed filename.
         """
         import json as _json
+        sys.path.insert(0, str(ROOT))
+        from build import COVER_WIDTHS
+        checked = 0
         for content in sorted((ROOT / "projects").glob("*/content.json")):
             data = _json.loads(content.read_text(encoding="utf-8"))
-            if not data.get("live") or not data.get("cover"):
+            if data.get("published") is False:
                 continue
-            stem = (content.parent / data["cover"]).with_suffix("")
+            cover = data.get("indexImage") or data.get("cover")
+            if not cover:
+                continue
+            stem = (content.parent / cover).with_suffix("")
+            found = []
+            for w in COVER_WIDTHS:
+                pair = [stem.with_name("%s.card-%d.%s" % (stem.name, w, ext))
+                        for ext in ("avif", "jpg")]
+                if not any(f.is_file() for f in pair):
+                    continue  # width skipped: the original is narrower
+                with self.subTest(slug=data.get("slug"), width=w):
+                    for f in pair:
+                        self.assertTrue(f.is_file(),
+                                        "%s is missing its other half; run "
+                                        "tools/make-index-thumbs.py --apply"
+                                        % f.relative_to(ROOT))
+                found.append(w)
             with self.subTest(slug=data.get("slug")):
-                for ext in (".card.avif", ".card.jpg"):
-                    f = stem.with_name(stem.name + ext)
-                    self.assertTrue(f.is_file(),
-                                    "%s is missing; run "
-                                    "tools/make-index-thumbs.py --apply"
-                                    % f.relative_to(ROOT))
+                self.assertTrue(found,
+                                "%s has a cover and no derivatives at all"
+                                % data.get("slug"))
+                self.assertIn(COVER_WIDTHS[0], found,
+                              "%s has no smallest rendering, which is what "
+                              "the cursor peek loads" % data.get("slug"))
+            checked += 1
+        self.assertTrue(checked, "this test walked zero projects again")
 
     def test_the_covers_only_show_where_the_preview_cannot_run(self):
         """The two must be exact inverses, or a pointer device gets the
@@ -4149,15 +4191,15 @@ class TestTheAsk(BuildCase):
     def test_book_a_call_goes_straight_to_cal_in_a_new_tab(self):
         """It pointed at /contact while the booker was embedded there.
 
-        The embed is gone -- see CAL_LINK in build.py -- so this is an
-        outbound link again, and an outbound link that replaces the tab
-        makes the back button the only way back to the work.
+        The embed is gone -- see BOOKING_URL in build.py -- so this is
+        an outbound link again, and an outbound link that replaces the
+        tab makes the back button the only way back to the work. It
+        goes via /call on this domain, which is the hop that keeps the
+        provider out of every link ever written down.
         """
-        sys.path.insert(0, str(ROOT))
-        from build import CAL_LINK
         row = self.actions("index.html")
         book = re.search(r'<a class="btn btn--solid"[^>]*>', row).group(0)
-        self.assertIn('href="%s"' % CAL_LINK, book)
+        self.assertIn('href="call/"', book)
         self.assertIn('target="_blank"', book)
         self.assertIn('rel="noopener"', book)
 
@@ -4240,8 +4282,24 @@ class TestTheAsk(BuildCase):
         literals = re.findall(r'"https://cal\.com/[^"]*"', src)
         self.assertEqual(len(literals), 1,
                          "the calendar URL is written %d times in build.py; "
-                         "it should be CAL_LINK and nothing else" % len(literals))
-        self.assertRegex(src, re.compile(r"^CAL_LINK = ", re.M))
+                         "it should be BOOKING_URL and nothing else"
+                         % len(literals))
+        self.assertRegex(src, re.compile(r"^BOOKING_URL = ", re.M))
+        # And nothing else in the repo may name the host either. One
+        # generated page is allowed to: the redirect itself.
+        import glob, pathlib as pl
+        for path in (glob.glob(str(ROOT / "*.html"))
+                     + glob.glob(str(ROOT / "projects" / "*.html"))
+                     + glob.glob(str(ROOT / "call" / "*.html"))):
+            rel = pl.Path(path).relative_to(ROOT)
+            html = pl.Path(path).read_text(encoding="utf-8")
+            if str(rel) == "call/index.html":
+                self.assertIn("cal.com", html, "/call forwards nowhere")
+                continue
+            with self.subTest(page=str(rel)):
+                self.assertNotIn("cal.com", html,
+                                 "%s names the booking host; every link "
+                                 "should go through /call" % rel)
 
     def test_every_page_carrying_the_actions_offers_both(self):
         """There is no page left that is the booker, so there is no page
@@ -4297,14 +4355,33 @@ class TestCopyBudget(BuildCase):
 
         Every one of those is a thing somebody looking to hire or brief
         you came here to find out. That is the bar for spending from
-        this budget, and it is still a cap: 150 leaves room for one
-        more project row and nothing else. Prose creeping back onto
-        this page fails here.
+        this budget.
+
+        215 is what naming the engagements cost, and it is the largest
+        single step this cap has taken:
+
+          +55  "Ways to work together": a heading and three cards. The
+               page was good at showing what the work WAS and silent on
+               what hiring or briefing looks like, so the only move
+               available to someone who liked it was to book a call and
+               find out. No prices -- a number here answers a question
+               nobody has asked yet.
+          +9   four client and employer names under the ask. The
+               nearest thing to social proof that is honest without
+               asking anyone for a quote.
+          +8   the quiet "Book a call" under the cards.
+          +3   the greeting, which moved OUT of the h1 and into its own
+               line, so these words are not new, they just stopped
+               being a third of the largest type on the site.
+
+        The bar is unchanged and so is the shape of the rule: prose
+        creeping back onto this page still fails here. 215 leaves room
+        for one more project row and nothing else.
         """
         sys.path.insert(0, str(ROOT))
         from build import HOME_NOT_COPY
         n = self.words("index.html", HOME_NOT_COPY)
-        self.assertLess(n, 150, "the homepage body copy is %d words" % n)
+        self.assertLess(n, 215, "the homepage body copy is %d words" % n)
 
 
     def test_the_about_page_stays_lean(self):
@@ -4461,9 +4538,7 @@ class TestTheRecruiterPass(BuildCase):
         m = re.search(r'<p class="ask">(.*?)</p>', self.html("index.html"), re.S)
         self.assertIsNotNone(m, "the homepage has no hero ask")
         row = m.group(1)
-        sys.path.insert(0, str(ROOT))
-        from build import CAL_LINK
-        self.assertIn('href="%s"' % CAL_LINK, row)
+        self.assertIn('href="call/"', row)
         self.assertRegex(row, r'<button[^>]*class="[^"]*js-copy[^"]*"[^>]*type="button"')
         self.assertIn("js-copy-fallback", row, "no mailto fallback")
         self.assertIn('role="status"', row, "no live region")
@@ -4601,19 +4676,32 @@ class TestTheBooker(BuildCase):
     def test_book_a_call_goes_straight_to_cal(self):
         """Three asks, one destination, one string in the source.
 
-        The nav CTA, the hero's quiet ask and the closing band's loud
-        one. They used to point at /contact and that page pointed at
-        Cal, so the booking URL could rot in one place and look fine in
-        the other two.
+        The nav CTA, the hero's quiet ask, the one under the ways
+        cards and the closing band's loud one. All four point at /call
+        here, and /call is the only thing that knows the provider.
+
+        This used to assert the four pointed straight at Cal. That made
+        the booking URL a string written into every generated page, so
+        changing provider meant a rebuild of the whole site and a dead
+        link in every email already sent.
         """
         sys.path.insert(0, str(ROOT))
-        from build import CAL_LINK
-        self.assertTrue(CAL_LINK.startswith("https://cal.com/"))
+        from build import BOOKING_URL
+        self.assertTrue(BOOKING_URL.startswith("https://"))
         home = self.html("index.html")
-        self.assertEqual(home.count('href="%s"' % CAL_LINK), 3,
-                         "the homepage does not have exactly three routes "
+        self.assertEqual(home.count('href="call/"'), 4,
+                         "the homepage does not have exactly four routes "
                          "to the booker")
         self.assertNotIn("REPLACE-ME", home, "the placeholder link shipped")
+        # ...and the hop actually arrives. A redirect page that forgot
+        # its destination is a dead end that every test above passes.
+        stub = (ROOT / "call" / "index.html").read_text(encoding="utf-8")
+        self.assertIn('content="0; url=%s"' % BOOKING_URL, stub,
+                      "/call has no meta refresh to the booking URL")
+        self.assertIn('href="%s"' % BOOKING_URL, stub,
+                      "/call has no visible link for anything that "
+                      "honours neither the refresh nor the script")
+        self.assertIn('location.replace("%s")' % BOOKING_URL, stub)
 
     def test_the_booking_link_opens_in_its_own_tab(self):
         """Booking is a detour, not a destination.
@@ -4623,13 +4711,11 @@ class TestTheBooker(BuildCase):
         so in its accessible name too, because a new tab that announces
         itself only by appearing is WCAG 3.2.5.
         """
-        sys.path.insert(0, str(ROOT))
-        from build import CAL_LINK
         for page in self.pages():
             with self.subTest(page=page):
                 html = self.html(page)
                 for m in re.finditer(
-                        r'<a[^>]*href="%s"[^>]*>(.*?)</a>' % re.escape(CAL_LINK),
+                        r'<a[^>]*href="(?:\.\./)*call/"[^>]*>(.*?)</a>',
                         html, re.S):
                     tag = m.group(0)[:m.group(0).index(">") + 1]
                     self.assertIn('target="_blank"', tag)
@@ -4663,6 +4749,112 @@ class TestTheBooker(BuildCase):
                     ".actions--single"):
             with self.subTest(selector=sel):
                 self.assertNotIn(sel, css)
+
+
+
+class TestTheSecondReviewPass(BuildCase):
+    """Three facts a second outside review asked to be held to.
+
+    Each one is here because a human had to notice it. A claim that
+    quietly became untrue, a link class that quietly rots, and an image
+    that renders without telling anyone what it is -- none of those
+    break a build, so none of them surface without a test that fails.
+    """
+
+    def all_html(self):
+        """Every generated page, redirects and the 404 included."""
+        import glob, pathlib as pl
+        out = []
+        for pat in ("*.html", "projects/*.html", "call/*.html"):
+            for path in sorted(glob.glob(str(ROOT / pat))):
+                rel = pl.Path(path).relative_to(ROOT)
+                out.append((str(rel), pl.Path(path).read_text(encoding="utf-8")))
+        return out
+
+    def test_the_funding_claim_is_gone(self):
+        """Konnect raised after Abdou had left, so it was never his.
+
+        The site carried it three times: the homepage row, a stat block
+        on the case study, and a sentence naming six investors. The
+        surrounding framing was always careful -- "what the company did
+        afterwards is not my work" -- but a figure printed that large
+        reads as a result regardless of the sentence around it, and the
+        one next to it on the page WAS his.
+
+        The Central Bank licence and the Visa accelerator stay. They
+        are the same kind of fact and they are not denominated in
+        money, so they cannot be mistaken for a number he moved.
+        """
+        for page, html in self.all_html():
+            with self.subTest(page=page):
+                for claim in ("1.5M", "1.5 M", "$1.5"):
+                    self.assertNotIn(claim, html,
+                                     "%s still claims %s" % (page, claim))
+        for path in sorted(ROOT.glob("projects/*/content.json")):
+            with self.subTest(source=path.name):
+                self.assertNotIn("1.5", path.read_text(encoding="utf-8"))
+
+    def test_no_link_rots_through_a_redirect_or_the_booking_host(self):
+        """Two classes of link that work today and rot differently.
+
+        /contact is a redirect stub kept alive for inbound links. A page
+        here linking it costs a visitor a hop for nothing, and the day
+        the stub goes, so does the link.
+
+        A cal.com address written into a page is worse: it outlives the
+        page it is on. It goes into emails and LinkedIn messages, and
+        changing provider -- or just claiming a readable slug, which
+        this account has not done -- breaks every copy anyone kept.
+        /call is the indirection that makes that a one-line change.
+        """
+        for page, html in self.all_html():
+            if page == "contact.html" or page == "call/index.html":
+                continue  # the redirects themselves
+            with self.subTest(page=page):
+                self.assertNotRegex(
+                    html, r'href="(?:\.\./|/)*contact(?:\.html)?"',
+                    "%s routes through the /contact redirect" % page)
+                self.assertNotIn("cal.com", html,
+                                 "%s writes the booking host into the page "
+                                 "instead of linking /call" % page)
+
+    def test_every_index_cover_is_described_and_reserved(self):
+        """An image with no alt and no box is two bugs, not one.
+
+        No alt and a screen reader announces a filename or nothing at
+        all, on the one image a phone visitor sees above the fold. No
+        width and height and the row reflows when the bytes land, which
+        on a lazy-loaded list is the page jumping under a thumb that is
+        already moving.
+        """
+        import glob
+        pages = [p for p in ("index.html", "work.html")
+                 if (ROOT / p).is_file()]
+        self.assertTrue(pages, "no homepage to check")
+        for page in pages:
+            html = self.html(page)
+            covers = re.findall(r'<picture class="index__cover">.*?</picture>',
+                                html, re.S)
+            self.assertTrue(covers,
+                            "%s renders no covers; a phone sees no work" % page)
+            for cover in covers:
+                img = re.search(r"<img[^>]*>", cover).group(0)
+                with self.subTest(page=page, img=img[:60]):
+                    alt = re.search(r'alt="([^"]*)"', img)
+                    self.assertIsNotNone(alt, "a cover has no alt attribute")
+                    self.assertGreater(
+                        len(alt.group(1).split()), 3,
+                        "a cover's alt text says nothing: %r" % alt.group(1))
+                    self.assertRegex(img, r'width="\d+"', "a cover has no width")
+                    self.assertRegex(img, r'height="\d+"', "a cover has no height")
+                    self.assertIn('loading="lazy"', img)
+                    # The ladder, not one file. A single 480px source in
+                    # a 327pt box is what shipped first and measured soft
+                    # on any phone above DPR 1.5.
+                    self.assertIn("srcset", cover, "a cover offers one width only")
+                    self.assertIn("sizes=", cover,
+                                  "a srcset with no sizes makes the browser "
+                                  "guess the box at 100vw")
 
 
 # ── the runner ───────────────────────────────────────────────────────────

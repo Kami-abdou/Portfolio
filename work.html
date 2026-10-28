@@ -52,7 +52,7 @@
   <link rel="preload" href="assets/fonts/bricolage-variable.woff2?v=e8a27852" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/fonts.css?v=850c1060">
   <link rel="stylesheet" href="assets/tokens.css?v=0cd1a4fb">
-  <link rel="stylesheet" href="assets/styles.css?v=fdbbacbb">
+  <link rel="stylesheet" href="assets/styles.css?v=13c21ef2">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
   <script>
     /* Before first paint, or the page renders in the system theme and then
@@ -78,7 +78,7 @@
           <a href="about">About</a>
         </span>
         <button class="theme-toggle" type="button" aria-label="Switch between light and dark" aria-pressed="false"><span class="theme-toggle__dial" aria-hidden="true"></span></button>
-        <a class="site-nav__cta" href="https://cal.com/abdou-yaackoubi-lpkcep/30min" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a>
+        <a class="site-nav__cta" href="call/" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a>
       </nav>
     </div>
   </header>
@@ -90,10 +90,12 @@
         <img src="site/portrait.jpg?v=e3c42d74" alt="Portrait of Abdou Yaackoubi" width="280" height="280" decoding="async">
       </figure>
 
-      <h1 class="opening__claim"><span class="claim__line">I design AI and fintech</span><span class="claim__line">products people trust.</span><span class="claim__line claim__line--built">Then I build them.</span></h1>
+      <p class="opening__greeting">Hi, I’m Abdou.</p>
+      <h1 class="opening__claim"><span class="claim__line">I design AI and</span><span class="claim__line">fintech products</span><span class="claim__line">people can trust.</span><span class="claim__line claim__line--built">Then I build them.</span></h1>
       <p class="opening__meta">Senior Product Designer at InstaDeep, acquired by BioNTech · Six years · Tunis, UTC+1</p>
 
-      <p class="ask"><a class="ask__act" href="https://cal.com/abdou-yaackoubi-lpkcep/30min" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a><span class="ask__or">or</span><button class="ask__act js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="ask__act js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="ask__badge"><span class="ask__dot" aria-hidden="true"></span>Open to new projects</span><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></p>
+      <p class="ask"><a class="ask__act" href="call/" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a><span class="ask__or">or</span><button class="ask__act js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="ask__act js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="ask__badge"><span class="ask__dot" aria-hidden="true"></span>Open to new projects</span><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></p>
+      <p class="opening__worked">Worked with InstaDeep (BioNTech), Konnect, Steer AI and Groupado</p>
     </section>
     </div>
 
@@ -102,9 +104,9 @@
       <h2 class="band__title">Selected work</h2>
       <ol class="index">
         <li class="index__row">
-          <a class="index__link" href="projects/instadeep" data-peek="projects/10-instadeep/assets/index-cover.card.jpg?v=a20804bc">
+          <a class="index__link" href="projects/instadeep" data-peek="projects/10-instadeep/assets/index-cover.card-480.jpg?v=a20804bc">
             <span class="index__num" aria-hidden="true">01</span>
-            <picture class="index__cover" aria-hidden="true"><source srcset="projects/10-instadeep/assets/index-cover.card.avif?v=7719d4a8" type="image/avif"><img src="projects/10-instadeep/assets/index-cover.card.jpg?v=a20804bc" alt="" loading="lazy" decoding="async" width="480" height="300"></picture>
+            <picture class="index__cover"><source type="image/avif" srcset="projects/10-instadeep/assets/index-cover.card-480.avif?v=7719d4a8 480w, projects/10-instadeep/assets/index-cover.card-960.avif?v=3b8f3047 960w, projects/10-instadeep/assets/index-cover.card-1440.avif?v=367cc085 1440w" sizes="(min-width: 1200px) 1152px, calc(100vw - 3rem)"><img src="projects/10-instadeep/assets/index-cover.card-1440.jpg?v=4c712b96" srcset="projects/10-instadeep/assets/index-cover.card-480.jpg?v=a20804bc 480w, projects/10-instadeep/assets/index-cover.card-960.jpg?v=0447653f 960w, projects/10-instadeep/assets/index-cover.card-1440.jpg?v=4c712b96 1440w" sizes="(min-width: 1200px) 1152px, calc(100vw - 3rem)" alt="InstaDeep project cover: the InstaNovo and DeepPCB websites" loading="lazy" decoding="async" width="1440" height="900"></picture>
             <span class="index__name">InstaDeep</span>
             <span class="index__line">One design system under 3 AI products and 10+ client demos.</span>
             <span class="index__domain">AI</span>
@@ -113,20 +115,20 @@
           </a>
         </li>
         <li class="index__row">
-          <a class="index__link" href="projects/konnect" data-peek="projects/02-konnect/assets/index-cover.card.jpg?v=42099a8e">
+          <a class="index__link" href="projects/konnect" data-peek="projects/02-konnect/assets/index-cover.card-480.jpg?v=42099a8e">
             <span class="index__num" aria-hidden="true">02</span>
-            <picture class="index__cover" aria-hidden="true"><source srcset="projects/02-konnect/assets/index-cover.card.avif?v=264dbc0b" type="image/avif"><img src="projects/02-konnect/assets/index-cover.card.jpg?v=42099a8e" alt="" loading="lazy" decoding="async" width="480" height="300"></picture>
+            <picture class="index__cover"><source type="image/avif" srcset="projects/02-konnect/assets/index-cover.card-480.avif?v=264dbc0b 480w, projects/02-konnect/assets/index-cover.card-960.avif?v=b9cb0a10 960w, projects/02-konnect/assets/index-cover.card-1440.avif?v=64cfb0f0 1440w" sizes="(min-width: 1200px) 1152px, calc(100vw - 3rem)"><img src="projects/02-konnect/assets/index-cover.card-1440.jpg?v=fbb3fa36" srcset="projects/02-konnect/assets/index-cover.card-480.jpg?v=42099a8e 480w, projects/02-konnect/assets/index-cover.card-960.jpg?v=e424b733 960w, projects/02-konnect/assets/index-cover.card-1440.jpg?v=fbb3fa36 1440w" sizes="(min-width: 1200px) 1152px, calc(100vw - 3rem)" alt="Konnect project cover: two screens of the Konnect wallet app" loading="lazy" decoding="async" width="1440" height="900"></picture>
             <span class="index__name">Konnect</span>
-            <span class="index__line">Sole designer among 15 engineers; the MVP raised $1.5M.</span>
+            <span class="index__line">Sole designer among 15 engineers; designed the MVP that launched.</span>
             <span class="index__domain">Fintech</span>
             <span class="index__year">2020-21</span>
             <span class="index__arrow" aria-hidden="true">&#8599;</span>
           </a>
         </li>
         <li class="index__row">
-          <a class="index__link" href="projects/steer" data-peek="projects/01-steer/assets/index-cover.card.jpg?v=a867f8d4">
+          <a class="index__link" href="projects/steer" data-peek="projects/01-steer/assets/index-cover.card-480.jpg?v=a867f8d4">
             <span class="index__num" aria-hidden="true">03</span>
-            <picture class="index__cover" aria-hidden="true"><source srcset="projects/01-steer/assets/index-cover.card.avif?v=5aaffb76" type="image/avif"><img src="projects/01-steer/assets/index-cover.card.jpg?v=a867f8d4" alt="" loading="lazy" decoding="async" width="480" height="300"></picture>
+            <picture class="index__cover"><source type="image/avif" srcset="projects/01-steer/assets/index-cover.card-480.avif?v=5aaffb76 480w, projects/01-steer/assets/index-cover.card-960.avif?v=f3ff40f0 960w, projects/01-steer/assets/index-cover.card-1440.avif?v=6d9ec87d 1440w" sizes="(min-width: 1200px) 1152px, calc(100vw - 3rem)"><img src="projects/01-steer/assets/index-cover.card-1440.jpg?v=a3e3c9fe" srcset="projects/01-steer/assets/index-cover.card-480.jpg?v=a867f8d4 480w, projects/01-steer/assets/index-cover.card-960.jpg?v=01227396 960w, projects/01-steer/assets/index-cover.card-1440.jpg?v=a3e3c9fe 1440w" sizes="(min-width: 1200px) 1152px, calc(100vw - 3rem)" alt="Steer project cover: the DeepDiag page and the Steer marketplace homepage" loading="lazy" decoding="async" width="1440" height="900"></picture>
             <span class="index__name">Steer</span>
             <span class="index__line">Sole designer and product lead; the company raised in France.</span>
             <span class="index__domain">Automotive retail</span>
@@ -135,9 +137,9 @@
           </a>
         </li>
         <li class="index__row">
-          <a class="index__link" href="projects/groupado" data-peek="projects/04-groupado/assets/index-cover.card.jpg?v=e273d40a">
+          <a class="index__link" href="projects/groupado" data-peek="projects/04-groupado/assets/index-cover.card-480.jpg?v=e273d40a">
             <span class="index__num" aria-hidden="true">04</span>
-            <picture class="index__cover" aria-hidden="true"><source srcset="projects/04-groupado/assets/index-cover.card.avif?v=9a680632" type="image/avif"><img src="projects/04-groupado/assets/index-cover.card.jpg?v=e273d40a" alt="" loading="lazy" decoding="async" width="480" height="300"></picture>
+            <picture class="index__cover"><source type="image/avif" srcset="projects/04-groupado/assets/index-cover.card-480.avif?v=9a680632 480w, projects/04-groupado/assets/index-cover.card-960.avif?v=cf5ab89a 960w, projects/04-groupado/assets/index-cover.card-1440.avif?v=ad2eb10a 1440w" sizes="(min-width: 1200px) 1152px, calc(100vw - 3rem)"><img src="projects/04-groupado/assets/index-cover.card-1440.jpg?v=b8e6b09c" srcset="projects/04-groupado/assets/index-cover.card-480.jpg?v=e273d40a 480w, projects/04-groupado/assets/index-cover.card-960.jpg?v=063f48d2 960w, projects/04-groupado/assets/index-cover.card-1440.jpg?v=b8e6b09c 1440w" sizes="(min-width: 1200px) 1152px, calc(100vw - 3rem)" alt="Groupado project cover: two pages of the Groupado experiences marketplace" loading="lazy" decoding="async" width="1440" height="900"></picture>
             <span class="index__name">Groupado</span>
             <span class="index__line">Web and mobile shipped in 8 months, homepage built for search.</span>
             <span class="index__domain">Skills marketplace</span>
@@ -149,17 +151,28 @@
     </section>
 
 
+    <section class="band shell band--ways" aria-labelledby="ways">
+      <h2 class="band__title" id="ways">Ways to work together</h2>
+      <ul class="ways">
+        <li class="way"><h3 class="way__title">MVP sprint</h3><p class="way__body">Product design and a coded prototype for a first release or a fundraise.</p></li>
+        <li class="way"><h3 class="way__title">AI UX review</h3><p class="way__body">Onboarding, empty states, errors and trust signals in your AI product, with fixes ranked by impact.</p></li>
+        <li class="way"><h3 class="way__title">Design system</h3><p class="way__body">Components, tokens and states a small team can use without a designer in the room.</p></li>
+      </ul>
+      <p class="ways__ask"><a class="ask__act" href="call/" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a></p>
+    </section>
+
+
     <section class="band shell band--close" id="contact">
       <h2 class="band__close">Have something in mind?</h2>
       <p class="close__proof">This site is the proof: my Figma, my code, and a test suite that checks its own claims.</p>
-      <div class="actions"><a class="btn btn--solid" href="https://cal.com/abdou-yaackoubi-lpkcep/30min" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a><button class="btn js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="btn js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></div>
+      <div class="actions"><a class="btn btn--solid" href="call/" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a><button class="btn js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="btn js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></div>
       <p class="reach"><a class="reach__addr" href="mailto:abdouyaackoubi@gmail.com">abdouyaackoubi@gmail.com</a><span class="reach__sep" aria-hidden="true"> · </span><span class="reach__reply">Usually a reply the same day.</span></p>
     </section>
 
   </main>
   <footer class="site-foot">
     <div class="shell site-foot__inner">
-      <p class="site-foot__note">© 2026 Abdou Yaackoubi<span class="site-foot__sep" aria-hidden="true"> · </span>Last updated October 2026<span class="site-foot__sep" aria-hidden="true"> · </span><a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener">LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a><span class="site-foot__sep" aria-hidden="true"> · </span><a href="site/CV-Abdou-Yaackoubi.pdf?v=86f36456" target="_blank" rel="noopener">CV (PDF)<span class="visually-hidden"> (opens in a new tab)</span></a></p>
+      <p class="site-foot__note">© 2026 Abdou Yaackoubi<span class="site-foot__sep" aria-hidden="true"> · </span>Last updated October 2026<span class="site-foot__sep" aria-hidden="true"> · </span><a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener">LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a><span class="site-foot__sep" aria-hidden="true"> · </span><a href="site/CV-Abdou-Yaackoubi.pdf?v=41def01a" target="_blank" rel="noopener">CV (PDF)<span class="visually-hidden"> (opens in a new tab)</span></a></p>
     </div>
   </footer>
   <script src="assets/lightbox.js?v=652506b0" defer></script>

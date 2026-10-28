@@ -50,6 +50,7 @@
   ],
   "cover": "assets/01-homepage.jpg",
   "indexImage": "assets/index-cover.jpg",
+  "indexImageAlt": "Steer project cover: the DeepDiag page and the Steer marketplace homepage",
   "sections": [
     {
       "id": "context",

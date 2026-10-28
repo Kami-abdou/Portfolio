@@ -7,7 +7,7 @@
   "experience": [
     {
       "company": "InstaDeep",
-      "role": "Senior Product Designer",
+      "role": "UX/UI Designer \u2192 Senior Product Designer",
       "years": "2024-now",
       "projects": [
         "instadeep"
@@ -31,7 +31,7 @@
     },
     {
       "company": "T-ledger",
-      "role": "Product Designer",
+      "role": "UX/UI Designer",
       "years": "2020-21",
       "projects": [
         "konnect",
@@ -75,7 +75,9 @@
   "url": "https://abdouyaackoubi.com",
   "shareImage": "site/share-card.png",
   "metaDescription": "Product designer. I build what I design.",
-  "heroClaim": "I design AI and fintech\nproducts people trust.\nThen I build them.",
+  "heroGreeting": "Hi, I\u2019m Abdou.",
+  "heroClaim": "I design AI and\nfintech products\npeople can trust.\nThen I build them.",
+  "workedWith": "Worked with InstaDeep (BioNTech), Konnect, Steer AI and Groupado",
   "values": {
     "heading": "How I work",
     "body": "I learned most of this from watching handoffs go wrong. A design that stops at the handoff gets built as something else, and a component that only works when I’m in the room to explain it isn’t finished. So I stay next to the build, and I’d rather hear what’s wrong at the prototype than at launch."
@@ -103,6 +105,23 @@
   "availability": "Open to new projects",
   "replyTime": "Usually a reply the same day.",
   "buildProof": "This site is the proof: my Figma, my code, and a test suite that checks its own claims.",
+  "ways": {
+    "heading": "Ways to work together",
+    "items": [
+      {
+        "title": "MVP sprint",
+        "body": "Product design and a coded prototype for a first release or a fundraise."
+      },
+      {
+        "title": "AI UX review",
+        "body": "Onboarding, empty states, errors and trust signals in your AI product, with fixes ranked by impact."
+      },
+      {
+        "title": "Design system",
+        "body": "Components, tokens and states a small team can use without a designer in the room."
+      }
+    ]
+  },
   "metaDescriptions": {
     "home": "Senior product designer. Six years across fintech, automotive retail and AI: designing products and building them.",
     "about": "Senior product designer across AI, blockchain and fintech: what I work on, and why I build the things I design."

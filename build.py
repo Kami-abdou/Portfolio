@@ -376,7 +376,29 @@ def link_icon(label, depth=0, *, slug=None):
 #: takes this site to ZERO third-party requests and zero third-party
 #: script -- which is a claim the portfolio case study makes about
 #: itself. The cost is one context switch before booking.
-CAL_LINK = "https://cal.com/abdou-yaackoubi-lpkcep/30min"
+#: WHERE BOOKING ACTUALLY GOES. The one place in the repo that names the
+#: booking host. Changing provider -- or changing the Cal slug, which is
+#: still the ugly generated one -- is this line and nothing else.
+BOOKING_URL = "https://cal.com/abdou-yaackoubi-lpkcep/30min"
+
+#: ...and what the SITE links to, which is deliberately not the line above.
+#:
+#: Every "Book a call" on the site points at /call here, a page on this
+#: domain that forwards to BOOKING_URL. Three reasons, in order of how
+#: much they matter:
+#:
+#:   * The address is sayable. "abdouyaackoubi.com/call" goes in an email,
+#:     a LinkedIn message or out loud; the Cal URL carries a random slug.
+#:   * The provider stops being load-bearing. If Cal is replaced, every
+#:     link already written down anywhere still works.
+#:   * The redirect is one hop and costs nothing, because the page is
+#:     static and replaces itself before it can be read.
+CALL_PATH = "call/"
+
+
+def call_href(up=""):
+    """The on-site booking URL, relative to a page `up` levels deep."""
+    return "%s%s" % (up, CALL_PATH)
 
 NEW_TAB = ' target="_blank" rel="noopener"'
 
@@ -431,7 +453,7 @@ def ask_row(depth=0):
              '<span class="ask__dot" aria-hidden="true"></span>%s</span>'
              % e(label)) if usable(label) else ""
     book = ('<a class="ask__act" href="%s"%s>Book a call%s</a>'
-            % (e(CAL_LINK), NEW_TAB, NEW_TAB_NOTE))
+            % (e(call_href("../" * depth)), NEW_TAB, NEW_TAB_NOTE))
     if not usable(addr):
         return '<p class="ask">%s%s</p>' % (book, badge)
     # With JavaScript off the button hides and the mailto shows, and
@@ -512,7 +534,7 @@ def actions_row(depth=0, *, cls="actions"):
     """
     addr = SITE.get("email", "")
     book = ('<a class="btn btn--solid" href="%s"%s>Book a call%s</a>'
-            % (e(CAL_LINK), NEW_TAB, NEW_TAB_NOTE))
+            % (e(call_href("../" * depth)), NEW_TAB, NEW_TAB_NOTE))
     if not usable(addr):
         return '<div class="%s">%s</div>' % (cls, book)
     return (
@@ -814,7 +836,7 @@ def primary_nav(up, current=None):
         '        %s\n'
         '        <a class="site-nav__cta" href="%s"%s>Book a call%s</a>\n'
         '      </nav>' % ("\n          ".join(out), toggle,
-                          e(CAL_LINK), NEW_TAB, NEW_TAB_NOTE))
+                          e(call_href(up)), NEW_TAB, NEW_TAB_NOTE))
 
 
 def head(title, description, *, depth=0, image=None, page_url="",
@@ -1222,24 +1244,37 @@ def project_domain(project):
     return parts[1] if len(parts) > 2 else ""
 
 
-def thumb_sources(project):
-    """(avif, jpg, width, height) for a project's index thumbnail.
+#: The widths tools/make-index-thumbs.py renders, smallest first. They
+#: are 1x, 2x and 3x of the sizes this cover is actually displayed at --
+#: see that file for the arithmetic.
+COVER_WIDTHS = (480, 960, 1440)
 
-    Built by tools/make-index-thumbs.py from assets/_src, so the pair is
-    regenerated from originals rather than recompressed. Returns None
-    when either half is missing -- a <picture> whose <source> 404s shows
-    nothing at all, so it is both files or neither.
+#: What the browser is told the cover will occupy, so it can pick a width
+#: before layout exists. The cover spans the shell, which is the viewport
+#: less two 1.5rem gutters, capped at the 1200px --max-width.
+COVER_SIZES = "(min-width: 1200px) 1152px, calc(100vw - 3rem)"
+
+
+def thumb_sources(project):
+    """[(width, avif, jpg)] for a project's index cover, smallest first.
+
+    Built by tools/make-index-thumbs.py from assets/_src, so the set is
+    regenerated from originals rather than recompressed. A width is only
+    included when BOTH halves exist -- a <picture> whose <source> 404s
+    shows nothing at all rather than falling back, so it is both files
+    or neither, per width.
     """
     cover = project.get("indexImage") or project.get("cover")
     if not cover:
         return None
-    base = "projects/%s/%s" % (project["_dir"], cover)
-    stem = base.rsplit(".", 1)[0] + ".card"
-    avif, jpg = stem + ".avif", stem + ".jpg"
-    if not ((ROOT / avif).is_file() and (ROOT / jpg).is_file()):
-        return None
-    w, h = png_size(ROOT / jpg)
-    return avif, jpg, w or 480, h or 300
+    stem = "projects/%s/%s" % (project["_dir"], cover)
+    stem = stem.rsplit(".", 1)[0] + ".card-"
+    out = []
+    for w in COVER_WIDTHS:
+        avif, jpg = "%s%d.avif" % (stem, w), "%s%d.jpg" % (stem, w)
+        if (ROOT / avif).is_file() and (ROOT / jpg).is_file():
+            out.append((w, avif, jpg))
+    return out or None
 
 
 def index_row(project, n, depth=0):
@@ -1301,13 +1336,33 @@ def index_row(project, n, depth=0):
     card = thumb_sources(project)
     pic = ""
     if card:
-        avif, jpg, w, h = card
+        # The browser picks ONE of these. The ladder exists so a DPR-3
+        # phone stops being handed 480 pixels for a 327pt box, which is
+        # what shipped first and measured visibly soft.
+        srcset = lambda i: ", ".join(
+            "%s%s%s %dw" % (up, e(f[i]), asset_v(f[i]), f[0]) for f in card)
+        widest = card[-1]
+        w, h = png_size(ROOT / widest[2])
+        # Real alt text, not alt="".
+        #
+        # The row's own text would normally make this image decorative,
+        # and an empty alt would be the textbook call. It is authored
+        # instead because the cover is not a decoration of the row: it
+        # is four product screenshots and a claim, and on a phone it is
+        # the ONLY look at the work above the fold. A visitor who cannot
+        # see it should be told what is in it.
+        alt = project.get("indexImageAlt")
+        if not usable(alt):
+            alt = "%s project cover" % project["title"]
         pic = (
-            '<picture class="index__cover" aria-hidden="true">'
-            '<source srcset="%s%s%s" type="image/avif">'
-            '<img src="%s%s%s" alt="" loading="lazy" decoding="async"'
-            ' width="%d" height="%d"></picture>'
-            % (up, e(avif), asset_v(avif), up, e(jpg), asset_v(jpg), w, h))
+            '<picture class="index__cover">'
+            '<source type="image/avif" srcset="%s" sizes="%s">'
+            '<img src="%s%s%s" srcset="%s" sizes="%s" alt="%s"'
+            ' loading="lazy" decoding="async" width="%d" height="%d">'
+            '</picture>'
+            % (srcset(1), COVER_SIZES,
+               up, e(widest[2]), asset_v(widest[2]), srcset(2), COVER_SIZES,
+               e(alt), w or widest[0], h or int(widest[0] * 10 / 16)))
 
     return """        <li class="index__row">
           <a class="index__link" href="{up}projects/{slug}" data-peek="{up}{peek}{pv}">
@@ -1326,9 +1381,50 @@ def index_row(project, n, depth=0):
         # lightbox-grade pixels for a preview 250px wide, and the four
         # designed covers have no 900px rendering at all -- only an _src
         # original and this pair.
-        peek=e(card[1] if card else cover), pv=asset_v(card[1] if card else cover),
+        peek=e(card[0][2] if card else cover),
+        pv=asset_v(card[0][2] if card else cover),
         pic=pic, title=e(project["title"]), line=e(line),
         domain=e(project_domain(project)), year=e(project_year(project)))
+
+
+def ways_block(depth=0):
+    """Three things someone can actually buy, named.
+
+    The site was good at showing what the work WAS and silent on what
+    engaging looks like, so a visitor who liked the work had one move
+    available: book a call and find out. This names the three shapes the
+    work usually takes, which is the question that otherwise gets asked
+    on the call.
+
+    NO PRICES, on purpose. A number here would be answering a question
+    nobody has asked yet, and every one of these is scoped per project.
+
+    ONE quiet link under the cards, not a solid button, even though the
+    closing band twenty pixels below has a solid one. Two filled pills
+    stacked would read as the page asking twice. Same rule as the hero:
+    quiet where the work is still doing the arguing, loud once it has
+    finished. The dotted underline is the hero's own ask treatment.
+    """
+    block = SITE.get("ways") or {}
+    items = [i for i in block.get("items", [])
+             if usable(i.get("title")) and usable(i.get("body"))]
+    if not items:
+        return ""
+    cards = "\n".join(
+        '        <li class="way">'
+        '<h3 class="way__title">%s</h3>'
+        '<p class="way__body">%s</p></li>' % (e(i["title"]), e(i["body"]))
+        for i in items)
+    return """
+    <section class="band shell band--ways" aria-labelledby="ways">
+      <h2 class="band__title" id="ways">%s</h2>
+      <ul class="ways">
+%s
+      </ul>
+      <p class="ways__ask"><a class="ask__act" href="%s"%s>Book a call%s</a></p>
+    </section>
+""" % (e(block.get("heading", "Ways to work together")), cards,
+       e(call_href("../" * depth)), NEW_TAB, NEW_TAB_NOTE)
 
 
 def build_index(projects):
@@ -1373,6 +1469,30 @@ def build_index(projects):
     meta_html = ('\n      <p class="opening__meta">%s</p>' % e(meta_line)
                  ) if usable(meta_line) else ""
 
+    # The greeting, demoted from headline to eyebrow.
+    #
+    # It used to be line one of the h1, which spent a third of the
+    # largest type on the site introducing a person rather than the
+    # work. It is not worthless though -- it is the only warm thing
+    # above the fold -- so it keeps its place in the reading order and
+    # loses its weight. aria-hidden is NOT set: it is real text a
+    # screen reader should read, just small.
+    greeting = SITE.get("heroGreeting", "")
+    greet_html = ('      <p class="opening__greeting">%s</p>\n' % e(greeting)
+                  ) if usable(greeting) else ""
+
+    # Four names, as text, under the ask.
+    #
+    # The nearest thing this page has to social proof, and the only
+    # version of it that is honest right now: these are employers and
+    # clients, not endorsements, so they are set as a sentence rather
+    # than a logo wall. A logo wall implies permission that was never
+    # asked for and a relationship -- "trusted by" -- that a job does
+    # not make true.
+    worked = SITE.get("workedWith", "")
+    worked_html = ('\n      <p class="opening__worked">%s</p>' % e(worked)
+                   ) if usable(worked) else ""
+
     out.append(f"""
     <div class="shell hero-band">
     <section class="opening">
@@ -1380,9 +1500,9 @@ def build_index(projects):
         <img src="{e(hero_img)}{asset_v(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
       </figure>
 
-      <h1 class="opening__claim">{claim_html}</h1>{meta_html}
+{greet_html}      <h1 class="opening__claim">{claim_html}</h1>{meta_html}
 
-      {ask_row()}
+      {ask_row()}{worked_html}
     </section>
     </div>
 """)
@@ -1405,6 +1525,9 @@ def build_index(projects):
       </ol>
     </section>
 """)
+
+    # ── Ways to work together ────────────────────────────────────────
+    out.append(ways_block())
 
     # ── The closing ask ──────────────────────────────────────────────
     # The hero's ask again, in its loud form, plus the two things the
@@ -2084,6 +2207,60 @@ def build_contact_redirect():
        e(TOKENS["color"]["accent"]), e(target), e(target)), encoding="utf-8")
 
 
+
+def build_call_redirect():
+    """/call, the bookable address on this domain.
+
+    Same mechanism as build_contact_redirect and a different purpose.
+    That one preserves a URL the site used to serve; this one creates a
+    URL the site never had, so that the booking address is something
+    Abdou can say out loud and write in an email.
+
+    THE CANONICAL IS DELIBERATELY ABSENT and robots is noindex. /contact
+    carries a canonical because it had years of inbound signal to pass
+    on to a real page here. /call has none to pass, and the only place
+    it could point is off-site, which is not what a canonical is for. A
+    redirect with nothing of its own to say should stay out of the
+    index; the pages worth finding are already in the sitemap.
+
+    GitHub Pages has no redirect rules -- no vercel.json, no _redirects,
+    no .htaccess, just CNAME and .nojekyll -- so this is a directory
+    with an index.html in it, which is the only server-independent way
+    to own a path. The trailing slash in CALL_PATH is what makes
+    /call and /call/ both resolve.
+    """
+    target = BOOKING_URL
+    out = ROOT / "call"
+    out.mkdir(exist_ok=True)
+    (out / "index.html").write_text("""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book a call - %s</title>
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url=%s">
+<style>
+  body { margin:0; min-height:100vh; display:grid; place-items:center;
+         background:%s; color:%s; font:400 16px/1.5 system-ui, sans-serif;
+         padding:24px; text-align:center; }
+  a { color:%s; }
+</style>
+</head>
+<body>
+  <p>Opening the booking page&hellip;<br>
+     <a href="%s">Book a 30-minute call</a> if nothing happens.</p>
+  <!-- The meta refresh is the no-JavaScript path. This runs first where
+       scripts are on; replace() rather than assign() so the hop does not
+       take a slot in history and trap the back button on the way out. -->
+  <script>location.replace("%s");</script>
+</body>
+</html>
+""" % (e(SITE["name"]), e(target),
+       e(TOKENS["color"]["bg"]), e(TOKENS["color"]["text"]),
+       e(TOKENS["color"]["accent"]), e(target), e(target)), encoding="utf-8")
+
+
 def build_404():
     """The page a bad link lands on.
 
@@ -2128,6 +2305,7 @@ def main():
         build_project(p, projects[i - 1] if i else None,
                       projects[i + 1] if i + 1 < len(projects) else None)
     build_contact_redirect()
+    build_call_redirect()
     build_404()
     n_urls = write_sitemap(projects)
 

@@ -45,6 +45,7 @@
   ],
   "cover": "assets/n1-homepage.jpg",
   "indexImage": "assets/index-cover.jpg",
+  "indexImageAlt": "Groupado project cover: two pages of the Groupado experiences marketplace",
   "sections": [
     {
       "id": "context",
