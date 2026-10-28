@@ -2781,18 +2781,68 @@ class TestWorkCards(BuildCase):
                     self.assertIn(cls, row, "row %d has no %s" % (i, cls))
 
 
-    def test_a_row_ships_no_image_of_its_own(self):
-        """The covers are previews, not content.
+    def test_a_row_carries_its_cover_for_devices_that_cannot_hover(self):
+        """This asserted the opposite until an outside reviewer read the
+        site on a phone.
 
-        Five rows each carrying a cover <img> would be the card layout
-        again with smaller pictures -- five requests for images most
-        visitors never look at. The cover rides on an attribute and is
-        fetched by the preview when a row is actually hovered.
+        The old rule was "the covers are previews, not content": five
+        inline covers would be the card layout again, five requests for
+        images most visitors never look at. That reasoning holds for a
+        visitor with a cursor, who gets the peek preview on demand.
+
+        It was wrong for everyone else. The peek is gated on `(hover:
+        hover) and (pointer: fine)`, so on a phone the homepage rendered
+        ONE image -- the portrait -- and a product designer's portfolio
+        showed no work at all.
+
+        The cost objection was real and is answered with bytes rather
+        than by dropping the image: a 480px AVIF derivative, 170 KB for
+        all five against 1.4 MB for the 900px grid files, lazy-loaded so
+        the rows below the fold cost nothing until they are reached. CSS
+        shows them only where the peek cannot run.
         """
         for i, row in enumerate(self.rows()):
             with self.subTest(row=i):
-                self.assertNotIn("<img", row,
-                                 "row %d ships a cover image inline" % i)
+                self.assertIn("index__cover", row,
+                              "row %d has no cover, so a phone visitor "
+                              "sees no work" % i)
+                self.assertIn('loading="lazy"', row,
+                              "row %d fetches its cover eagerly" % i)
+                self.assertRegex(row, r'<img[^>]*\bwidth="\d+"[^>]*\bheight="\d+"',
+                                 "row %d reserves no space, so the list "
+                                 "reflows as covers arrive" % i)
+
+    def test_the_cover_pair_is_both_files_or_neither(self):
+        """A <source> that 404s renders NOTHING. It does not fall back.
+
+        This repo learned that once already, when a deleted AVIF left a
+        cached page asking for a file that was gone and the <picture>
+        showed empty. So the AVIF and its JPEG are shipped together and
+        both are asserted on disk.
+        """
+        import json as _json
+        for content in sorted((ROOT / "projects").glob("*/content.json")):
+            data = _json.loads(content.read_text(encoding="utf-8"))
+            if not data.get("live") or not data.get("cover"):
+                continue
+            stem = (content.parent / data["cover"]).with_suffix("")
+            with self.subTest(slug=data.get("slug")):
+                for ext in (".card.avif", ".card.jpg"):
+                    f = stem.with_name(stem.name + ext)
+                    self.assertTrue(f.is_file(),
+                                    "%s is missing; run "
+                                    "tools/make-index-thumbs.py --apply"
+                                    % f.relative_to(ROOT))
+
+    def test_the_covers_only_show_where_the_preview_cannot_run(self):
+        """The two must be exact inverses, or a pointer device gets the
+        cover twice and a touch device gets it never."""
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        self.assertRegex(css, r"\.index__cover\s*\{\s*display:\s*none",
+                         "the inline cover is not hidden by default, so a "
+                         "pointer device shows it and the peek together")
+        self.assertRegex(css, r"@media \(hover: none\), \(pointer: coarse\)",
+                         "nothing reveals the inline cover")
 
 
     def test_the_cover_follows_the_cursor_instead_of_filling_the_page(self):

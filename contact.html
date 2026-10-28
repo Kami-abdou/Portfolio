@@ -13,6 +13,15 @@
 </style>
 </head>
 <body>
-  <p>This page has moved. <a href="/#contact">Continue to the contact section</a>.</p>
+  <p>Taking you to the contact section&hellip;
+     <a href="/#contact">Continue</a> if nothing happens.</p>
+  <!-- The meta refresh above is the no-JavaScript path and fires on its
+       own. This runs first where scripts are on, which matters: an
+       outside reviewer reported landing on "This page has moved" from a
+       cached old page, and whatever the browser was doing with the
+       refresh, a visitor should never READ this page. replace() rather
+       than assign() so the stub does not take a slot in history and
+       trap the back button. -->
+  <script>location.replace("/#contact");</script>
 </body>
 </html>

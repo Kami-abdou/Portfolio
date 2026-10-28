@@ -3561,6 +3561,19 @@ html { scroll-snap-type: y proximity; }
 .index__link:focus-visible::before { opacity: 1; }
 .index__link > span { position: relative; z-index: 1; }
 
+/* The cover, in the layout, for anyone who cannot hover.
+   
+   Hidden here on purpose. Where there is a cursor there is the peek
+   preview, which shows the cover larger and on demand, and putting the
+   same image in the row as well would be saying it twice.
+   
+   Where there is NO cursor there was nothing: the homepage rendered one
+   image, the portrait, so a phone visitor saw a product designer's
+   portfolio with no work in it. The media query below is the exact
+   inverse of the peek's own gate, so the two can never both be on or
+   both be off. */
+.index__cover { display: none; }
+
 /* The wash never travels alone. Three small movements ride with it, all
    made of things already on the page: the row's own hairline takes the
    accent, the line of description comes up from muted to full strength,
@@ -3601,7 +3614,8 @@ html { scroll-snap-type: y proximity; }
     grid-template-columns: 1.75rem minmax(0, 1fr) auto;
     grid-template-areas:
       "num  name line-end"
-      "line line line";
+      "line line line"
+      "pic  pic  pic";
     gap: var(--space-2) var(--space-3);
     padding-block: var(--space-4);
     align-items: baseline;
@@ -3614,6 +3628,7 @@ html { scroll-snap-type: y proximity; }
   .index__arrow { display: none; }
   .index__link:hover .index__name,
   .index__link:focus-visible .index__name { transform: none; }
+  .index__cover { grid-area: pic; }
 }
 
 /* ── the cover, following the cursor ──────────────────────
@@ -3756,4 +3771,29 @@ html { scroll-snap-type: y proximity; }
 
   .card__row { gap: var(--space-1) var(--space-3); }
   .card__years { margin-left: 0; flex-basis: 100%; }
+}
+
+/* ── index covers, where there is no cursor ───────────────
+   The inverse of the peek gate. A touch device gets the cover in the
+   row; a pointer device gets it following the cursor. Never both.
+   
+   aspect-ratio with object-fit, not the image's own proportions: five
+   covers at five different shapes would make the list lurch as it
+   scrolls. The space is reserved by width/height on the <img> as well,
+   so nothing reflows when a lazy image arrives. */
+@media (hover: none), (pointer: coarse) {
+  .index__cover {
+    display: block;
+    margin-top: var(--space-3);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-bg-alt);
+  }
+  .index__cover img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
 }

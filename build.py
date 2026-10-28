@@ -1222,6 +1222,26 @@ def project_domain(project):
     return parts[1] if len(parts) > 2 else ""
 
 
+def thumb_sources(project):
+    """(avif, jpg, width, height) for a project's index thumbnail.
+
+    Built by tools/make-index-thumbs.py from assets/_src, so the pair is
+    regenerated from originals rather than recompressed. Returns None
+    when either half is missing -- a <picture> whose <source> 404s shows
+    nothing at all, so it is both files or neither.
+    """
+    cover = project.get("cover")
+    if not cover:
+        return None
+    base = "projects/%s/%s" % (project["_dir"], cover)
+    stem = base.rsplit(".", 1)[0] + ".card"
+    avif, jpg = stem + ".avif", stem + ".jpg"
+    if not ((ROOT / avif).is_file() and (ROOT / jpg).is_file()):
+        return None
+    w, h = png_size(ROOT / jpg)
+    return avif, jpg, w or 480, h or 300
+
+
 def index_row(project, n, depth=0):
     """One line of the work index.
 
@@ -1260,9 +1280,39 @@ def index_row(project, n, depth=0):
     # indexLine rendering exactly as before.
     line = (project.get("indexLine") if usable(project.get("indexLine"))
             else project.get("tagline") if usable(project.get("tagline")) else "")
+    # The cover, IN THE LAYOUT, for anyone who cannot hover.
+    #
+    # The covers used to exist only as data-peek, feeding the cursor
+    # preview, which is gated on `(hover: hover) and (pointer: fine)`.
+    # That gate is right -- a cursor preview with no cursor is nothing --
+    # but it meant the homepage rendered ONE image, the portrait, and a
+    # visitor on a phone saw a product designer's portfolio with no work
+    # in it. An outside reviewer caught it and was right.
+    #
+    # A 480px derivative, not the 900px grid file: those five covers are
+    # 1.4 MB between them and Groupado alone is 622 KB. As AVIF at 480
+    # the five come to 170 KB, and the JPEG beside it is what <picture>
+    # falls back to -- it is shipped, not assumed, because a <source>
+    # that 404s renders NOTHING rather than falling back.
+    #
+    # loading="lazy" so the rows below the fold cost nothing until they
+    # are scrolled to, and width/height so they reserve their space and
+    # the list does not reflow as they arrive.
+    card = thumb_sources(project)
+    pic = ""
+    if card:
+        avif, jpg, w, h = card
+        pic = (
+            '<picture class="index__cover" aria-hidden="true">'
+            '<source srcset="%s%s%s" type="image/avif">'
+            '<img src="%s%s%s" alt="" loading="lazy" decoding="async"'
+            ' width="%d" height="%d"></picture>'
+            % (up, e(avif), asset_v(avif), up, e(jpg), asset_v(jpg), w, h))
+
     return """        <li class="index__row">
           <a class="index__link" href="{up}projects/{slug}" data-peek="{up}{cover}{v}">
             <span class="index__num" aria-hidden="true">{n:02d}</span>
+            {pic}
             <span class="index__name">{title}</span>
             <span class="index__line">{line}</span>
             <span class="index__domain">{domain}</span>
@@ -1271,7 +1321,7 @@ def index_row(project, n, depth=0):
           </a>
         </li>""".format(
         up=up, slug=e(project["slug"]), cover=e(cover), v=asset_v(cover), n=n,
-        title=e(project["title"]), line=e(line),
+        pic=pic, title=e(project["title"]), line=e(line),
         domain=e(project_domain(project)), year=e(project_year(project)))
 
 
@@ -2011,12 +2061,21 @@ def build_contact_redirect():
 </style>
 </head>
 <body>
-  <p>This page has moved. <a href="%s">Continue to the contact section</a>.</p>
+  <p>Taking you to the contact section&hellip;
+     <a href="%s">Continue</a> if nothing happens.</p>
+  <!-- The meta refresh above is the no-JavaScript path and fires on its
+       own. This runs first where scripts are on, which matters: an
+       outside reviewer reported landing on "This page has moved" from a
+       cached old page, and whatever the browser was doing with the
+       refresh, a visitor should never READ this page. replace() rather
+       than assign() so the stub does not take a slot in history and
+       trap the back button. -->
+  <script>location.replace("%s");</script>
 </body>
 </html>
 """ % (e(SITE["name"]), e(canonical), e(target),
        e(TOKENS["color"]["bg"]), e(TOKENS["color"]["text"]),
-       e(TOKENS["color"]["accent"]), e(target)), encoding="utf-8")
+       e(TOKENS["color"]["accent"]), e(target), e(target)), encoding="utf-8")
 
 
 def build_404():
