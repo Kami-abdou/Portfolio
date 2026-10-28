@@ -379,7 +379,7 @@ def link_icon(label, depth=0, *, slug=None):
 #: WHERE BOOKING ACTUALLY GOES. The one place in the repo that names the
 #: booking host. Changing provider -- or changing the Cal slug, which is
 #: still the ugly generated one -- is this line and nothing else.
-BOOKING_URL = "https://cal.com/abdou-yaackoubi-lpkcep/30min"
+BOOKING_URL = "https://cal.com/abdouyaackoubi/intro"
 
 #: ...and what the SITE links to, which is deliberately not the line above.
 #:
