@@ -1230,7 +1230,7 @@ def thumb_sources(project):
     when either half is missing -- a <picture> whose <source> 404s shows
     nothing at all, so it is both files or neither.
     """
-    cover = project.get("cover")
+    cover = project.get("indexImage") or project.get("cover")
     if not cover:
         return None
     base = "projects/%s/%s" % (project["_dir"], cover)
@@ -1310,7 +1310,7 @@ def index_row(project, n, depth=0):
             % (up, e(avif), asset_v(avif), up, e(jpg), asset_v(jpg), w, h))
 
     return """        <li class="index__row">
-          <a class="index__link" href="{up}projects/{slug}" data-peek="{up}{cover}{v}">
+          <a class="index__link" href="{up}projects/{slug}" data-peek="{up}{peek}{pv}">
             <span class="index__num" aria-hidden="true">{n:02d}</span>
             {pic}
             <span class="index__name">{title}</span>
@@ -1320,7 +1320,13 @@ def index_row(project, n, depth=0):
             <span class="index__arrow" aria-hidden="true">&#8599;</span>
           </a>
         </li>""".format(
-        up=up, slug=e(project["slug"]), cover=e(cover), v=asset_v(cover), n=n,
+        up=up, slug=e(project["slug"]), n=n,
+        # The peek shows the same image as the inline cover, at the same
+        # 480px derivative. Pointing it at the 900px grid file would fetch
+        # lightbox-grade pixels for a preview 250px wide, and the four
+        # designed covers have no 900px rendering at all -- only an _src
+        # original and this pair.
+        peek=e(card[1] if card else cover), pv=asset_v(card[1] if card else cover),
         pic=pic, title=e(project["title"]), line=e(line),
         domain=e(project_domain(project)), year=e(project_year(project)))
 

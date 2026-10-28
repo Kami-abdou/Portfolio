@@ -2018,7 +2018,8 @@ class TestHighlightsFormat(BuildCase):
     hides the section prose, which stays in the JSON. It was applied to
     four projects as a tiering decision.
 
-    FISSA3 AND GROUPADO CAME OFF IT, because the decision stopped being
+    GROUPADO CAME OFF IT (and Fissa3 did too, before being retired
+    outright), because the decision stopped being
     coherent with the index. It was made when the homepage showed cards
     reading "Skills marketplace · 2021" -- a card that vague is
     honestly served by a page of screens. The index now promises "Web
@@ -2035,7 +2036,7 @@ class TestHighlightsFormat(BuildCase):
     """
 
     TIER2 = [("08-smarthub", "smarthub"), ("09-portfolio", "portfolio")]
-    LIVE_CASE_STUDIES = ("01-steer", "02-konnect", "03-fissa3",
+    LIVE_CASE_STUDIES = ("01-steer", "02-konnect",
                          "04-groupado", "06-fixerloop", "10-instadeep")
 
     def test_the_retired_projects_are_flagged(self):
@@ -2059,7 +2060,7 @@ class TestHighlightsFormat(BuildCase):
         total, because the failure mode is prose being dropped at render
         time, not prose being short.
         """
-        for folder, slug in (("03-fissa3", "fissa3"), ("04-groupado", "groupado")):
+        for folder, slug in (("04-groupado", "groupado"),):
             with self.subTest(slug=slug):
                 written = len([x for x in self.content(folder)["sections"]
                                if x.get("body")])
@@ -2121,7 +2122,7 @@ class TestHighlightsFormat(BuildCase):
         """The TOC was suppressed on the short format, correctly: it is
         navigation to nothing over image blocks with no prose. Now that
         both pages carry prose again, they should have one."""
-        for slug in ("fissa3", "groupado"):
+        for slug in ("groupado",):
             with self.subTest(slug=slug):
                 self.assertIn('class="toc"', self.html("projects/%s.html" % slug),
                               "%s has prose again but no way to navigate it"

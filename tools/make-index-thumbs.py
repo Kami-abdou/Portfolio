@@ -67,13 +67,16 @@ def main():
 
     for content in sorted(ROOT.glob("projects/*/content.json")):
         data = json.loads(content.read_text(encoding="utf-8"))
-        cover = data.get("cover")
+        # indexImage first: a cover designed FOR the index, rather than a
+        # page screenshot cropped to fit it. Four of them are purpose-made
+        # banners -- number, name, claim, device shots -- which is a better
+        # three-second impression than the top 16:10 of a 4000px-tall
+        # homepage capture, which is all the crop could ever see.
+        cover = data.get("indexImage") or data.get("cover")
         if not cover:
             continue
         assets = content.parent / "assets"
         live = content.parent / cover
-        if not live.exists():
-            continue
         src = source_for(assets, pathlib.Path(cover).name)
         if src is None:
             rows.append((data.get("slug", "?"), "NO _src ORIGINAL", 0, 0))
@@ -82,7 +85,7 @@ def main():
         stem = live.with_suffix("")
         jpg = stem.with_name(stem.name + ".card.jpg")
         avif = stem.with_name(stem.name + ".card.avif")
-        before = live.stat().st_size
+        before = live.stat().st_size if live.exists() else src.stat().st_size
         total_before += before
 
         if apply_changes:

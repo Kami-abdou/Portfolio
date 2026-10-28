@@ -33,7 +33,16 @@ import socketserver
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8123
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
+PORT = int(ARGS[0]) if ARGS else 8123
+
+# --lan binds to every interface so a phone on the same wifi can reach it.
+# Localhost-only is the right default -- this serves an unfinished site off
+# a laptop -- but the one thing you cannot check from the laptop is the one
+# thing that only happens without a cursor: the index covers appear under
+# `(hover: none)`, and a desktop browser's device emulator still reports a
+# fine pointer. A real phone is the only honest test.
+HOST = "0.0.0.0" if "--lan" in sys.argv else "127.0.0.1"
 
 
 class PagesHandler(http.server.SimpleHTTPRequestHandler):
@@ -78,8 +87,18 @@ class PagesHandler(http.server.SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     os.chdir(ROOT)
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("127.0.0.1", PORT), PagesHandler) as httpd:
+    with socketserver.TCPServer((HOST, PORT), PagesHandler) as httpd:
         print("serving %s at http://localhost:%d" % (ROOT, PORT))
+        if HOST != "127.0.0.1":
+            import socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                sock.connect(("8.8.8.8", 80))
+                print("on this wifi:  http://%s:%d" % (sock.getsockname()[0], PORT))
+            except OSError:
+                pass
+            finally:
+                sock.close()
         print("extensionless URLs resolve to .html, and misses get "
               "404.html -- as on GitHub Pages")
         httpd.serve_forever()

@@ -1,4 +1,6 @@
 {
+  "_retired": "Retired at the owner's request. Nothing is deleted: the folder, the content.json, the assets and the _src originals all stay, and `published: true` puts it back in one line. It was the only one of the five with no finished product UI to show -- every landscape image it had was research or wireframes -- and the four that remain each have a designed cover.",
+  "published": false,
   "slug": "fissa3",
   "order": 5,
   "meta": "2020 · Food delivery · UX/UI",

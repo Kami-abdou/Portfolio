@@ -44,6 +44,7 @@
     }
   ],
   "cover": "assets/n1-homepage.jpg",
+  "indexImage": "assets/index-cover.jpg",
   "sections": [
     {
       "id": "context",
