@@ -3244,27 +3244,79 @@ class TestFigureWidth(BuildCase):
 
 class TestShareCards(BuildCase):
 
+    def pages(self):
+        """Every page a person can land on and then share."""
+        out = ["index.html", "work.html", "about.html"]
+        for path in sorted((ROOT / "projects").glob("*/content.json")):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if data.get("published") is not False:
+                out.append("projects/%s.html" % data["slug"])
+        return out
+
     def test_every_referenced_share_card_is_tracked(self):
         """An untracked og:image 404s on the host and every link preview breaks.
 
         The file exists locally, so the build is happy and nothing warns.
         """
         proc = subprocess.run(
-            ["git", "ls-files", "--others", "--exclude-standard", "projects"],
+            ["git", "ls-files", "--others", "--exclude-standard"],
             cwd=str(ROOT), capture_output=True, text=True)
         untracked = set(proc.stdout.split())
-        import re
+        base = (self.site.get("url") or "").rstrip("/") + "/"
         referenced = set()
-        for page in (ROOT / "projects").glob("*.html"):
-            for match in re.finditer(r'(projects/[^"\']*share\.jpg)',
-                                     page.read_text(encoding="utf-8")):
-                referenced.add(match.group(1))
+        for page in self.pages():
+            for match in re.finditer(r'property="og:image" content="([^"]+)"',
+                                     self.html(page)):
+                referenced.add(match.group(1).replace(base, ""))
         self.assertTrue(referenced, "no share cards referenced -- test is vacuous")
         self.assertEqual(referenced & untracked, set())
+        for rel in referenced:
+            with self.subTest(card=rel):
+                self.assertTrue((ROOT / rel).is_file(),
+                                "%s is advertised and not on disk" % rel)
 
-    def test_instadeep_has_its_own_share_card(self):
-        page = self.html("projects/instadeep.html")
-        self.assertIn("projects/10-instadeep/assets/share.jpg", page)
+    def test_one_card_previews_the_whole_site(self):
+        """Every page, case studies included, previews as the site card.
+
+        Each case study used to carry its own assets/share.jpg, and all
+        three that had one were the CLIENT's asset rather than anything
+        about this work: InstaDeep's corporate logo lockup, and
+        screenshots of Steer's and Groupado's marketing homepages. A
+        case study posted to LinkedIn previewed as that company's
+        advertising with nothing on it to say whose portfolio it was.
+        Konnect had none at all and fell through to a 900x640 product
+        screenshot, which a scraper crops to 1.91:1 and shows a slice of.
+
+        The files are still on disk. If a project is ever given a real
+        card of its own, this is the test to change.
+        """
+        card = self.site.get("shareImage")
+        self.assertTrue(card, "site.json names no shareImage")
+        for page in self.pages():
+            with self.subTest(page=page):
+                self.assertRegex(
+                    self.html(page),
+                    r'property="og:image" content="[^"]*%s"' % re.escape(card),
+                    "%s previews as something other than the site card" % page)
+
+    def test_the_site_card_is_the_size_it_claims(self):
+        """og:image:width and height let a scraper lay the card out before
+        the bytes arrive. Wrong numbers are worse than none: the preview
+        reserves the wrong box and then jumps.
+
+        1200x630 is also the size itself -- under 1.91:1 and a platform
+        letterboxes it, over and it crops the sides off.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import png_size
+        card = ROOT / self.site["shareImage"]
+        self.assertTrue(card.is_file(), "the site share card is missing")
+        size = png_size(card)
+        self.assertEqual(size, (1200, 630),
+                         "the share card is %s, not 1200x630" % (size,))
+        home = self.html("index.html")
+        self.assertIn('<meta property="og:image:width" content="1200">', home)
+        self.assertIn('<meta property="og:image:height" content="630">', home)
 
     def test_instadeep_share_card_is_not_the_absorbed_deeppcb_card(self):
         """The merged entry inherited DeepPCB's card when DeepPCB was absorbed.

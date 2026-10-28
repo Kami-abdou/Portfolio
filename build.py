@@ -1742,9 +1742,24 @@ def build_project(project, prev_p, next_p):
     # to about 1.91:1, so those arrived as an unrecognisable band lifted out of
     # the middle of a page. tools/make-share-cards.py renders a proper
     # 1200x630 card where one is needed; use it when it exists.
-    share = ROOT / "projects" / d / "assets" / "share.jpg"
-    og_img = ("projects/%s/assets/share.jpg" % d if share.is_file()
-              else "projects/%s/%s" % (d, project["cover"]))
+    # EVERY page previews as the site card, case studies included.
+    #
+    # Each case study used to carry its own assets/share.jpg, and all
+    # three that had one were the CLIENT's asset rather than a card
+    # about this work: InstaDeep's corporate logo lockup, and
+    # screenshots of Steer's and Groupado's marketing homepages. So
+    # posting a case study to LinkedIn previewed as that company's
+    # advertising, with nothing on it to say whose portfolio it was --
+    # and in InstaDeep's case it put a company's brand mark forward as
+    # the preview for a personal site. Konnect had no card at all and
+    # fell through to a 900x640 screenshot that a scraper crops to
+    # 1.91:1 and shows a slice of.
+    #
+    # One card instead: 1200x630, the name, the claim, the face and
+    # the four clients. The share.jpg files are left on disk, so a
+    # project that is given a real card of its own can have this
+    # changed back for it.
+    og_img = SITE.get("shareImage") or "projects/%s/%s" % (d, project["cover"])
     out = [head(
         "%s - %s" % (project["title"], SITE["name"]),
         # summary is body copy — 3-4 sentences, up to 346 chars. Google cuts at
