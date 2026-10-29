@@ -52,7 +52,7 @@
   <link rel="preload" href="assets/fonts/bricolage-variable.woff2?v=e8a27852" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/fonts.css?v=850c1060">
   <link rel="stylesheet" href="assets/tokens.css?v=0cd1a4fb">
-  <link rel="stylesheet" href="assets/styles.css?v=13c21ef2">
+  <link rel="stylesheet" href="assets/styles.css?v=ef8a3c5f">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
   <script>
     /* Before first paint, or the page renders in the system theme and then
@@ -70,7 +70,7 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-head">
     <div class="shell site-head__inner">
-      <a class="site-head__name" href="work" aria-label="Abdou Yaackoubi, home"><span class="wordmark__line">Abdou</span><span class="wordmark__line wordmark__line--in">Yaackoubi</span></a>
+      <a class="site-head__name" href="work" aria-label="Abdou Yaackoubi, home"><span class="wordmark__line wordmark__line--in"><svg class="wordmark__mark" viewBox="0 0 48 16" aria-hidden="true" focusable="false"><path d="M3 12.4C11.5 6.9 25 4.2 36.5 5.2c4.4.4 7-.8 8.2-3.4"/></svg>Abdou</span><span class="wordmark__line">Yaackoubi</span></a>
       <nav class="site-nav" aria-label="Primary">
         <span class="site-nav__pill">
           <span class="site-nav__marker" aria-hidden="true"></span>
@@ -84,16 +84,24 @@
   </header>
   <main id="main" tabindex="-1">
 
-    <article class="shell about">
-      <h1 class="about__statement"><span class="mask"><span class="mask__in">I design products where the interface</span></span><span class="mask"><span class="mask__in">has to carry trust.</span></span></h1>
-      <div class="about__intro prose">
-        <p>AI, blockchain and fintech all ask someone to act on a system they cannot check for themselves. Six years of my work has been in that gap.</p>
+    <div class="shell about">
+      <section class="about__lead">
+        <h1 class="about__statement"><span class="mask"><span class="mask__in">I design products where the interface</span></span><span class="mask"><span class="mask__in">has to carry trust.</span></span></h1>
+        <div class="about__foot">
+          <div class="about__intro prose">
+            <p>AI, blockchain and fintech all ask someone to act on a system they cannot check for themselves. Six years of my work has been in that gap.</p>
         <p>Day to day that means interaction: how a product responds, what it does while it waits, how it recovers. I map the system before I draw a screen, then prototype in code to check how it feels.</p>
-      </div>
-    </article>
+          </div>
+        <div class="about__tools">
+          <p class="band__title" id="tools">Tools</p>
+          <ul class="tools"><li class="tool"><img class="tool__icon tool__icon--plate" src="assets/tools/figma.png?v=99f9166b" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Figma</span></li><li class="tool"><img class="tool__icon tool__icon--plate" src="assets/tools/framer.png?v=18193210" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Framer</span></li><li class="tool"><img class="tool__icon" src="assets/tools/claude-code.png?v=f579683c" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Claude Code</span></li><li class="tool"><img class="tool__icon" src="assets/tools/git.png?v=07d991a5" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Git</span></li><li class="tool"><img class="tool__icon" src="assets/tools/miro.png?v=60873b3e" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Miro</span></li><li class="tool"><img class="tool__icon" src="assets/tools/notion.png?v=53581a0a" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Notion</span></li><li class="tool"><img class="tool__icon" src="assets/tools/jira.png?v=35dcbfcd" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Jira</span></li></ul>
+        </div>
+        </div>
+      </section>
+    </div>
 
     <section class="band shell band--jobs" aria-labelledby="experience">
-      <h2 id="experience">Experience</h2>
+      <div class="band__bar"><h2 class="band__title" id="experience">Experience</h2><p class="band__count">04 · 2020-now</p></div>
       <ul class="jobs">
         <li class="job"><span class="job__company"><a href="projects/instadeep">InstaDeep</a></span><span class="job__role">UX/UI Designer → Senior Product Designer</span><span class="job__years">2024-now</span></li>
         <li class="job"><span class="job__company"><a href="projects/steer">Steer</a></span><span class="job__role">Product Designer Lead</span><span class="job__years">2021-23</span></li>
@@ -102,20 +110,18 @@
       </ul>
     </section>
 
-    <section class="band shell band--tools" aria-labelledby="tools">
-      <h2 id="tools">Tools</h2>
-      <ul class="tools"><li class="tool"><img class="tool__icon tool__icon--plate" src="assets/tools/figma.png?v=99f9166b" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Figma</span></li><li class="tool"><img class="tool__icon tool__icon--plate" src="assets/tools/framer.png?v=18193210" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Framer</span></li><li class="tool"><img class="tool__icon" src="assets/tools/claude-code.png?v=f579683c" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Claude Code</span></li><li class="tool"><img class="tool__icon" src="assets/tools/git.png?v=07d991a5" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Git</span></li><li class="tool"><img class="tool__icon" src="assets/tools/miro.png?v=60873b3e" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Miro</span></li><li class="tool"><img class="tool__icon" src="assets/tools/notion.png?v=53581a0a" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Notion</span></li><li class="tool"><img class="tool__icon" src="assets/tools/jira.png?v=35dcbfcd" alt="" width="18" height="18" loading="lazy" decoding="async"><span class="tool__name">Jira</span></li></ul>
-    </section>
-
     <section class="band shell band--values" aria-labelledby="values">
-      <h2 id="values">How I work</h2>
+      <div class="band__bar"><h2 class="band__title" id="values">How I work</h2></div>
       <p class="values__prose">I learned most of this from watching handoffs go wrong. A design that stops at the handoff gets built as something else, and a component that only works when I’m in the room to explain it isn’t finished. So I stay next to the build, and I’d rather hear what’s wrong at the prototype than at launch.</p>
     </section>
 
     <section class="band shell band--close">
       <h2 class="band__close">Have something in mind?</h2>
+      <div class="close__row">
       <div class="actions"><a class="btn btn--solid" href="call/" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a><button class="btn js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="btn js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></div>
-      <p class="about__small"><a href="site/CV-Abdou-Yaackoubi.pdf?v=41def01a" target="_blank" rel="noopener">CV (PDF)<span class="visually-hidden"> (opens in a new tab)</span></a> <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener">LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a></p>
+        <div class="close__side"><p class="about__small"><a href="site/CV-Abdou-Yaackoubi.pdf?v=41def01a" target="_blank" rel="noopener">CV (PDF)<span class="visually-hidden"> (opens in a new tab)</span></a> <a href="https://www.linkedin.com/in/abdou-yaackoubi/" target="_blank" rel="noopener">LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a></p>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -125,6 +131,6 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=652506b0" defer></script>
-  <script src="assets/enhance.js?v=72f7d23d" defer></script>
+  <script src="assets/enhance.js?v=f7523a4f" defer></script>
 </body>
 </html>

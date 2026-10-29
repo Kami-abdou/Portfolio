@@ -245,8 +245,13 @@ class TestHeroPositioning(BuildCase):
         # is marked for it; everything else is a plain line.
         claim = self.site["heroClaim"]
         lines = claim.split("\n")
+        # Each line is wrapped in a .claim__reveal that clips it, so it
+        # can slide up from behind one. The clip is a separate element
+        # from the thing that moves -- it has to be, since one cannot
+        # both clip its contents and be translated by them.
         rendered = "".join(
-            '<span class="claim__line%s">%s</span>'
+            '<span class="claim__reveal">'
+            '<span class="claim__line%s">%s</span></span>'
             % (" claim__line--built" if i == len(lines) - 1 else "",
                html.escape(l, quote=True))
             for i, l in enumerate(lines))
@@ -4130,7 +4135,7 @@ class TestTheClaimAssembles(BuildCase):
         self.assertEqual(page.count('class="claim__line claim__line--built"'), 1)
         # and it is the LAST one, not whichever line happens to match
         last = html.escape(lines[-1], quote=True)
-        self.assertIn('claim__line--built">%s</span></h1>' % last, page)
+        self.assertIn('claim__line--built">%s</span></span></h1>' % last, page)
 
     def test_the_decorations_rest_invisible(self):
         """So a browser that ignores the animation gets the end state."""
@@ -4580,33 +4585,56 @@ class TestTheRecruiterPass(BuildCase):
                 self.assertNotIn('<p class="ask">', self.html(page),
                                  "%s uses the hero's ask" % page)
 
-    def test_the_quiet_ask_keeps_all_four_parts(self):
-        """Dressing the controls as text must not cost them anything.
+    def test_the_hero_asks_for_nothing_and_points_at_the_work(self):
+        """The hero's one control goes INTO the page, not off it.
 
-        enhance.js finds the fallback and the live region through
-        btn.parentNode, so all four have to be siblings inside the <p>
-        or the copy button degrades into a button that does nothing.
+        It read "Book a call  or  Copy email" and was the first of four
+        booking links on this page. A visitor who has read the headline
+        wants to see the work, not to schedule a conversation about
+        work they have not seen, so the hero offers exactly that and
+        the asks wait until the work has made the argument.
+
+        The copy-email control went with it. That is only safe because
+        the closing band and /about each still carry their own button,
+        mailto fallback and live region -- enhance.js reaches those
+        through btn.parentNode, so a half-move would have left a button
+        that silently does nothing.
         """
         m = re.search(r'<p class="ask">(.*?)</p>', self.html("index.html"), re.S)
         self.assertIsNotNone(m, "the homepage has no hero ask")
         row = m.group(1)
-        self.assertIn('href="call/"', row)
-        self.assertRegex(row, r'<button[^>]*class="[^"]*js-copy[^"]*"[^>]*type="button"')
-        self.assertIn("js-copy-fallback", row, "no mailto fallback")
-        self.assertIn('role="status"', row, "no live region")
+        self.assertIn('href="#work"', row, "the hero does not point at the work")
+        self.assertNotIn('href="call/"', row, "the hero still books a call")
+        self.assertNotIn("js-copy", row, "the hero still copies an address")
+        # The arrow is decoration; the accessible name is the sentence.
+        self.assertIn('aria-hidden="true"', row)
+        self.assertIn("See the work", row)
 
-    def test_the_fallback_follows_the_or(self):
-        """With JavaScript off the sentence still has to read.
+    def test_the_work_the_hero_points_at_is_actually_there(self):
+        """A fragment link is only as good as the id it names.
 
-        The button hides and the mailto shows. Source order decides what
-        is left: book, "or", [hidden button], mailto -- which reads
-        "Book a call or Email me". Put the fallback before the "or" and
-        it reads "Book a call Email me or".
+        #work is on the band and nothing in the nav uses it any more, so
+        it is exactly the kind of id that gets tidied away by someone
+        who greps for it and finds one reference. That reference is now
+        the homepage's only above-the-fold control.
         """
-        row = re.search(r'<p class="ask">(.*?)</p>',
-                        self.html("index.html"), re.S).group(1)
-        self.assertLess(row.index('class="ask__or"'),
-                        row.index("js-copy-fallback"))
+        home = self.html("index.html")
+        self.assertIn('id="work"', home, "the #work anchor is gone")
+        self.assertLess(home.index('href="#work"'), home.index('id="work"'),
+                        "the hero link comes after the thing it points at")
+
+    def test_the_copy_control_still_exists_where_it_moved_to(self):
+        """Removing it from the hero must not remove it from the site."""
+        for page in ("index.html", "about.html"):
+            with self.subTest(page=page):
+                h = self.html(page)
+                self.assertRegex(
+                    h, r'<button[^>]*class="[^"]*js-copy[^"]*"[^>]*type="button"',
+                    "%s lost its copy button" % page)
+                self.assertIn("js-copy-fallback", h,
+                              "%s lost the mailto fallback" % page)
+                self.assertIn("data-copy-status", h,
+                              "%s lost the live region" % page)
 
     def test_the_availability_badge_is_in_the_ask_not_over_the_h1(self):
         """It was an eyebrow above the headline; it is a state now.
@@ -4728,11 +4756,18 @@ class TestTheBooker(BuildCase):
     def test_book_a_call_goes_straight_to_cal(self):
         """Three asks, one destination, one string in the source.
 
-        The nav CTA, the hero's quiet ask, the one under the ways
-        cards and the closing band's loud one. All four point at /call
-        here, and /call is the only thing that knows the provider.
+        THREE, and it was four. The nav CTA, the one under the ways
+        cards and the closing band's loud one -- the hero's went, and
+        the count is asserted so it cannot quietly come back. All three
+        point at /call, and /call is the only thing that knows the
+        provider.
 
-        This used to assert the four pointed straight at Cal. That made
+        Four identical "Book a call" links on one page was what a CEO
+        read as too many asks, and the hero's was the worst of them: it
+        asked for a meeting above the fold, before the page had shown
+        one thing that was designed.
+
+        This used to assert the links pointed straight at Cal. That made
         the booking URL a string written into every generated page, so
         changing provider meant a rebuild of the whole site and a dead
         link in every email already sent.
@@ -4741,9 +4776,18 @@ class TestTheBooker(BuildCase):
         from build import BOOKING_URL
         self.assertTrue(BOOKING_URL.startswith("https://"))
         home = self.html("index.html")
-        self.assertEqual(home.count('href="call/"'), 4,
-                         "the homepage does not have exactly four routes "
+        self.assertEqual(home.count('href="call/"'), 2,
+                         "the homepage does not have exactly two routes "
                          "to the booker")
+        hero = re.search(r'<section class="opening">(.*?)</section>',
+                         home, re.S)
+        self.assertIsNotNone(hero, "the homepage has no hero")
+        self.assertNotIn('href="call/"', hero.group(1),
+                         "the hero asks for a meeting again")
+        self.assertNotIn("ways__ask", home,
+                         "the ask under the Ways cards is back: that is "
+                         "the third Book a call, and the closing band "
+                         "with the fourth is one scroll below it")
         self.assertNotIn("REPLACE-ME", home, "the placeholder link shipped")
         # ...and the hop actually arrives. A redirect page that forgot
         # its destination is a dead end that every test above passes.
@@ -4918,5 +4962,906 @@ class TestTheSecondReviewPass(BuildCase):
 # all reported green by a runner that had never seen them.
 #
 # It is also why this file counted 207 tests while the runner said 141.
+
+class TestTheFirstImpression(BuildCase):
+    """The hero, after a CEO reported lost space and no first impression.
+
+    Three complaints, all of them measurable and all of them true: the
+    header ate a quarter of a phone screen, the page asked for a meeting
+    four times, and the first screen showed a visitor no work at all.
+    These pin the fixes so they cannot quietly come undone.
+    """
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def classes_in(self, page):
+        """Every class name actually used in a page's markup."""
+        out = set()
+        for m in re.finditer(r'class="([^"]*)"', self.html(page)):
+            out.update(m.group(1).split())
+        return out
+
+    def media_block(self, needle):
+        """The @media block containing `needle`, by brace matching.
+
+        Substring slicing would be close enough right up until a nested
+        at-rule or a comment with a brace in it, both of which this
+        stylesheet has.
+        """
+        css = self.css()
+        i = css.index(needle)
+        start = css.rindex("@media", 0, i)
+        depth, j = 0, css.index("{", start)
+        for k in range(j, len(css)):
+            if css[k] == "{":
+                depth += 1
+            elif css[k] == "}":
+                depth -= 1
+                if depth == 0:
+                    return css[start:k + 1]
+        raise AssertionError("unbalanced braces around %r" % needle)
+
+    def test_every_selector_in_the_hero_cascade_names_something(self):
+        """THIS IS THE TEST THAT WAS MISSING, and the bug was live.
+
+        The hero cascade named .opening__status, .opening__support,
+        .opening__actions and .opening__facts -- the old hero's status
+        row, supporting paragraph, button row and four stat blocks.
+        Every one of them was deleted when the hero was cut back, and
+        the animation stayed behind pointing at all four. Grepped
+        against index.html at the time: 0, 0, 0, 0.
+
+        So the stylesheet described a load cascade, the hero arrived
+        with no motion whatsoever, and nothing failed. A selector that
+        matches nothing is not a CSS error -- it is silence, which is
+        why this has to be asserted rather than noticed.
+        """
+        block = self.media_block("animation: hero-step-in")
+        names = set(re.findall(r'\.([a-z][a-z0-9_-]*)', block))
+        self.assertTrue(names, "the cascade has no class selectors at all")
+        markup = self.classes_in("index.html")
+        # A class the page never carries in its source can still be real:
+        # the hook's are added to <html> at runtime. The rule is that it
+        # has to exist SOMEWHERE -- in the markup, or in a script that
+        # puts it there. A typo still matches neither and still fails.
+        js = "".join((ROOT / "assets" / f).read_text(encoding="utf-8")
+                     for f in ("enhance.js", "hook.js", "signal.js"))
+        js += (ROOT / "build.py").read_text(encoding="utf-8")
+        missing = sorted(n for n in names
+                         if n not in markup and '"%s"' % n not in js
+                         and "'%s'" % n not in js)
+        self.assertEqual(
+            missing, [],
+            "the hero cascade animates classes that are in neither the "
+            "markup nor any script that could add them, so it animates "
+            "nothing: %s" % missing)
+
+    def test_the_headline_stagger_covers_every_authored_line(self):
+        """The breaks are authored, so the stagger has to outlast them.
+
+        heroClaim has been four lines and is three. A stagger with one
+        delay per line and no spare leaves the next line it grows back
+        arriving with no delay at all -- visibly out of step with the
+        three above it, and only on the viewport where the copy fits.
+        """
+        lines = len(re.findall(r'class="claim__reveal"', self.html("index.html")))
+        self.assertGreaterEqual(lines, 3, "the headline lost its line clips")
+        block = self.media_block("animation: maskUp")
+        delays = re.findall(
+            r'\.claim__reveal:nth-child\((\d+)\) \.claim__line', block)
+        self.assertGreaterEqual(
+            len(set(delays)), lines,
+            "%d authored lines but only %d stagger delays"
+            % (lines, len(set(delays))))
+
+    def test_the_headline_is_sized_by_height_as_well_as_width(self):
+        """A hero measured against the fold cannot size on vw alone.
+
+        The desktop headline was clamp(5.5rem, 10vw, 8.5rem), which is
+        a function of width only. At 1280x800 -- an ordinary laptop --
+        that is 128px, and 128px of headline plus the foot row needed
+        875px of the 800 available: the foot landed 43px BELOW the fold
+        it exists to sit on. Nothing failed, because every test here
+        asserted markup and tokens and this was rendered geometry on one
+        viewport shape.
+
+        Fixed at 1280x800 and 1440x900 after: hero bottom 800 and 900,
+        both exactly the fold.
+        """
+        css = self.css()
+        rule = re.search(r"\.opening__claim\s*\{([^}]*font-size[^}]*)\}", css)
+        self.assertIsNotNone(rule, ".opening__claim has no sized rule")
+        # The desktop override is the one with a vh term; find whichever
+        # block actually sets a font-size containing one.
+        sized = [m.group(1) for m in
+                 re.finditer(r"\.opening__claim\s*\{([^}]*)\}", css)
+                 if "font-size" in m.group(1)]
+        self.assertTrue(sized, "nothing sizes the headline")
+        joined = "\n".join(sized)
+        self.assertIn("vw", joined, "the headline does not respond to width")
+        self.assertIn(
+            "vh", joined,
+            "the headline is sized on width alone, so a short laptop "
+            "pushes the hero's own foot row past the fold")
+        # And the two have to be combined by min(), not stacked -- the
+        # smaller constraint is the one that must win.
+        self.assertRegex(
+            joined, r"min\s*\(",
+            "the width and height terms are not reconciled with min()")
+
+    def test_the_line_clip_does_not_shear_the_selection_frame(self):
+        """overflow:hidden is the obvious way to do this and it is wrong.
+
+        The reveal needs each line clipped to its own box. overflow:
+        hidden clips to the PADDING box, and the last line carries the
+        selection frame on pseudo-elements at
+        `inset: -4px calc(-0.08em - 4px)` -- 4px outside the line box on
+        all four sides, with handles on the corners. Clipping there
+        shears every edge and handle off it, and nothing fails: the
+        frame just quietly stops having corners.
+
+        clip-path clips to the border box and takes negative insets, so
+        -100% left and right turns horizontal clipping off entirely
+        while the vertical padding gives the frame room. That is the
+        only reason it is clip-path, so it is asserted rather than left
+        to the next person to rediscover.
+        """
+        css = self.css()
+        rule = re.search(r"\.claim__reveal\s*\{([^}]*)\}", css)
+        self.assertIsNotNone(rule, ".claim__reveal has no rule")
+        body = rule.group(1)
+        self.assertNotIn(
+            "overflow", body,
+            "the line clip uses overflow, which shears the frame's edges "
+            "and handles off the last line")
+        clip = re.search(r"clip-path:\s*inset\(([^)]*)\)", body)
+        self.assertIsNotNone(clip, "the line clip has no clip-path")
+        sides = clip.group(1).split()
+        self.assertEqual(len(sides), 4,
+                         "the clip needs all four insets spelled out")
+        self.assertTrue(
+            sides[1].startswith("-") and sides[3].startswith("-"),
+            "the clip is not open horizontally, so the frame's side "
+            "handles are cut: %r" % clip.group(1))
+
+    def test_the_hero_stops_growing_before_the_air_does(self):
+        """The headline cannot grow past 136px, so a taller fold is air.
+
+        The column is capped at 1152 and the longest line fills 1044 of
+        it at that size, so above about an 886px fold the extra height
+        has nowhere to go: measured at 1512x982 before the ceiling went
+        in, 262px of empty page between the headline and the strip,
+        which is the same hole this hero exists to close.
+
+        Both halves are asserted. A ceiling with no fold term stops the
+        strip reaching the fold on a laptop; a fold term with no ceiling
+        is the 262px. And the ceiling has to clear the fold term at
+        1440x900 -- 750px -- or the commonest desktop here loses its
+        exact fit.
+        """
+        css = self.css()
+        m = re.search(r"\.hero-band \{[^}]*?min-height: ([^;]+);", css, re.S)
+        self.assertIsNotNone(m, "the hero has no min-height at all")
+        rule = m.group(1)
+        self.assertIn("100dvh", rule,
+                      "the hero is a fixed height, so its strip stops "
+                      "landing on the fold")
+        self.assertIn("min(", rule,
+                      "the hero grows with the viewport without a "
+                      "ceiling, and the headline does not grow with it")
+        ceiling = re.search(r"(\d+(?:\.\d+)?)rem", rule)
+        self.assertIsNotNone(ceiling, "the ceiling is not a rem value")
+        px = float(ceiling.group(1)) * 16
+        self.assertGreaterEqual(
+            px, 750,
+            "the ceiling is %dpx and the fold term at 1440x900 is 750, "
+            "so the strip stops short of the fold there" % px)
+        self.assertLessEqual(
+            px, 850,
+            "a ceiling of %dpx lets about %dpx of air open up between "
+            "the headline and the strip" % (px, px - 570))
+
+    def test_the_phone_header_is_one_row(self):
+        """193px of an 812px screen, and 29% of an SE, spent on a header.
+
+        Two rows: the wordmark had one to itself and the nav had the
+        other. One row is only possible with the booking button out of
+        it, so both halves of that are asserted here together -- putting
+        the button back silently costs the row 97px it does not have.
+        """
+        block = self.media_block(".site-head__inner { flex-wrap: nowrap")
+        self.assertIn("flex-wrap: nowrap", block,
+                      "the phone header is allowed to wrap to a second row")
+        self.assertRegex(
+            block, r"\.site-head nav a\.site-nav__cta \{\s*display: none",
+            "the booking button is back in the phone header")
+
+    def test_the_asks_clear_the_touch_minimum(self):
+        """31px, 31px and 22px, on the three controls that matter most.
+
+        The hero's ask, its copy button and the Ways link -- all under
+        the 44px platform minimum. The Ways link is gone entirely now
+        (it was the third Book a call), so what is left to check is the
+        hero's one control and the buttons in the closing band, which is
+        where every ask the page still makes lives.
+        """
+        css = self.css()
+        rule = re.search(r"\.ask__act--see \{([^}]*)\}", css)
+        self.assertIsNotNone(rule, ".ask__act--see has no rule")
+        self.assertIn("min-height: 44px", rule.group(1),
+                      "the hero's ask does not clear 44px")
+        home = self.html("index.html")
+        self.assertNotIn("ways__ask", home,
+                         "the 22px Ways link is back")
+
+
+class TestTheHookAndTheSignal(BuildCase):
+    """The two seconds at the start and the trace down the page.
+
+    Both are pure enhancement: the markup is the same page without them,
+    and every rule that touches content is scoped to a class a script
+    sets. These pin that scoping, because the failure mode is silent --
+    a selector that stops being guarded does not error, it just leaves a
+    reader looking at an outlined headline that never fills.
+    """
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def js(self, name):
+        return (ROOT / "assets" / name).read_text(encoding="utf-8")
+
+    def head_script(self):
+        """The one inline script in <head>, which decides both."""
+        home = self.html("index.html")
+        m = re.search(r"<script>(.*?)</script>", home, re.S)
+        self.assertIsNotNone(m, "the homepage has no inline head script")
+        return m.group(1)
+
+    def test_the_hook_is_decided_before_the_first_paint(self):
+        """A deferred decision IS the flash it is trying to prevent.
+
+        If the class went on after the first frame, the solid headline
+        would paint and then be replaced by outlines, which reads as a
+        rendering bug rather than as an intro. So the three conditions
+        and the class are in the same synchronous inline script as the
+        theme, above <body>.
+        """
+        script = self.head_script()
+        for needle in ('prefers-reduced-motion: reduce',
+                       'location.hash',
+                       'sessionStorage.getItem("hook-seen")',
+                       'sessionStorage.setItem("hook-seen", "1")',
+                       'classList.add("hook-on")'):
+            self.assertIn(needle, script,
+                          "the before-paint script does not check %r" % needle)
+        # Every condition is a bail-out, so the class can only be reached
+        # after all three. If the add moved above any of them it would
+        # fire for a reduced-motion reader on a deep link.
+        self.assertLess(script.index('sessionStorage.getItem'),
+                        script.index('classList.add("hook-on")'),
+                        "the hook is switched on before it has checked "
+                        "whether this session has already seen it")
+        home = self.html("index.html")
+        self.assertEqual(home.count("<script>"), 1,
+                         "a second inline head script: both decisions "
+                         "belong in the one that already blocks paint")
+
+    def test_a_hook_that_never_loads_undoes_itself(self):
+        """The head script can switch the hook on and hook.js can fail.
+
+        The class hides the filled headline. If the file that removes it
+        404s, a visitor is left reading outlines for the life of the
+        page -- so the script that sets the class also schedules its
+        removal, and hook.js cancels that timer when it starts.
+        """
+        script = self.head_script()
+        self.assertIn("__hookFailsafe", script, "no failsafe is scheduled")
+        tail = script[script.index("__hookFailsafe"):]
+        self.assertIn('remove("hook-on")', tail,
+                      "the failsafe does not remove the class")
+        self.assertIn("setTimeout", tail, "the failsafe is not a timer")
+        self.assertIn("window.__hookFailsafe", self.js("hook.js"))
+        self.assertIn("clearTimeout(window.__hookFailsafe)", self.js("hook.js"),
+                      "hook.js does not take the timing over from the "
+                      "failsafe, so the class is pulled mid-sequence")
+
+    def test_the_failsafe_outlasts_the_sequence_it_guards(self):
+        """A failsafe shorter than the hook pulls the class mid-play.
+
+        It only fires when hook.js never loaded -- hook.js clears it on
+        its first line -- but the two numbers live in two different
+        files, so slowing the sequence without moving the timer is a
+        one-line change with no symptom until the day a fetch fails.
+
+        The pace itself is also pinned. The first cut had the cursor
+        clicking at 960ms and the whole thing done by 3.3s, which was
+        over before a reader had registered that the headline was
+        hollow. If someone tunes it back under four seconds they should
+        have to say so here.
+        """
+        src = self.js("hook.js")
+        ends = [int(m) for m in re.findall(r"later\(finish, (\d+)\)", src)]
+        self.assertTrue(ends, "hook.js never schedules its own cleanup")
+        finish = max(ends)
+        self.assertGreaterEqual(
+            finish, 4000,
+            "the sequence is over in %dms; it is meant to be watchable, "
+            "not merely present" % finish)
+        guard = re.search(r"__hookFailsafe = setTimeout\(.*?\}, (\d+)\)",
+                          self.head_script(), re.S)
+        self.assertIsNotNone(guard, "no failsafe timer to read")
+        self.assertGreater(
+            int(guard.group(1)), finish,
+            "the failsafe fires at %sms and the hook does not finish "
+            "until %dms: on a page where hook.js failed to load, the "
+            "outlines would be swapped for solid type part-way through "
+            "a sequence that is still running" % (guard.group(1), finish))
+        # The fill has to still fit inside the window the build gets.
+        css = self.css()
+        dur = re.search(r"\.hook-on\.hook-build \.claim__line \{\s*"
+                        r"animation: hook-build ([\d.]+)s", css)
+        self.assertIsNotNone(dur, "the build sweep has no duration")
+        delays = [float(m) for m in re.findall(
+            r"\.hook-on\.hook-build \.claim__reveal:nth-child\(\d+\) "
+            r"\.claim__line \{ animation-delay: ([\d.]+)s", css)]
+        build = max(int(m) for m in re.findall(
+            r"root\.classList\.add\('hook-build'\);.*?\}, (\d+)\)",
+            src, re.S))
+        last = build + (max(delays) + float(dur.group(1))) * 1000
+        self.assertLess(
+            last, finish,
+            "the last line is still filling at %dms and the hook tears "
+            "itself down at %dms" % (last, finish))
+
+    def test_the_hook_puts_the_page_back_exactly_as_it_found_it(self):
+        """Its finished state has to be the page without it.
+
+        Anything left behind -- the cursor node, a class, an inline
+        style on a line -- is a difference between a first visit and a
+        second one, which is a bug nobody sees because it only happens
+        once per session.
+        """
+        src = self.js("hook.js")
+        for needle in ("cursor.remove()",
+                       "root.classList.add('hook-done')",
+                       "root.classList.remove('hook-on', 'hook-build')",
+                       "built.classList.remove('is-selected')"):
+            self.assertIn(needle, src, "finish() does not do: %s" % needle)
+
+    def test_the_hook_gets_out_of_the_way_when_asked(self):
+        """Anything that looks like intent ends it at once.
+
+        Not speeds it up -- jumps to the end. Someone who scrolls 600ms
+        in has told you they are here for the page, not the performance.
+        """
+        src = self.js("hook.js")
+        self.assertIn("['wheel', 'touchstart', 'keydown', 'pointerdown']", src,
+                      "the hook cannot be skipped")
+        self.assertIn("function skip() { finish(); }", src,
+                      "skipping does something other than finishing")
+        self.assertIn("if (window.scrollY > 8) { finish(); return; }", src,
+                      "restored mid-page, the hook performs to an empty "
+                      "screen")
+
+    def test_a_reader_who_asked_for_less_motion_gets_neither(self):
+        """Three layers, because any one of them can be the only one.
+
+        The head script never sets the class; the stylesheet neutralises
+        it if something else does; and the signal draws its finished
+        diagram statically and does not touch the page at all.
+        """
+        self.assertIn("prefers-reduced-motion: reduce", self.head_script())
+        css = self.css()
+        self.assertRegex(
+            css, r"@media \(prefers-reduced-motion: reduce\) \{\s*"
+                 r"/\*[^*]*(?:\*(?!/)[^*]*)*\*/\s*\.hook-cursor \{ display: none",
+            "the stylesheet has no reduced-motion belt for the hook")
+        signal = self.js("signal.js")
+        self.assertIn("if (!el || still) return;", signal,
+                      "the signal marks up page content for a reader who "
+                      "asked it not to move")
+        self.assertIn(".signal.is-still .signal__head { display: none; }", css,
+                      "the static diagram still shows a moving tip")
+
+    def test_neither_file_is_loaded_where_it_has_nothing_to_do(self):
+        """They are homepage code and they are most of the JavaScript.
+
+        /about and the case studies have no claim to perform and no
+        network to trace, so linking them there is two requests for two
+        files that measure a page and then do nothing with it.
+        """
+        for page in ("index.html", "work.html"):
+            with self.subTest(page=page):
+                html = self.html(page)
+                self.assertIn("assets/hook.js", html)
+                self.assertIn("assets/signal.js", html)
+                self.assertLess(html.index("assets/hook.js"),
+                                html.index("assets/signal.js"),
+                                "the signal is parsed before the hook it "
+                                "waits for")
+        for page in ("about.html", "404.html", "projects/instadeep.html"):
+            with self.subTest(page=page):
+                html = self.html(page)
+                self.assertNotIn("assets/hook.js", html)
+                self.assertNotIn("assets/signal.js", html)
+
+    def test_the_two_clips_on_a_claim_line_do_not_shear_it(self):
+        """The one interaction between the hook and this hero.
+
+        Each line sits in a .claim__reveal that clips to the line box
+        plus 0.07em. The hook paints the fill with background-clip: text,
+        which only paints INSIDE the line box, so it grows each line by
+        0.14em to keep the descenders of "design" and "people" -- and
+        that 0.14em lands outside the reveal's clip and gets cut. The
+        reveal has to open while the hook is running.
+        """
+        css = self.css()
+        self.assertIn(".hook-on .claim__reveal { clip-path: none; }", css,
+                      "the reveal still clips during the hook, so the "
+                      "descenders it just made room for are sliced off "
+                      "by the element above")
+        self.assertIn(".hook-on .claim__line:not(.claim__line--built) {", css,
+                      "the hook does not make room for descenders")
+
+    def test_the_build_sweep_staggers_by_the_wrapper(self):
+        """:nth-child on the line itself always matches 1.
+
+        Every .claim__line is an only child of its own .claim__reveal,
+        so `.claim__line:nth-child(2)` -- which is how this arrived --
+        names nothing and all four lines fill at once. The counting has
+        to happen on the wrapper.
+        """
+        css = self.css()
+        delays = re.findall(
+            r"\.hook-on\.hook-build ([^{]*?) \{ animation-delay", css)
+        self.assertTrue(delays, "the build sweep has no stagger at all")
+        for sel in delays:
+            with self.subTest(sel=sel):
+                self.assertIn(".claim__reveal:nth-child(", sel,
+                              "the stagger counts lines, not wrappers, so "
+                              "it matches one element and staggers nothing")
+        home = self.html("index.html")
+        lines = home.count('class="claim__reveal"')
+        self.assertGreaterEqual(
+            len(delays), lines,
+            "%d authored lines and only %d build delays: the last line "
+            "fills with the first" % (lines, len(delays)))
+
+    def test_the_load_cascade_stands_down_for_the_hook(self):
+        """Two entrances for the same elements, in the wrong order.
+
+        The hero's own load animation arrives on page load; the hook
+        does not reach those elements until the claim is built, about
+        1.5s later. Unguarded, both run -- the supporting content
+        arrives first, under a headline that is still a row of outlines
+        waiting to be filled. .hook-done keeps them off afterwards, so
+        clearing .hook-on does not replay the whole cascade.
+        """
+        css = self.css()
+        for keyframe in ("hero-step-in", "maskUp"):
+            with self.subTest(keyframe=keyframe):
+                i = css.index("animation: %s" % keyframe)
+                rule = css[css.rindex("}", 0, i):i]
+                self.assertIn("html:not(.hook-on):not(.hook-done)", rule,
+                              "%s plays underneath the hook" % keyframe)
+
+    def test_everything_the_signal_measures_is_on_the_page(self):
+        """A selector that matches nothing routes the trace into a wall.
+
+        measure() returns null and the circuit silently never appears --
+        no error, no drawing, nothing to notice. Every class it reaches
+        for is checked against the markup it reaches into.
+        """
+        src = self.js("signal.js")
+        wanted = set()
+        for m in re.finditer(r"querySelector(?:All)?\('([^']+)'\)", src):
+            wanted.update(re.findall(r"\.([a-z][a-z0-9_-]*)", m.group(1)))
+        self.assertTrue(wanted, "the signal selects nothing")
+        home = set()
+        for m in re.finditer(r'class="([^"]*)"', self.html("index.html")):
+            home.update(m.group(1).split())
+        missing = sorted(w for w in wanted if w not in home)
+        self.assertEqual(missing, [],
+                         "the signal measures classes the homepage does "
+                         "not have: %s" % missing)
+
+    def test_the_signal_stays_off_paper_and_out_of_forced_colours(self):
+        """It is decoration drawn in the margin.
+
+        Printed it is a stray line down the page; in a forced-colours
+        theme it is flattened to the one stroke colour and stops being
+        faint, which puts a hard black rule through the gutter.
+        """
+        css = self.css()
+        self.assertIn("@media print { .signal { display: none; } }", css)
+        self.assertIn("@media (forced-colors: active) { .signal { display: none; } }", css)
+
+    def test_the_header_ask_waits_and_comes_back(self):
+        """One Book a call on the first screen was two, 300px apart.
+
+        It collapses rather than fading: an invisible button still holds
+        its width, leaving a hole in the header, and still takes a tab
+        stop. And it hides again at the top, so arriving back at the
+        hero does not leave it showing.
+        """
+        css = self.css()
+        i = css.index(".js .site-head nav a.site-nav__cta {")
+        rule = css[i:css.index("}", i)]
+        for prop in ("max-width: 0", "visibility: hidden", "padding-inline: 0"):
+            self.assertIn(prop, rule, "the collapsed button still %s" % prop)
+        self.assertNotIn("display: none", rule,
+                         "display: none cannot transition, so the button "
+                         "would appear rather than arrive")
+        src = (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+        self.assertIn("en.boundingClientRect.top < 0", src,
+                      "the button shows whenever the hero's ask is out of "
+                      "view, including below it")
+        self.assertIn("if (!ask || !io) { cta.classList.add('is-shown'); return; }",
+                      src,
+                      "a page with no hero loses its only ask")
+
+    def test_the_page_asks_twice(self):
+        """Six asks, four of them the same four words, was the note.
+
+        Header, hero, under the Ways cards, and the closing band's pair.
+        What is left is the header's -- which waits -- and the closing
+        band's, which is the one place the page is allowed to be loud.
+        """
+        home = self.html("index.html")
+        self.assertEqual(home.count(">Book a call"), 2,
+                         "the homepage says Book a call a number of times "
+                         "other than twice")
+        self.assertNotIn("ways__ask", home)
+
+    def test_the_counts_on_the_bars_are_counted(self):
+        """A typed count starts lying the first time the list changes."""
+        home = self.html("index.html")
+        counts = re.findall(r'<p class="band__count">([^<]*)</p>', home)
+        self.assertEqual(len(counts), 2,
+                         "the homepage does not have exactly two bars")
+        rows = home.count('<li class="index__row">')
+        ways = home.count('<li class="way">')
+        self.assertTrue(counts[0].startswith("%02d" % rows),
+                        "the work bar says %r for %d rows" % (counts[0], rows))
+        self.assertEqual(counts[1], "%02d" % ways,
+                         "the ways bar says %r for %d cards" % (counts[1], ways))
+        # ...and the span is derived, not typed.
+        sys.path.insert(0, str(ROOT))
+        import build
+        self.assertIn(build.work_span(
+            [p for p in build.load_projects()
+             if p["slug"] in [i["slug"] for i
+                              in build.SITE["sections"]["selected"]["items"]]]),
+            counts[0])
+
+
+class TestTheOutlinedHeadline(BuildCase):
+    """For about a second and a half the h1 IS the outline.
+
+    It is also what is left on screen if hook.js never arrives and the
+    failsafe has not fired yet, and what a visitor sees for the whole
+    sequence. So the outline colour has to be readable against the
+    canvas in both themes, not merely visible -- a hairline at 2:1 on a
+    136px letterform is a headline nobody can read.
+    """
+
+    FLOOR = 4.5
+
+    @staticmethod
+    def _rgb(h):
+        h = h.lstrip("#")
+        return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+    @classmethod
+    def _ratio(cls, a, b):
+        def lum(rgb):
+            c = [v / 255 for v in rgb]
+            c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4
+                 for x in c]
+            return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+        x, y = lum(cls._rgb(a)), lum(cls._rgb(b))
+        if x < y:
+            x, y = y, x
+        return (x + 0.05) / (y + 0.05)
+
+    def test_the_outline_is_readable_in_both_themes(self):
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        m = re.search(r"\.hook-on \.claim__line \{[^}]*?"
+                      r"-webkit-text-stroke: 1px var\((--[a-z-]+)\)", css, re.S)
+        self.assertIsNotNone(m, "the outline does not come from a token")
+        token = m.group(1)[2:]
+        key = re.sub(r"-(\w)", lambda k: k.group(1).upper(), token)
+        key = key[len("color"):]
+        key = key[0].lower() + key[1:]
+        tokens = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
+        for group, label in (("color", "dark"), ("colorLight", "light")):
+            with self.subTest(theme=label):
+                ink = tokens[group][key]
+                bg = tokens[group]["bg"]
+                r = self._ratio(ink, bg)
+                self.assertGreaterEqual(
+                    round(r, 2), self.FLOOR,
+                    "the outlined headline reads %.2f:1 against the %s "
+                    "canvas, under AA -- for a second and a half that is "
+                    "the h1" % (r, label))
+
+
+class TestNothingNeedsJavaScript(BuildCase):
+    """Every rule the hook and the signal add hides or moves something.
+
+    Each one is scoped to a class that only a script sets, so with
+    JavaScript off none of them apply and the page is the page. The
+    failure here is silent and total: one unscoped `color: transparent`
+    and the headline is simply gone for anyone without JS.
+    """
+
+    #: Properties that can remove content from a page.
+    HIDING = ("color: transparent", "opacity: 0;", "display: none",
+              "visibility: hidden", "clip-path: none")
+    #: Classes nothing can see until a script puts them on <html>.
+    GATES = (".hook-on", ".hook-done", ".signal-on", ".signal", ".js ",
+             ".hook-cursor", ".signal__", ".is-")
+
+    @staticmethod
+    def _rules(css):
+        """(selector, declarations) for every rule, at-rules flattened.
+
+        Written out rather than regexed: a declaration can hold braces,
+        percentages and parentheses, and the first attempt at this
+        matched "100%" out of the middle of a linear-gradient and
+        reported it as an unguarded selector.
+        """
+        css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+        out, buf, stack = [], "", []
+        i = 0
+        while i < len(css):
+            c = css[i]
+            if c == "{":
+                stack.append(buf.strip())
+                buf = ""
+            elif c == "}":
+                sel = stack.pop() if stack else ""
+                # Keyframe steps are "0%" and "to", not selectors, and
+                # every one of them sets opacity. Skip the whole at-rule.
+                inside_frames = any(f.lstrip().startswith("@keyframes")
+                                    for f in stack)
+                if not sel.startswith("@") and not inside_frames:
+                    out.append((sel, buf))
+                buf = ""
+            else:
+                buf += c
+            i += 1
+        return out
+
+    def test_every_hiding_rule_in_the_new_work_is_behind_a_script(self):
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        start = css.index("/* \u2500\u2500 Signal: a forward pass")
+        bad = []
+        for sel, body in self._rules(css[start:]):
+            if not sel or not any(h in body for h in self.HIDING):
+                continue
+            if not any(g in sel for g in self.GATES):
+                bad.append(" ".join(sel.split())[:70])
+        self.assertEqual(
+            bad, [],
+            "these rules hide page content with no script-set class in "
+            "front of them, so they apply with JavaScript off: %s" % bad)
+
+    def test_the_markup_itself_carries_none_of_it(self):
+        """Nothing is pre-hidden in the HTML either."""
+        home = self.html("index.html")
+        self.assertNotIn("hook-cursor", home,
+                         "the cursor is in the markup; it is decoration "
+                         "and hook.js builds and removes it")
+        self.assertNotIn("<svg class=\"signal\"", home,
+                         "the circuit is in the markup; signal.js builds "
+                         "it from measurements that do not exist yet")
+        self.assertNotIn('class="hook-on"', home)
+        self.assertIn('class="claim__line">I design AI products</span>', home,
+                      "the claim is not plain text in the source")
+
+
+class TestTheTwoPagesLookLikeOneSite(BuildCase):
+    """/about read as a different product from the homepage.
+
+    Its headline was 88px at weight 400 in the accent pink; the
+    homepage's is 136px at weight 700 in the page's own ink. Its
+    sections had bare labels where the homepage has a counted bar. Its
+    four jobs were set at body size while the homepage's four projects
+    carry the row at 34px. Its closing band stacked down the left edge
+    while the homepage's is a row. Four separate drifts, each one small,
+    and together they made two sites.
+    """
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def rule(self, selector):
+        """Every declaration this exact selector sets, anywhere in the file.
+
+        All of them joined, not the last one: these properties are split
+        across a base rule and a desktop override, and reading only one
+        of the two reported a missing line-height on a heading that has
+        one.
+        """
+        hits = [m.group(1) for m in re.finditer(
+            r"(?:^|\})\s*" + re.escape(selector) + r"\s*\{([^}]*)\}",
+            self.css(), re.M)]
+        self.assertTrue(hits, "no rule for %s" % selector)
+        return "\n".join(hits)
+
+    def test_neither_headline_is_set_in_the_accent(self):
+        """A pink h1 on one page and a white one on the other is two brands."""
+        body = self.rule(".about .about__statement")
+        self.assertIn("color: var(--color-text)", body,
+                      "the about headline is not the page's ink")
+        self.assertNotIn("accent", body,
+                         "the about headline is back in the accent, which "
+                         "nothing else on either page is set in")
+
+    def test_both_headlines_share_a_desktop_treatment(self):
+        """Same weight, same tracking, same leading, above 1100px.
+
+        The sizes differ on purpose -- the about sentence is six words
+        longer -- but everything that makes the two read as the same
+        typeface decision is asserted to match.
+        """
+        for sel in (".opening__claim", ".about .about__statement"):
+            with self.subTest(sel=sel):
+                body = self.rule(sel)
+                self.assertIn("line-height: 0.96", body)
+                self.assertIn("letter-spacing: -0.05em", body)
+                self.assertIn("font-weight: var(--font-weight-bold)", body)
+
+    def test_the_about_headline_outranks_the_legacy_h1_rules(self):
+        """Three `.about h1` rules sit at (0,1,1) in this file.
+
+        A bare `.about__statement` is (0,1,0) and loses to all three
+        silently: the rule is in the stylesheet, the heading renders at
+        the old size, and nothing anywhere says why. Measured once by
+        hand already, so it gets a check.
+        """
+        css = self.css()
+        self.assertTrue(re.search(r"(?:^|\})\s*\.about h1\s*\{", css, re.M),
+                        "the legacy rules are gone, so this guard can go "
+                        "too -- delete the test with them")
+        for m in re.finditer(r"([.\w\s-]*\babout__statement)\s*\{", css):
+            sel = m.group(1).strip()
+            with self.subTest(sel=sel):
+                self.assertIn(".about ", sel + " ",
+                              "%s is outranked by `.about h1` and will not "
+                              "apply" % sel)
+
+    def test_both_pages_count_their_lists(self):
+        """Every section bar on either page is the same component."""
+        for page in ("index.html", "about.html"):
+            with self.subTest(page=page):
+                html = self.html(page)
+                # The closing band is exempt: its h2 is the ask itself,
+                # not the title of a list, and there is nothing to count
+                # opposite a question.
+                loose = re.findall(
+                    r'<section class="band([^"]*)"[^>]*>\s*<h2', html)
+                self.assertEqual(
+                    [c for c in loose if "band--close" not in c], [],
+                    "%s has a list section whose heading is not a band "
+                    "bar" % page)
+                self.assertIn('class="band__bar"', html)
+        about = self.html("about.html")
+        jobs = about.count('<li class="job">')
+        counts = re.findall(r'<p class="band__count">([^<]*)</p>', about)
+        self.assertTrue(counts, "/about counts nothing")
+        self.assertTrue(counts[0].startswith("%02d" % jobs),
+                        "the experience bar says %r for %d jobs"
+                        % (counts[0], jobs))
+
+    def test_both_lists_are_carried_by_their_names(self):
+        """One size for the four projects and the four companies."""
+        size = "clamp(1.5rem, 2.4vw, 2.125rem)"
+        for sel in (".index__name", ".job__company"):
+            with self.subTest(sel=sel):
+                self.assertIn("font-size: %s" % size, self.rule(sel),
+                              "%s is not set at the shared index size" % sel)
+
+    def test_both_closing_bands_are_rows(self):
+        for page in ("index.html", "about.html"):
+            with self.subTest(page=page):
+                self.assertIn('class="close__row"', self.html(page),
+                              "%s still stacks its closing band down the "
+                              "left edge" % page)
+
+
+class TestTheWordmark(BuildCase):
+    """The mark in front of the first name.
+
+    It was a 2px rectangle -- a rule -- in an identity whose other half
+    is the hand-drawn stroke the share card puts under "trust.". The two
+    did not read as one hand, so the bar became that stroke, and it
+    moved from the surname to the given name.
+    """
+
+    PAGES = ("index.html", "about.html", "404.html",
+             "projects/instadeep.html")
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def test_the_mark_is_drawn_on_every_page_that_has_a_header(self):
+        for page in self.PAGES:
+            with self.subTest(page=page):
+                html = self.html(page)
+                self.assertIn('class="wordmark__mark"', html,
+                              "%s has a header with no mark in it" % page)
+
+    def test_the_mark_sits_in_front_of_the_first_name(self):
+        """Not the surname, which is where the ruled bar used to sit.
+
+        Asserted off the rendered name rather than off the class, so
+        swapping which line carries the indent without moving the mark
+        fails here.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import SITE
+        first, rest = SITE["name"].split(" ", 1)
+        html = self.html("index.html")
+        m = re.search(r'<span class="wordmark__line wordmark__line--in">'
+                      r'(.*?)</span>\s*<span class="wordmark__line">(.*?)</span>',
+                      html, re.S)
+        self.assertIsNotNone(
+            m, "the wordmark is no longer an indented line followed by a "
+               "flush one")
+        self.assertIn("wordmark__mark", m.group(1),
+                      "the indented line has no mark in it")
+        self.assertIn(first, m.group(1),
+                      "the mark is not on the given name")
+        self.assertEqual(m.group(2).strip(), rest,
+                         "the second line is not the surname on its own")
+        self.assertNotIn("wordmark__line--in::before", self.css(),
+                         "the ruled bar is still drawn as well as the "
+                         "stroke, so the mark renders twice")
+
+    def test_the_mark_is_decoration_and_says_so(self):
+        """It is the logo's ornament; the link already carries the name."""
+        html = self.html("index.html")
+        svg = re.search(r'<svg class="wordmark__mark"[^>]*>', html).group(0)
+        self.assertIn('aria-hidden="true"', svg)
+        self.assertIn('focusable="false"', svg,
+                      "an SVG without this takes a tab stop in some "
+                      "browsers, which would put a focus ring on an "
+                      "ornament inside a link")
+        link = re.search(r'<a class="site-head__name"[^>]*>', html).group(0)
+        self.assertIn('aria-label=', link,
+                      "the logo's accessible name came from its text, and "
+                      "its text now starts with a drawing")
+
+    def test_the_mark_takes_its_colour_from_a_token(self):
+        """Inline SVG and not a background image, for exactly this.
+
+        A data URI would have to spell the colour out, and every colour
+        in this stylesheet comes from tokens so that both themes repaint
+        from one place. A hardcoded crimson mark would stay crimson on
+        paper and in the light theme, where the accent is a different
+        red.
+        """
+        css = self.css()
+        i = css.index(".wordmark__mark {")
+        rule = css[i:css.index("}", i)]
+        self.assertIn("stroke: var(--color-accent)", rule)
+        self.assertNotIn("fill: var", rule)
+        self.assertIn("fill: none", rule,
+                      "a filled path would render the curve as a blob")
+        self.assertNotIn("data:image/svg", rule,
+                         "the mark is back as a background image, which "
+                         "cannot follow the theme")
+        # The one data URI in this file is a colourless noise filter, and
+        # it is why the check above is scoped to the rule: a blanket ban
+        # would have failed on something that is already correct.
+        self.assertEqual(css.count("data:image/svg"), 1,
+                         "a second inline SVG has appeared in the "
+                         "stylesheet; check it carries no colour")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -76,8 +76,8 @@
   "shareImage": "site/share-card.jpg",
   "metaDescription": "Product designer. I build what I design.",
   "heroGreeting": "Hi, I\u2019m Abdou.",
-  "heroClaim": "I design AI and\nfintech products\npeople can trust.\nThen I build them.",
-  "workedWith": "Worked with InstaDeep (BioNTech), Konnect, Steer AI and Groupado",
+  "heroClaim": "I design AI products\npeople can trust.\nThen I build them.",
+  "workedWith": "AI at InstaDeep (BioNTech) and Steer. Fintech, marketplaces and delivery before that.",
   "values": {
     "heading": "How I work",
     "body": "I learned most of this from watching handoffs go wrong. A design that stops at the handoff gets built as something else, and a component that only works when I’m in the room to explain it isn’t finished. So I stay next to the build, and I’d rather hear what’s wrong at the prototype than at launch."

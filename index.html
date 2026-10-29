@@ -52,7 +52,7 @@
   <link rel="preload" href="assets/fonts/bricolage-variable.woff2?v=e8a27852" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/fonts.css?v=850c1060">
   <link rel="stylesheet" href="assets/tokens.css?v=0cd1a4fb">
-  <link rel="stylesheet" href="assets/styles.css?v=13c21ef2">
+  <link rel="stylesheet" href="assets/styles.css?v=ef8a3c5f">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Abdou Yaackoubi","jobTitle":"Senior Product Designer","email":"mailto:abdouyaackoubi@gmail.com","description":"Product designer. I build what I design.","image":"https://abdouyaackoubi.com/site/profile.jpg","url":"https://abdouyaackoubi.com","address":{"@type":"PostalAddress","addressLocality":"Tunis, Tunisia"},"sameAs":["https://www.linkedin.com/in/abdou-yaackoubi/"]}</script>
   <script>
     /* Before first paint, or the page renders in the system theme and then
@@ -64,13 +64,45 @@
       var t = localStorage.getItem("theme");
       if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
     } catch (e) {}
+
+    /* THE SAME SCRIPT, SECOND HALF: does this visit get the hook?
+       It has to be decided here, before the first frame, or the solid
+       headline paints and is then replaced by outlines -- which reads as
+       a bug rather than as an intro. hook.js never makes this decision;
+       it only looks for the class.
+
+       Once per session, never for a reader who has asked for less motion,
+       and never on a deep link, where the hero is not on screen to be
+       performed at. Any of those, or storage being unavailable, and the
+       page is simply the page.
+
+       ONE inline script, not two. A second one in the head is another
+       parse-and-execute before the first paint, for eleven lines that
+       belong to the same "decide this before anything renders" job as
+       the theme above. */
+    (function () {
+      var r = document.documentElement;
+      try {
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        if (location.hash && location.hash !== "#main") return;
+        if (sessionStorage.getItem("hook-seen")) return;
+        sessionStorage.setItem("hook-seen", "1");
+      } catch (e) { return; }
+      r.classList.add("hook-on");
+      /* Failsafe for a hook.js that never loads: without it a failed
+         fetch leaves the claim outlined for good. hook.js clears this
+         the moment it starts, and owns the timing from there. */
+      window.__hookFailsafe = setTimeout(function () {
+        r.classList.remove("hook-on");
+      }, 6000);
+    })();
   </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-head">
     <div class="shell site-head__inner">
-      <a class="site-head__name" href="work" aria-label="Abdou Yaackoubi, home"><span class="wordmark__line">Abdou</span><span class="wordmark__line wordmark__line--in">Yaackoubi</span></a>
+      <a class="site-head__name" href="work" aria-label="Abdou Yaackoubi, home"><span class="wordmark__line wordmark__line--in"><svg class="wordmark__mark" viewBox="0 0 48 16" aria-hidden="true" focusable="false"><path d="M3 12.4C11.5 6.9 25 4.2 36.5 5.2c4.4.4 7-.8 8.2-3.4"/></svg>Abdou</span><span class="wordmark__line">Yaackoubi</span></a>
       <nav class="site-nav" aria-label="Primary">
         <span class="site-nav__pill">
           <span class="site-nav__marker" aria-hidden="true"></span>
@@ -86,22 +118,26 @@
 
     <div class="shell hero-band">
     <section class="opening">
-      <figure class="opening__portrait">
-        <img src="site/portrait.jpg?v=e3c42d74" alt="Portrait of Abdou Yaackoubi" width="280" height="280" decoding="async">
-      </figure>
-
+      <div class="opening__top">
+        <figure class="opening__portrait">
+          <img src="site/portrait.jpg?v=e3c42d74" alt="Portrait of Abdou Yaackoubi" width="280" height="280" decoding="async">
+        </figure>
       <p class="opening__greeting">Hi, I’m Abdou.</p>
-      <h1 class="opening__claim"><span class="claim__line">I design AI and</span><span class="claim__line">fintech products</span><span class="claim__line">people can trust.</span><span class="claim__line claim__line--built">Then I build them.</span></h1>
+        <h1 class="opening__claim"><span class="claim__reveal"><span class="claim__line">I design AI products</span></span><span class="claim__reveal"><span class="claim__line">people can trust.</span></span><span class="claim__reveal"><span class="claim__line claim__line--built">Then I build them.</span></span></h1>
+      </div>
+      <div class="opening__foot">
+        <div class="opening__says">
       <p class="opening__meta">Senior Product Designer at InstaDeep, acquired by BioNTech · Six years · Tunis, UTC+1</p>
-
-      <p class="ask"><a class="ask__act" href="call/" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a><span class="ask__or">or</span><button class="ask__act js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="ask__act js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="ask__badge"><span class="ask__dot" aria-hidden="true"></span>Open to new projects</span><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></p>
-      <p class="opening__worked">Worked with InstaDeep (BioNTech), Konnect, Steer AI and Groupado</p>
+      <p class="opening__worked">AI at InstaDeep (BioNTech) and Steer. Fintech, marketplaces and delivery before that.</p>
+        </div>
+        <p class="ask"><a class="ask__act ask__act--see" href="#work">See the work<span class="ask__down" aria-hidden="true">↓</span></a><span class="ask__badge"><span class="ask__dot" aria-hidden="true"></span>Open to new projects</span></p>
+      </div>
     </section>
     </div>
 
 
     <section class="band shell band--work" id="work">
-      <h2 class="band__title">Selected work</h2>
+      <div class="band__bar"><h2 class="band__title">Selected work</h2><p class="band__count">04 · 2020-now</p></div>
       <ol class="index">
         <li class="index__row">
           <a class="index__link" href="projects/instadeep" data-peek="projects/10-instadeep/assets/index-cover.card-480.jpg?v=a20804bc">
@@ -152,21 +188,23 @@
 
 
     <section class="band shell band--ways" aria-labelledby="ways">
-      <h2 class="band__title" id="ways">Ways to work together</h2>
+      <div class="band__bar"><h2 class="band__title" id="ways">Ways to work together</h2><p class="band__count">03</p></div>
       <ul class="ways">
-        <li class="way"><h3 class="way__title">MVP sprint</h3><p class="way__body">Product design and a coded prototype for a first release or a fundraise.</p></li>
-        <li class="way"><h3 class="way__title">AI UX review</h3><p class="way__body">Onboarding, empty states, errors and trust signals in your AI product, with fixes ranked by impact.</p></li>
-        <li class="way"><h3 class="way__title">Design system</h3><p class="way__body">Components, tokens and states a small team can use without a designer in the room.</p></li>
+        <li class="way"><span class="way__num" aria-hidden="true">01</span><h3 class="way__title">MVP sprint</h3><p class="way__body">Product design and a coded prototype for a first release or a fundraise.</p></li>
+        <li class="way"><span class="way__num" aria-hidden="true">02</span><h3 class="way__title">AI UX review</h3><p class="way__body">Onboarding, empty states, errors and trust signals in your AI product, with fixes ranked by impact.</p></li>
+        <li class="way"><span class="way__num" aria-hidden="true">03</span><h3 class="way__title">Design system</h3><p class="way__body">Components, tokens and states a small team can use without a designer in the room.</p></li>
       </ul>
-      <p class="ways__ask"><a class="ask__act" href="call/" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a></p>
     </section>
 
 
     <section class="band shell band--close" id="contact">
       <h2 class="band__close">Have something in mind?</h2>
-      <p class="close__proof">This site is the proof: my Figma, my code, and a test suite that checks its own claims.</p>
+      <div class="close__row">
       <div class="actions"><a class="btn btn--solid" href="call/" target="_blank" rel="noopener">Book a call<span class="visually-hidden"> (opens in a new tab)</span></a><button class="btn js-copy" type="button" data-copy="abdouyaackoubi@gmail.com">Copy email</button><a class="btn js-copy-fallback" href="mailto:abdouyaackoubi@gmail.com">Email me</a><span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span></div>
-      <p class="reach"><a class="reach__addr" href="mailto:abdouyaackoubi@gmail.com">abdouyaackoubi@gmail.com</a><span class="reach__sep" aria-hidden="true"> · </span><span class="reach__reply">Usually a reply the same day.</span></p>
+        <div class="close__side"><p class="close__proof">This site is the proof: my Figma, my code, and a test suite that checks its own claims.</p>
+        <p class="reach"><a class="reach__addr" href="mailto:abdouyaackoubi@gmail.com">abdouyaackoubi@gmail.com</a><span class="reach__sep" aria-hidden="true"> · </span><span class="reach__reply">Usually a reply the same day.</span></p>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -176,6 +214,8 @@
     </div>
   </footer>
   <script src="assets/lightbox.js?v=652506b0" defer></script>
-  <script src="assets/enhance.js?v=72f7d23d" defer></script>
+  <script src="assets/enhance.js?v=f7523a4f" defer></script>
+  <script src="assets/hook.js?v=79b2255c" defer></script>
+  <script src="assets/signal.js?v=9e761618" defer></script>
 </body>
 </html>

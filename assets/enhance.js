@@ -290,6 +290,40 @@
      of several headings is nearest the top, which is a query, not an
      animation, and no timeline expresses it. */
 
+  /* ── the header's ask waits for the hero's ─────────
+     The page used to open with two "Book a call" buttons on screen at
+     once: one in the header and one in the hero, 300px apart, saying
+     the same four words. A CEO reading the homepage counted the asks
+     before he read the claim.
+
+     The hero no longer asks for a meeting at all -- it points at the
+     work -- so the header's button has nothing to compete with, and no
+     reason to be on the first screen either. It stays collapsed until
+     the hero's own control has scrolled off the top, which is the
+     moment the page stops introducing itself.
+
+     Collapsed with max-width and visibility rather than opacity alone:
+     opacity would leave a hole in the header and a tabbable button
+     nobody can see. Without this script the stylesheet's `.js` scope
+     never applies and the button is simply always there. */
+  (function () {
+    var cta = document.querySelector('.site-nav__cta');
+    if (!cta) return;
+    var ask = document.querySelector('.opening .ask');
+    /* No hero on this page (/about, a case study): the button is the
+       only ask there is, so it does not wait for anything. */
+    if (!ask || !io) { cta.classList.add('is-shown'); return; }
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        /* Above the viewport, not below it. Scrolling UP past the hero
+           hides it again; arriving at the hero from a #contact link
+           should not leave it showing. */
+        cta.classList.toggle(
+          'is-shown', !en.isIntersecting && en.boundingClientRect.top < 0);
+      });
+    }, { threshold: 0 }).observe(ask);
+  })();
+
   /* ── mark the section you're reading in the index ──
      Tracks the heading nearest the top of the viewport rather than
      using an observer per section, so it stays correct when several

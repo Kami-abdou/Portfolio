@@ -421,29 +421,34 @@ def link_btn(label, href, depth=0, *, slug=None, rel_attr="", new_tab=False):
 
 
 def ask_row(depth=0):
-    """The hero's ask, set as a sentence instead of two buttons.
+    """The hero's one action: into the work, not into a calendar.
 
-        Book a call  or  Copy email   (Open to new projects)
+    It used to read "Book a call  or  Copy email", and it was the first
+    of FOUR "Book a call" links on this page -- header, hero, ways,
+    closing band -- which is the page asking for a meeting four times
+    before it has shown one thing that was designed. A CEO reading this
+    site said there were too many asks, and counting them proved him
+    right: six controls, four of them the same four words.
 
-    The same two controls as actions_row, and the same three elements
-    underneath them -- the button, the mailto fallback, the live region
-    -- so enhance.js and the <noscript> rule reach this one without
-    knowing it exists. Only the dress is different.
+    The hero now asks for nothing. It points down, at the index, which
+    is what somebody who has just read the headline actually wants
+    next. The booking link survives twice: under Ways, where naming the
+    engagement raises the question, and in the closing band, where five
+    case studies have already answered it.
 
-    WHY THE HERO DIFFERS from the closing band, which keeps the solid
-    buttons: a filled pill above the fold asks for the meeting before
-    the visitor has seen one thing you made. The quiet version offers it
-    without insisting; the loud one waits at the bottom, where the work
-    has already made the argument. Quiet at the top, loud once it is
-    earned. That is the rule, written down so it stays a rule and does
-    not read later as two components that drifted.
+    The copy-email control went with it. That is safe because the two
+    remaining asks each carry their own fallback and live region (see
+    actions_row), so nothing in enhance.js is left reaching through
+    parentNode for a sibling that moved out.
 
-    The badge is what replaced the "OPEN TO WORK" eyebrow above the h1.
-    Same fact, but attached to the action it qualifies instead of
-    floating over the headline, where it reads as a state rather than a
-    plea.
+    `depth` is still in the signature and still unused by the href: the
+    target is an in-page id, not a path, so it does not change with how
+    deep the page sits. Only build_index calls this.
+
+    Smooth scrolling and the landing offset are already handled -- the
+    root sets scroll-behavior and #work carries scroll-margin-top for
+    the sticky header -- so there is no JavaScript behind this link.
     """
-    addr = SITE.get("email", "")
     label = SITE.get("availability", "")
     # The dot is decoration -- "Open to new projects" already says it --
     # so it is aria-hidden and the badge is not given a role. A status
@@ -452,24 +457,12 @@ def ask_row(depth=0):
     badge = ('<span class="ask__badge">'
              '<span class="ask__dot" aria-hidden="true"></span>%s</span>'
              % e(label)) if usable(label) else ""
-    book = ('<a class="ask__act" href="%s"%s>Book a call%s</a>'
-            % (e(call_href("../" * depth)), NEW_TAB, NEW_TAB_NOTE))
-    if not usable(addr):
-        return '<p class="ask">%s%s</p>' % (book, badge)
-    # With JavaScript off the button hides and the mailto shows, and
-    # because the fallback follows the "or" in source order the sentence
-    # still reads straight through: "Book a call or Email me".
-    return (
-        '<p class="ask">'
-        '%s'
-        '<span class="ask__or">or</span>'
-        '<button class="ask__act js-copy" type="button" data-copy="%s">'
-        'Copy email</button>'
-        '<a class="ask__act js-copy-fallback" href="mailto:%s">Email me</a>'
-        '%s'
-        '<span class="visually-hidden" role="status" aria-live="polite"'
-        ' data-copy-status></span>'
-        '</p>' % (book, e(addr), e(addr), badge))
+    # The arrow is aria-hidden: "See the work" is the accessible name,
+    # and a screen reader reading "See the work down arrow" is worse
+    # than one that does not.
+    see = ('<a class="ask__act ask__act--see" href="#work">See the work'
+           '<span class="ask__down" aria-hidden="true">\u2193</span></a>')
+    return '<p class="ask">%s%s</p>' % (see, badge)
 
 
 def reach_line():
@@ -686,8 +679,34 @@ def write_tokens_css():
 
 # ─────────────────────────────────────────── page chrome
 
+#: The mark in front of the first name, drawn rather than ruled.
+#
+#  It was a 2px rectangle, which is what a rule is. The share card marks
+#  the claim with a hand-drawn stroke instead -- one pass of a marker
+#  under "trust.", heavier in the middle, flicking up as it leaves the
+#  word -- and that stroke is the only piece of handwriting anywhere in
+#  the identity. Having it on the card and a ruled bar in the header
+#  meant the two did not look like they came from the same hand.
+#
+#  Inline SVG and not a background image, for one reason: a data URI
+#  would have to carry the colour, and this stylesheet holds no colour
+#  literals so that both themes can repaint everything from tokens.
+#  `stroke: var(--color-accent)` on a real element keeps that true.
+WORDMARK_MARK = (
+    '<svg class="wordmark__mark" viewBox="0 0 48 16" aria-hidden="true" '
+    'focusable="false">'
+    '<path d="M3 12.4C11.5 6.9 25 4.2 36.5 5.2c4.4.4 7-.8 8.2-3.4"/>'
+    '</svg>')
+
+
 def wordmark():
-    """The logo as two stacked lines, the second indented.
+    """The logo as two stacked lines, the FIRST indented behind a mark.
+
+    The indent used to carry the surname and the mark sat in front of it.
+    It reads better the other way round: the stroke lands on the given
+    name, which is what anyone says out loud, and the surname -- the
+    longer of the two words -- gets the full width instead of starting a
+    third of the way across.
 
     Splits on the first space so a middle name would ride with the surname
     rather than creating a third line the layout does not allow for.
@@ -695,10 +714,11 @@ def wordmark():
     parts = SITE["name"].split(" ", 1)
     first = parts[0]
     rest = parts[1] if len(parts) > 1 else ""
-    lines = '<span class="wordmark__line">%s</span>' % e(first)
-    if rest:
-        lines += '<span class="wordmark__line wordmark__line--in">%s</span>' % e(rest)
-    return lines
+    if not rest:
+        return '<span class="wordmark__line">%s</span>' % e(first)
+    return ('<span class="wordmark__line wordmark__line--in">%s%s</span>'
+            '<span class="wordmark__line">%s</span>'
+            % (WORDMARK_MARK, e(first), e(rest)))
 
 
 def asset_v(rel):
@@ -839,8 +859,45 @@ def primary_nav(up, current=None):
                           e(call_href(up)), NEW_TAB, NEW_TAB_NOTE))
 
 
+HOOK_SCRIPT = """
+    /* THE SAME SCRIPT, SECOND HALF: does this visit get the hook?
+       It has to be decided here, before the first frame, or the solid
+       headline paints and is then replaced by outlines -- which reads as
+       a bug rather than as an intro. hook.js never makes this decision;
+       it only looks for the class.
+
+       Once per session, never for a reader who has asked for less motion,
+       and never on a deep link, where the hero is not on screen to be
+       performed at. Any of those, or storage being unavailable, and the
+       page is simply the page.
+
+       ONE inline script, not two. A second one in the head is another
+       parse-and-execute before the first paint, for eleven lines that
+       belong to the same "decide this before anything renders" job as
+       the theme above. */
+    (function () {
+      var r = document.documentElement;
+      try {
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        if (location.hash && location.hash !== "#main") return;
+        if (sessionStorage.getItem("hook-seen")) return;
+        sessionStorage.setItem("hook-seen", "1");
+      } catch (e) { return; }
+      r.classList.add("hook-on");
+      /* Failsafe for a hook.js that never loads: without it a failed
+         fetch leaves the claim outlined for good. hook.js clears this
+         the moment it starts, and owns the timing from there. */
+      window.__hookFailsafe = setTimeout(function () {
+        r.classList.remove("hook-on");
+      }, 6000);
+    })();
+"""
+
+
 def head(title, description, *, depth=0, image=None, page_url="",
-         og_type="website", image_alt=None, nav_current=None, up=None):
+         og_type="website", image_alt=None, nav_current=None, up=None,
+         hook=False):
+    """`hook` is the homepage only: see HOOK_SCRIPT above."""
     # `up` overrides the depth-derived prefix, and exactly one page needs
     # it: 404.html is served for /anything/at/any/depth, so a relative
     # "assets/styles.css" resolves against whatever path was missed and
@@ -870,6 +927,7 @@ def head(title, description, *, depth=0, image=None, page_url="",
         canonical = '\n  <link rel="canonical" href="%s">' % e(abs_url(page_url, depth))
     og_url = ('\n  <meta property="og:url" content="%s">' % e(abs_url(page_url, depth))
               if SITE.get("url") and page_url else "")
+    hook_js = HOOK_SCRIPT if hook else ""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -929,7 +987,7 @@ def head(title, description, *, depth=0, image=None, page_url="",
       var t = localStorage.getItem("theme");
       if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
     }} catch (e) {{}}
-  </script>
+{hook_js}  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -942,8 +1000,15 @@ def head(title, description, *, depth=0, image=None, page_url="",
   <main id="main" tabindex="-1">"""
 
 
-def foot(depth=0, up=None):
+def foot(depth=0, up=None, scripts=()):
     """One line, which is all a footer on this site has to be now.
+
+    `scripts` names extra files in assets/ to load after enhance.js. The
+    hook and the signal are homepage-only and together weigh more than
+    everything else this site ships; linking them from /about or a case
+    study would be two requests for code with nothing on the page to act
+    on. Order matters -- enhance.js sets html.js first, and the signal
+    waits on an event the hook fires, so the hook is parsed first.
 
     It carried the copyright, a "Last updated" stamp and a row of link
     buttons repeating the email, LinkedIn and CV that were already in the
@@ -959,6 +1024,9 @@ def foot(depth=0, up=None):
     across the JSON sources, so it cannot claim a change nobody made.
     """
     up = "../" * depth if up is None else up
+    extra = "".join(
+        '\n  <script src="%sassets/%s%s" defer></script>'
+        % (up, name, asset_v("assets/" + name)) for name in scripts)
     iso, stamp = content_updated()
     linkedin = next((l for l in SITE.get("links", [])
                      if "linkedin" in l.get("label", "").lower()), None)
@@ -978,7 +1046,7 @@ def foot(depth=0, up=None):
     </div>
   </footer>
   <script src="{up}assets/lightbox.js{asset_v("assets/lightbox.js")}" defer></script>
-  <script src="{up}assets/enhance.js{asset_v("assets/enhance.js")}" defer></script>
+  <script src="{up}assets/enhance.js{asset_v("assets/enhance.js")}" defer></script>{extra}
 </body>
 </html>
 """
@@ -1387,6 +1455,57 @@ def index_row(project, n, depth=0):
         domain=e(project_domain(project)), year=e(project_year(project)))
 
 
+def band_bar(heading, count, heading_id=None):
+    """A section title with a count sitting opposite it.
+
+    A quiet index. The page is a list of lists -- four projects, three
+    ways to work -- and until now a reader found out how many of each
+    there were by reaching the bottom of one. The numeral says it up
+    front, in the same mono the project rows count in, and it fills the
+    right end of a line that was empty from the title to the margin.
+
+    Called __bar and not __head because `.band__head` already means
+    something on the case-study pages, where it is the title block of a
+    chapter. Reusing the name would have made one stylesheet rule reach
+    two unrelated things.
+    """
+    hid = ' id="%s"' % e(heading_id) if heading_id else ""
+    tail = ('<p class="band__count">%s</p>' % e(count)) if count else ""
+    return ('      <div class="band__bar">'
+            '<h2 class="band__title"%s>%s</h2>%s</div>'
+            % (hid, e(heading), tail))
+
+
+def year_span(strings):
+    """"2020-now", derived from whatever wrote the years down.
+
+    Typed, it would start lying the first time a project is added or the
+    current role ends. The years it reads are free text -- "October 2021
+    - November 2023", "January 2024 - present", "2024-now" -- so this
+    takes the four-digit years out of them and keeps the earliest; the
+    end is the word "now" when any of them is still running, and the
+    latest year when none is.
+    """
+    years, running = [], False
+    for y in strings:
+        y = y or ""
+        if re.search(r"present|now|ongoing", y, re.I):
+            running = True
+        years += [int(m) for m in re.findall(r"(?:19|20)\d{2}", y)]
+    if not years:
+        return ""
+    end = "now" if running else str(max(years))
+    start = str(min(years))
+    # A hyphen, not an en dash: the rows beside it already print
+    # "2024-now" and "2020-21", and the build refuses dashes in copy.
+    return start if start == end else "%s-%s" % (start, end)
+
+
+def work_span(projects):
+    """The span of a list of projects, read off their meta lines."""
+    return year_span(project_year(p) for p in projects)
+
+
 def ways_block(depth=0):
     """Three things someone can actually buy, named.
 
@@ -1399,11 +1518,18 @@ def ways_block(depth=0):
     NO PRICES, on purpose. A number here would be answering a question
     nobody has asked yet, and every one of these is scoped per project.
 
-    ONE quiet link under the cards, not a solid button, even though the
-    closing band twenty pixels below has a solid one. Two filled pills
-    stacked would read as the page asking twice. Same rule as the hero:
-    quiet where the work is still doing the arguing, loud once it has
-    finished. The dotted underline is the hero's own ask treatment.
+    NO ASK UNDER THE CARDS. There used to be a quiet "Book a call" here,
+    on the argument that the cards name three things someone can buy and
+    the next move should be within reach. It was the THIRD copy of that
+    button on one page -- header, here, closing band -- and the closing
+    band is one scroll below this one. A page that asks three times is
+    not being helpful, it is being anxious. The ask is now in exactly two
+    places: the header, once you are past the hero, and the end.
+
+    Each card carries its number. The cards are a set of three and said
+    so only by sitting next to each other; the numeral says it in the
+    same mono the rest of the page counts in, and gives the signal's bus
+    a visible thing to tap.
     """
     block = SITE.get("ways") or {}
     items = [i for i in block.get("items", [])
@@ -1412,19 +1538,19 @@ def ways_block(depth=0):
         return ""
     cards = "\n".join(
         '        <li class="way">'
+        '<span class="way__num" aria-hidden="true">%02d</span>'
         '<h3 class="way__title">%s</h3>'
-        '<p class="way__body">%s</p></li>' % (e(i["title"]), e(i["body"]))
-        for i in items)
+        '<p class="way__body">%s</p></li>' % (n, e(i["title"]), e(i["body"]))
+        for n, i in enumerate(items, 1))
     return """
     <section class="band shell band--ways" aria-labelledby="ways">
-      <h2 class="band__title" id="ways">%s</h2>
+%s
       <ul class="ways">
 %s
       </ul>
-      <p class="ways__ask"><a class="ask__act" href="%s"%s>Book a call%s</a></p>
     </section>
-""" % (e(block.get("heading", "Ways to work together")), cards,
-       e(call_href("../" * depth)), NEW_TAB, NEW_TAB_NOTE)
+""" % (band_bar(block.get("heading", "Ways to work together"),
+                "%02d" % len(items), heading_id="ways"), cards)
 
 
 def build_index(projects):
@@ -1448,7 +1574,14 @@ def build_index(projects):
         page_description("home"),
         page_url="work",
         nav_current="work",
+        hook=True,
     )]
+
+    # Resolved before the hero, not with the index below it: the hero
+    # shows the first three of these, so one list decides both and they
+    # cannot drift into disagreeing about what the recent work is.
+    sel = SITE.get("sections", {}).get("selected") or {}
+    items = [i["slug"] for i in sel.get("items", []) if i.get("slug") in slugs]
 
     hero_img = SITE.get("heroImage") or SITE["profileImage"]
     psize = png_size(ROOT / hero_img)
@@ -1460,8 +1593,23 @@ def build_index(projects):
     # them -- a <br> between two blocks renders a phantom empty line.
     claim = SITE.get("heroClaim") or SITE["title"]
     claim_lines = claim.split("\n")
+    # Each line sits in its own clip so it can slide up from behind one.
+    # The outer span clips and the inner one moves -- the same two-element
+    # shape as `masked()` further up, but on a CSS animation rather than
+    # the IntersectionObserver, because the hero is on screen at load and
+    # has nothing to scroll into.
+    #
+    # The clip is clip-path rather than overflow:hidden, and that is not a
+    # style preference. The last line carries the selection frame, drawn
+    # on pseudo-elements at `inset: -4px calc(-0.08em - 4px)` -- 4px
+    # OUTSIDE the line box on every side, with handles on the corners.
+    # overflow:hidden clips at the padding box and would cut all four
+    # edges and every handle off it. clip-path clips at the border box and
+    # takes negative insets, so the stylesheet opens it horizontally and
+    # pads it vertically, and the frame survives the reveal intact.
     claim_html = "".join(
-        '<span class="claim__line%s">%s</span>'
+        '<span class="claim__reveal">'
+        '<span class="claim__line%s">%s</span></span>'
         % (" claim__line--built" if i == len(claim_lines) - 1 else "", e(line))
         for i, line in enumerate(claim_lines))
 
@@ -1493,16 +1641,31 @@ def build_index(projects):
     worked_html = ('\n      <p class="opening__worked">%s</p>' % e(worked)
                    ) if usable(worked) else ""
 
+    # TWO BLOCKS, not one column. The hero used to stack portrait,
+    # greeting, headline, meta and ask from the top and stop, leaving the
+    # rest of the first screen empty. Now the headline takes the top and
+    # everything that qualifies it is a foot row sitting on the fold, so
+    # the first screen reads as one composition with air in the middle
+    # instead of a pile of text with a gap under it.
+    #
+    # The foot used to carry three project covers on its right. They are
+    # gone at the owner's call, so what is left spans the strip instead
+    # of huddling in a 420px column beside them: who and where on the
+    # left, the one way in on the right, both sitting on the fold.
     out.append(f"""
     <div class="shell hero-band">
     <section class="opening">
-      <figure class="opening__portrait">
-        <img src="{e(hero_img)}{asset_v(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
-      </figure>
-
-{greet_html}      <h1 class="opening__claim">{claim_html}</h1>{meta_html}
-
-      {ask_row()}{worked_html}
+      <div class="opening__top">
+        <figure class="opening__portrait">
+          <img src="{e(hero_img)}{asset_v(hero_img)}" alt="Portrait of {e(SITE['name'])}"{pdims} decoding="async">
+        </figure>
+{greet_html}        <h1 class="opening__claim">{claim_html}</h1>
+      </div>
+      <div class="opening__foot">
+        <div class="opening__says">{meta_html}{worked_html}
+        </div>
+        {ask_row()}
+      </div>
     </section>
     </div>
 """)
@@ -1512,14 +1675,16 @@ def build_index(projects):
     # More work line" existed because a cover card is expensive: three was
     # all that fit. A row costs a line, so the two tiers collapse into one
     # list and nothing is relegated to a footnote.
-    sel = SITE.get("sections", {}).get("selected") or {}
-    items = [i["slug"] for i in sel.get("items", []) if i.get("slug") in slugs]
     if items:
         rows = "\n".join(index_row(slugs[sl], n)
                          for n, sl in enumerate(items, 1))
+        bar = band_bar(sel.get("heading", "Selected work"),
+                       "%02d" % len(items)
+                       + (" \u00b7 " + work_span([slugs[sl] for sl in items])
+                          if work_span([slugs[sl] for sl in items]) else ""))
         out.append(f"""
     <section class="band shell band--work" id="work">
-      <h2 class="band__title">{e(sel.get("heading", "Selected work"))}</h2>
+{bar}
       <ol class="index">
 {rows}
       </ol>
@@ -1539,18 +1704,28 @@ def build_index(projects):
     # it and changed the subject; this is the sentence that cashes it,
     # placed where a visitor who has just read five projects can check
     # it against what they saw.
+    #
+    # A ROW, not a column. The band used to stack heading, proof,
+    # buttons and address down the left edge and leave the right half of
+    # a 1440px screen empty -- the same lost space the hero was fixing,
+    # repeated at the end of the page. The buttons now sit on the left,
+    # where the signal's trace lands, and the two lines that qualify
+    # them share a baseline with the buttons on the right.
     proof = SITE.get("buildProof", "")
-    proof_html = ('\n      <p class="close__proof">%s</p>'
+    proof_html = ('<p class="close__proof">%s</p>\n        '
                   % e(proof)) if usable(proof) else ""
     out.append(f"""
     <section class="band shell band--close" id="contact">
-      <h2 class="band__close">{e(SITE.get("closingLine", "Have something in mind?"))}</h2>{proof_html}
+      <h2 class="band__close">{e(SITE.get("closingLine", "Have something in mind?"))}</h2>
+      <div class="close__row">
       {actions_row()}
-      {reach_line()}
+        <div class="close__side">{proof_html}{reach_line()}
+        </div>
+      </div>
     </section>
 """)
 
-    out.append(foot())
+    out.append(foot(scripts=("hook.js", "signal.js")))
 
     # The homepage is served at two URLs on purpose. /work is what the nav
     # points at and what the canonical names, because "work" says what the
@@ -1583,6 +1758,10 @@ def experience_list(index):
     roles = SITE.get("experience") or []
     if not roles:
         return ""
+    # Same bar as Selected work on the homepage, and the same rule for
+    # what goes in it: counted, and spanned off the years already
+    # written down rather than typed next to them.
+    span = year_span(job.get("years", "") for job in roles)
     rows = []
     for job in roles:
         company = job.get("company", "")
@@ -1604,12 +1783,16 @@ def experience_list(index):
             '</li>' % (name, e(job.get("role", "")), e(job.get("years", ""))))
     return """
     <section class="band shell band--jobs" aria-labelledby="experience">
-      <h2 id="experience">%s</h2>
+%s
       <ul class="jobs">
 %s
       </ul>
     </section>
-""" % (e(SITE.get("experienceHeading", "Experience")), "\n".join(rows))
+""" % (band_bar(SITE.get("experienceHeading", "Experience"),
+                "%02d" % len(roles)
+                + (" \u00b7 " + span if span else ""),
+                heading_id="experience"),
+       "\n".join(rows))
 
 
 def values_block():
@@ -1633,7 +1816,7 @@ def values_block():
     make; this page turned out to have one.
     """
     block = SITE.get("values") or {}
-    heading = e(block.get("heading", "How I work"))
+    heading = block.get("heading", "How I work")
     body = block.get("body", "")
     if usable(body):
         inner = '      <p class="values__prose">%s</p>' % e(body)
@@ -1648,12 +1831,14 @@ def values_block():
             '<span class="value__body">%s</span></li>'
             % (e(i["label"]), e(i["body"])) for i in items)
         inner = "      <ul class=\"values\">\n%s\n      </ul>" % rows
+    # The bar carries no count: one paragraph is not a list, and "01"
+    # opposite it would be counting for the sake of the pattern.
     return """
     <section class="band shell band--values" aria-labelledby="values">
-      <h2 id="values">%s</h2>
+%s
 %s
     </section>
-""" % (heading, inner)
+""" % (band_bar(heading, "", heading_id="values"), inner)
 
 
 def build_about(index):
@@ -1699,11 +1884,10 @@ def build_about(index):
     tools_html = ""
     if tools:
         tools_html = """
-    <section class="band shell band--tools" aria-labelledby="tools">
-      <h2 id="tools">%s</h2>
-      %s
-    </section>
-""" % (e(SITE.get("toolsHeading", "Tools")), tool_chips(tools))
+        <div class="about__tools">
+          <p class="band__title" id="tools">%s</p>
+          %s
+        </div>""" % (e(SITE.get("toolsHeading", "Tools")), tool_chips(tools))
 
     # The same two actions as everywhere else, with the two documents a
     # reader of this page actually goes looking for underneath them.
@@ -1716,19 +1900,38 @@ def build_about(index):
                % (e(linkedin["url"]), NEW_TAB, e(linkedin["label"]), NEW_TAB_NOTE)
                ) if linkedin else ""
     small = " ".join(x for x in (cv_link, li_link) if x)
-    small_html = ('\n      <p class="about__small">%s</p>' % small) if small else ""
+    small_html = ('<p class="about__small">%s</p>' % small) if small else ""
 
+    # THE SAME SHAPE AS THE HOMEPAGE, which it did not have. That page
+    # opens with a headline across the full column and a foot row under
+    # it -- what qualifies the claim on the left, something to look at on
+    # the right. This one opened with a pink headline at two thirds the
+    # size, a narrow column of prose, and the right half of the screen
+    # empty, and then a separate band for seven logos. Read one after the
+    # other they did not look like the same site.
+    #
+    # So the tools come up into the foot row, where the homepage keeps
+    # its covers, and the band they had to themselves goes. Same
+    # structure, same hairline, same two columns.
     out.append(f"""
-    <article class="shell about">
-      <h1 class="about__statement">{intro_heading}</h1>
-      <div class="about__intro prose">
-        {intro_body}
-      </div>
-    </article>
-{experience_list(index)}{tools_html}{values_block()}
+    <div class="shell about">
+      <section class="about__lead">
+        <h1 class="about__statement">{intro_heading}</h1>
+        <div class="about__foot">
+          <div class="about__intro prose">
+            {intro_body}
+          </div>{tools_html}
+        </div>
+      </section>
+    </div>
+{experience_list(index)}{values_block()}
     <section class="band shell band--close">
       <h2 class="band__close">{e(SITE.get("closingLine", "Have something in mind?"))}</h2>
-      {actions_row()}{small_html}
+      <div class="close__row">
+      {actions_row()}
+        <div class="close__side">{small_html}
+        </div>
+      </div>
     </section>
 """)
     out.append(foot())
