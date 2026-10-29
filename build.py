@@ -2409,6 +2409,7 @@ def build_contact_redirect():
 <title>Contact - %s</title>
 <link rel="canonical" href="%s">
 <meta http-equiv="refresh" content="0; url=%s">
+%s
 <style>
   body { margin:0; min-height:100vh; display:grid; place-items:center;
          background:%s; color:%s; font:400 16px/1.5 system-ui, sans-serif; }
@@ -2429,9 +2430,45 @@ def build_contact_redirect():
 </body>
 </html>
 """ % (e(SITE["name"]), e(canonical), e(target),
+       stub_og("Contact %s" % SITE["name"],
+               "The address, the reply time and both ways to start."),
        e(TOKENS["color"]["bg"]), e(TOKENS["color"]["text"]),
        e(TOKENS["color"]["accent"]), e(target), e(target)), encoding="utf-8")
 
+
+
+def stub_og(title, description):
+    """The four tags a link preview needs, for a page that is a hop.
+
+    /call and /contact are redirects, not destinations, and neither is
+    in the sitemap -- so for a long time neither carried Open Graph
+    tags, on the reasoning that nobody shares a hop.
+
+    People share hops. /call is what the header button points at, which
+    makes it the URL somebody copies out of a right-click menu and
+    pastes into a message, and a paste with no tags previews as a bare
+    link with the domain under it. LinkedIn's Post Inspector reports
+    exactly that as two warnings. Four tags and the same card the rest
+    of the site uses, and every URL on this domain previews.
+
+    This does not fight the noindex on /call: noindex is about search
+    results and Open Graph is about what a chat window draws. The two
+    have nothing to say to each other.
+    """
+    img = SITE.get("shareImage") or SITE.get("profileImage")
+    tags = [
+        '<meta property="og:type" content="website">',
+        '<meta property="og:site_name" content="%s">' % e(SITE["name"]),
+        '<meta property="og:title" content="%s">' % e(title),
+        '<meta property="og:description" content="%s">' % e(description),
+    ]
+    if img:
+        tags.append('<meta property="og:image" content="%s%s">'
+                    % (e(abs_url(img)), asset_v(img)))
+        tags.append('<meta property="og:image:alt" content="%s - %s">'
+                    % (e(SITE["name"]), e(SITE["title"])))
+    tags.append('<meta name="twitter:card" content="summary_large_image">')
+    return "\n".join(tags)
 
 
 def build_call_redirect():
@@ -2466,6 +2503,7 @@ def build_call_redirect():
 <title>Book a call - %s</title>
 <meta name="robots" content="noindex">
 <meta http-equiv="refresh" content="0; url=%s">
+%s
 <style>
   body { margin:0; min-height:100vh; display:grid; place-items:center;
          background:%s; color:%s; font:400 16px/1.5 system-ui, sans-serif;
@@ -2483,6 +2521,9 @@ def build_call_redirect():
 </body>
 </html>
 """ % (e(SITE["name"]), e(target),
+       stub_og("Book a call with %s" % SITE["name"],
+               "A 30-minute intro. Tell me what you are building and "
+               "where the design is stuck."),
        e(TOKENS["color"]["bg"]), e(TOKENS["color"]["text"]),
        e(TOKENS["color"]["accent"]), e(target), e(target)), encoding="utf-8")
 

@@ -3308,6 +3308,40 @@ class TestShareCards(BuildCase):
                     % re.escape(card),
                     "%s previews as something other than the site card" % page)
 
+    def test_every_page_this_build_writes_previews_as_something(self):
+        """Including the two that are hops rather than destinations.
+
+        /call and /contact are redirects and neither is in the sitemap,
+        so neither carried Open Graph tags: nobody shares a hop. People
+        share hops -- /call is the URL behind the header button, which
+        makes it the one somebody copies from a right-click menu -- and
+        a paste with no tags previews as a bare link with the domain
+        under it. LinkedIn's Post Inspector reports that as exactly two
+        warnings, which is how this was found.
+
+        The list is the build's own outputs, not a glob: _proto/ and the
+        scratch directories hold HTML nobody serves, and sweeping them
+        in would make this fail for the wrong reason.
+        """
+        pages = ["index.html", "work.html", "about.html", "404.html",
+                 "contact.html", "call/index.html"]
+        pages += [p for p in self.pages() if p.startswith("projects/")]
+        for page in pages:
+            with self.subTest(page=page):
+                html = self.html(page)
+                for tag in ("og:title", "og:description", "og:image"):
+                    self.assertIn(
+                        'property="%s"' % tag, html,
+                        "%s has no %s, so a pasted link to it previews as "
+                        "a bare URL" % (page, tag))
+                # ...and the tags have to say something.
+                for tag in ("og:title", "og:description"):
+                    m = re.search(
+                        r'property="%s" content="([^"]*)"' % tag, html)
+                    self.assertTrue(
+                        m and m.group(1).strip(),
+                        "%s has an empty %s" % (page, tag))
+
     def test_the_card_url_moves_when_the_card_does(self):
         """A scraper caches the preview against the URL and never returns.
 
