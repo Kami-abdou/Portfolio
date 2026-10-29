@@ -111,18 +111,21 @@
     /* 1. Glide in. Three keyframes for a slight arc rather than a ruler
        line.
 
-       SLOWER THAN IT WAS, and the delay is most of the change. The
-       first version put the cursor on screen at 120ms and had it
-       clicking by 960ms -- the whole design half was over before anyone
-       had finished registering that the headline was hollow. The
-       outlines now hold on their own for a quarter of a second, the
-       travel takes 1.15s instead of 0.82, and the pointer is readable
-       for the length of it. */
+       SLOWER THAN IT WAS, and the travel is the change. The first
+       version had the cursor clicking by 960ms -- the whole design
+       half was over before anyone had finished registering that the
+       headline was hollow. It takes 1.15s instead of 0.82 now, and the
+       pointer is readable for the length of it.
+
+       The delay went back to 120ms, though. At 250 there was a visible
+       pause between first paint and anything moving, which with the
+       rest of the hero still hidden read as a page that had stalled.
+       The slowness belongs in the gesture, not in front of it. */
     anims.push(cursor.animate([
       { transform: 'translate(' + x0 + 'px,' + y0 + 'px)', opacity: 0 },
       { transform: 'translate(' + (x1 + fs * 1.2) + 'px,' + (y1 - fs * 0.9) + 'px)', opacity: 1, offset: 0.7 },
       { transform: 'translate(' + x1 + 'px,' + y1 + 'px)', opacity: 1 }
-    ], { duration: 1150, delay: 250, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' }));
+    ], { duration: 1150, delay: 120, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' }));
 
     /* 2. Click: select the last line. */
     later(function () {

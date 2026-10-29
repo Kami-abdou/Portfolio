@@ -4715,27 +4715,32 @@ html { scroll-snap-type: y proximity; }
 .claim__line--built.is-selected::before,
 .claim__line--built.is-selected::after { opacity: 1; transition-duration: .18s; }
 
-/* Everything else in the hero waits for the build, then rises. Named
-   one by one rather than as .opening__top, because on this hero the h1
-   is INSIDE .opening__top and hiding that container would hide the very
-   thing the hook exists to perform. */
-.hook-on .opening__portrait,
-.hook-on .opening__greeting,
+/* The foot waits for the build, then rises. Named one by one rather
+   than as .opening__top, because on this hero the h1 is INSIDE
+   .opening__top and hiding that container would hide the very thing
+   the hook exists to perform.
+
+   THE GREETING AND THE PORTRAIT ARE NOT IN THIS LIST ANY MORE. They
+   were, and the first screen of a first visit was an outlined headline
+   alone on an empty page for the two seconds before the build -- which
+   is not read as an intro, it is read as a page that failed to load.
+   Reported as "it bugs for a second and then the animation starts".
+
+   One line of greeting above the claim is enough to say the page is
+   here and the headline is being drawn, rather than the page is
+   broken. The foot still waits: it is the part that answers the claim,
+   and it should not arrive before the claim is finished. */
 .hook-on .opening__foot {
   opacity: 0;
   transform: translateY(12px);
 }
-.hook-on.hook-build .opening__portrait,
-.hook-on.hook-build .opening__greeting,
 .hook-on.hook-build .opening__foot {
   opacity: 1;
   transform: none;
   transition: opacity .6s var(--ease-out) var(--d, .2s), transform .8s var(--ease-out) var(--d, .2s);
 }
-.hook-on.hook-build .opening__portrait { --d: .1s; }
-.hook-on.hook-build .opening__greeting { --d: .2s; }
 /* After the last line has finished filling (.48 + .85), not during it. */
-.hook-on.hook-build .opening__foot     { --d: .7s; }
+.hook-on.hook-build .opening__foot { --d: .7s; }
 
 /* The cursor: a multiplayer pointer with a name tag. Decorative, built
    by hook.js, removed by hook.js. */
@@ -4781,7 +4786,5 @@ html { scroll-snap-type: y proximity; }
      belt to that pair of braces. */
   .hook-cursor { display: none; }
   .hook-on .claim__line { color: inherit; -webkit-text-stroke: 0; background: none; animation: none; }
-  .hook-on .opening__portrait,
-  .hook-on .opening__greeting,
   .hook-on .opening__foot { opacity: 1; transform: none; }
 }

@@ -38,7 +38,7 @@
   font-style: normal;
   font-weight: 200 800;
   font-display: swap;
-  src: url('fonts/bricolage-variable.woff2') format('woff2');
+  src: url('fonts/bricolage-variable.woff2?v=e8a27852') format('woff2');
 }
 
 @font-face {
@@ -46,6 +46,6 @@
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('fonts/instrument-variable.woff2') format('woff2');
+  src: url('fonts/instrument-variable.woff2?v=561da854') format('woff2');
 }
 

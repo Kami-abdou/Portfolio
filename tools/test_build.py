@@ -5930,5 +5930,91 @@ class TestTheWordmark(BuildCase):
                          "stylesheet; check it carries no colour")
 
 
+class TestTheFontsAreFetchedOnce(BuildCase):
+    """A preload only helps if it names the URL @font-face will ask for.
+
+    They did not match. The preload carried a ?v= hash and the
+    @font-face url did not, so they were two cache entries and BOTH
+    FACES WERE DOWNLOADED TWICE -- the preload landing at 784ms and the
+    request the page actually waits on finishing at 1524ms, measured on
+    the live site.
+
+    What that looks like to a visitor is the bug that found it: first
+    paint in the fallback face at ~976ms, the display face swapping in
+    around 1.5s, and the hook -- which waits on document.fonts.ready --
+    unable to start until then. A reflowing headline in the wrong face
+    with the rest of the hero still hidden, for about 600ms, and then
+    everything moving at once.
+
+    A mismatch here is invisible in every other way: both files are
+    correct on their own, nothing 404s, nothing warns.
+    """
+
+    def head_of(self, page="index.html"):
+        html = self.html(page)
+        return html[:html.index("</head>")]
+
+    def test_the_preload_and_the_font_face_ask_for_the_same_url(self):
+        css_path = ROOT / "assets" / "fonts.css"
+        css = css_path.read_text(encoding="utf-8")
+        faces = re.findall(r"url\('([^']+)'\)", css)
+        self.assertTrue(faces, "fonts.css loads no font files")
+        head = self.head_of()
+        preloads = re.findall(
+            r'<link rel="preload" href="([^"]+)"[^>]*as="font"', head)
+        self.assertEqual(
+            len(preloads), len(faces),
+            "%d faces and %d preloads: a face with no preload is a "
+            "layout shift, a preload with no face is a wasted request"
+            % (len(faces), len(preloads)))
+        # Both resolve against their own file's directory, so compare
+        # what the browser would: the path from the site root.
+        want = {("assets/" + u).replace("assets/fonts/", "assets/fonts/")
+                for u in faces}
+        self.assertEqual(
+            set(preloads), want,
+            "the preload and the @font-face ask for different URLs, so "
+            "the browser treats them as different files and fetches "
+            "each face twice:\n  preload   %s\n  font-face %s"
+            % (sorted(preloads), sorted(want)))
+
+    def test_every_preloaded_font_is_cors_and_typed(self):
+        """Fonts are always fetched in CORS mode.
+
+        A preload without `crossorigin` is a separate cache entry from
+        the one @font-face goes on to request -- the same double-fetch
+        by a different route.
+        """
+        for link in re.findall(r'<link rel="preload"[^>]*as="font"[^>]*>',
+                               self.head_of()):
+            with self.subTest(link=link[:70]):
+                self.assertIn("crossorigin", link,
+                              "a font preload without crossorigin is "
+                              "fetched twice")
+                self.assertIn('type="font/woff2"', link)
+
+    def test_the_font_url_is_busted_where_it_is_requested(self):
+        """The hash has to be on the URL @font-face asks for.
+
+        It used to be on the preload only -- a URL nothing else
+        requested -- so the file the page actually loaded had no
+        cache-buster at all and a replaced face would have been served
+        stale indefinitely.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import asset_v
+        css = (ROOT / "assets" / "fonts.css").read_text(encoding="utf-8")
+        for url in re.findall(r"url\('([^']+)'\)", css):
+            with self.subTest(url=url):
+                path, _, query = url.partition("?")
+                self.assertTrue(
+                    (ROOT / "assets" / path).is_file(),
+                    "fonts.css loads %s, which is not on disk" % path)
+                self.assertEqual(
+                    "?" + query, asset_v("assets/" + path),
+                    "%s carries a hash that is not a hash of its own "
+                    "bytes" % path)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -2563,8 +2563,57 @@ def build_404():
     (ROOT / "404.html").write_text("\n".join(out), encoding="utf-8")
 
 
+FONT_SRC = re.compile(r"url\('(fonts/[^']+\.woff2)(\?v=[0-9a-f]+)?'\)")
+
+
+def write_fonts_css():
+    """Stamp each font file's hash into its own @font-face URL.
+
+    MEASURED BUG, and the comment in `head` warns about the shape of it
+    without catching this instance. The preload asked for
+
+        assets/fonts/bricolage-variable.woff2?v=e8a27852
+
+    and @font-face asked for
+
+        assets/fonts/bricolage-variable.woff2
+
+    Two URLs, so two cache entries, so BOTH FACES WERE DOWNLOADED TWICE
+    and the preload bought nothing. From the live waterfall: the preload
+    landed at 784ms and the request @font-face actually waits on did not
+    start until 1234ms and finished at 1524.
+
+    That is what a visitor sees as "it bugs for a second and then the
+    animation starts". First paint lands at ~976ms in the fallback face,
+    the display face swaps in around 1.5s, and the hook -- which waits
+    on document.fonts.ready -- cannot begin until then either. So the
+    first screen is a reflowing headline in the wrong face with the rest
+    of the hero still hidden, for about 600ms, and then everything moves
+    at once.
+
+    Stamping the hash here makes the two URLs identical, which is the
+    whole fix: one request, served to both. It also means the font URL
+    is finally cache-busted at the place that actually requests it --
+    before this, the hash was only ever on a URL nothing else asked for.
+
+    Idempotent: the hash is of the woff2 bytes, so a second run writes
+    the same text and the build stays a no-op.
+    """
+    path = ROOT / "assets" / "fonts.css"
+    css = path.read_text(encoding="utf-8")
+    out = FONT_SRC.sub(
+        lambda m: "url('%s%s')" % (m.group(1), asset_v("assets/" + m.group(1))),
+        css)
+    if out != css:
+        path.write_text(out, encoding="utf-8")
+    return len(FONT_SRC.findall(out))
+
+
 def main():
     projects = load_projects()
+    # Before anything that links to fonts.css: patching it changes its
+    # own hash, and the pages have to carry the patched one.
+    n_fonts = write_fonts_css()
     n_vars = write_tokens_css()
     build_index(projects)
     build_about(by_slug(projects))
@@ -2586,6 +2635,7 @@ def main():
             imgs += len(s.get("images", []))
             if s.get("autoImages"):
                 imgs += len(auto_images(p["_dir"], s["autoImages"]))
+    print("fonts.css    %d faces, hashed at the @font-face url" % n_fonts)
     print("tokens.css   %d custom properties" % n_vars)
     sel = SITE.get("sections", {}).get("selected", {})
     print("index.html   %d rows, %d words of body copy"
