@@ -915,10 +915,18 @@ def head(title, description, *, depth=0, image=None, page_url="",
         dims = ('\n  <meta property="og:image:width" content="%d">'
                 '\n  <meta property="og:image:height" content="%d">' % size
                 if size else "")
+        # The hash, on this URL above all others. A scraper caches a
+        # preview against the og:image URL and does not come back: when
+        # the card was redrawn, every link already posted anywhere --
+        # and every new one -- kept showing the old picture, because the
+        # URL had not changed. A URL is the only thing LinkedIn, Slack
+        # and the rest key on, so the URL has to move when the file
+        # does. Every one of them handles a query string; what none of
+        # them handles is the same URL meaning two different images.
         og_image = (
-            '\n  <meta property="og:image" content="%s">'
+            '\n  <meta property="og:image" content="%s%s">'
             '\n  <meta property="og:image:alt" content="%s">%s'
-            % (e(abs_url(img, depth)),
+            % (e(abs_url(img, depth)), asset_v(img),
                e(image_alt or "%s - %s" % (SITE["name"], SITE["title"])),
                dims)
         )

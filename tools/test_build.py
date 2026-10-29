@@ -3272,7 +3272,10 @@ class TestShareCards(BuildCase):
         for page in self.pages():
             for match in re.finditer(r'property="og:image" content="([^"]+)"',
                                      self.html(page)):
-                referenced.add(match.group(1).replace(base, ""))
+                # The URL carries a ?v= hash so scrapers refetch a
+                # redrawn card; the file on disk does not.
+                referenced.add(
+                    match.group(1).replace(base, "").split("?", 1)[0])
         self.assertTrue(referenced, "no share cards referenced -- test is vacuous")
         self.assertEqual(referenced & untracked, set())
         for rel in referenced:
@@ -3301,8 +3304,38 @@ class TestShareCards(BuildCase):
             with self.subTest(page=page):
                 self.assertRegex(
                     self.html(page),
-                    r'property="og:image" content="[^"]*%s"' % re.escape(card),
+                    r'property="og:image" content="[^"]*%s(?:\?v=[0-9a-f]+)?"'
+                    % re.escape(card),
                     "%s previews as something other than the site card" % page)
+
+    def test_the_card_url_moves_when_the_card_does(self):
+        """A scraper caches the preview against the URL and never returns.
+
+        The card was redrawn and every link already posted -- and every
+        new one -- kept showing the old picture, because LinkedIn, Slack
+        and the rest key on the URL and the URL had not changed. There
+        is no header, no meta tag and no "please refetch" that beats
+        this; the URL has to move when the file does.
+
+        Asserted against a hash of the file's own bytes, so editing the
+        card and forgetting to rebuild cannot leave the two disagreeing.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import asset_v
+        card = self.site["shareImage"]
+        want = asset_v(card)
+        self.assertRegex(want, r"^\?v=[0-9a-f]{8}$",
+                         "the card has no content hash to advertise")
+        for page in self.pages():
+            with self.subTest(page=page):
+                m = re.search(r'property="og:image" content="([^"]+)"',
+                              self.html(page))
+                self.assertIsNotNone(m, "%s advertises no card" % page)
+                self.assertTrue(
+                    m.group(1).endswith(want),
+                    "%s points social at %r, which is not the hash of the "
+                    "file it will serve (%s) -- posted links keep the old "
+                    "preview" % (page, m.group(1)[-24:], want))
 
     def test_the_site_card_is_the_size_it_claims(self):
         """og:image:width and height let a scraper lay the card out before
