@@ -4953,9 +4953,33 @@ class TestTheSecondReviewPass(BuildCase):
                 for claim in ("1.5M", "1.5 M", "$1.5"):
                     self.assertNotIn(claim, html,
                                      "%s still claims %s" % (page, claim))
+        # The source check used to be a bare `assertNotIn("1.5", ...)`.
+        # That was broad on purpose and it held for a year, until the
+        # portfolio page's own "JavaScript shipped, gzipped" metric --
+        # which the suite keeps in sync with the real file sizes --
+        # reached 21.5 KB and matched it. A test that fails because a
+        # stylesheet grew is a test nobody trusts the next time.
+        #
+        # So: the money-shaped claims, exactly as on the page, plus any
+        # bare 1.5 standing near funding language. A figure that is not
+        # denominated and not next to the word "raised" is a size, not
+        # a round.
+        money = re.compile(r"\$\s*1\.5|1\.5\s*(?:M\b|million)", re.I)
+        near = re.compile(
+            r"1\.5(?:(?!1\.5).){0,60}?"
+            r"(rais|fund|seed|round|investor|valuat|ARR|revenue)"
+            r"|(rais|fund|seed|round|investor|valuat|ARR|revenue)"
+            r"(?:(?!1\.5).){0,60}?1\.5", re.I | re.S)
         for path in sorted(ROOT.glob("projects/*/content.json")):
             with self.subTest(source=path.name):
-                self.assertNotIn("1.5", path.read_text(encoding="utf-8"))
+                text = path.read_text(encoding="utf-8")
+                self.assertIsNone(money.search(text),
+                                  "%s carries a money-denominated 1.5"
+                                  % path.name)
+                m = near.search(text)
+                self.assertIsNone(
+                    m, "%s has 1.5 sitting next to funding language: %r"
+                       % (path.name, m.group(0)[:80] if m else ""))
 
     def test_no_link_rots_through_a_redirect_or_the_booking_host(self):
         """Two classes of link that work today and rot differently.
@@ -5381,6 +5405,58 @@ class TestTheHookAndTheSignal(BuildCase):
             last, finish,
             "the last line is still filling at %dms and the hook tears "
             "itself down at %dms" % (last, finish))
+
+    def test_no_delayed_animation_shows_the_element_where_it_starts(self):
+        """A delay with no backwards fill paints the static style first.
+
+        The cursor's glide had `delay: 120, fill: 'forwards'`. A
+        forwards fill holds the LAST keyframe and only after the
+        animation ends, so through those 120ms the element rendered at
+        its own style -- no transform, no opacity rule -- which put a
+        fully opaque pointer in the top-left corner of the hero. Then
+        the animation began, snapped it to the right edge at opacity 0,
+        and glided it back. Reported as the cursor jumping once, fast,
+        from left to right on first open.
+
+        Measured on the live page before the fix: transform "none",
+        opacity "1", 24px left and 64px above the hero's own origin.
+
+        Every delayed animation in this file has the same trap, so the
+        check is on all of them rather than on the one that bit.
+        """
+        src = self.js("hook.js")
+        calls = re.findall(r"\.animate\(\s*\[.*?\]\s*,\s*(\{[^}]*\})\)",
+                           src, re.S)
+        self.assertTrue(calls, "hook.js animates nothing")
+        delayed = [o for o in calls if re.search(r"\bdelay:\s*[1-9]", o)]
+        self.assertTrue(
+            delayed,
+            "no delayed animation left -- if that is deliberate, this "
+            "test has nothing to guard and can go")
+        for opts in delayed:
+            with self.subTest(opts=" ".join(opts.split())[:70]):
+                fill = re.search(r"fill:\s*'(\w+)'", opts)
+                self.assertIsNotNone(
+                    fill, "a delayed animation sets no fill at all, so the "
+                          "element is drawn at its static style until the "
+                          "delay is up")
+                self.assertIn(
+                    fill.group(1), ("both", "backwards"),
+                    "a delayed animation fills %r: the element is visible "
+                    "at its own position for the length of the delay and "
+                    "then jumps to the first keyframe" % fill.group(1))
+
+    def test_the_cursor_is_invisible_until_it_is_driven(self):
+        """The belt to the fill, and it covers one more frame.
+
+        hook.js appends the cursor, reads offsetWidth to decide which
+        side the name tag goes on -- which forces layout -- and only
+        then calls animate(). Nothing should be paintable in between.
+        """
+        i = self.css().index(".hook-cursor {")
+        rule = self.css()[i:self.css().index("}", i)]
+        self.assertIn("opacity: 0", rule,
+                      "a cursor with no animation on it is visible")
 
     def test_the_hook_puts_the_page_back_exactly_as_it_found_it(self):
         """Its finished state has to be the page without it.

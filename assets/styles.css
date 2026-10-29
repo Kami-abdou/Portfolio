@@ -4751,6 +4751,14 @@ html { scroll-snap-type: y proximity; }
   z-index: 5;
   pointer-events: none;
   will-change: transform, opacity;
+  /* Invisible until something is animating it. hook.js builds this
+     element and then starts a delayed animation on it, and for the
+     length of that delay the element renders at its own static style --
+     which, with no rule here, was a fully opaque pointer parked in the
+     top-left corner of the hero. The animation's backwards fill is the
+     real fix; this is the belt, and it also covers the frame between
+     appendChild and animate(). */
+  opacity: 0;
 }
 .hook-cursor__arrow {
   display: block;

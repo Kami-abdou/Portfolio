@@ -120,12 +120,22 @@
        The delay went back to 120ms, though. At 250 there was a visible
        pause between first paint and anything moving, which with the
        rest of the hero still hidden read as a page that had stalled.
-       The slowness belongs in the gesture, not in front of it. */
+       The slowness belongs in the gesture, not in front of it.
+
+       `fill: 'both'`, NOT 'forwards'. A forwards fill only holds the
+       LAST keyframe, and only after the animation ends; through the
+       120ms delay the element shows its own static style, which for a
+       freshly created div is no transform and no opacity rule. So the
+       cursor sat fully opaque at the top-left corner of the hero, then
+       snapped to x0 at the right edge and glided back -- one fast
+       left-to-right jump, on every first visit. The backwards half of
+       'both' applies the first keyframe (x0, opacity 0) through the
+       delay, so there is nothing to see until the glide starts. */
     anims.push(cursor.animate([
       { transform: 'translate(' + x0 + 'px,' + y0 + 'px)', opacity: 0 },
       { transform: 'translate(' + (x1 + fs * 1.2) + 'px,' + (y1 - fs * 0.9) + 'px)', opacity: 1, offset: 0.7 },
       { transform: 'translate(' + x1 + 'px,' + y1 + 'px)', opacity: 1 }
-    ], { duration: 1150, delay: 120, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' }));
+    ], { duration: 1150, delay: 120, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' }));
 
     /* 2. Click: select the last line. */
     later(function () {
