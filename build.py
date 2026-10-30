@@ -449,20 +449,20 @@ def ask_row(depth=0):
     root sets scroll-behavior and #work carries scroll-margin-top for
     the sticky header -- so there is no JavaScript behind this link.
     """
-    label = SITE.get("availability", "")
-    # The dot is decoration -- "Open to new projects" already says it --
-    # so it is aria-hidden and the badge is not given a role. A status
-    # role here would make a screen reader announce availability every
-    # time focus passed through the hero.
-    badge = ('<span class="ask__badge">'
-             '<span class="ask__dot" aria-hidden="true"></span>%s</span>'
-             % e(label)) if usable(label) else ""
+    # NO AVAILABILITY BADGE. "Open to new projects", on a pulsing dot,
+    # sat next to the one control on the first screen. Removed at the
+    # owner's call, and it goes the same way as the fourth Book a call
+    # and the covers: the first screen now says what the work is and
+    # points at it, and asks for nothing. Someone reading a portfolio
+    # has already guessed that its owner would take the call.
+    #
     # The arrow is aria-hidden: "See the work" is the accessible name,
     # and a screen reader reading "See the work down arrow" is worse
     # than one that does not.
-    see = ('<a class="ask__act ask__act--see" href="#work">See the work'
-           '<span class="ask__down" aria-hidden="true">\u2193</span></a>')
-    return '<p class="ask">%s%s</p>' % (see, badge)
+    return ('<p class="ask">'
+            '<a class="ask__act ask__act--see" href="#work">See the work'
+            '<span class="ask__down" aria-hidden="true">\u2193</span></a>'
+            '</p>')
 
 
 def reach_line():

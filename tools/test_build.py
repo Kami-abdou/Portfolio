@@ -4676,6 +4676,22 @@ class TestTheRecruiterPass(BuildCase):
         # The arrow is decoration; the accessible name is the sentence.
         self.assertIn('aria-hidden="true"', row)
         self.assertIn("See the work", row)
+        # ONE control, and nothing beside it. The row also carried an
+        # "Open to new projects" pill on a pulsing dot -- a second thing
+        # competing for the only line on the first screen that is not
+        # the headline, and a sentence that asks rather than shows.
+        # Removed at the owner's call; this is what keeps it gone.
+        self.assertNotIn("ask__badge", row,
+                         "the availability badge is back in the hero")
+        self.assertEqual(
+            row.count("<a "), 1,
+            "the hero ask holds more than one link again")
+        home = self.html("index.html")
+        self.assertNotIn("ask__dot", home, "the pulsing dot is back")
+        for word in ("Open to", "Available for", "open to work"):
+            self.assertNotIn(word, home,
+                             "the homepage pitches availability again "
+                             "(%r)" % word)
 
     def test_the_work_the_hero_points_at_is_actually_there(self):
         """A fragment link is only as good as the id it names.
@@ -4702,28 +4718,6 @@ class TestTheRecruiterPass(BuildCase):
                               "%s lost the mailto fallback" % page)
                 self.assertIn("data-copy-status", h,
                               "%s lost the live region" % page)
-
-    def test_the_availability_badge_is_in_the_ask_not_over_the_h1(self):
-        """It was an eyebrow above the headline; it is a state now.
-
-        Attached to the action it qualifies, it reads as a fact. Floated
-        over the h1 it reads as a plea, which is the opposite of what it
-        is for.
-        """
-        home = self.html("index.html")
-        self.assertIn("ask__badge", home, "no availability badge")
-        hero = home[:home.index("<h1")]
-        self.assertNotIn("ask__badge", hero,
-                         "the badge is back above the headline")
-
-    def test_the_badge_dot_is_decoration(self):
-        """A screen reader must not announce it twice.
-
-        The label already says the thing. A dot with a role would make
-        availability announce itself every time focus crossed the hero.
-        """
-        self.assertRegex(self.html("index.html"),
-                         r'<span class="ask__dot" aria-hidden="true">')
 
     def test_the_address_is_readable_not_only_copyable(self):
         """"Copy email" serves the reader. It fails the relayer.

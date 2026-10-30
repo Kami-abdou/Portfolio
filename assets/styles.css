@@ -3564,45 +3564,6 @@ html { scroll-snap-type: y proximity; }
   .ask__act--see:focus-visible .ask__down { transform: translateY(3px); }
 }
 
-/* The availability badge. It replaced an "OPEN TO WORK" eyebrow over
-   the h1 -- same fact, but sitting with the action it qualifies.
-
-   accent-soft is the existing 12%/10% wash, so the pill is the accent
-   at low strength rather than a grey chip. The INK is accent-bright,
-   not accent: the plain accent on its own wash measures 4.44:1 on the
-   dark theme, which is under AA. Bright reads 6.24 dark, 7.47 light. */
-.ask__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0.2rem 0.625rem;
-  border-radius: var(--radius-full);
-  background: var(--color-accent-soft);
-  color: var(--color-accent-bright);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  line-height: 1.5;
-  white-space: nowrap;
-}
-.ask__dot {
-  width: 0.375rem;
-  height: 0.375rem;
-  flex: none;
-  border-radius: var(--radius-full);
-  background: currentColor;
-}
-/* A slow, shallow breath -- the universal "this is live" cue. Kept to
-   2.6s and a 0.5 floor so it registers in peripheral vision without
-   becoming something the eye has to keep rejecting. */
-@media (prefers-reduced-motion: no-preference) {
-  .ask__dot { animation: ask-pulse 2.6s var(--ease-out) infinite; }
-}
-@keyframes ask-pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: .5; }
-}
-
 /* ── the hero ─────────────────────────────────────────────── */
 .hero-band { padding-block: var(--space-16) var(--space-12); }
 .opening {

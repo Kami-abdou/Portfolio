@@ -102,7 +102,6 @@
     "Notion",
     "Jira"
   ],
-  "availability": "Open to new projects",
   "replyTime": "Usually a reply the same day.",
   "buildProof": "This site is the proof: my Figma, my code, and a test suite that checks its own claims.",
   "ways": {
