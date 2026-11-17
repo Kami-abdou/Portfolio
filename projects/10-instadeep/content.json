@@ -43,16 +43,16 @@
   ],
   "metrics": [
     {
-      "value": "10+",
-      "label": "Demo apps for clients, partners and BioNTech"
+      "value": "22,000+",
+      "label": "Engineers routing boards on DeepPCB"
     },
     {
-      "value": "3",
-      "label": "Product surfaces running on one system"
+      "value": "62",
+      "label": "Components, under 3 AI products and 10+ demos"
     },
     {
-      "value": "In code",
-      "label": "Core components implemented by engineering"
+      "value": "3 weeks",
+      "label": "To design a new product, from 8 weeks"
     }
   ],
   "cover": "assets/cover-brand.jpg",
@@ -64,7 +64,7 @@
       "id": "deeppcb",
       "phase": "Product",
       "heading": "DeepPCB",
-      "body": "DeepPCB is InstaDeep’s cloud-native PCB routing software: a reinforcement-learning router that takes a board layout and returns a routed one. My work covers the product’s public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.\n\nThese are the marketing and onboarding surfaces rather than the routing canvas itself.",
+      "body": "DeepPCB is InstaDeep’s cloud-native PCB routing software: a reinforcement-learning router that takes a board layout and returns a routed one. More than 22,000 engineers use it, and over 100,000 boards have been through it. My work covers the product’s public surfaces: what the tool claims, who it claims it for, and how someone evaluating it gets from the pitch to a signed-up account.\n\nThese are the marketing and onboarding surfaces rather than the routing canvas itself.",
       "images": [
         {
           "src": "assets/p01-home.jpg",
@@ -132,7 +132,7 @@
       "id": "design-system",
       "phase": "System",
       "heading": "Design system",
-      "body": "Every InstaDeep product surface and research demo is built from one system. It exists because the alternative was each team inventing its own buttons, and it had to survive being used by engineers with no designer in the room.\n\nMore than ten demo applications have been built on it since, for prospective clients, for partners and for BioNTech. Engineering has implemented its core components in code, so a new demo starts from assembled parts instead of a blank file. That is where the time goes back: the system pays for itself every time the next one is needed.\n\nBrowse the components below.",
+      "body": "Every InstaDeep product surface and research demo is built from one system. It exists because the alternative was each team inventing its own buttons, and it had to survive being used by engineers with no designer in the room.\n\nMore than ten demo applications have been built on it since, for prospective clients, for partners and for BioNTech. Engineering has implemented its core components in code, so a new demo starts from assembled parts instead of a blank file. Sixty-two components in, that is where the time goes back: a new product or demo takes three weeks to design where it used to take eight.\n\nBrowse the components below.",
       "viewer": false,
       "autoImages": "components"
     },

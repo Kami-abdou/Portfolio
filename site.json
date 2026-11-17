@@ -14,8 +14,8 @@
       ]
     },
     {
-      "company": "Steer",
-      "role": "Product Designer Lead",
+      "company": "SteerAI",
+      "role": "Lead Product Designer",
       "years": "2021-23",
       "projects": [
         "steer"
@@ -30,12 +30,11 @@
       ]
     },
     {
-      "company": "T-ledger",
+      "company": "Konnect",
       "role": "UX/UI Designer",
       "years": "2020-21",
       "projects": [
-        "konnect",
-        "fissa3"
+        "konnect"
       ]
     }
   ],
@@ -77,7 +76,7 @@
   "metaDescription": "Product designer. I build what I design.",
   "heroGreeting": "Hi, I\u2019m Abdou.",
   "heroClaim": "I design AI products\npeople can trust.\nThen I build them.",
-  "workedWith": "AI at InstaDeep (BioNTech) and Steer. Fintech, marketplaces and delivery before that.",
+  "workedWith": "AI at InstaDeep (BioNTech) and SteerAI. Fintech and marketplaces before that.",
   "values": {
     "heading": "How I work",
     "body": "I learned most of this from watching handoffs go wrong. A design that stops at the handoff gets built as something else, and a component that only works when I’m in the room to explain it isn’t finished. So I stay next to the build, and I’d rather hear what’s wrong at the prototype than at launch."
@@ -95,12 +94,14 @@
   "toolsHeading": "Tools",
   "tools": [
     "Figma",
-    "Framer",
     "Claude Code",
-    "Git",
+    "Framer",
+    "ProtoPie",
     "Miro",
-    "Notion",
-    "Jira"
+    "Sketch",
+    "Google Analytics",
+    "VWO",
+    "Midjourney"
   ],
   "replyTime": "Usually a reply the same day.",
   "buildProof": "This site is the proof: my Figma, my code, and a test suite that checks its own claims.",
