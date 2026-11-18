@@ -6273,13 +6273,30 @@ class TestTheNavMarker(BuildCase):
         # this test failed on those instead of on the nav.
         start = src.index("var pill = document.querySelector('.site-nav__pill')")
         block = src[start:src.index("the work index's cover", start)]
+        # BANNING THE MECHANISM WAS WRONG. The first version of this
+        # forbade addEventListener('click') outright, which is the
+        # proxy rather than the property -- and it then blocked a click
+        # handler that settles the marker before the page is snapshotted
+        # and cancels nothing. What must never happen is the navigation
+        # being cancelled, so that is what is asserted.
+        self.assertNotIn(
+            "preventDefault", block,
+            "the nav cancels a click; a nav link that does not navigate "
+            "reads as a broken button, which is how this started")
         self.assertNotRegex(
-            block, r"addEventListener\(\s*'click'",
-            "the nav script intercepts clicks again; a nav link that "
-            "does not navigate reads as a broken button")
-        self.assertNotIn("preventDefault", block,
-                         "something in the nav is cancelling a default "
-                         "action")
+            block, r"return\s+false\s*;\s*\}\s*\)\s*;",
+            "a nav handler returns false, which cancels the default "
+            "action the long way round")
+        # A click handler is allowed, but only one that bails out of
+        # anything that is not a plain navigating click: a cmd-click
+        # opens a new tab and leaves this page as it was.
+        if re.search(r"addEventListener\(\s*'click'", block):
+            self.assertIn("ev.metaKey || ev.ctrlKey", block,
+                          "the nav's click handler acts on modified "
+                          "clicks, which do not navigate this page")
+            self.assertIn("ev.button !== 0", block,
+                          "the nav's click handler acts on non-primary "
+                          "buttons")
         # ...and every nav link still has somewhere to go.
         for page in ("index.html", "about.html"):
             with self.subTest(page=page):

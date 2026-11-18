@@ -579,23 +579,33 @@
   links.forEach(function (link) {
     link.addEventListener('mouseenter', function () { moveTo(link); });
     link.addEventListener('focus', function () { moveTo(link); });
-    /* NO CLICK HANDLER. There was one for a day: a link carrying
-       aria-current had its navigation cancelled and scrolled to the top
-       instead, on the reasoning that / and /work are different URLs
-       serving the same bytes and the crossfade between them showed the
-       reader nothing new.
+    /* Settle the marker where the NEXT page will have it, instantly,
+       before the browser snapshots this one.
 
-       It made Work look broken. The HOMEPAGE marks Work as current, so
-       on the page most people land on first, the Work button did
-       nothing at all when tapped -- and on /about it worked, which is
-       worse than either behaviour on its own. Reported as the nav
-       crashing when changing between Work and About, and reproduced on
-       the live site: defaultPrevented true, URL unchanged, nothing on
-       screen moved.
+       Without this the click starts a 420ms spring and the navigation
+       interrupts it. Measured on the live site, clicking About from
+       /work: the outgoing snapshot caught the marker at left 13.7px --
+       22% of the way across -- while the incoming page had it at 62px.
+       The crossfade then blended a pill in one place into a pill in
+       another, which is the flicker, and it is on the exact element
+       that was just clicked.
 
-       A flicker between two pages that look alike is a much smaller
-       problem than a navigation control that appears dead. The links
-       navigate. */
+       Placed instantly here, both sides of the crossfade hold the same
+       marker in the same place and there is nothing to dissolve.
+
+       THIS HANDLER MUST NOT CANCEL THE NAVIGATION. An earlier one did,
+       for links carrying aria-current, and since the homepage marks
+       Work as current it made the Work button do nothing at all on the
+       page most people land on first. There is a test.
+
+       Modified and non-primary clicks return early: cmd-click opens a
+       new tab and leaves this page where it is, so moving the marker
+       would leave it sitting under a link that is not the current one. */
+    link.addEventListener('click', function (ev) {
+      if (ev.defaultPrevented || ev.button !== 0) return;
+      if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+      moveTo(link, true);
+    });
   });
   pill.addEventListener('mouseleave', function () { moveTo(home); });
   pill.addEventListener('focusout', function (ev) {
