@@ -537,13 +537,30 @@
 
   var home = pill.querySelector('a[aria-current="page"]');
 
-  function moveTo(link) {
+  /* `instant` places the marker with the spring switched off.
+     Three callers need it and all three are the same situation: the
+     marker is being put where it already belongs rather than moved
+     somewhere a reader asked for.
+
+       - the first placement, which otherwise animates from the
+         stylesheet's left:0/width:0 and slides the pill in from the
+         edge of the nav on every single page load;
+       - the re-measure after the display face lands and changes the
+         links' widths;
+       - a resize, where springing 420ms behind the drag is lag.
+
+     The reflow between removing and re-adding .is-placed is load
+     bearing: it makes the browser commit the new left/width while the
+     transition is off, so switching it back on has nothing left to
+     animate. */
+  function moveTo(link, instant) {
     if (!link) {
       marker.style.width = '0px';
       pill.classList.remove('is-live');
       links.forEach(function (a) { a.classList.remove('is-marked'); });
       return;
     }
+    if (instant) pill.classList.remove('is-placed');
     // offsetLeft is relative to the pill, which is the marker's
     // containing block -- so no rect arithmetic and nothing to go stale
     // when the header moves.
@@ -551,25 +568,43 @@
     marker.style.width = link.offsetWidth + 'px';
     pill.classList.add('is-live');
     links.forEach(function (a) { a.classList.toggle('is-marked', a === link); });
+    if (instant) {
+      void marker.offsetWidth;
+      pill.classList.add('is-placed');
+    }
   }
 
-  function rest() { moveTo(home); }
+  function rest(instant) { moveTo(home, instant !== false); }
 
   links.forEach(function (link) {
     link.addEventListener('mouseenter', function () { moveTo(link); });
     link.addEventListener('focus', function () { moveTo(link); });
+    /* A link that says "you are here" should not fetch the page you are
+       already on. On the homepage, Work carries aria-current and points
+       at /work -- a different URL serving the same bytes -- so clicking
+       it navigated, crossfaded, and left the reader on a screen that
+       had not changed. Scroll to the top instead.
+
+       No behavior argument: scrollTo without one follows the CSS, which
+       is smooth normally and auto under reduced motion, so the two
+       paths need no branch here. */
+    link.addEventListener('click', function (ev) {
+      if (link.getAttribute('aria-current') !== 'page') return;
+      ev.preventDefault();
+      window.scrollTo(0, 0);
+    });
   });
-  pill.addEventListener('mouseleave', rest);
+  pill.addEventListener('mouseleave', function () { moveTo(home); });
   pill.addEventListener('focusout', function (ev) {
-    if (!pill.contains(ev.relatedTarget)) rest();
+    if (!pill.contains(ev.relatedTarget)) moveTo(home);
   });
 
   // The pill is laid out before the fonts land, and Gabarito changes the
   // links' widths when it arrives. Measure after.
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(rest);
+    document.fonts.ready.then(function () { rest(); });
   }
-  window.addEventListener('resize', rest, { passive: true });
+  window.addEventListener('resize', function () { rest(); }, { passive: true });
   rest();
 
   /* ── the work index's cover, following the cursor ────

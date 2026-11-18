@@ -3262,6 +3262,19 @@ html { scroll-snap-type: y proximity; }
   background: var(--color-bg-inverse);
   opacity: 0;
   pointer-events: none;
+  /* NO left/width TRANSITION HERE. The marker is positioned by script,
+     and the first positioning happens after the browser has already
+     resolved this rule -- so a transition declared here turns that
+     first placement into an animation, and the pill springs out of the
+     nav's left edge at zero width on EVERY page load. Clicking Work or
+     About made that the last thing you saw of the new page.
+
+     The spring belongs to moving BETWEEN links, which is the only move
+     a reader asked for. It is switched on by .is-placed, one forced
+     reflow after the marker has been put where it belongs. */
+  transition: opacity .25s var(--ease-out);
+}
+.site-nav__pill.is-placed .site-nav__marker {
   transition: left .42s var(--ease-spring), width .42s var(--ease-spring),
               opacity .25s var(--ease-out);
 }
@@ -3278,7 +3291,8 @@ html { scroll-snap-type: y proximity; }
 .site-head nav .site-nav__pill a.is-marked { color: var(--color-text-inverse); }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-nav__marker { transition: opacity .2s linear; }
+  .site-nav__marker,
+  .site-nav__pill.is-placed .site-nav__marker { transition: opacity .2s linear; }
 }
 
 /* ══════════════════════════════════════════════════════════

@@ -6170,5 +6170,111 @@ class TestTheFontsAreFetchedOnce(BuildCase):
                     "bytes" % path)
 
 
+class TestTheNavMarker(BuildCase):
+    """The filled pill behind Work and About.
+
+    Reported as the nav "not smooth when clicking on them", on desktop
+    and on a phone. Two separate faults, both at navigation time.
+    """
+
+    def css(self):
+        return (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+
+    def js(self):
+        return (ROOT / "assets" / "enhance.js").read_text(encoding="utf-8")
+
+    def rule(self, selector):
+        """EVERY rule with this exact selector, joined.
+
+        re.search returned the first, and `.site-nav__marker` has two:
+        a one-line `inset-block: 0` inside the phone media query comes
+        before the real one in the file. So the first version of the
+        test below read that rule, found no transition in it, and
+        passed no matter what the marker actually did -- it was still
+        passing with the bug restored. Checking all of them is the fix,
+        and it is also the stronger assertion: the property must not be
+        transitioned by ANY unscoped rule.
+        """
+        hits = [m.group(1) for m in re.finditer(
+            r"(?:^|\})\s*" + re.escape(selector) + r"\s*\{([^}]*)\}",
+            self.css(), re.M)]
+        self.assertTrue(hits, "no rule for %s" % selector)
+        return "\n".join(hits)
+
+    def test_the_marker_does_not_spring_in_on_every_page_load(self):
+        """It was transitioning from the stylesheet's own left:0/width:0.
+
+        The marker is positioned by script. The stylesheet declared
+        `left: 0; width: 0` AND a 420ms spring on both, and the first
+        positioning happens after the browser has resolved that rule --
+        so the first placement was an animation, and the pill grew out
+        of the nav's left edge on every single page load. Clicking Work
+        or About made that the last thing you saw of the new page.
+
+        Same shape as the hook cursor parked in the corner: an element
+        rendering its initial state before script puts it where it
+        goes. The spring now belongs to .is-placed, which is added one
+        forced reflow after the marker is already in position.
+        """
+        base = self.rule(".site-nav__marker")
+        for prop in ("left", "width"):
+            with self.subTest(prop=prop):
+                self.assertNotRegex(
+                    base, r"transition:[^;]*\b%s\b" % prop,
+                    "the marker transitions %s before it has ever been "
+                    "placed, so its first placement animates" % prop)
+        placed = self.rule(".site-nav__pill.is-placed .site-nav__marker")
+        for prop in ("left", "width"):
+            with self.subTest(placed=prop):
+                self.assertRegex(
+                    placed, r"transition:[^;]*\b%s\b" % prop,
+                    "moving between links no longer animates at all")
+
+    def test_the_first_placement_is_committed_before_the_spring_is_armed(self):
+        """Without the reflow, removing and re-adding the class in one
+        task is a no-op: the browser never sees the untransitioned
+        state, and the placement animates anyway."""
+        src = self.js()
+        i = src.index("function moveTo(")
+        body = src[i:src.index("function rest(", i)]
+        self.assertIn("pill.classList.remove('is-placed')", body)
+        self.assertIn("void marker.offsetWidth", body,
+                      "nothing forces the layout flush between placing "
+                      "the marker and arming its transition")
+        self.assertLess(
+            body.index("void marker.offsetWidth"),
+            body.index("pill.classList.add('is-placed')"),
+            "the transition is armed before the new position has been "
+            "committed, which is the bug this guards")
+
+    def test_a_link_that_says_you_are_here_does_not_reload(self):
+        """The homepage's Work link carries aria-current AND an href.
+
+        / and /work are different URLs serving the same bytes, so
+        clicking Work on the homepage navigated, crossfaded, and left
+        the reader looking at a screen that had not changed. A flicker
+        in exchange for nothing.
+
+        The href stays -- it is what works without script, and what a
+        middle click should still open -- so the interception is in
+        enhance.js and only for the link already marked current.
+        """
+        src = self.js()
+        self.assertIn("link.getAttribute('aria-current') !== 'page'", src,
+                      "every nav link is intercepted, or none is")
+        self.assertIn("window.scrollTo(0, 0)", src)
+        self.assertNotIn("scrollTo({", src,
+                         "an explicit behavior here would ignore the "
+                         "reduced-motion scroll-behavior the stylesheet "
+                         "already sets")
+        # ...and the markup still carries a real href for no-JS.
+        home = self.html("index.html")
+        m = re.search(r'<a href="([^"]*)"[^>]*aria-current="page"', home)
+        self.assertIsNotNone(
+            m, "the current nav link lost its href or its aria-current")
+        self.assertTrue(m.group(1).strip(),
+                        "the current nav link has an empty href")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
