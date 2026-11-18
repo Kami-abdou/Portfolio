@@ -436,31 +436,72 @@ class TestCV(BuildCase):
                 mappings += len(re.findall(rb"<[0-9A-Fa-f]+>\s*<[0-9A-Fa-f]+>", data))
         return mappings
 
-    def test_it_does_not_use_type3_fonts(self):
-        """Back to a flat ban, because the file that needed the exception
-        is gone.
+    #: Words that have to survive extraction. Not a style check -- these
+    #: are what an ATS matches on and what a recruiter copies out.
+    CV_PROBES = ("Abdou Yaackoubi", "abdouyaackoubi@gmail.com", "InstaDeep",
+                 "BioNTech", "SteerAI", "Konnect", "Groupado",
+                 "Carthage Art Academy", "Ingenierie".replace("e", "\u00e9", 1))
 
-        Type3 draws each glyph as a procedure. Without a ToUnicode table
-        that is a picture of words, which is what made the ORIGINAL CV
-        unreadable and earned this rule in the first place.
+    def cv_text(self):
+        """The document as a parser gets it, whitespace flattened.
 
-        It was narrowed once, for a real reason: the CV supplied on
-        2026-10-16 had 14 Type3 references AND 238 glyph-to-unicode
-        mappings, and extracting it returned 4,787 clean characters. A
-        flat ban would have rejected a document whose text was provably
-        fine, so the rule became "Type3 only with a dense mapping table".
+        Flattened because the only probe that ever "failed" did so on a
+        line wrap: "the Central\nBank of Tunisia". A parser matching
+        keywords does not care where the line broke, and neither should
+        this.
+        """
+        from pypdf import PdfReader
+        pages = PdfReader(str(self.cv_path())).pages
+        return re.sub(r"\s+", " ",
+                      "".join((p.extract_text() or "") for p in pages))
 
-        That document has been replaced by one with no Type3 at all, so
-        the exception has nothing left to protect and the stricter rule
-        comes back. A crude ATS parser can skip a Type3 font it could
-        have read; not shipping one is strictly safer than arguing about
-        whether this one is readable.
+    def test_type3_glyphs_are_only_allowed_if_they_still_read(self):
+        """Narrowed a second time, at the owner's call, and told why.
+
+        Type3 draws each glyph as a procedure rather than a character.
+        Without a ToUnicode table that is a picture of words, which is
+        what made the ORIGINAL CV unreadable and earned a flat ban.
+
+        The ban has now been relaxed twice for the same document -- the
+        CV of 2026-10-16, a Figma export with Type3 fonts. Both times
+        the reason was the same and it is measurable: its text comes out
+        clean. 4,787 characters, no control characters, no replacement
+        characters, accents and the email address intact.
+
+        The residual risk is real and is the owner's to carry: a crude
+        parser CAN skip a Type3 font whose text it could have read, and
+        the file is 170KB against 29KB for a subset-TrueType export of
+        the same CV. Exporting from a word processor rather than a
+        design tool avoids both. That trade was put to the owner with
+        these numbers and they chose this document.
+
+        So the rule is no longer "no Type3". It is the property the ban
+        was ever a proxy for, tested directly and harder than a glyph
+        count: every character has to come back, and every word anything
+        matches on has to still be in there.
         """
         raw = self.cv_path().read_bytes()
-        self.assertNotIn(b"/Type3", raw,
-                         "the CV uses Type3 fonts again -- some ATS parsers "
-                         "skip them even when a ToUnicode table makes the "
-                         "text recoverable")
+        if b"/Type3" not in raw:
+            return  # nothing to argue about
+        import unicodedata
+        text = self.cv_text()
+        self.assertGreater(
+            self.unicode_mappings(), 50,
+            "the CV uses Type3 glyphs and carries too few glyph-to-unicode "
+            "mappings for its text to be recoverable at all")
+        bad = sorted({hex(ord(c)) for c in text
+                      if unicodedata.category(c) in ("Cc", "Cf", "Co", "Cs")}
+                     | ({"U+FFFD"} if "\ufffd" in text else set()))
+        self.assertEqual(
+            bad, [],
+            "the CV's Type3 glyphs do not all map back to characters; "
+            "extraction yields %s, which is the failure the ban exists "
+            "for" % bad)
+        missing = [w for w in self.CV_PROBES if w not in text]
+        self.assertEqual(
+            missing, [],
+            "these do not survive extraction, so an ATS cannot match "
+            "them: %s" % missing)
 
 
     def test_its_text_can_be_mapped_back_to_characters(self):
