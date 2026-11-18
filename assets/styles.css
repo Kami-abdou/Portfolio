@@ -1626,10 +1626,23 @@ body::after {
    contrast on white, Creative Cloud going from 10.33:1 on the page to
    1.79:1 on a plate. The mark itself is never recoloured; vendor terms
    forbid altering it. */
+/* --color-plate, NOT --color-bg-inverse. Every colour token on this
+   site flips with the theme and that one flipped the plate with it: on
+   the light page the "plate" became near-black, so a dark mark sat on a
+   dark tile and vanished. Midjourney's black line art was a black
+   square on a white page, which is the same disappearing act the plate
+   exists to prevent, performed by the plate itself.
+
+   The plate has no business flipping. A dark mark needs a light surface
+   on a dark page, and on a light page it needs nothing -- a light plate
+   there is simply invisible, which is the correct outcome in both. So
+   --color-plate carries the same value in both themes, and it is the
+   white the contrast figures in assets/tools/README.md are computed
+   against. */
 .tool__icon--plate {
   padding: 2px;
   border-radius: var(--radius-sm);
-  background: var(--color-bg-inverse);
+  background: var(--color-plate);
 }
 /* the fallback deliberately reads as this site's type, not as a brand mark */
 .tool__mono {

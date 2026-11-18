@@ -2703,6 +2703,46 @@ class TestToolIcons(BuildCase):
             "light mark, or _svg_ink has stopped reading them and is "
             "answering False for all of them: %s" % verdicts)
 
+    def test_the_plate_does_not_flip_with_the_theme(self):
+        """A plate that inverts is a plate that hides the mark.
+
+        It was --color-bg-inverse, and every colour token here flips
+        between themes. On the dark page that resolved light, which is
+        the point. On the LIGHT page it resolved near-black, so a dark
+        mark sat on a dark tile: Midjourney's black line art rendered as
+        a black square on a white page, which is the exact disappearing
+        act the plate exists to prevent, performed by the plate.
+
+        A dark mark needs a light surface on a dark page and nothing at
+        all on a light one, where a light plate is simply invisible. One
+        value serves both, so the token must carry the same colour in
+        both themes.
+        """
+        css = (ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        i = css.index(".tool__icon--plate {")
+        rule = css[i:css.index("}", i)]
+        m = re.search(r"background:\s*var\((--[a-z-]+)\)", rule)
+        self.assertIsNotNone(m, "the plate's background is not a token")
+        token = m.group(1)
+        self.assertNotIn(
+            "inverse", token,
+            "the plate uses %s, which flips with the theme" % token)
+        key = re.sub(r"-(\w)", lambda k: k.group(1).upper(), token[len("--color-"):])
+        tokens = json.loads((ROOT / "tokens.json").read_text(encoding="utf-8"))
+        dark = tokens["color"].get(key)
+        light = tokens["colorLight"].get(key)
+        self.assertIsNotNone(dark, "%s is not defined for the dark theme" % token)
+        self.assertEqual(
+            dark, light,
+            "%s is %s on dark and %s on light, so the plate inverts with "
+            "the page and stops being a light surface" % (token, dark, light))
+        # ...and it has to actually be light, or it is not a plate.
+        sys.path.insert(0, str(ROOT))
+        from build import _hex_luminance
+        self.assertGreater(
+            _hex_luminance(dark), 0.5,
+            "the plate is %s, which is not a light surface" % dark)
+
     def test_tools_without_a_file_fall_back_to_a_monogram(self):
         """A tool with no mark on disk still renders, as its initial.
 
