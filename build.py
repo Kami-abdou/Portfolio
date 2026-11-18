@@ -221,6 +221,56 @@ def _hex_luminance(value):
 PAGE_LUMINANCE = _hex_luminance(TOKENS["color"]["bg"])
 
 
+def _png_ink(path):
+    """Mean luminance of a PNG's opaque pixels, or None if unreadable."""
+    total = 0.0
+    count = 0
+    for r, g, b, a in _png_pixels(path):
+        if a > 128:
+            total += _relative_luminance(r, g, b)
+            count += 1
+    return (total / count) if count else None
+
+
+#: Colour keywords that turn up in vendor SVGs. Anything else named
+#: rather than written in hex is rare enough to leave unmeasured.
+_SVG_NAMED = {"black": (0, 0, 0), "white": (255, 255, 255),
+              "red": (255, 0, 0), "currentcolor": (0, 0, 0)}
+
+
+def _svg_ink(path):
+    """Mean luminance of the colours an SVG declares, or None.
+
+    Reads fill= and stroke= attributes and their style: equivalents,
+    skipping `none` and the gradient/pattern references, which name a
+    paint server rather than a colour. `currentColor` resolves to the
+    page ink, and on this site that is near-black, so it counts dark --
+    which is the safe direction: the worst outcome is a plate behind a
+    mark that did not need one.
+    """
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    vals = re.findall(r'(?:fill|stroke)\s*[:=]\s*"?\s*([^";\s>]+)', text, re.I)
+    lums = []
+    for v in vals:
+        v = v.strip().strip(";").lower()
+        if v in ("none", "transparent", "inherit") or v.startswith("url("):
+            continue
+        if v in _SVG_NAMED:
+            lums.append(_relative_luminance(*_SVG_NAMED[v]))
+            continue
+        m = re.fullmatch(r"#([0-9a-f]{3}|[0-9a-f]{6})", v)
+        if not m:
+            continue
+        h = m.group(1)
+        if len(h) == 3:
+            h = "".join(c * 2 for c in h)
+        lums.append(_relative_luminance(*(int(h[i:i + 2], 16) for i in (0, 2, 4))))
+    return (sum(lums) / len(lums)) if lums else None
+
+
 def icon_needs_plate(path, threshold=3.0):
     """True when a mark would disappear against this page's background.
 
@@ -252,16 +302,23 @@ def icon_needs_plate(path, threshold=3.0):
     Averaging luminance over the opaque pixels is deliberately crude. It
     answers "is this mark broadly dark or broadly light", which is the only
     question the plate turns on.
+
+    SVG IS MEASURED TOO, and that is a bug fix rather than a feature.
+    _png_pixels decodes PNG and nothing else, so an .svg yielded zero
+    samples and fell out of here as False -- never plated, silently.
+    The lookup in tool_chips prefers .svg over .png, so dropping a dark
+    SVG in this directory was a guaranteed invisible chip, which is the
+    exact failure the whole function exists to prevent.
+
+    An SVG has no pixels to average, so the ink is taken from the
+    colours it declares: every fill and stroke, weighted equally. That
+    is as crude as averaging opaque pixels and answers the same
+    question -- broadly dark, or broadly light.
     """
-    total = 0.0
-    count = 0
-    for r, g, b, a in _png_pixels(path):
-        if a > 128:
-            total += _relative_luminance(r, g, b)
-            count += 1
-    if not count:
+    ink = (_svg_ink(path) if path.suffix.lower() == ".svg"
+           else _png_ink(path))
+    if ink is None:
         return False
-    ink = total / count
     contrast = (max(ink, PAGE_LUMINANCE) + 0.05) / (min(ink, PAGE_LUMINANCE) + 0.05)
     return contrast < threshold
 

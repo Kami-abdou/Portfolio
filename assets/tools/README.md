@@ -10,33 +10,34 @@ set in the site's own type.
 
 ## The plate is automatic — do not set it by hand
 
-This page is `#02050C`, and brand marks come in both polarities. Measured
-against the page background, every mark currently shipped, worst first —
-the four above the rule get a plate, the six below it must not:
+The page is dark, and brand marks come in both polarities. Measured
+against it, every mark currently shipped, worst first — the three above the
+rule get a plate, the rest must not:
 
-| mark           | on the page | on a white plate |
-|----------------|-------------|------------------|
-| MCP            |  1.00:1     | 18.48:1          |
-| Framer         |  1.03:1     | 19.07:1          |
-| Figma          |  2.10:1     |  8.80:1          |
-| VWO            |  2.48:1     |  7.48:1          |
-| ·············· | ··········· | ················ |
-| Git            |  5.11:1     |  3.62:1          |
-| Jira           |  5.17:1     |  3.58:1          |
-| Claude Code    |  6.60:1     |  2.81:1          |
-| Miro           |  9.36:1     |  1.98:1          |
-| Notion         | 10.02:1     |  1.85:1          |
-| Creative Cloud | 10.33:1     |  1.79:1          |
+| mark                 | on the page | on a white plate |
+|----------------------|-------------|------------------|
+| mcp.png              |   1.03:1    | 20.35:1          |
+| framer.png           |   1.07:1    | 21.00:1          |
+| midjourney.svg       |   1.07:1    | 21.00:1          |
+| ·················    | ··········· | ················ |
+| sketch.png           |   4.73:1    |  4.16:1          |
+| git.png              |   4.94:1    |  3.99:1          |
+| jira.png             |   5.00:1    |  3.94:1          |
+| claude-code.png      |   6.38:1    |  3.09:1          |
+| protopie.png         |   7.53:1    |  2.62:1          |
+| google-analytics.svg |   7.63:1    |  2.58:1          |
+| miro.png             |   9.05:1    |  2.18:1          |
+| figma.svg            |   9.40:1    |  2.10:1          |
+| notion.png           |   9.69:1    |  2.03:1          |
+| creative-cloud.png   |   9.98:1    |  1.97:1          |
+| vwo.svg              |  12.41:1    |  1.59:1          |
 
 Both directions fail silently. Framer shipped on the live site at 1.03:1 —
 an empty chip — and nobody noticed until it was measured.
 
-This table has itself gone stale once, which is worth knowing before you
-trust it. It used to list MCP at 14.91:1 and Git at 12.35:1 as the examples
-of light marks; both files were later swapped for darker exports and the
-numbers were never redone, so the table said "never plate MCP" while the
-build was correctly plating it. Re-measure rather than edit by hand — the
-figures above come from `icon_needs_plate()` over the files on disk.
+This table has gone stale twice, which is worth knowing before you trust
+it. The figures above were regenerated from `icon_needs_plate()` over the
+files on disk; do that rather than editing a row by hand.
 
 So `icon_needs_plate()` in build.py averages the luminance of each icon's
 opaque pixels and adds `.tool__icon--plate` only when contrast against the
@@ -44,10 +45,20 @@ page drops below 3:1. Swap a file and the build re-decides. The mark itself
 is never recoloured: vendor terms generally forbid altering it, so the only
 thing we change is what sits behind it.
 
-Store icons as **PNG or SVG**. The detector decodes PNG; a WEBP is accepted
-by the lookup but cannot be measured, so convert it first:
+Store icons as **PNG or SVG**. Both are measured: PNG by averaging the
+luminance of its opaque pixels, SVG by averaging the colours it declares in
+`fill`/`stroke`. A WEBP is accepted by the lookup and cannot be measured, so
+convert it first:
 
     sips --resampleWidth 96 -s format png in.webp --out assets/tools/slug.png
+
+Two file shapes read as measurable and are not. **A palette PNG** (colour
+type 3) is skipped by the decoder — ProtoPie's download arrived as one and
+reported no ink at all. **An SVG whose colour is in a `prefers-color-scheme`
+media query** measures as the average of both polarities, and worse, it
+follows the OS rather than this site's own theme toggle: Sketch's favicon
+does exactly that, which is why the tile is shipped instead. A test fails
+the build if any icon in this directory cannot be measured.
 
 ## Getting clean files
 
@@ -70,6 +81,7 @@ Check before committing:
 
 ## Wordmarks
 
-The slot is 18x18. VWO's logo is 3:1 — `object-fit: contain` keeps it
-undistorted but it renders about 18x6 and reads as a shape, not a word.
-Prefer a vendor's standalone symbol where one exists.
+The slot is 18x18, so a wordmark loses. VWO shipped as a 96x32 lockup —
+`object-fit: contain` kept it undistorted and rendered it about 18x6, a
+smear rather than a word. It is their standalone bird symbol now.
+Prefer a vendor's symbol over its logotype every time.

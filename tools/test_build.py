@@ -2631,7 +2631,11 @@ class TestToolIcons(BuildCase):
         """
         chips = self.chips_everywhere()
         self.assertTrue(chips, "no page renders a tool chip any more")
-        on_disk = {f.name for f in (ROOT / "assets" / "tools").glob("*.png")}
+        # .svg as well as .png: the lookup in tool_chips tries svg
+        # first, and globbing only png reported Figma's own SVG as a
+        # file that was not on disk.
+        on_disk = {f.name for d in ("*.png", "*.svg", "*.webp")
+                   for f in (ROOT / "assets" / "tools").glob(d)}
         referenced = {f for _, f in chips if f}
         self.assertTrue(referenced, "no chip renders a supplied mark")
         for name, filename in chips:
@@ -2640,6 +2644,64 @@ class TestToolIcons(BuildCase):
                     self.assertIn(filename, on_disk,
                                   "%s references a mark that is not on disk: %s"
                                   % (name, filename))
+
+    def test_every_mark_can_actually_be_measured(self):
+        """An unmeasurable icon silently never gets a plate.
+
+        icon_needs_plate decides the light tile behind a mark, and when
+        it cannot read a file it returns False -- which is the same
+        answer as "this mark is light enough on its own". So a dark mark
+        in a format the detector cannot open is an invisible chip, with
+        nothing in the build to say so. That is the Framer failure the
+        detector was written for, arriving by a different door.
+
+        Two shapes read as fine and are not, and both turned up in one
+        afternoon of adding icons:
+
+          a PALETTE png (colour type 3) is skipped by the decoder --
+            ProtoPie's own download was one, and reported no ink at all;
+          an SVG was skipped entirely until _svg_ink existed, and the
+            lookup prefers .svg, so dropping one in was a guaranteed
+            silent miss.
+
+        Measured, not inferred: every file in the directory has to yield
+        an ink value.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import _png_ink, _svg_ink
+        folder = ROOT / "assets" / "tools"
+        files = [f for f in sorted(folder.iterdir())
+                 if f.suffix.lower() in (".png", ".svg", ".webp")]
+        self.assertTrue(files, "the tool icon folder is empty")
+        unmeasurable = []
+        for f in files:
+            ink = _svg_ink(f) if f.suffix.lower() == ".svg" else _png_ink(f)
+            if ink is None:
+                unmeasurable.append(f.name)
+        self.assertEqual(
+            unmeasurable, [],
+            "these icons cannot be measured, so the plate decision for "
+            "them is a coin flip that always lands on 'no plate': %s"
+            % unmeasurable)
+
+    def test_a_dark_svg_is_plated_like_a_dark_png(self):
+        """The SVG path has to reach the same verdict as the PNG one.
+
+        Asserted on a mark that is actually dark, because the bug it
+        guards is the one where SVG quietly answered False for
+        everything.
+        """
+        sys.path.insert(0, str(ROOT))
+        from build import icon_needs_plate
+        folder = ROOT / "assets" / "tools"
+        svgs = sorted(folder.glob("*.svg"))
+        self.assertTrue(svgs, "no SVG icons left to prove this with")
+        verdicts = {f.name: icon_needs_plate(f) for f in svgs}
+        self.assertTrue(
+            any(verdicts.values()),
+            "not one SVG icon is plated. Either every SVG here is a "
+            "light mark, or _svg_ink has stopped reading them and is "
+            "answering False for all of them: %s" % verdicts)
 
     def test_tools_without_a_file_fall_back_to_a_monogram(self):
         """A tool with no mark on disk still renders, as its initial.
@@ -2657,8 +2719,9 @@ class TestToolIcons(BuildCase):
         sys.path.insert(0, str(ROOT))
         from build import tool_chips
         known = tool_chips(["Figma"])
-        self.assertIn("assets/tools/figma.png", known,
+        self.assertIn("assets/tools/figma.", known,
                       "a tool WITH a mark stopped rendering it")
+        self.assertIn("<img", known)
         unknown = tool_chips(["Kaleidoscope"])
         self.assertNotIn("<img", unknown,
                          "a tool with no mark on disk tried to render one")
