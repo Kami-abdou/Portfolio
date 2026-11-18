@@ -4358,8 +4358,6 @@ html { scroll-snap-type: y proximity; }
 }
 .value__label { font-weight: var(--font-weight-bold); }
 .value__body { color: var(--color-text-muted); }
-.about__small { margin: var(--space-6) 0 0; font-size: var(--font-size-sm); }
-.about__small a { color: var(--color-text-muted); margin-right: var(--space-4); }
 
 .site-foot__sep { color: var(--color-text-faint); }
 

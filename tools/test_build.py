@@ -5943,12 +5943,55 @@ class TestTheTwoPagesLookLikeOneSite(BuildCase):
                 self.assertIn("font-size: %s" % size, self.rule(sel),
                               "%s is not set at the shared index size" % sel)
 
-    def test_both_closing_bands_are_rows(self):
-        for page in ("index.html", "about.html"):
+    def test_a_closing_band_is_a_row_when_it_has_two_things_to_say(self):
+        """Both halves, because each one was live at some point.
+
+        The homepage's band used to stack heading, proof, buttons and
+        address down the left edge and leave the right of a 1440px
+        screen empty, which is what .close__row fixed.
+
+        /about then had the opposite problem. It was given the same row
+        for consistency, and the only thing in its right-hand column was
+        a CV and a LinkedIn link -- both of which the footer of that
+        same page carries about eighty pixels below. Removing the
+        duplicate left a row with one filled column and one empty one,
+        which is the first problem again with extra markup.
+
+        So the rule is the shape has to match the content: a band with
+        something for a second column spreads into one, a band without
+        does not pretend, and no .close__side is ever empty.
+        """
+        for page in ("index.html", "about.html", "404.html"):
             with self.subTest(page=page):
-                self.assertIn('class="close__row"', self.html(page),
-                              "%s still stacks its closing band down the "
-                              "left edge" % page)
+                html = self.html(page)
+                band = re.search(
+                    r'<section class="band[^"]*band--close".*?</section>',
+                    html, re.S)
+                if band is None:
+                    continue
+                band = band.group(0)
+                side = re.search(r'<div class="close__side">(.*?)</div>',
+                                 band, re.S)
+                has_row = 'class="close__row"' in band
+                if side is not None:
+                    self.assertTrue(
+                        side.group(1).strip(),
+                        "%s has an empty second column" % page)
+                    self.assertTrue(
+                        has_row,
+                        "%s has a second column and no row to put it in"
+                        % page)
+                else:
+                    self.assertFalse(
+                        has_row,
+                        "%s wraps its closing band in a row with nothing "
+                        "to put in the second half" % page)
+        # ...and the homepage, which does have two things to say, still
+        # says them side by side.
+        home = self.html("index.html")
+        self.assertIn('class="close__row"', home,
+                      "the homepage's closing band stacks again")
+        self.assertIn("close__proof", home)
 
 
 class TestTheWordmark(BuildCase):

@@ -1897,18 +1897,15 @@ def build_about(index):
           %s
         </div>""" % (e(SITE.get("toolsHeading", "Tools")), tool_chips(tools))
 
-    # The same two actions as everywhere else, with the two documents a
-    # reader of this page actually goes looking for underneath them.
-    cv_link = ('<a href="%s%s"%s>CV (PDF)%s</a>'
-               % (e(SITE["cv"]), asset_v(SITE["cv"]), NEW_TAB, NEW_TAB_NOTE)
-               ) if SITE.get("cv") else ""
-    linkedin = next((l for l in SITE.get("links", [])
-                     if "linkedin" in l.get("label", "").lower()), None)
-    li_link = ('<a href="%s"%s>%s%s</a>'
-               % (e(linkedin["url"]), NEW_TAB, e(linkedin["label"]), NEW_TAB_NOTE)
-               ) if linkedin else ""
-    small = " ".join(x for x in (cv_link, li_link) if x)
-    small_html = ('<p class="about__small">%s</p>' % small) if small else ""
+    # NO CV AND LINKEDIN UNDER THE BUTTONS. They sat in the closing
+    # band's right-hand column, and the footer of the same page carries
+    # both about eighty pixels below -- close enough to be in the same
+    # glance. The footer is the right home for them: it is on every page
+    # rather than this one, and a reader looking for a CV looks at the
+    # bottom of a site, not at the end of an About page.
+    #
+    # The band is a heading and the two actions now, which is the shape
+    # every other closing band on the site has.
 
     # THE SAME SHAPE AS THE HOMEPAGE, which it did not have. That page
     # opens with a headline across the full column and a foot row under
@@ -1935,11 +1932,7 @@ def build_about(index):
 {experience_list(index)}{values_block()}
     <section class="band shell band--close">
       <h2 class="band__close">{e(SITE.get("closingLine", "Have something in mind?"))}</h2>
-      <div class="close__row">
       {actions_row()}
-        <div class="close__side">{small_html}
-        </div>
-      </div>
     </section>
 """)
     out.append(foot())
