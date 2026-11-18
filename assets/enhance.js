@@ -579,20 +579,23 @@
   links.forEach(function (link) {
     link.addEventListener('mouseenter', function () { moveTo(link); });
     link.addEventListener('focus', function () { moveTo(link); });
-    /* A link that says "you are here" should not fetch the page you are
-       already on. On the homepage, Work carries aria-current and points
-       at /work -- a different URL serving the same bytes -- so clicking
-       it navigated, crossfaded, and left the reader on a screen that
-       had not changed. Scroll to the top instead.
+    /* NO CLICK HANDLER. There was one for a day: a link carrying
+       aria-current had its navigation cancelled and scrolled to the top
+       instead, on the reasoning that / and /work are different URLs
+       serving the same bytes and the crossfade between them showed the
+       reader nothing new.
 
-       No behavior argument: scrollTo without one follows the CSS, which
-       is smooth normally and auto under reduced motion, so the two
-       paths need no branch here. */
-    link.addEventListener('click', function (ev) {
-      if (link.getAttribute('aria-current') !== 'page') return;
-      ev.preventDefault();
-      window.scrollTo(0, 0);
-    });
+       It made Work look broken. The HOMEPAGE marks Work as current, so
+       on the page most people land on first, the Work button did
+       nothing at all when tapped -- and on /about it worked, which is
+       worse than either behaviour on its own. Reported as the nav
+       crashing when changing between Work and About, and reproduced on
+       the live site: defaultPrevented true, URL unchanged, nothing on
+       screen moved.
+
+       A flicker between two pages that look alike is a much smaller
+       problem than a navigation control that appears dead. The links
+       navigate. */
   });
   pill.addEventListener('mouseleave', function () { moveTo(home); });
   pill.addEventListener('focusout', function (ev) {

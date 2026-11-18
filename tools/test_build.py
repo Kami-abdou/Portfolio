@@ -6247,33 +6247,52 @@ class TestTheNavMarker(BuildCase):
             "the transition is armed before the new position has been "
             "committed, which is the bug this guards")
 
-    def test_a_link_that_says_you_are_here_does_not_reload(self):
-        """The homepage's Work link carries aria-current AND an href.
+    def test_the_nav_links_actually_navigate(self):
+        """Every one of them, including the one marked current.
 
-        / and /work are different URLs serving the same bytes, so
-        clicking Work on the homepage navigated, crossfaded, and left
-        the reader looking at a screen that had not changed. A flicker
-        in exchange for nothing.
+        A click handler was added here that cancelled navigation on any
+        link carrying aria-current and scrolled to the top instead --
+        because / and /work are different URLs serving the same bytes,
+        so the crossfade between them showed the reader nothing new.
 
-        The href stays -- it is what works without script, and what a
-        middle click should still open -- so the interception is in
-        enhance.js and only for the link already marked current.
+        It made Work look broken. The HOMEPAGE is the page that marks
+        Work as current, so on the page most people land on first the
+        Work button did nothing at all when tapped, while on /about the
+        same button worked -- worse than either behaviour on its own.
+        Reported as the nav crashing when changing between Work and
+        About, and reproduced on the live site: default prevented, URL
+        unchanged, nothing on screen moved.
+
+        A flicker between two pages that look alike is a much smaller
+        problem than a navigation control that appears dead.
         """
         src = self.js()
-        self.assertIn("link.getAttribute('aria-current') !== 'page'", src,
-                      "every nav link is intercepted, or none is")
-        self.assertIn("window.scrollTo(0, 0)", src)
-        self.assertNotIn("scrollTo({", src,
-                         "an explicit behavior here would ignore the "
-                         "reduced-motion scroll-behavior the stylesheet "
-                         "already sets")
-        # ...and the markup still carries a real href for no-JS.
-        home = self.html("index.html")
-        m = re.search(r'<a href="([^"]*)"[^>]*aria-current="page"', home)
-        self.assertIsNotNone(
-            m, "the current nav link lost its href or its aria-current")
-        self.assertTrue(m.group(1).strip(),
-                        "the current nav link has an empty href")
+        # JUST the nav-marker module. Slicing to the end of the file
+        # swept in the peek preview and the copy-email button, both of
+        # which bind click for good reasons, and the first version of
+        # this test failed on those instead of on the nav.
+        start = src.index("var pill = document.querySelector('.site-nav__pill')")
+        block = src[start:src.index("the work index's cover", start)]
+        self.assertNotRegex(
+            block, r"addEventListener\(\s*'click'",
+            "the nav script intercepts clicks again; a nav link that "
+            "does not navigate reads as a broken button")
+        self.assertNotIn("preventDefault", block,
+                         "something in the nav is cancelling a default "
+                         "action")
+        # ...and every nav link still has somewhere to go.
+        for page in ("index.html", "about.html"):
+            with self.subTest(page=page):
+                pill = re.search(
+                    r'<span class="site-nav__pill">(.*?)</span>\s*<button',
+                    self.html(page), re.S)
+                self.assertIsNotNone(pill, "%s has no nav pill" % page)
+                hrefs = re.findall(r'<a href="([^"]*)"', pill.group(1))
+                self.assertEqual(len(hrefs), 2,
+                                 "%s does not have two nav links" % page)
+                for h in hrefs:
+                    self.assertTrue(
+                        h.strip(), "%s has a nav link with no href" % page)
 
 
 if __name__ == "__main__":
